@@ -859,6 +859,28 @@ class SubscriptionController extends Controller
     }
     
     /**
+     * Get subscription plans (API endpoint).
+     */
+    public function getPlans()
+    {
+        $user = auth()->user();
+        
+        // Get active subscription plans filtered by user's project
+        $plans = SubscriptionPlan::where('is_active', true)
+            ->where(function($query) use ($user) {
+                // Show plans that either belong to the user's project or have no project assigned (global plans)
+                $query->where('project_id', $user->project?->id)
+                      ->orWhereNull('project_id');
+            })
+            ->orderBy('price')
+            ->get();
+        
+        return response()->json([
+            'plans' => $plans,
+        ]);
+    }
+
+    /**
      * Get user's active subscription.
      */
     public function getActiveSubscription($userIdentifier)

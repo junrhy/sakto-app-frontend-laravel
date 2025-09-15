@@ -75,31 +75,56 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
             if (userIdentifier) {
                 const activeResponse = await fetch(`/subscriptions/${userIdentifier}/active`);
                 if (activeResponse.ok) {
-                    const activeData = await activeResponse.json();
-                    if (activeData.active) {
-                        setSubscription(activeData.subscription);
+                    const contentType = activeResponse.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const activeData = await activeResponse.json();
+                        if (activeData.active) {
+                            setSubscription(activeData.subscription);
+                        }
+                    } else {
+                        console.error('Active subscription response is not JSON');
                     }
+                } else {
+                    console.error('Failed to fetch active subscription:', activeResponse.status, activeResponse.statusText);
                 }
             }
 
             // Fetch subscription plans
-            const plansResponse = await fetch('/subscriptions');
+            const plansResponse = await fetch('/api/subscriptions/plans');
             if (plansResponse.ok) {
-                const plansData = await plansResponse.json();
-                setPlans(plansData.plans || []);
+                const contentType = plansResponse.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const plansData = await plansResponse.json();
+                    setPlans(plansData.plans || []);
+                } else {
+                    console.error('Plans response is not JSON');
+                }
+            } else {
+                console.error('Failed to fetch plans:', plansResponse.status, plansResponse.statusText);
             }
 
             // Fetch subscription history
             if (userIdentifier) {
                 const historyResponse = await fetch(`/subscriptions/history/${userIdentifier}`);
                 if (historyResponse.ok) {
-                    const historyData = await historyResponse.json();
-                    setSubscriptionHistory(historyData.history || []);
+                    const contentType = historyResponse.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const historyData = await historyResponse.json();
+                        setSubscriptionHistory(historyData.history || []);
+                    } else {
+                        console.error('History response is not JSON');
+                    }
+                } else {
+                    console.error('Failed to fetch subscription history:', historyResponse.status, historyResponse.statusText);
                 }
             }
         } catch (error) {
             console.error('Failed to fetch subscription data:', error);
-            toast.error('Failed to load subscription information');
+            if (error instanceof SyntaxError) {
+                toast.error('Failed to parse server response. Please refresh the page.');
+            } else {
+                toast.error('Failed to load subscription information');
+            }
         } finally {
             setIsLoading(false);
         }

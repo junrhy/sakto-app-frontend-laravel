@@ -445,7 +445,11 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::get('/apps', [AppsController::class, 'index'])->name('apps');
     Route::get('/api/apps', [AppsController::class, 'getApps'])->name('api.apps');
     Route::post('/api/apps/add', [AppsController::class, 'addApp'])->name('api.apps.add');
+    Route::post('/api/apps/add-multiple', [AppsController::class, 'addMultipleApps'])->name('api.apps.add-multiple');
     Route::delete('/api/apps/remove', [AppsController::class, 'removeApp'])->name('api.apps.remove');
+    Route::get('/api/apps/billing-history', [AppsController::class, 'getBillingHistory'])->name('api.apps.billing-history');
+    Route::post('/api/apps/toggle-auto-renew', [AppsController::class, 'toggleAutoRenew'])->name('api.apps.toggle-auto-renew');
+    Route::post('/api/apps/cancel-subscription', [AppsController::class, 'cancelAppSubscription'])->name('api.apps.cancel-subscription');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboards', [DashboardController::class, 'gallery'])->name('dashboard.gallery');
     Route::post('/dashboard', [DashboardController::class, 'store'])->name('dashboard.store');
@@ -579,6 +583,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     
     // Subscription Management
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('/api/subscriptions/plans', [SubscriptionController::class, 'getPlans'])->name('api.subscriptions.plans');
     Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
     Route::post('/subscriptions/cancel/{identifier}', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
     Route::get('/subscriptions/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');

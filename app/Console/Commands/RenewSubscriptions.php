@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
+use App\Services\AppBillingService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -25,6 +26,14 @@ class RenewSubscriptions extends Command
      */
     protected $description = 'Process subscription renewals and add monthly credits';
 
+    protected $appBillingService;
+
+    public function __construct(AppBillingService $appBillingService)
+    {
+        parent::__construct();
+        $this->appBillingService = $appBillingService;
+    }
+
     /**
      * Execute the console command.
      */
@@ -38,12 +47,35 @@ class RenewSubscriptions extends Command
         // Process auto-renewals for subscriptions ending soon
         $this->processAutoRenewals();
         
+        // Process monthly billing for individual app subscriptions
+        $this->processAppSubscriptions();
+        
         // Mark expired subscriptions
         $this->markExpiredSubscriptions();
         
         $this->info('Subscription renewal process completed.');
         
         return Command::SUCCESS;
+    }
+
+    /**
+     * Process monthly billing for individual app subscriptions.
+     */
+    private function processAppSubscriptions()
+    {
+        $this->info('Processing individual app subscription billing...');
+        
+        $results = $this->appBillingService->generateMonthlyBilling();
+        
+        $this->info("Processed {$results['processed']} app subscriptions.");
+        
+        if ($results['failed'] > 0) {
+            $this->warn("Failed to process {$results['failed']} app subscriptions.");
+            
+            foreach ($results['errors'] as $error) {
+                $this->error("User App ID {$error['user_app_id']}: {$error['error']}");
+            }
+        }
     }
     
     /**

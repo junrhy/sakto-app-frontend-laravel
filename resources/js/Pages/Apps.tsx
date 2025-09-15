@@ -1,4 +1,5 @@
 import { Head, Link as InertiaLink, usePage } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Input } from '@/Components/ui/input';
@@ -11,18 +12,21 @@ import { useTheme } from "@/Components/ThemeProvider";
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
+import AppPaymentModal from '@/Components/AppPaymentModal';
+import MultiAppPaymentModal from '@/Components/MultiAppPaymentModal';
+import { toast, Toaster } from 'sonner';
 // App interface and utility functions
 interface App {
-    icon: JSX.Element;
+    icon?: JSX.Element;
     title: string;
-    route: string;
-    bgColor: string;
-    visible: boolean;
+    route?: string;
+    bgColor?: string;
+    visible?: boolean;
     description: string;
     price: number;
-    rating: number;
-    categories: string[];
-    comingSoon: boolean;
+    rating?: number;
+    categories?: string[];
+    comingSoon?: boolean;
     pricingType: 'free' | 'one-time' | 'subscription';
     includedInPlans?: string[];
     id?: number;
@@ -32,12 +36,41 @@ interface App {
     isInSubscription?: boolean;
     isUserAdded?: boolean;
     isAvailable?: boolean;
+    paymentStatus?: string;
+    billingType?: string;
+    nextBillingDate?: string;
+    cancelledAt?: string;
 }
 
 // Utility function to get icon for any app
 const getIconForApp = (app: any): JSX.Element => {
     const IconComponent = getIconByName(app.icon || getSmartIconSuggestion(app.title));
     return <IconComponent />;
+};
+
+// Helper function to get app payment state
+const getAppPaymentState = (app: App) => {
+    if (app.isInSubscription) {
+        return { state: 'in-subscription', label: 'In Plan', color: 'green' };
+    }
+    
+    if (app.isUserAdded && app.paymentStatus === 'paid') {
+        return { state: 'paid', label: 'Added', color: 'blue' };
+    }
+    
+    if (app.paymentStatus === 'failed') {
+        return { state: 'failed', label: 'Payment Failed', color: 'red' };
+    }
+    
+    if (app.paymentStatus === 'pending') {
+        return { state: 'pending', label: 'Payment Pending', color: 'yellow' };
+    }
+    
+    if (app.pricingType === 'free' || app.price === 0) {
+        return { state: 'free', label: 'Free', color: 'gray' };
+    }
+    
+    return { state: 'not-purchased', label: 'Not in Plan', color: 'gray' };
 };
 
 // Utility function to get apps directly from API
@@ -50,14 +83,18 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
             icon: getIconForApp(app),
             isInSubscription: app.isInSubscription || false,
             isUserAdded: app.isUserAdded || false,
-            isAvailable: app.isAvailable || false
+            isAvailable: app.isAvailable || false,
+            paymentStatus: app.paymentStatus || null,
+            billingType: app.billingType || null,
+            nextBillingDate: app.nextBillingDate || null,
+            cancelledAt: app.cancelledAt || null
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);
         return [];
     }
 };
-import { useState, useMemo, useEffect } from 'react';
+
 import { CreditCardIcon } from '@heroicons/react/24/outline';
 import { PageProps } from '@/types';
 import { User } from '@/types';
@@ -126,6 +163,17 @@ interface Props extends PageProps {
 
 export default function Apps() {
     const { flash, auth, enabledModules } = usePage<Props>().props;
+    
+    // Payment modal state
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [selectedApp, setSelectedApp] = useState<App | null>(null);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    
+    // Multiple app selection state
+    const [selectedApps, setSelectedApps] = useState<App[]>([]);
+    const [multiPaymentModalOpen, setMultiPaymentModalOpen] = useState(false);
+    const [isProcessingMultiPayment, setIsProcessingMultiPayment] = useState(false);
+    const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -134,7 +182,6 @@ export default function Apps() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
     const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({ PHP: 56.50 }); // Default fallback rate
-    const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [showAllCategories, setShowAllCategories] = useState(false);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
@@ -274,7 +321,7 @@ export default function Apps() {
     const allCategories = useMemo(() => {
         const categories = new Set<string>();
         apps.forEach(app => {
-            app.categories.forEach(category => categories.add(category));
+            (app.categories || []).forEach(category => categories.add(category));
         });
         return Array.from(categories).sort();
     }, [apps]);
@@ -289,7 +336,7 @@ export default function Apps() {
         const filtered = apps.filter(app => {
             const matchesSearch = app.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 app.description.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCategory = !selectedCategory || app.categories.includes(selectedCategory);
+            const matchesCategory = !selectedCategory || (app.categories || []).includes(selectedCategory);
             
             // Show all apps regardless of availability status
             return matchesSearch && matchesCategory;
@@ -320,6 +367,124 @@ export default function Apps() {
 
     // Handle adding an app to user's collection
     const handleAddApp = async (app: App) => {
+        // If it's a free app, add directly
+        if (app.pricingType === 'free' || app.price === 0) {
+            await addAppToCollection(app.identifier!, 'free', false);
+            return;
+        }
+
+        // Check if user has sufficient credits for paid apps
+        if (credits < app.price) {
+            toast.error(
+                `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${app.price.toLocaleString()} credits for this app.`,
+                {
+                    duration: 5000,
+                }
+            );
+            return;
+        }
+
+        // For paid apps, show payment modal
+        setSelectedApp(app);
+        setPaymentModalOpen(true);
+    };
+
+    // Handle multiple app selection
+    const handleAppSelection = (app: App) => {
+        if (isMultiSelectMode) {
+            // Check if app is already available (in plan or already added)
+            const isAlreadyAvailable = app.isInSubscription || (app.isUserAdded && app.paymentStatus === 'paid');
+            
+            // Don't allow selection of already available apps
+            if (isAlreadyAvailable) {
+                return;
+            }
+            
+            setSelectedApps(prev => {
+                const isSelected = prev.some(selected => selected.identifier === app.identifier);
+                if (isSelected) {
+                    return prev.filter(selected => selected.identifier !== app.identifier);
+                } else {
+                    return [...prev, app];
+                }
+            });
+        } else {
+            setSelectedApp(app);
+        }
+    };
+
+    // Handle removing app from multi-selection
+    const handleRemoveFromSelection = (app: App) => {
+        setSelectedApps(prev => prev.filter(selected => selected.identifier !== app.identifier));
+    };
+
+    // Handle multi-app checkout
+    const handleMultiAppCheckout = () => {
+        if (selectedApps.length === 0) return;
+        
+        const paidApps = selectedApps.filter(app => app.pricingType !== 'free' && app.price > 0);
+        const totalCost = paidApps.reduce((sum, app) => sum + app.price, 0);
+        
+        if (paidApps.length > 0 && credits < totalCost) {
+            toast.error(
+                `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${totalCost.toLocaleString()} credits for selected apps.`,
+                {
+                    duration: 5000,
+                }
+            );
+            return;
+        }
+        
+        setMultiPaymentModalOpen(true);
+    };
+
+    // Handle multi-app payment confirmation
+    const handleMultiPaymentConfirm = async (paymentMethod: string, autoRenew: boolean) => {
+        if (selectedApps.length === 0) return;
+
+        setIsProcessingMultiPayment(true);
+        try {
+            await addMultipleAppsToCollection(selectedApps, paymentMethod, autoRenew);
+            setMultiPaymentModalOpen(false);
+            setSelectedApps([]);
+            setIsMultiSelectMode(false);
+        } catch (error) {
+            console.error('Multi-app payment failed:', error);
+            toast.error(
+                error instanceof Error ? error.message : 'Failed to purchase apps. Please try again.',
+                {
+                    duration: 5000,
+                }
+            );
+        } finally {
+            setIsProcessingMultiPayment(false);
+        }
+    };
+
+    // Handle payment confirmation
+    const handlePaymentConfirm = async (paymentMethod: string, autoRenew: boolean) => {
+        if (!selectedApp) return;
+
+        setIsProcessingPayment(true);
+        try {
+            await addAppToCollection(selectedApp.identifier!, paymentMethod, autoRenew);
+            setPaymentModalOpen(false);
+            setSelectedApp(null);
+        } catch (error) {
+            console.error('Payment failed:', error);
+            toast.error(
+                error instanceof Error ? error.message : 'Failed to purchase app. Please try again.',
+                {
+                    duration: 5000,
+                }
+            );
+        } finally {
+            setIsProcessingPayment(false);
+        }
+    };
+
+    // Add app to collection with payment
+    const addAppToCollection = async (moduleIdentifier: string, paymentMethod: string, autoRenew: boolean) => {
         try {
             const response = await fetch('/api/apps/add', {
                 method: 'POST',
@@ -328,20 +493,87 @@ export default function Apps() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
-                    module_identifier: app.identifier
+                    module_identifier: moduleIdentifier,
+                    payment_method: paymentMethod,
+                    auto_renew: autoRenew
                 })
             });
 
             if (response.ok) {
+                const result = await response.json();
                 // Refresh apps data
                 const appData = await fetchAppsFromAPI();
                 setApps(appData);
+                
+                // Show success message
+                if (result.invoice) {
+                    toast.success(
+                        `App purchased successfully! Invoice: ${result.invoice.invoice_number}`,
+                        {
+                            duration: 4000,
+                        }
+                    );
+                } else {
+                    toast.success('App added successfully!', {
+                        duration: 3000,
+                    });
+                }
             } else {
                 const error = await response.json();
                 console.error('Failed to add app:', error.message);
+                throw new Error(error.message);
             }
         } catch (error) {
             console.error('Error adding app:', error);
+            throw error;
+        }
+    };
+
+    // Add multiple apps to collection with payment
+    const addMultipleAppsToCollection = async (apps: App[], paymentMethod: string, autoRenew: boolean) => {
+        try {
+            const moduleIdentifiers = apps.map(app => app.identifier).filter(Boolean);
+            
+            const response = await fetch('/api/apps/add-multiple', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    module_identifiers: moduleIdentifiers,
+                    payment_method: paymentMethod,
+                    auto_renew: autoRenew
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                // Refresh apps data
+                const appData = await fetchAppsFromAPI();
+                setApps(appData);
+                
+                // Show success message
+                if (result.results.invoice) {
+                    toast.success(
+                        `${result.message}! Invoice: ${result.results.invoice.invoice_number}`,
+                        {
+                            duration: 4000,
+                        }
+                    );
+                } else {
+                    toast.success(result.message, {
+                        duration: 3000,
+                    });
+                }
+            } else {
+                const error = await response.json();
+                console.error('Failed to add multiple apps:', error.message);
+                throw new Error(error.message);
+            }
+        } catch (error) {
+            console.error('Error adding multiple apps:', error);
+            throw error;
         }
     };
 
@@ -363,12 +595,21 @@ export default function Apps() {
                 // Refresh apps data
                 const appData = await fetchAppsFromAPI();
                 setApps(appData);
+                toast.success('App removed successfully!', {
+                    duration: 3000,
+                });
             } else {
                 const error = await response.json();
                 console.error('Failed to remove app:', error.message);
+                toast.error('Failed to remove app. Please try again.', {
+                    duration: 4000,
+                });
             }
         } catch (error) {
             console.error('Error removing app:', error);
+            toast.error('An error occurred while removing the app. Please try again.', {
+                duration: 4000,
+            });
         }
     };
 
@@ -496,7 +737,7 @@ export default function Apps() {
                             {/* Left Column - App Listing */}
                             <div className="lg:col-span-4 bg-gray-50/50 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
                                 {/* Search and Filter Section */}
-                                <div className="mb-6">
+                                <div className="mb-6 space-y-3">
                                     <div className="relative">
                                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                                         <Input
@@ -505,6 +746,38 @@ export default function Apps() {
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
+                                    </div>
+                                    
+                                    {/* Multi-select controls */}
+                                    <div className="flex items-center justify-between">
+                                        <Button
+                                            variant={isMultiSelectMode ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => {
+                                                setIsMultiSelectMode(!isMultiSelectMode);
+                                                if (isMultiSelectMode) {
+                                                    setSelectedApps([]);
+                                                }
+                                            }}
+                                            className="text-xs"
+                                        >
+                                            {isMultiSelectMode ? 'Exit Multi-Select' : 'Multi-Select'}
+                                        </Button>
+                                        
+                                        {isMultiSelectMode && selectedApps.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {selectedApps.length} selected
+                                                </span>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={handleMultiAppCheckout}
+                                                    className="bg-orange-600 hover:bg-orange-700 text-xs"
+                                                >
+                                                    Checkout
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -521,17 +794,45 @@ export default function Apps() {
                                                 </span>
                                             </h2>
                                             <div className="space-y-3">
-                                                {filteredApps.map((app) => (
-                                                    <Card 
-                                                        key={app.title} 
-                                                        className={`hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer ${
-                                                            app.comingSoon ? 'opacity-75' : ''
-                                                        }`}
-                                                        onClick={() => setSelectedApp(app)}
-                                                    >
+                                                {filteredApps.map((app) => {
+                                                    const isSelected = selectedApps.some(selected => selected.identifier === app.identifier);
+                                                    const paymentState = getAppPaymentState(app);
+                                                    
+                                                    // Check if app is already available (in plan or already added)
+                                                    const isAlreadyAvailable = app.isInSubscription || (app.isUserAdded && app.paymentStatus === 'paid');
+                                                    
+                                                    return (
+                                                        <Card 
+                                                            key={app.title} 
+                                                            className={`hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm ${
+                                                                app.comingSoon ? 'opacity-75' : ''
+                                                            } ${isSelected ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-900/20' : ''} ${
+                                                                isMultiSelectMode && isAlreadyAvailable ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                                            }`}
+                                                            onClick={() => {
+                                                                if (!isMultiSelectMode || !isAlreadyAvailable) {
+                                                                    handleAppSelection(app);
+                                                                }
+                                                            }}
+                                                        >
                                                         <CardHeader className="p-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm ${app.comingSoon ? 'opacity-50' : ''}`}>
+                                                                {/* Multi-select checkbox */}
+                                                                {isMultiSelectMode && (
+                                                                    <div className="flex items-center">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={isSelected}
+                                                                            disabled={isAlreadyAvailable}
+                                                                            onChange={() => handleAppSelection(app)}
+                                                                            className={`w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 dark:focus:ring-orange-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${
+                                                                                isAlreadyAvailable ? 'opacity-50 cursor-not-allowed' : ''
+                                                                            }`}
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                                
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor || 'bg-gray-100'} shadow-sm ${app.comingSoon ? 'opacity-50' : ''}`}>
                                                                     <div className="text-xl dark:text-slate-300">
                                                                         {app.icon}
                                                                     </div>
@@ -544,76 +845,137 @@ export default function Apps() {
                                                                                 Coming Soon
                                                                             </Badge>
                                                                         )}
-                                                                        {!app.comingSoon && app.isInSubscription && (
-                                                                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs">
-                                                                                In Plan
-                                                                            </Badge>
-                                                                        )}
-                                                                        {!app.comingSoon && app.isUserAdded && !app.isInSubscription && (
-                                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
-                                                                                Added
-                                                                            </Badge>
-                                                                        )}
-                                                                        {!app.comingSoon && !app.isInSubscription && !app.isUserAdded && (
+                                                                        {!app.comingSoon && (() => {
+                                                                            const colorClasses = {
+                                                                                green: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                                                                                blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+                                                                                red: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                                                                                yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                                                                gray: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                                                                            };
+                                                                            return (
+                                                                                <Badge variant="secondary" className={`${colorClasses[paymentState.color as keyof typeof colorClasses]} text-xs`}>
+                                                                                    {paymentState.label}
+                                                                                </Badge>
+                                                                            );
+                                                                        })()}
+                                                                        
+                                                                        {/* Show "Already Available" badge in multi-select mode for apps that can't be selected */}
+                                                                        {isMultiSelectMode && isAlreadyAvailable && (
                                                                             <Badge variant="secondary" className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 text-xs">
-                                                                                Not in Plan
+                                                                                Already Available
                                                                             </Badge>
                                                                         )}
                                                                     </div>
                                                                     {/* Show price for apps not in plan */}
-                                                                    {!app.comingSoon && !app.isInSubscription && !app.isUserAdded && app.price > 0 && (
-                                                                        <div className="mt-1">
-                                                                            <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                                                {formatPrice(app.price)}
-                                                                            </span>
-                                                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                                                                                {app.pricingType === 'one-time' ? 'one-time' : app.pricingType === 'subscription' ? 'per month' : ''}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
+                                                                    {!app.comingSoon && (() => {
+                                                                        const paymentState = getAppPaymentState(app);
+                                                                        if ((paymentState.state === 'not-purchased' || paymentState.state === 'failed') && app.price > 0) {
+                                                                            return (
+                                                                                <div className="mt-1">
+                                                                                    <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                                                                        {formatPrice(app.price)}
+                                                                                    </span>
+                                                                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                                                                                        {app.pricingType === 'one-time' ? 'one-time' : app.pricingType === 'subscription' ? 'per month' : ''}
+                                                                                    </span>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
                                                                     <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
                                                                         {app.description}
                                                                     </CardDescription>
                                                                 </div>
                                                                 <div className="flex gap-2">
-                                                                    {!app.comingSoon && !app.isInSubscription && !app.isUserAdded && (
-                                                                        <div className="flex flex-col items-end">
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    handleAddApp(app);
-                                                                                }}
-                                                                                className="text-xs"
-                                                                            >
-                                                                                Add
-                                                                            </Button>
-                                                                            {app.price > 0 && (
-                                                                                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
-                                                                                    {formatPrice(app.price)}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                    {!app.comingSoon && app.isUserAdded && !app.isInSubscription && (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="outline"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                handleRemoveApp(app);
-                                                                            }}
-                                                                            className="text-xs text-red-600 hover:text-red-700"
-                                                                        >
-                                                                            Remove
-                                                                        </Button>
-                                                                    )}
+                                                                    {!app.comingSoon && !isMultiSelectMode && (() => {
+                                                                        if (paymentState.state === 'not-purchased') {
+                                                                            return (
+                                                                                <div className="flex flex-col items-end">
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            handleAddApp(app);
+                                                                                        }}
+                                                                                        className="text-xs"
+                                                                                    >
+                                                                                        Add
+                                                                                    </Button>
+                                                                                    {app.price > 0 && (
+                                                                                        <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
+                                                                                            {formatPrice(app.price)}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        
+                                                                        if (paymentState.state === 'paid') {
+                                                                            return (
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        handleRemoveApp(app);
+                                                                                    }}
+                                                                                    className="text-xs text-red-600 hover:text-red-700"
+                                                                                >
+                                                                                    Remove
+                                                                                </Button>
+                                                                            );
+                                                                        }
+                                                                        
+                                                                        if (paymentState.state === 'failed') {
+                                                                            return (
+                                                                                <div className="flex flex-col items-end">
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            handleAddApp(app);
+                                                                                        }}
+                                                                                        className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                                                                    >
+                                                                                        Retry Payment
+                                                                                    </Button>
+                                                                                    <span className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">
+                                                                                        Payment Failed
+                                                                                    </span>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        
+                                                                        if (paymentState.state === 'pending') {
+                                                                            return (
+                                                                                <div className="flex flex-col items-end">
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        disabled
+                                                                                        className="text-xs opacity-50"
+                                                                                    >
+                                                                                        Processing...
+                                                                                    </Button>
+                                                                                    <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium mt-1">
+                                                                                        Payment Pending
+                                                                                    </span>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        
+                                                                        return null;
+                                                                    })()}
                                                                 </div>
                                                             </div>
                                                         </CardHeader>
                                                     </Card>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}
@@ -625,7 +987,7 @@ export default function Apps() {
                                 {selectedApp ? (
                                     <div className="space-y-6">
                                         <div className="flex items-start gap-4">
-                                            <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${selectedApp.bgColor} shadow-sm`}>
+                                            <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${selectedApp.bgColor || 'bg-gray-100'} shadow-sm`}>
                                                 <div className="text-2xl dark:text-slate-300">
                                                     {selectedApp.icon}
                                                 </div>
@@ -643,7 +1005,7 @@ export default function Apps() {
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Categories</h3>
                                             <div className="flex flex-wrap gap-2">
-                                                {selectedApp.categories.map((category) => (
+                                                {(selectedApp.categories || []).map((category) => (
                                                     <Badge 
                                                         key={category} 
                                                         variant="secondary" 
@@ -725,6 +1087,40 @@ export default function Apps() {
             </div>
 
             <BottomNav />
+
+            {/* Payment Modal */}
+            <AppPaymentModal
+                isOpen={paymentModalOpen}
+                onClose={() => {
+                    setPaymentModalOpen(false);
+                    setSelectedApp(null);
+                }}
+                app={selectedApp}
+                onConfirm={handlePaymentConfirm}
+                isLoading={isProcessingPayment}
+                userCredits={credits}
+            />
+
+            {/* Multi-App Payment Modal */}
+            <MultiAppPaymentModal
+                isOpen={multiPaymentModalOpen}
+                onClose={() => {
+                    setMultiPaymentModalOpen(false);
+                }}
+                selectedApps={selectedApps}
+                onConfirm={handleMultiPaymentConfirm}
+                isLoading={isProcessingMultiPayment}
+                userCredits={credits}
+                onRemoveApp={handleRemoveFromSelection}
+            />
+
+            {/* Toast Notifications */}
+            <Toaster
+                position="top-right"
+                expand={true}
+                richColors={true}
+                closeButton={true}
+            />
         </div>
     );
 }
