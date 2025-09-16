@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "../../Components/ui/input";
 import { Label } from "../../Components/ui/label";
 import { Textarea } from "../../Components/ui/textarea";
-import { Users, UserPlus, Calendar } from 'lucide-react';
+import { Users, UserPlus, Calendar, Table, Grid3X3 } from 'lucide-react';
 
 // Import types
 import { 
@@ -42,6 +42,7 @@ import {
     DeleteConfirmationDialog,
     AddCheckupDialog,
     AppointmentTable,
+    AppointmentCalendar,
     AddAppointmentDialog,
     EditAppointmentDialog
 } from './components';
@@ -163,6 +164,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
     const [deleteAppointmentConfirmation, setDeleteAppointmentConfirmation] = useState<Appointment | null>(null);
+    const [appointmentView, setAppointmentView] = useState<'table' | 'calendar'>('table');
 
     // Permission checks
     const canDelete = useMemo(() => {
@@ -570,20 +572,53 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-semibold">Appointments</h3>
-                                <Button onClick={() => setIsAddAppointmentDialogOpen(true)}>
-                                    <Calendar className="h-4 w-4 mr-2" />
-                                    Schedule Appointment
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg">
+                                        <Button
+                                            variant={appointmentView === 'table' ? 'default' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setAppointmentView('table')}
+                                            className="rounded-r-none"
+                                        >
+                                            <Table className="h-4 w-4 mr-2" />
+                                            Table
+                                        </Button>
+                                        <Button
+                                            variant={appointmentView === 'calendar' ? 'default' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setAppointmentView('calendar')}
+                                            className="rounded-l-none"
+                                        >
+                                            <Grid3X3 className="h-4 w-4 mr-2" />
+                                            Calendar
+                                        </Button>
+                                    </div>
+                                    <Button onClick={() => setIsAddAppointmentDialogOpen(true)}>
+                                        <Calendar className="h-4 w-4 mr-2" />
+                                        Schedule Appointment
+                                    </Button>
+                                </div>
                             </div>
                             
-                            <AppointmentTable
-                                appointments={appointments}
-                                onEditAppointment={handleEditAppointment}
-                                onDeleteAppointment={handleDeleteAppointment}
-                                onUpdateStatus={handleUpdateAppointmentStatus}
-                                onUpdatePaymentStatus={handleUpdateAppointmentPaymentStatus}
-                                currency={currency}
-                            />
+                            {appointmentView === 'table' ? (
+                                <AppointmentTable
+                                    appointments={appointments}
+                                    onEditAppointment={handleEditAppointment}
+                                    onDeleteAppointment={handleDeleteAppointment}
+                                    onUpdateStatus={handleUpdateAppointmentStatus}
+                                    onUpdatePaymentStatus={handleUpdateAppointmentPaymentStatus}
+                                    currency={currency}
+                                />
+                            ) : (
+                                <AppointmentCalendar
+                                    appointments={appointments}
+                                    onEditAppointment={handleEditAppointment}
+                                    onDeleteAppointment={handleDeleteAppointment}
+                                    onUpdateStatus={handleUpdateAppointmentStatus}
+                                    onUpdatePaymentStatus={handleUpdateAppointmentPaymentStatus}
+                                    currency={currency}
+                                />
+                            )}
                         </div>
                     </TabsContent>
 
