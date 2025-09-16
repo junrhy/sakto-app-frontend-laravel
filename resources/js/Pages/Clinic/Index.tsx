@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Button } from "../../Components/ui/button";
@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "../../Components/ui/input";
 import { Label } from "../../Components/ui/label";
 import { Textarea } from "../../Components/ui/textarea";
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, Calendar } from 'lucide-react';
 
 // Import types
 import { 
@@ -15,7 +15,9 @@ import {
     NewPatient, 
     Patient, 
     AppCurrency,
-    EditingNextVisit
+    EditingNextVisit,
+    Appointment,
+    NewAppointment
 } from './types';
 
 // Import hooks
@@ -26,7 +28,8 @@ import {
     useCheckups,
     useDentalChart,
     useNextVisit,
-    useHistory
+    useHistory,
+    useAppointments
 } from './hooks';
 
 // Import components
@@ -37,7 +40,10 @@ import {
     DentalChartDialog,
     EditPatientDialog,
     DeleteConfirmationDialog,
-    AddCheckupDialog
+    AddCheckupDialog,
+    AppointmentTable,
+    AddAppointmentDialog,
+    EditAppointmentDialog
 } from './components';
 
 export default function Clinic({ auth, initialPatients = [], appCurrency = null, error = null }: ClinicProps) {
@@ -131,6 +137,18 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         setLoading
     } = useHistory();
 
+    const {
+        appointments,
+        setAppointments,
+        isLoading: isLoadingAppointments,
+        fetchAppointments,
+        createAppointment,
+        updateAppointment,
+        deleteAppointment,
+        updateAppointmentStatus,
+        updateAppointmentPaymentStatus
+    } = useAppointments();
+
     // Local state
     const [newPatient, setNewPatient] = useState<NewPatient>({ 
         name: '', 
@@ -140,6 +158,11 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     });
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [deleteConfirmation, setDeleteConfirmation] = useState<Patient | null>(null);
+    
+    // Appointment state
+    const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] = useState(false);
+    const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+    const [deleteAppointmentConfirmation, setDeleteAppointmentConfirmation] = useState<Appointment | null>(null);
 
     // Permission checks
     const canDelete = useMemo(() => {
@@ -411,6 +434,55 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         openNextVisitDialog(patient.id, patient.next_visit_date);
     };
 
+    // Appointment event handlers
+    const handleAddAppointment = async (appointment: NewAppointment) => {
+        const result = await createAppointment(appointment);
+        if (result.success) {
+            setIsAddAppointmentDialogOpen(false);
+        }
+    };
+
+    const handleEditAppointment = (appointment: Appointment) => {
+        setEditingAppointment(appointment);
+    };
+
+    const handleUpdateAppointment = async (id: number, appointment: Partial<NewAppointment>) => {
+        const result = await updateAppointment(id, appointment);
+        if (result.success) {
+            setEditingAppointment(null);
+        }
+    };
+
+    const handleDeleteAppointment = (appointment: Appointment) => {
+        setDeleteAppointmentConfirmation(appointment);
+    };
+
+    const handleConfirmDeleteAppointment = async (appointmentId: number) => {
+        const result = await deleteAppointment(appointmentId);
+        if (result.success) {
+            setDeleteAppointmentConfirmation(null);
+        }
+    };
+
+    const handleUpdateAppointmentStatus = async (appointment: Appointment, status: string) => {
+        const result = await updateAppointmentStatus(appointment.id, { status: status as any });
+        if (result.success) {
+            // Status updated successfully
+        }
+    };
+
+    const handleUpdateAppointmentPaymentStatus = async (appointment: Appointment, paymentStatus: string) => {
+        const result = await updateAppointmentPaymentStatus(appointment.id, paymentStatus);
+        if (result.success) {
+            // Payment status updated successfully
+        }
+    };
+
+    // Fetch appointments on component mount
+    useEffect(() => {
+        fetchAppointments();
+    }, [fetchAppointments]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -434,6 +506,18 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                     <span>Patients</span>
                                     <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
                                         {filteredPatients.length}
+                                    </span>
+                                </div>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="appointments" 
+                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>Appointments</span>
+                                    <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+                                        {appointments.length}
                                     </span>
                                 </div>
                             </TabsTrigger>
@@ -480,6 +564,27 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                             onOpenPatientInfo={openPatientInfoDialog}
                             onEditNextVisit={handleEditNextVisit}
                         />
+                    </TabsContent>
+
+                    <TabsContent value="appointments">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold">Appointments</h3>
+                                <Button onClick={() => setIsAddAppointmentDialogOpen(true)}>
+                                    <Calendar className="h-4 w-4 mr-2" />
+                                    Schedule Appointment
+                                </Button>
+                            </div>
+                            
+                            <AppointmentTable
+                                appointments={appointments}
+                                onEditAppointment={handleEditAppointment}
+                                onDeleteAppointment={handleDeleteAppointment}
+                                onUpdateStatus={handleUpdateAppointmentStatus}
+                                onUpdatePaymentStatus={handleUpdateAppointmentPaymentStatus}
+                                currency={currency}
+                            />
+                        </div>
                     </TabsContent>
 
                     <TabsContent value="add-patient">
@@ -651,6 +756,48 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                             </div>
                             <Button type="submit">Update Next Visit</Button>
                         </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Add Appointment Dialog */}
+                <AddAppointmentDialog
+                    isOpen={isAddAppointmentDialogOpen}
+                    onClose={() => setIsAddAppointmentDialogOpen(false)}
+                    onSubmit={handleAddAppointment}
+                    patients={filteredPatients}
+                    currency={currency}
+                />
+
+                {/* Edit Appointment Dialog */}
+                <EditAppointmentDialog
+                    isOpen={!!editingAppointment}
+                    onClose={() => setEditingAppointment(null)}
+                    appointment={editingAppointment}
+                    onUpdate={handleUpdateAppointment}
+                    patients={filteredPatients}
+                    currency={currency}
+                />
+
+                {/* Delete Appointment Confirmation Dialog */}
+                <Dialog open={!!deleteAppointmentConfirmation} onOpenChange={(open) => !open && setDeleteAppointmentConfirmation(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Delete Appointment</DialogTitle>
+                        </DialogHeader>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Are you sure you want to delete this appointment? This action cannot be undone.
+                        </p>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setDeleteAppointmentConfirmation(null)}>
+                                Cancel
+                            </Button>
+                            <Button 
+                                variant="destructive" 
+                                onClick={() => deleteAppointmentConfirmation && handleConfirmDeleteAppointment(deleteAppointmentConfirmation.id)}
+                            >
+                                Delete
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

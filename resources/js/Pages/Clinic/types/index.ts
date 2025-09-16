@@ -101,3 +101,6 @@ export interface ClinicProps {
     appCurrency: AppCurrency | null;
     error: any;
 }
+
+// Re-export appointment types
+export * from './appointment';

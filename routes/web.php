@@ -950,6 +950,16 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/patients/{patientId}/bills', [ClinicController::class, 'getBills']);
         Route::get('/patients/{patientId}/payments', [ClinicController::class, 'getPayments']);
         Route::get('/patients/{patientId}/checkups', [ClinicController::class, 'getCheckups']);
+        
+        // Appointment routes
+        Route::get('/appointments', [ClinicController::class, 'getAppointments']);
+        Route::post('/appointments', [ClinicController::class, 'storeAppointment']);
+        Route::put('/appointments/{id}', [ClinicController::class, 'updateAppointment']);
+        Route::delete('/appointments/{id}', [ClinicController::class, 'deleteAppointment']);
+        Route::get('/appointments/today', [ClinicController::class, 'getTodayAppointments']);
+        Route::get('/appointments/upcoming', [ClinicController::class, 'getUpcomingAppointments']);
+        Route::patch('/appointments/{id}/status', [ClinicController::class, 'updateAppointmentStatus']);
+        Route::patch('/appointments/{id}/payment-status', [ClinicController::class, 'updateAppointmentPaymentStatus']);
     });
     
     // Real Estate (subscription required)

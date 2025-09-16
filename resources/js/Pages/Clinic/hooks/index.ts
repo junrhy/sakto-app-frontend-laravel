@@ -5,3 +5,4 @@ export { useCheckups } from './useCheckups';
 export { useDentalChart } from './useDentalChart';
 export { useNextVisit } from './useNextVisit';
 export { useHistory } from './useHistory';
+export { useAppointments } from './useAppointments';

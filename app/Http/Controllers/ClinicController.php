@@ -212,6 +212,109 @@ class ClinicController extends Controller
         }
     }
 
+    public function getAppointments(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/appointments", [
+                    'client_identifier' => $clientIdentifier,
+                    'status' => $request->status,
+                    'date' => $request->date,
+                    'patient_id' => $request->patient_id
+                ]);
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch appointments'], 500);
+        }
+    }
+
+    public function storeAppointment(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/appointments", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create appointment'], 500);
+        }
+    }
+
+    public function updateAppointment(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/appointments/{$id}", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update appointment'], 500);
+        }
+    }
+
+    public function deleteAppointment($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/appointments/{$id}");
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete appointment'], 500);
+        }
+    }
+
+    public function getTodayAppointments()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/appointments/today", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch today\'s appointments'], 500);
+        }
+    }
+
+    public function getUpcomingAppointments(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/appointments/upcoming", [
+                    'client_identifier' => $clientIdentifier,
+                    'limit' => $request->limit ?? 10
+                ]);
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch upcoming appointments'], 500);
+        }
+    }
+
+    public function updateAppointmentStatus(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/appointments/{$id}/status", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update appointment status'], 500);
+        }
+    }
+
+    public function updateAppointmentPaymentStatus(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/appointments/{$id}/payment-status", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update appointment payment status'], 500);
+        }
+    }
+
     public function settings()
     {
         try {
