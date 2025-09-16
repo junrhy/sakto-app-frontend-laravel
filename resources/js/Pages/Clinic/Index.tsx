@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "../../Components/ui/input";
 import { Label } from "../../Components/ui/label";
 import { Textarea } from "../../Components/ui/textarea";
-import { Users, UserPlus, Calendar, Table, Grid3X3 } from 'lucide-react';
+import { Users, UserPlus, Calendar, Table, Grid3X3, Package } from 'lucide-react';
 
 // Import types
 import { 
@@ -46,6 +46,7 @@ import {
     AddAppointmentDialog,
     EditAppointmentDialog
 } from './components';
+import Inventory from './Inventory';
 
 export default function Clinic({ auth, initialPatients = [], appCurrency = null, error = null }: ClinicProps) {
     const currency = appCurrency ? appCurrency.symbol : '$';
@@ -524,6 +525,15 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 </div>
                             </TabsTrigger>
                             <TabsTrigger 
+                                value="inventory" 
+                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Package className="h-4 w-4" />
+                                    <span>Inventory</span>
+                                </div>
+                            </TabsTrigger>
+                            <TabsTrigger 
                                 value="add-patient" 
                                 className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
                             >
@@ -620,6 +630,13 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 />
                             )}
                         </div>
+                    </TabsContent>
+
+                    <TabsContent value="inventory">
+                        <Inventory 
+                            auth={auth} 
+                            appCurrency={appCurrency} 
+                        />
                     </TabsContent>
 
                     <TabsContent value="add-patient">

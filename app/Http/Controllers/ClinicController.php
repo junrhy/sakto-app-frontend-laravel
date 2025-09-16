@@ -16,6 +16,24 @@ class ClinicController extends Controller
         $this->apiToken = config('api.token');
     }
 
+    /**
+     * Get the performed_by value with team member fallback
+     */
+    private function getPerformedBy(Request $request)
+    {
+        $selectedTeamMemberId = $request->session()->get('selected_team_member_id');
+        $performedBy = auth()->user()->name; // fallback
+        
+        if ($selectedTeamMemberId && auth()->user()->team_members_data) {
+            $teamMember = collect(auth()->user()->team_members_data)->firstWhere('identifier', $selectedTeamMemberId);
+            if ($teamMember && isset($teamMember['full_name'])) {
+                $performedBy = $teamMember['full_name'];
+            }
+        }
+        
+        return $performedBy;
+    }
+
     public function index()
     {
         try {
@@ -383,6 +401,209 @@ class ClinicController extends Controller
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
+
+    public function inventory()
+    {
+        try {
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            
+            return Inertia::render('Clinic/Inventory', [
+                'appCurrency' => $jsonAppCurrency
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load inventory');
+        }
+    }
+
+    public function getInventory(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $params = $request->all();
+            $params['client_identifier'] = $clientIdentifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/clinic-inventory", $params);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch inventory items'], 500);
+        }
+    }
+
+    public function storeInventoryItem(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge([
+                'client_identifier' => $clientIdentifier,
+                'performed_by' => $this->getPerformedBy($request)
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-inventory", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create inventory item: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateInventoryItem(Request $request, $id)
+    {
+        try {
+            $request->merge([
+                'performed_by' => $this->getPerformedBy($request),
+                'client_identifier' => auth()->user()->identifier
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/clinic-inventory/{$id}", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update inventory item: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteInventoryItem($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/clinic-inventory/{$id}", ['client_identifier' => auth()->user()->identifier]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete inventory item: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function addInventoryStock(Request $request, $id)
+    {
+        try {
+            $request->merge([
+                'performed_by' => $this->getPerformedBy($request),
+                'client_identifier' => auth()->user()->identifier
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-inventory/{$id}/add-stock", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to add stock: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function removeInventoryStock(Request $request, $id)
+    {
+        try {
+            $request->merge([
+                'performed_by' => $this->getPerformedBy($request),
+                'client_identifier' => auth()->user()->identifier
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-inventory/{$id}/remove-stock", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to remove stock: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function adjustInventoryStock(Request $request, $id)
+    {
+        try {
+            $request->merge([
+                'performed_by' => $this->getPerformedBy($request),
+                'client_identifier' => auth()->user()->identifier
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-inventory/{$id}/adjust-stock", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to adjust stock: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function getInventoryCategories()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/clinic-inventory/categories", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch categories'], 500);
+        }
+    }
+
+    public function getInventoryAlerts(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $type = $request->get('type', 'low-stock');
+            
+            $endpoint = match($type) {
+                'low-stock' => 'low-stock-alerts',
+                'expiring' => 'expiring-alerts',
+                'expired' => 'expired-items',
+                default => 'low-stock-alerts'
+            };
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/clinic-inventory/{$endpoint}", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch alerts'], 500);
         }
     }
 }

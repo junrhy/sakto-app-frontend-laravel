@@ -935,6 +935,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     // Clinic (subscription required)
     Route::prefix('clinic')->group(function () {
         Route::get('/', [ClinicController::class, 'index'])->name('clinic');
+        Route::get('/inventory', [ClinicController::class, 'inventory'])->name('clinic.inventory');
         Route::get('/settings', [ClinicController::class, 'settings'])->name('clinic.settings');
         Route::post('/patients', [ClinicController::class, 'store']);
         Route::put('/patients/{id}', [ClinicController::class, 'update']);
@@ -960,6 +961,17 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/appointments/upcoming', [ClinicController::class, 'getUpcomingAppointments']);
         Route::patch('/appointments/{id}/status', [ClinicController::class, 'updateAppointmentStatus']);
         Route::patch('/appointments/{id}/payment-status', [ClinicController::class, 'updateAppointmentPaymentStatus']);
+        
+        // Inventory API routes
+        Route::get('/inventory/api', [ClinicController::class, 'getInventory']);
+        Route::post('/inventory/api', [ClinicController::class, 'storeInventoryItem']);
+        Route::put('/inventory/api/{id}', [ClinicController::class, 'updateInventoryItem']);
+        Route::delete('/inventory/api/{id}', [ClinicController::class, 'deleteInventoryItem']);
+        Route::post('/inventory/api/{id}/add-stock', [ClinicController::class, 'addInventoryStock']);
+        Route::post('/inventory/api/{id}/remove-stock', [ClinicController::class, 'removeInventoryStock']);
+        Route::post('/inventory/api/{id}/adjust-stock', [ClinicController::class, 'adjustInventoryStock']);
+        Route::get('/inventory/api/categories', [ClinicController::class, 'getInventoryCategories']);
+        Route::get('/inventory/api/alerts', [ClinicController::class, 'getInventoryAlerts']);
     });
     
     // Real Estate (subscription required)
