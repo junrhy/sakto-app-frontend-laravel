@@ -85,7 +85,7 @@ class TeamsController extends Controller
             $validated = $request->validate([
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:team_members,email',
+                'email' => 'required|email|max:255|unique:team_members,email,NULL,id,user_identifier,' . $user->identifier,
                 'contact_number' => 'nullable|string|max:20',
                 'password' => 'required|string|min:8',
                 'roles' => 'nullable|array',
@@ -222,7 +222,7 @@ class TeamsController extends Controller
             $validated = $request->validate([
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:team_members,email,' . $teamMember->id,
+                'email' => 'required|email|max:255|unique:team_members,email,' . $teamMember->id . ',id,user_identifier,' . $user->identifier,
                 'contact_number' => 'nullable|string|max:20',
                 'roles' => 'nullable|array',
                 'roles.*' => 'string|in:' . implode(',', array_keys($this->getAvailableRoles())),

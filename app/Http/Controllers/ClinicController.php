@@ -48,13 +48,13 @@ class ClinicController extends Controller
 
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
-            return Inertia::render('Clinic', [
+            return Inertia::render('Clinic/Index', [
                 'initialPatients' => $patients,
                 'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             // Handle error gracefully
-            return Inertia::render('Clinic', [
+            return Inertia::render('Clinic/Index', [
                 'initialPatients' => [],
                 'error' => 'Failed to fetch patients data'
             ]);
@@ -109,11 +109,11 @@ class ClinicController extends Controller
         return response()->json($response->json());
     }
 
-    public function addBill(Request $request)
+    public function addBill(Request $request, $patientId)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patient-bills/{$request->patient_id}", $request->all());
+                ->post("{$this->apiUrl}/patient-bills/{$patientId}", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add bill'], 500);
