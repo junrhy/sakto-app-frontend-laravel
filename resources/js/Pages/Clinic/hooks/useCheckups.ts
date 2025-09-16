@@ -5,6 +5,7 @@ import axios from 'axios';
 
 export const useCheckups = () => {
     const [newCheckupResult, setNewCheckupResult] = useState<NewCheckupResult>({ 
+        checkup_date: '', 
         date: '', 
         diagnosis: '', 
         treatment: '', 
@@ -61,7 +62,7 @@ export const useCheckups = () => {
     };
 
     const resetCheckupForm = () => {
-        setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
+        setNewCheckupResult({ checkup_date: '', date: '', diagnosis: '', treatment: '', notes: '' });
         setCheckupDateTime({ date: undefined });
         setCheckupPatient(null);
         setIsCheckupDialogOpen(false);

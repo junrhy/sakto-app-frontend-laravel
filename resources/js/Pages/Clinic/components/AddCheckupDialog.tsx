@@ -32,7 +32,7 @@ export const AddCheckupDialog: React.FC<AddCheckupDialogProps> = ({
     onSubmit
 }) => {
     const handleClose = () => {
-        setCheckupData({ date: '', diagnosis: '', treatment: '', notes: '' });
+        setCheckupData({ checkup_date: '', date: '', diagnosis: '', treatment: '', notes: '' });
         setCheckupDateTime({ date: undefined });
         onClose();
     };
