@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Button } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area";
-import DentalChart from '@/Components/DentalChart';
+import DentalChart from './DentalChart';
 import { Patient, ToothData } from '../types';
 
 interface DentalChartDialogProps {

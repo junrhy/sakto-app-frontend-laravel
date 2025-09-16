@@ -189,9 +189,10 @@ class ClinicController extends Controller
         }
     }
 
-    public function updateDentalChart(Request $request)
+    public function updateDentalChart(Request $request, $patientId)
     {
         try {
+            $request->merge(['patient_id' => $patientId]);
             $response = Http::withToken($this->apiToken)
                 ->put("{$this->apiUrl}/patient-dental-charts", $request->all());
             return response()->json($response->json());
