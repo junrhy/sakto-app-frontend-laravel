@@ -6,6 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { ThemeProvider } from '@/Components/ThemeProvider';
 import { Toaster } from '@/Components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
 import { CartProvider } from '@/Components/CartContext';
 import type { User } from '@/types/index';
 import { PageProps } from '@/types';
@@ -45,6 +46,7 @@ createInertiaApp({
                 <CartProvider>
                     <App {...props} />
                     <Toaster />
+                    <SonnerToaster />
                 </CartProvider>
             </ThemeProvider>
         );

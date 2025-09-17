@@ -1,3 +1,28 @@
+export type ClinicPaymentAccount = {
+    id: number;
+    client_identifier: string;
+    account_type: 'group' | 'company';
+    account_name: string;
+    account_code: string;
+    description?: string;
+    contact_person?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    address?: string;
+    credit_limit: number;
+    status: 'active' | 'inactive' | 'suspended';
+    billing_settings?: any;
+    created_at: string;
+    updated_at: string;
+    patients?: Patient[];
+    patients_count?: number;
+    total_outstanding?: number;
+    total_bills?: number;
+    total_payments?: number;
+    bills?: BillItem[];
+    payments?: PaymentItem[];
+};
+
 export type BillItem = {
     id: number;
     patient_id: number;
@@ -6,6 +31,17 @@ export type BillItem = {
     bill_amount: string;
     bill_status: string | null;
     bill_details: string;
+    billing_type?: 'individual' | 'account';
+    clinic_payment_account_id?: number;
+    account_bill_reference?: string;
+    clinic_payment_account?: ClinicPaymentAccount;
+    patient?: Patient;
+    billing_info?: {
+        type: 'individual' | 'account';
+        account_name?: string;
+        patient_name: string;
+        reference: string;
+    };
     created_at: string;
     updated_at: string;
 };
@@ -17,6 +53,19 @@ export type PaymentItem = {
     payment_amount: string;
     payment_method: string;
     payment_notes: string;
+    payment_type?: 'individual' | 'account';
+    clinic_payment_account_id?: number;
+    account_payment_reference?: string;
+    covered_patients?: number[];
+    clinic_payment_account?: ClinicPaymentAccount;
+    patient?: Patient;
+    payment_info?: {
+        type: 'individual' | 'account';
+        account_name?: string;
+        patient_name?: string;
+        reference?: string;
+        covered_patients_count: number;
+    };
     created_at: string;
     updated_at: string;
 };
@@ -43,6 +92,10 @@ export type Patient = {
     birthdate: string;
     next_visit_date: string;
     next_visit_time: string;
+    billing_type?: 'individual' | 'account';
+    clinic_payment_account_id?: number;
+    clinic_payment_account?: ClinicPaymentAccount;
+    billing_display_name?: string;
     total_bills: number;
     total_payments: number;
     balance: number;

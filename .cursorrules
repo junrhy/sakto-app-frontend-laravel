@@ -249,8 +249,13 @@ Routes should be properly grouped in `routes/web.php`:
 
 #### Authenticated Routes Group:
 - All routes requiring authentication should be grouped with appropriate middleware
-- Use middleware like `['auth', 'verified']`
+- **CRITICAL**: Use middleware `['auth', 'verified', 'team.member.selection']` for all authenticated routes
 - Separate groups for different permission levels (admin, subscription-required, etc.)
+
+#### Required Middleware for Authenticated Routes:
+- `'auth'` - Ensures user is authenticated
+- `'verified'` - Ensures email is verified
+- `'team.member.selection'` - Handles team member context (REQUIRED for all authenticated routes)
 
 #### Example Structure:
 ```php
@@ -261,18 +266,30 @@ Route::group(['middleware' => ['web']], function () {
     // ... other public routes
 });
 
-// Authenticated routes
-Route::middleware(['auth', 'verified'])->group(function () {
+// Authenticated routes (ALWAYS use these 3 middleware)
+Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     // ... other authenticated routes
 });
 
+// Module routes (like clinic, pos, etc.) - MUST include all 3 middleware
+Route::prefix('clinic')->middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+    Route::get('/', [ClinicController::class, 'index'])->name('clinic');
+    Route::post('/payment-accounts', [ClinicController::class, 'createPaymentAccount']);
+    // ... other clinic routes
+});
+
 // Admin routes
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'index']);
     // ... admin routes
 });
 ```
+
+#### Common Route Issues:
+- **Missing Middleware**: Always include `['auth', 'verified', 'team.member.selection']` for authenticated routes
+- **404 Errors**: Often caused by missing middleware or incorrect route grouping
+- **Route Caching**: Clear route cache with `php artisan route:clear` after adding new routes
 
 **Note**: This grouping ensures proper middleware application and makes route management more organized.
 

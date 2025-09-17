@@ -962,7 +962,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     });
     
     // Clinic (subscription required)
-    Route::prefix('clinic')->group(function () {
+    Route::prefix('clinic')->middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
         Route::get('/', [ClinicController::class, 'index'])->name('clinic');
         Route::get('/inventory', [ClinicController::class, 'inventory'])->name('clinic.inventory');
         Route::get('/settings', [ClinicController::class, 'settings'])->name('clinic.settings');
@@ -1001,6 +1001,18 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::post('/inventory/api/{id}/adjust-stock', [ClinicController::class, 'adjustInventoryStock']);
         Route::get('/inventory/api/categories', [ClinicController::class, 'getInventoryCategories']);
         Route::get('/inventory/api/alerts', [ClinicController::class, 'getInventoryAlerts']);
+        
+        // Payment Account routes
+        Route::get('/payment-accounts', [ClinicController::class, 'getPaymentAccounts']);
+        Route::post('/payment-accounts', [ClinicController::class, 'createPaymentAccount']);
+        Route::get('/payment-accounts/{id}', [ClinicController::class, 'getPaymentAccount']);
+        Route::put('/payment-accounts/{id}', [ClinicController::class, 'updatePaymentAccount']);
+        Route::delete('/payment-accounts/{id}', [ClinicController::class, 'deletePaymentAccount']);
+        Route::post('/payment-accounts/{id}/assign-patients', [ClinicController::class, 'assignPatientsToAccount']);
+        Route::post('/payment-accounts/{id}/remove-patients', [ClinicController::class, 'removePatientsFromAccount']);
+        Route::post('/patient-bills/account-bill', [ClinicController::class, 'createAccountBill']);
+        Route::put('/patient-bills/{billId}/status', [ClinicController::class, 'updateBillStatus']);
+        Route::post('/patient-payments/account-payment', [ClinicController::class, 'createAccountPayment']);
     });
     
     // Real Estate (subscription required)

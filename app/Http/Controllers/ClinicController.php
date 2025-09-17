@@ -607,4 +607,196 @@ class ClinicController extends Controller
             return response()->json(['error' => 'Failed to fetch alerts'], 500);
         }
     }
+
+    // Clinic Payment Account Management Routes
+
+    public function getPaymentAccounts(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $queryParams = array_merge(['client_identifier' => $clientIdentifier], $request->query());
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/clinic-payment-accounts", $queryParams);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch payment accounts'], 500);
+        }
+    }
+
+    public function createPaymentAccount(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-payment-accounts", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create payment account'], 500);
+        }
+    }
+
+    public function getPaymentAccount(Request $request, $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/clinic-payment-accounts/{$id}", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch payment account'], 500);
+        }
+    }
+
+    public function updatePaymentAccount(Request $request, $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/clinic-payment-accounts/{$id}", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update payment account'], 500);
+        }
+    }
+
+    public function deletePaymentAccount(Request $request, $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/clinic-payment-accounts/{$id}", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete payment account'], 500);
+        }
+    }
+
+    public function assignPatientsToAccount(Request $request, $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-payment-accounts/{$id}/assign-patients", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to assign patients'], 500);
+        }
+    }
+
+    public function removePatientsFromAccount(Request $request, $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic-payment-accounts/{$id}/remove-patients", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to remove patients'], 500);
+        }
+    }
+
+    public function createAccountBill(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/patient-bills/account-bill", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create account bill'], 500);
+        }
+    }
+
+    public function createAccountPayment(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/patient-payments/account-payment", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to record account payment'], 500);
+        }
+    }
+
+    public function updateBillStatus(Request $request, $billId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/patient-bills/{$billId}/status", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update bill status'], 500);
+        }
+    }
 }
