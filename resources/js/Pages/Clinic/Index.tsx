@@ -92,6 +92,9 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         fetchPaymentHistory
     } = usePayments();
 
+    // Payment state
+    const [selectedPatientForPayment, setSelectedPatientForPayment] = useState<Patient | null>(null);
+
     const {
         newCheckupResult,
         setNewCheckupResult,
@@ -565,7 +568,10 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 setIsAddBillDialogOpen(true);
                             }}
                             onShowBillHistory={handleShowBillHistory}
-                            onAddPayment={(patient) => setIsPaymentDialogOpen(true)}
+                            onAddPayment={(patient) => {
+                                setSelectedPatientForPayment(patient);
+                                setIsPaymentDialogOpen(true);
+                            }}
                             onShowPaymentHistory={handleShowPaymentHistory}
                             onAddCheckup={(patient) => {
                                 setCheckupPatient(patient);
@@ -738,20 +744,26 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 </Dialog>
 
                 {/* Add Payment Dialog */}
-                <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                <Dialog open={isPaymentDialogOpen} onOpenChange={(open) => {
+                    setIsPaymentDialogOpen(open);
+                    if (!open) setSelectedPatientForPayment(null);
+                }}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Make Payment</DialogTitle>
+                            <DialogTitle>
+                                Make Payment {selectedPatientForPayment && `for ${selectedPatientForPayment.name}`}
+                            </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             const form = e.target as HTMLFormElement;
                             const input = form.elements.namedItem('paymentAmount') as HTMLInputElement;
                             const amount = parseFloat(input.value);
-                            if (!isNaN(amount)) {
-                                await handlePayment(currentPatients[0]?.id || '', amount);
+                            if (!isNaN(amount) && selectedPatientForPayment) {
+                                await handlePayment(selectedPatientForPayment.id, amount);
                                 form.reset();
                                 setIsPaymentDialogOpen(false);
+                                setSelectedPatientForPayment(null);
                             }
                         }} 
                         className="space-y-4"

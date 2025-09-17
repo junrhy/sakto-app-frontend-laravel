@@ -156,11 +156,11 @@ class ClinicController extends Controller
         return response()->json($response->json());
     }
 
-    public function addPayment(Request $request)
+    public function addPayment(Request $request, $patientId)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patient-payments/{$request->patient_id}", $request->all());
+                ->post("{$this->apiUrl}/patient-payments/{$patientId}", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add payment'], 500);
