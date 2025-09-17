@@ -18,6 +18,19 @@ export const AddPatientForm: React.FC<AddPatientFormProps> = ({
     return (
         <form onSubmit={onSubmit} className="space-y-4">
             <div>
+                <Label htmlFor="arn" className="text-gray-900 dark:text-white">ARN (Admission Record Number)</Label>
+                <Input
+                    id="arn"
+                    value={newPatient.arn || ''}
+                    onChange={(e) => setNewPatient({ ...newPatient, arn: e.target.value })}
+                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                    placeholder="Leave empty to auto-generate"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    If left empty, an ARN will be automatically generated
+                </p>
+            </div>
+            <div>
                 <Label htmlFor="name" className="text-gray-900 dark:text-white">Name</Label>
                 <Input
                     id="name"

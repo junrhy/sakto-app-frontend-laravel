@@ -41,6 +41,18 @@ export const EditPatientDialog: React.FC<EditPatientDialogProps> = ({
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
+                        <Label htmlFor="edit-arn" className="text-gray-900 dark:text-white">ARN (Admission Record Number)</Label>
+                        <Input
+                            id="edit-arn"
+                            value={editingPatient.arn || ''}
+                            onChange={(e) => setEditingPatient(prev => 
+                                prev ? { ...prev, arn: e.target.value } : null
+                            )}
+                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                            placeholder="ARN will be auto-generated if empty"
+                        />
+                    </div>
+                    <div>
                         <Label htmlFor="edit-name" className="text-gray-900 dark:text-white">Name</Label>
                         <Input
                             id="edit-name"

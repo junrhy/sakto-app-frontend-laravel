@@ -86,6 +86,7 @@ class ClinicController extends Controller
             $request->merge(['client_identifier' => $clientIdentifier]);
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/patients", [
+                    'arn' => $request->arn,
                     'name' => $request->name,
                     'birthdate' => $request->dateOfBirth,
                     'phone' => $request->contactNumber,

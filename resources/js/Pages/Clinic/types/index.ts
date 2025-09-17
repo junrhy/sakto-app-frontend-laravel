@@ -36,6 +36,7 @@ export type ToothData = {
 
 export type Patient = {
     id: string;
+    arn: string;
     name: string;
     email: string;
     phone: string;
@@ -66,6 +67,7 @@ export type TimePickerProps = {
 };
 
 export type NewPatient = {
+    arn?: string;
     name: string;
     dateOfBirth: string;
     contactNumber: string;

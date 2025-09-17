@@ -156,6 +156,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     // Local state
     const [newPatient, setNewPatient] = useState<NewPatient>({ 
+        arn: '',
         name: '', 
         dateOfBirth: '', 
         contactNumber: '', 
@@ -190,7 +191,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         e.preventDefault();
         const result = await addPatientToAPI(newPatient);
         if (result.success) {
-            setNewPatient({ name: '', dateOfBirth: '', contactNumber: '', email: '' });
+            setNewPatient({ arn: '', name: '', dateOfBirth: '', contactNumber: '', email: '' });
         }
     };
 

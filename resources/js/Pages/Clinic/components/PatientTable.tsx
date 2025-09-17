@@ -76,7 +76,7 @@ export const PatientTable: React.FC<PatientTableProps> = ({
             <Table>
                 <TableHeader>
                     <TableRow className="bg-gray-50 dark:bg-gray-700">
-                        <TableHead className="text-gray-900 dark:text-white">ID</TableHead>
+                        <TableHead className="text-gray-900 dark:text-white">ARN</TableHead>
                         <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
                         <TableHead className="text-gray-900 dark:text-white">Next Visit</TableHead>
                         <TableHead className="text-gray-900 dark:text-white">Total Bills ({currency})</TableHead>
@@ -91,7 +91,7 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                                 className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white" 
                                 onClick={() => onOpenPatientInfo(patient)}
                             >
-                                {patient.id}
+                                {patient.arn || 'Not Set'}
                             </TableCell>
                             <TableCell className="text-gray-900 dark:text-white">{patient.name}</TableCell>
                             <TableCell className="text-gray-900 dark:text-white">
