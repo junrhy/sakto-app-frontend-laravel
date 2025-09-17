@@ -254,6 +254,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const hasRentalItemAccess = (hasModuleAccess('rental-items') && (appParam === 'rental-items' || url.includes('rental-items'))) ?? false;
     const hasRentalPropertyAccess = (hasModuleAccess('rental-properties') && (appParam === 'rental-properties' || url.includes('rental-properties'))) ?? false;
     const hasClinicalAccess = (hasModuleAccess('clinic') && (appParam === 'clinic' || url.includes('clinic'))) ?? false;
+    const hasQueueSystemAccess = (hasModuleAccess('queue-system') && (appParam === 'queue-system' || url.includes('queue'))) ?? false;
     const hasLendingAccess = (hasModuleAccess('lending') && (appParam === 'lending' || url.includes('lending'))) ?? false;
     const hasPayrollAccess = (hasModuleAccess('payroll') && (appParam === 'payroll' || url.includes('payroll'))) ?? false;
     const hasTravelAccess = (hasModuleAccess('travel') && (appParam === 'travel' || url.includes('travel'))) ?? false;
@@ -424,13 +425,18 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                             </div>
                         )}
 
-                        {hasClinicalAccess && (
+                        {hasClinicalAccess || hasQueueSystemAccess && (
                             <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
                                     <div className="font-medium text-base text-gray-800 dark:text-white/90">Medical</div>
                                     <ResponsiveNavLink href={`/clinic?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Clinic
                                     </ResponsiveNavLink>
+                                    {hasQueueSystemAccess && (
+                                        <ResponsiveNavLink href={`/queue?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                                            Queue System
+                                        </ResponsiveNavLink>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -951,7 +957,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                             </Dropdown>
                                         </div>
                                     )}
-                                    {hasClinicalAccess && (
+                                    {hasClinicalAccess || hasQueueSystemAccess && (
                                         <div className="inline-flex items-center">
                                             <Dropdown>
                                                 <Dropdown.Trigger>
@@ -981,6 +987,11 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/clinic?app=${appParam}`}>
                                                         Clinic
                                                     </Dropdown.Link>
+                                                    {hasQueueSystemAccess && (
+                                                        <Dropdown.Link href={`/queue?app=${appParam}`}>
+                                                            Queue System
+                                                        </Dropdown.Link>
+                                                    )}
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>

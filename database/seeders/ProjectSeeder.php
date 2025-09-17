@@ -40,7 +40,7 @@ class ProjectSeeder extends Seeder
                 'id' => 4,
                 'name' => 'Medical',
                 'identifier' => 'medical',
-                'enabledModules' => json_encode(array_values(['clinic', 'payroll', 'contacts', 'email', 'sms'])),
+                'enabledModules' => json_encode(array_values(['clinic', 'payroll', 'contacts', 'email', 'sms', 'queue-system'])),
             ],
             [
                 'id' => 5,

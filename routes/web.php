@@ -46,6 +46,8 @@ use App\Http\Controllers\TeamsController;
 use App\Http\Controllers\BillPaymentController;
 use App\Http\Controllers\BillerController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\QueueController;
+use App\Http\Controllers\QueueDisplayController;
 
 use App\Models\User;
 
@@ -469,6 +471,33 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::patch('/widgets/{widget}/reorder', [WidgetController::class, 'reorder'])->name('widgets.reorder');
     
     // Free Apps (based on config/apps.php)
+    // Queue Management
+    Route::prefix('queue')->group(function () {
+        Route::get('/', [QueueController::class, 'index'])->name('queue.index');
+        Route::get('/create', [QueueController::class, 'create'])->name('queue.create');
+        Route::post('/', [QueueController::class, 'store'])->name('queue.store');
+        Route::get('/{id}', [QueueController::class, 'show'])->name('queue.show');
+        Route::get('/{id}/edit', [QueueController::class, 'edit'])->name('queue.edit');
+        Route::put('/{id}', [QueueController::class, 'update'])->name('queue.update');
+        Route::delete('/{id}', [QueueController::class, 'destroy'])->name('queue.destroy');
+        
+        // Queue number management
+        Route::get('/numbers/list', [QueueController::class, 'getQueueNumbers'])->name('queue.numbers.list');
+        Route::post('/numbers/create', [QueueController::class, 'createQueueNumber'])->name('queue.create-number');
+        Route::post('/call-next', [QueueController::class, 'callNext'])->name('queue.call-next');
+        Route::post('/{id}/start-serving', [QueueController::class, 'startServing'])->name('queue.start-serving');
+        Route::post('/{id}/complete', [QueueController::class, 'complete'])->name('queue.complete');
+        Route::post('/{id}/cancel', [QueueController::class, 'cancel'])->name('queue.cancel');
+        Route::get('/status/overview', [QueueController::class, 'getStatus'])->name('queue.status');
+    });
+
+    // Queue Display (for screens)
+    Route::prefix('queue-display')->group(function () {
+        Route::get('/', [QueueDisplayController::class, 'index'])->name('queue.display');
+        Route::get('/status', [QueueDisplayController::class, 'status'])->name('queue.display.status');
+        Route::get('/public/{identifier}', [QueueDisplayController::class, 'publicDisplay'])->name('queue.display.public');
+    });
+
     // POS Retail
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
     Route::post('/pos-retail', [PosRetailController::class, 'store']);

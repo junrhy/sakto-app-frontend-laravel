@@ -524,6 +524,19 @@ class ModuleSeeder extends Seeder
                 'bgColor' => 'bg-purple-100 dark:bg-purple-900/30',
                 'rating' => 4.9
             ],
+            [
+                'title' => 'Queue System',
+                'route' => '/dashboard?app=queue-system',
+                'visible' => false,
+                'description' => 'Digital queue management system for businesses with customer numbering, status tracking, and display screens.',
+                'price' => 79,
+                'categories' => ['Business', 'Customer Service', 'Operations'],
+                'comingSoon' => false,
+                'pricingType' => 'subscription',
+                'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
+                'bgColor' => 'bg-amber-100 dark:bg-amber-900/30',
+                'rating' => 4.6
+            ],
         ];
     }
 }

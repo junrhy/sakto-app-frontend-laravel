@@ -117,6 +117,38 @@ class ExampleController extends Controller
 - Display amounts with comma separators and proper currency formatting
 - **Toast messages always use sonner** - use the sonner toast library for all notifications
 
+#### shadcn/ui Select Component Best Practices
+**CRITICAL**: When using the Select component from shadcn/ui, **NEVER use empty string values** for SelectItem components:
+
+```tsx
+// ❌ WRONG - This will cause an error
+<SelectContent>
+    <SelectItem value="">All Options</SelectItem>  // ERROR: Empty string not allowed
+    <SelectItem value="option1">Option 1</SelectItem>
+</SelectContent>
+
+// ✅ CORRECT - Use meaningful non-empty values
+<SelectContent>
+    <SelectItem value="all">All Options</SelectItem>  // Use "all" or similar
+    <SelectItem value="option1">Option 1</SelectItem>
+</SelectContent>
+```
+
+**Why this happens**: The Select component reserves empty strings for clearing selections and showing placeholders. SelectItem components must have non-empty values.
+
+**Common Solutions**:
+- Use `"all"` for "All Options" or "Show All" type selections
+- Use `"none"` for "None" or "No Selection" options  
+- Use descriptive values like `"default"`, `"any"`, etc.
+- Update filtering logic to handle the new non-empty value:
+
+```tsx
+// Update filtering logic accordingly
+const filteredData = selectedValue && selectedValue !== 'all'
+    ? data.filter(item => item.category === selectedValue)
+    : data;
+```
+
 ### File Organization
 - Controllers in `app/Http/Controllers/`
 - Models in `app/Models/`
@@ -277,6 +309,39 @@ Components/
 - **In backend API: new database tables MUST have client_identifier column** for multi-tenant data isolation
 - Run migrations via Docker: `docker-compose exec app php artisan migrate`
 
+#### Creating Model, Migration, and Controller:
+The most efficient way to generate all three components is by using the make:model Artisan command with the -m (migration) and -c (controller) flags. If you also need a resource controller with pre-defined methods for common CRUD operations, you can add the --resource flag or the shorthand -r.
+
+```bash
+# Basic model with migration and controller
+php artisan make:model <ModelName> -mc
+
+# Model with migration, controller, and resource methods
+php artisan make:model <ModelName> -mcr
+
+# For API controllers (backend), use the --api flag
+php artisan make:model <ModelName> -mc --api
+
+# Example for QueueType model
+php artisan make:model QueueType -mc
+php artisan make:model QueueNumber -mc
+```
+
+#### Additional Artisan Commands:
+```bash
+# Create a migration only
+php artisan make:migration create_table_name
+
+# Create a controller only
+php artisan make:controller Api/ControllerName
+
+# Create a resource controller with API methods
+php artisan make:controller Api/ControllerName --api
+
+# Create a model with factory and seeder
+php artisan make:model ModelName -mf --seeder
+```
+
 #### Backend API Database Table Requirements:
 ```php
 // Example migration for backend API
@@ -351,7 +416,7 @@ When creating new modules, **ALWAYS consider updating seeders**:
 ```php
 [
     'title' => 'Module Name',
-    'route' => 'module-route',
+    'route' => '/dashboard?app=module-identifier',
     'visible' => true,
     'description' => 'Module description',
     'price' => 0.00,
@@ -364,6 +429,16 @@ When creating new modules, **ALWAYS consider updating seeders**:
     'rating' => 4.5
 ]
 ```
+
+#### Route Format Requirements:
+- **All module routes MUST use the dashboard query parameter format**: `/dashboard?app=module-identifier`
+- **Module identifier should match the identifier generated from the title** (e.g., 'Queue System' becomes 'queue-system')
+- **Examples of correct route formats**:
+  - Queue System: `/dashboard?app=queue-system`
+  - Mortuary: `/dashboard?app=mortuary`
+  - Clinic: `/dashboard?app=clinic`
+  - Lending: `/dashboard?app=lending`
+- **Do NOT use direct routes** like `/queue`, `/mortuary`, etc. - always use the dashboard format
 
 **Note**: Always run seeders after creating new modules to ensure proper system initialization.
 
@@ -535,10 +610,27 @@ export default function ComponentName({ data, categories }: Props) {
 
 ## Common Commands
 
+### Docker Network Setup
+Before running any Docker commands, ensure the `sakto_network` exists:
+```bash
+# Create the required Docker network (run once)
+docker network create sakto_network
+
+# Verify network exists
+docker network ls | grep sakto
+```
+
 ### Frontend (Laravel)
 ```bash
-# Run migrations
+# Navigate to frontend directory first
+cd /path/to/sakto-app-frontend-laravel
+
+# Run migrations (service name is 'app' for frontend)
 docker-compose exec app php artisan migrate
+
+# Run seeders
+docker-compose exec app php artisan db:seed --class=ModuleSeeder
+docker-compose exec app php artisan db:seed --class=DashboardSeeder
 
 # Clear caches
 docker-compose exec app php artisan cache:clear
@@ -563,10 +655,43 @@ npm run lint:fix
 
 ### Backend (API)
 ```bash
-# Similar Docker commands for backend container
-docker-compose exec api php artisan migrate
-docker-compose exec api composer install
+# Navigate to backend directory first
+cd /path/to/sakto-app-backend-laravel
+
+# Run migrations (service name is 'php' for backend)
+docker-compose exec php php artisan migrate
+
+# Run seeders
+docker-compose exec php php artisan db:seed
+
+# Install dependencies
+docker-compose exec php composer install
 ```
+
+### Docker Container Management
+```bash
+# Start all containers
+docker-compose up -d
+
+# Stop all containers
+docker-compose down
+
+# View running containers
+docker ps
+
+# View container logs
+docker-compose logs [service-name]
+
+# Access container shell
+docker-compose exec [service-name] bash
+```
+
+### Common Docker Issues & Solutions
+1. **Network not found error**: Run `docker network create sakto_network`
+2. **Service not running**: Check with `docker ps` and restart with `docker-compose up -d`
+3. **Wrong service name**: Frontend uses `app`, Backend uses `php`
+4. **Port conflicts**: Check if ports 8000, 8001, 3308, 3309 are available
+5. **Permission issues**: Ensure Docker has proper permissions on your project directories
 
 ## Important Notes
 - Always test API connectivity before implementing frontend features
