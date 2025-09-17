@@ -1,0 +1,585 @@
+# Cursor Rules for Sakto App Laravel Frontend & Backend
+
+## Project Overview
+
+This is a Laravel-based project with two main components:
+- **Frontend**: Laravel with Inertia.js, React, TypeScript, and Tailwind CSS
+- **Backend**: Laravel API server
+
+## Architecture & Communication Pattern
+
+### Frontend-Backend Communication
+- Frontend controllers MUST use `apiUrl` and `apiToken` from config to communicate with backend API
+- Frontend should NOT call `/api/` routes directly - use routes defined in `web.php`
+- Always use `Http::withToken($this->apiToken)->get/post/put/delete("{$this->apiUrl}/endpoint")`
+- Include `client_identifier` (auth()->user()->identifier) in API requests where needed
+
+### Controller Pattern
+```php
+<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
+
+class ExampleController extends Controller
+{
+    protected $apiUrl, $apiToken;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
+    }
+
+    public function index()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/endpoint", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return Inertia::render('ComponentName', [
+                'data' => $response->json()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+}
+```
+
+## Technology Stack
+
+### Frontend (sakto-app-frontend-laravel)
+- **Framework**: Laravel 11 with Inertia.js
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Context API (CartContext, ThemeProvider)
+- **Authentication**: Laravel Sanctum
+- **Build Tool**: Vite
+- **Package Manager**: npm
+
+### Backend (sakto-app-backend-laravel)
+- **Framework**: Laravel 11 API
+- **Authentication**: Laravel Sanctum
+- **Database**: MySQL (via Docker)
+- **API Routes**: All in `routes/api.php`
+- **API Controllers**: All in `app/Http/Controllers/Api/`
+
+## Development Environment
+
+- **Containerization**: Docker (development environment)
+- **Commands**: Run via Docker containers (e.g., `docker-compose exec app php artisan migrate`)
+
+## Code Standards & Patterns
+
+### PHP/Laravel Standards
+- Follow PSR-12 coding standards
+- Use proper namespacing
+- Controllers should extend base Controller class
+- Use proper exception handling with try-catch blocks
+- Always validate requests using Form Request classes or inline validation
+- Use Eloquent ORM for database operations
+- Follow Laravel naming conventions
+
+### TypeScript/React Standards
+- Use TypeScript for all new React components
+- Follow React functional component patterns with hooks
+- Use proper TypeScript interfaces/types in `types/` directory
+- Components should be in PascalCase
+- Use proper prop typing
+- Prefer composition over inheritance
+- **ALWAYS create files by components** - break down functionality into separate component files
+- **NO monolithic files** - avoid putting all code in one large file
+- Create reusable components in `resources/js/Components/`
+- Organize related components in subdirectories (e.g., `Components/Forms/`, `Components/Modals/`)
+
+### API Integration Standards
+- All frontend controllers MUST use the established API pattern
+- Include proper error handling for API failures
+- Use consistent response formats
+- Always include authentication tokens
+- Handle API timeouts gracefully
+
+### UI/UX Standards
+- Use shadcn/ui components consistently
+- Follow existing dark mode patterns
+- Ensure responsive design (mobile-first)
+- Include proper loading states
+- Use consistent spacing and typography
+- Display amounts with comma separators and proper currency formatting
+- **Toast messages always use sonner** - use the sonner toast library for all notifications
+
+### File Organization
+- Controllers in `app/Http/Controllers/`
+- Models in `app/Models/`
+- React components in `resources/js/Components/`
+- Pages in `resources/js/Pages/`
+- **Landing pages** in `resources/js/Pages/Landing/`
+- Types in `resources/js/types/`
+- Layouts in `resources/js/Layouts/`
+
+### Landing Pages Structure
+Landing pages are located in `resources/js/Pages/Landing/` and should have their own dedicated controllers:
+
+#### Organization Pattern:
+- **Landing Page Location**: `resources/js/Pages/Landing/[PageName].tsx`
+- **Controller Location**: `app/Http/Controllers/[PageName]Controller.php`
+- **Each landing page gets its own controller** for better organization and maintainability
+
+#### Example:
+- **Community Landing**: 
+  - Page: `resources/js/Pages/Landing/Community.tsx`
+  - Controller: `app/Http/Controllers/CommunityController.php`
+- **Shop Landing**:
+  - Page: `resources/js/Pages/Landing/Shop.tsx`
+  - Controller: `app/Http/Controllers/ShopController.php`
+
+#### Landing Page Data Handling:
+In landing pages, you can retrieve user data via URL parameters and handle it in the controller:
+
+```php
+// Example: CommunityController handling user identifier from URL
+public function member($identifier)
+{
+    // Check if identifier is numeric (ID) or string (slug)
+    $member = null;
+    
+    if (is_numeric($identifier)) {
+        // Search by ID
+        $member = User::where('project_identifier', 'community')
+            ->where('id', $identifier)
+            ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+            ->first();
+    } else {
+        // Search by slug
+        $member = User::where('project_identifier', 'community')
+            ->where('slug', $identifier)
+            ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+            ->first();
+    }
+    
+    // Handle member data and return to view
+    return Inertia::render('Landing/Community', [
+        'member' => $member,
+        // ... other data
+    ]);
+}
+```
+
+**Note**: This separation ensures clean code organization and allows each landing page to have its own specific logic and API integrations.
+
+### File Upload Handling
+File uploads should be handled using Laravel's storage system and saved to the public disk:
+
+```php
+// File upload pattern
+if ($request->hasFile('id_picture')) {
+    $path = $request->file('id_picture')->store('id_pictures', 'public');
+    $validated['id_picture'] = Storage::disk('public')->url($path);
+}
+
+// Multiple file uploads
+if ($request->hasFile('images')) {
+    $imagePaths = [];
+    foreach ($request->file('images') as $image) {
+        $path = $image->store('product_images', 'public');
+        $imagePaths[] = Storage::disk('public')->url($path);
+    }
+    $validated['images'] = $imagePaths;
+}
+```
+
+#### File Upload Best Practices:
+- Always use `$request->hasFile()` to check if file exists
+- Store files using `store()` method with appropriate folder names
+- Use `'public'` disk for publicly accessible files
+- Generate URLs using `Storage::disk('public')->url($path)`
+- Organize files in logical folders (e.g., 'id_pictures', 'product_images', 'documents')
+- Validate file types and sizes before storing
+
+**Note**: Files are stored in `storage/app/public/` and accessible via the public URL.
+
+### Route Organization
+Routes should be properly grouped in `routes/web.php`:
+
+#### Public Routes Group:
+- All public routes (no authentication required) should be grouped together
+- Use middleware group `['web']` for public routes
+- Include landing pages, policy pages, public APIs, etc.
+
+#### Authenticated Routes Group:
+- All routes requiring authentication should be grouped with appropriate middleware
+- Use middleware like `['auth', 'verified']`
+- Separate groups for different permission levels (admin, subscription-required, etc.)
+
+#### Example Structure:
+```php
+// Public routes
+Route::group(['middleware' => ['web']], function () {
+    Route::get('/landing', [LandingController::class, 'index']);
+    Route::get('/community', [CommunityController::class, 'index']);
+    // ... other public routes
+});
+
+// Authenticated routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    // ... other authenticated routes
+});
+
+// Admin routes
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'index']);
+    // ... admin routes
+});
+```
+
+**Note**: This grouping ensures proper middleware application and makes route management more organized.
+
+### Component Architecture Guidelines
+- **Single Responsibility**: Each component should have one clear purpose
+- **Small Components**: Keep components focused and manageable (typically under 200 lines)
+- **Reusable Components**: Create generic components that can be reused across pages
+- **Component Composition**: Build complex UIs by combining smaller components
+- **Proper File Naming**: Use descriptive names that reflect component functionality
+
+#### Example Component Structure:
+```
+Components/
+├── Forms/
+│   ├── LoginForm.tsx
+│   ├── ContactForm.tsx
+│   └── ProductForm.tsx
+├── Modals/
+│   ├── ConfirmDialog.tsx
+│   ├── ProductModal.tsx
+│   └── UserModal.tsx
+├── Tables/
+│   ├── DataTable.tsx
+│   ├── ProductTable.tsx
+│   └── UserTable.tsx
+└── ui/ (shadcn/ui components)
+```
+
+### Database & Migrations
+- Create migrations for all database changes
+- Use proper column types and constraints
+- Include foreign key relationships
+- **ALWAYS ensure migration date is today's date** - create fresh migrations with current timestamp
+- **In backend API: new database tables MUST have client_identifier column** for multi-tenant data isolation
+- Run migrations via Docker: `docker-compose exec app php artisan migrate`
+
+#### Backend API Database Table Requirements:
+```php
+// Example migration for backend API
+Schema::create('example_table', function (Blueprint $table) {
+    $table->id();
+    $table->string('client_identifier')->index(); // REQUIRED for backend API tables
+    $table->string('name');
+    // ... other columns
+    $table->timestamps();
+    
+    // Index for performance
+    $table->index(['client_identifier', 'created_at']);
+});
+```
+
+#### Backend API Request Handling:
+The `client_identifier` is always provided in API requests and should be used for data filtering.
+
+**API Controller Location**: All backend API controllers must be created in `app/Http/Controllers/Api/`
+
+```php
+<?php
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+class ExampleController extends Controller
+{
+    // Example: API Controller handling client_identifier from request
+    public function index(Request $request)
+    {
+        $clientIdentifier = $request->input('client_identifier');
+        
+        $data = ExampleModel::where('client_identifier', $clientIdentifier)
+            ->get();
+        
+        return response()->json(['data' => $data]);
+    }
+
+    // Example: Storing data with client_identifier
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'client_identifier' => 'required|string'
+        ]);
+        
+        $item = ExampleModel::create($validated);
+        
+        return response()->json(['data' => $item]);
+    }
+}
+```
+
+### Module Creation & Seeders
+When creating new modules, **ALWAYS consider updating seeders**:
+
+#### ModuleSeeder (`database/seeders/ModuleSeeder.php`)
+- Add new module data to the `getAppsData()` method
+- Include all required fields: `title`, `route`, `visible`, `description`, `price`, `categories`, etc.
+- Use proper identifier generation (e.g., 'f&b' becomes 'fnb')
+- Include appropriate icon suggestions
+- Set correct pricing type and included plans
+
+#### DashboardSeeder (`database/seeders/DashboardSeeder.php`)  
+- Add dashboard entry for new module in the `$dashboards` array
+- Use module identifier as the `app` value
+- Ensure all existing users get the new dashboard
+
+#### Module Data Structure:
+```php
+[
+    'title' => 'Module Name',
+    'route' => 'module-route',
+    'visible' => true,
+    'description' => 'Module description',
+    'price' => 0.00,
+    'categories' => ['category1', 'category2'],
+    'comingSoon' => false,
+    'pricingType' => 'free', // or 'subscription', 'one-time'
+    'includedInPlans' => ['basic', 'premium'],
+    'bgColor' => 'bg-blue-500',
+    'icon' => 'IconName',
+    'rating' => 4.5
+]
+```
+
+**Note**: Always run seeders after creating new modules to ensure proper system initialization.
+
+### Cron Jobs & Scheduling
+When creating cron jobs or scheduled tasks, define them in `routes/console.php`:
+
+#### Scheduling Pattern:
+```php
+use Illuminate\Support\Facades\Schedule;
+
+// Daily tasks
+Schedule::command('app:your-command')->dailyAt('00:00');
+
+// Hourly tasks  
+Schedule::command('app:your-command')->hourly();
+
+// Custom timing
+Schedule::command('app:your-command')->dailyAt('09:00');
+```
+
+#### Best Practices:
+- Use descriptive command names with `app:` prefix
+- Set appropriate timing based on business requirements
+- Consider timezone (Philippines time in examples)
+- Document the purpose of each scheduled task
+- Test scheduled commands thoroughly before deployment
+
+### Categories & Data Handling
+- Categories should be based solely on response data's category field
+- Don't manipulate or transform category data unless explicitly required
+- Preserve original API response structure for categories
+
+### Styling Preferences
+- Code blocks should not wrap lines - use horizontal scrollbars
+- Maintain consistent dark mode colors across components
+- Use existing color scheme and component patterns
+
+## Common Patterns
+
+### Error Handling
+```php
+try {
+    $response = Http::withToken($this->apiToken)
+        ->get("{$this->apiUrl}/endpoint");
+    
+    if (!$response->successful()) {
+        throw new \Exception('API request failed: ' . $response->body());
+    }
+    
+    return response()->json($response->json());
+} catch (\Exception $e) {
+    Log::error('Operation failed', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+    ]);
+    
+    return response()->json([
+        'status' => 'error',
+        'message' => 'Operation failed',
+        'data' => null
+    ], 500);
+}
+```
+
+### Currency Settings Pattern
+```php
+// Retrieve user currency settings
+$jsonAppCurrency = json_decode(auth()->user()->app_currency);
+
+// Use in data formatting
+$formattedData = array_map(function($item) use ($jsonAppCurrency) {
+    $item['price_formatted'] = $jsonAppCurrency->symbol . number_format(
+        $item['price'], 
+        2, 
+        $jsonAppCurrency->decimal_separator, 
+        $jsonAppCurrency->thousands_separator
+    );
+    return $item;
+}, $data);
+```
+
+### Inertia.js Response Pattern
+```php
+return Inertia::render('PageName', [
+    'data' => $apiResponse,
+    'appCurrency' => $jsonAppCurrency,
+    'categories' => $categories
+]);
+```
+
+### Shared Data via HandleInertiaRequests Middleware
+The following data is automatically available on all pages through `app/Http/Middleware/HandleInertiaRequests.php`:
+
+#### Auth Data (auth.*)
+- `auth.user` - Current authenticated user with properties:
+  - `id`, `name`, `email`, `contact_number`
+  - `identifier`, `project_identifier`
+  - `app_currency` - User's currency settings (JSON string)
+  - `theme`, `theme_color` - User's theme preferences
+  - `is_admin` - Admin status
+  - `subscription` - User's subscription data
+- `auth.project` - Current project data
+- `auth.modules` - Enabled modules for the project
+- `auth.teamMembers` - Available team members
+- `auth.selectedTeamMember` - Currently selected team member
+
+#### App Data (app.*)
+- `app.name` - Application name from config
+
+#### Flash Messages (flash.*)
+- `flash.message` - Success messages
+- `flash.error` - Error messages  
+- `flash.type` - Message type
+
+#### Routing (ziggy.*)
+- `ziggy` - Route data for frontend routing
+
+**Note**: This shared data is available in all React components via props without needing to explicitly pass it from controllers.
+
+### React Component Pattern
+```tsx
+import React from 'react';
+import { PageProps } from '@/types';
+
+interface Props extends PageProps {
+    data: any[];
+    categories: any[];
+}
+
+export default function ComponentName({ data, categories }: Props) {
+    return (
+        <div className="space-y-6">
+            {/* Component content */}
+        </div>
+    );
+}
+```
+
+## Security Considerations
+- Always validate and sanitize input data
+- Use CSRF protection for forms
+- Implement proper authentication checks
+- Sanitize data before displaying in frontend
+- Use prepared statements for database queries
+- Validate file uploads properly
+
+## Performance Guidelines
+- Use eager loading for Eloquent relationships
+- Implement proper caching where appropriate
+- Optimize API calls - avoid N+1 queries
+- Use pagination for large datasets
+- Compress and optimize images
+- Use CDN for static assets
+
+## Testing Guidelines
+- Write unit tests for critical business logic
+- Test API endpoints thoroughly
+- Test React components with proper mocking
+- Include integration tests for API communication
+- Test error scenarios and edge cases
+- **Always run linter test or npm lint** before committing code
+
+## Deployment Notes
+- Use environment variables for configuration
+- Ensure proper Docker setup for production
+- Run database migrations in production safely
+- Clear caches after deployment
+- Monitor API response times and errors
+
+## Common Commands
+
+### Frontend (Laravel)
+```bash
+# Run migrations
+docker-compose exec app php artisan migrate
+
+# Clear caches
+docker-compose exec app php artisan cache:clear
+docker-compose exec app php artisan config:clear
+docker-compose exec app php artisan route:clear
+
+# Generate keys
+docker-compose exec app php artisan key:generate
+
+# Install dependencies
+docker-compose exec app composer install
+npm install
+
+# Build assets
+npm run build
+npm run dev
+
+# Linting
+npm run lint
+npm run lint:fix
+```
+
+### Backend (API)
+```bash
+# Similar Docker commands for backend container
+docker-compose exec api php artisan migrate
+docker-compose exec api composer install
+```
+
+## Important Notes
+- Always test API connectivity before implementing frontend features
+- Ensure proper error messages are displayed to users
+- Follow existing patterns for consistency
+- Consider mobile responsiveness in all UI components
+- Use proper TypeScript types for better development experience
+- Maintain backward compatibility when making API changes
+
+## Troubleshooting
+- Check API connectivity if frontend requests fail
+- Verify authentication tokens are properly configured
+- Ensure Docker containers are running
+- Check Laravel logs for detailed error information
+- Verify database connections and migrations
+- Check Vite build process for frontend issues
