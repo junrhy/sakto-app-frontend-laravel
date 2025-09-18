@@ -176,7 +176,12 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return auth.selectedTeamMember.roles.includes('admin') || 
+                   auth.selectedTeamMember.roles.includes('manager') || 
+                   auth.selectedTeamMember.roles.includes('doctor') ||
+                   auth.selectedTeamMember.roles.includes('nurse') ||
+                   auth.selectedTeamMember.roles.includes('assistant') ||
+                   auth.selectedTeamMember.roles.includes('user');
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
@@ -185,8 +190,10 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const userRole = useMemo(() => {
         if (auth.selectedTeamMember) {
             if (auth.selectedTeamMember.roles.includes('doctor')) return 'doctor';
+            if (auth.selectedTeamMember.roles.includes('nurse')) return 'nurse';
+            if (auth.selectedTeamMember.roles.includes('assistant')) return 'assistant';
             if (auth.selectedTeamMember.roles.includes('admin')) return 'admin';
-            return 'assistant';
+            return 'assistant'; // fallback for other roles (user, supervisor, viewer)
         }
         return auth.user.is_admin ? 'admin' : 'assistant';
     }, [auth.selectedTeamMember, auth.user.is_admin]);

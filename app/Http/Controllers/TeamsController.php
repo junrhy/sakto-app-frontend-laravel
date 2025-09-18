@@ -499,6 +499,9 @@ class TeamsController extends Controller
             'admin' => 'Administrator',
             'manager' => 'Manager',
             'supervisor' => 'Supervisor',
+            'doctor' => 'Doctor',
+            'nurse' => 'Nurse',
+            'assistant' => 'Medical Assistant',
             'user' => 'User',
             'viewer' => 'Viewer',
         ];

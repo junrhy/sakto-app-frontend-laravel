@@ -105,7 +105,12 @@ export default function Settings({ settings, auth }: Props) {
     // Check if current team member has admin, manager, or user role
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return auth.selectedTeamMember.roles.includes('admin') || 
+                   auth.selectedTeamMember.roles.includes('manager') || 
+                   auth.selectedTeamMember.roles.includes('doctor') ||
+                   auth.selectedTeamMember.roles.includes('nurse') ||
+                   auth.selectedTeamMember.roles.includes('assistant') ||
+                   auth.selectedTeamMember.roles.includes('user');
         }
         // If no team member is selected, check if the main user is admin
         return auth.user.is_admin;

@@ -26,7 +26,7 @@ interface PatientRecordDialogProps {
     onClose: () => void;
     patient: Patient | null;
     currency: string;
-    userRole?: 'assistant' | 'doctor' | 'admin';
+    userRole?: 'assistant' | 'doctor' | 'nurse' | 'admin';
     canEdit: boolean;
     canDelete: boolean;
     onStartCheckup: (patient: Patient) => void;
@@ -150,11 +150,11 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">
-                        {userRole === 'doctor' ? 'Doctor Actions' : 'Quick Actions'}
+                        {(userRole === 'doctor' || userRole === 'nurse') ? 'Medical Actions' : 'Quick Actions'}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {userRole === 'doctor' ? (
+                    {(userRole === 'doctor' || userRole === 'nurse') ? (
                         <>
                             <Button 
                                 className="w-full justify-start" 
@@ -226,7 +226,7 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Medical History</h3>
-                {userRole === 'doctor' && (
+                {(userRole === 'doctor' || userRole === 'nurse') && (
                     <Button onClick={() => onStartCheckup(patient)}>
                         <Plus className="h-4 w-4 mr-2" />
                         New Checkup
