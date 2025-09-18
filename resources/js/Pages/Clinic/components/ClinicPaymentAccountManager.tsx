@@ -252,7 +252,6 @@ export function ClinicPaymentAccountManager({
     };
 
     const filteredAccounts = accounts.filter(account => {
-        if (activeTab === 'accounts') return true;
         if (activeTab === 'group') return account.account_type === 'group';
         if (activeTab === 'company') return account.account_type === 'company';
         return true;
@@ -266,18 +265,22 @@ export function ClinicPaymentAccountManager({
         })}`;
     };
 
-    if (loading) {
-        return (
-            <div className="space-y-4">
-                <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="h-48 bg-gray-200 rounded animate-pulse"></div>
-                    ))}
-                </div>
+    // Calculate account counts for badges
+    const groupCount = accounts.filter(acc => acc.account_type === 'group').length;
+    const companyCount = accounts.filter(acc => acc.account_type === 'company').length;
+    const patientCount = patients.length;
+
+    // Loading skeleton component for tab content
+    const LoadingSkeleton = () => (
+        <div className="space-y-4">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                ))}
             </div>
-        );
-    }
+        </div>
+    );
 
     return (
         <div className="space-y-6">
@@ -311,18 +314,44 @@ export function ClinicPaymentAccountManager({
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="patient-billing">Patient Billing</TabsTrigger>
-                    <TabsTrigger value="accounts">All Accounts</TabsTrigger>
-                    <TabsTrigger value="group">Groups</TabsTrigger>
-                    <TabsTrigger value="company">Companies</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+                    <TabsTrigger 
+                        value="patient-billing"
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                    >
+                        <CreditCard className="h-4 w-4" />
+                        <span>Individual</span>
+                        <Badge variant="secondary" className="ml-1 px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                            {patientCount}
+                        </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                        value="group"
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                    >
+                        <Users className="h-4 w-4" />
+                        <span>Groups</span>
+                        <Badge variant="secondary" className="ml-1 px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                            {groupCount}
+                        </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                        value="company"
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                    >
+                        <Building2 className="h-4 w-4" />
+                        <span>Companies</span>
+                        <Badge variant="secondary" className="ml-1 px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                            {companyCount}
+                        </Badge>
+                    </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="patient-billing" className="space-y-4">
-                    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                <TabsContent value="patient-billing" className="space-y-6 mt-0">
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
                         <div>
-                            <h3 className="text-lg font-semibold">Individual Patient Billing</h3>
-                            <p className="text-muted-foreground">Manage bills and payments for individual patients</p>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Individual Patient Billing</h3>
+                            <p className="text-muted-foreground mt-1">Manage bills and payments for individual patients</p>
                         </div>
                         <div className="relative w-full sm:w-64">
                             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -411,127 +440,10 @@ export function ClinicPaymentAccountManager({
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="accounts" className="space-y-4">
-                    {filteredAccounts.length === 0 ? (
-                        <Card>
-                            <CardContent className="flex flex-col items-center justify-center py-12">
-                                <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">No payment accounts found</h3>
-                                <p className="text-muted-foreground text-center mb-4">
-                                    Create your first payment account to manage group or company billing
-                                </p>
-                                <Button onClick={() => setIsCreateModalOpen(true)}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create Account
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredAccounts.map((account) => (
-                                <Card key={account.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                {getAccountTypeIcon(account.account_type)}
-                                                <div>
-                                                    <CardTitle className="text-lg">{account.account_name}</CardTitle>
-                                                    <CardDescription className="font-mono text-xs">
-                                                        {account.account_code}
-                                                    </CardDescription>
-                                                </div>
-                                            </div>
-                                            <Badge variant={getStatusBadgeVariant(account.status)}>
-                                                {account.status}
-                                            </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-muted-foreground">Type</p>
-                                                <p className="font-medium capitalize">{account.account_type}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-muted-foreground">Patients</p>
-                                                <p className="font-medium">{account.patients_count || 0}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-muted-foreground">Outstanding</p>
-                                                <p className="font-medium text-red-600">
-                                                    {formatCurrencyAmount(account.total_outstanding || 0)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-muted-foreground">Contact</p>
-                                                <p className="font-medium truncate">
-                                                    {account.contact_person || 'N/A'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex space-x-2">
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
-                                                onClick={() => handleViewDetails(account)}
-                                                className="flex-1"
-                                            >
-                                                <Eye className="mr-1 h-3 w-3" />
-                                                View
-                                            </Button>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedAccount(account);
-                                                    setIsAssignModalOpen(true);
-                                                }}
-                                            >
-                                                <Users className="mr-1 h-3 w-3" />
-                                                Assign
-                                            </Button>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => handleDeleteAccount(account.id)}
-                                            >
-                                                <Trash2 className="mr-1 h-3 w-3" />
-                                            </Button>
-                                        </div>
-
-                                        <div className="flex space-x-2">
-                                            <Button 
-                                                size="sm" 
-                                                className="flex-1"
-                                                onClick={() => {
-                                                    setSelectedAccount(account);
-                                                    setIsBillingModalOpen(true);
-                                                }}
-                                            >
-                                                Create Bill
-                                            </Button>
-                                            <Button 
-                                                size="sm" 
-                                                variant="secondary"
-                                                className="flex-1"
-                                                onClick={() => {
-                                                    setSelectedAccount(account);
-                                                    setIsPaymentModalOpen(true);
-                                                }}
-                                            >
-                                                Record Payment
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </TabsContent>
-
-                <TabsContent value="group" className="space-y-4">
-                    {filteredAccounts.filter(acc => acc.account_type === 'group').length === 0 ? (
+                <TabsContent value="group" className="space-y-6 mt-0">
+                    {loading ? (
+                        <LoadingSkeleton />
+                    ) : filteredAccounts.filter(acc => acc.account_type === 'group').length === 0 ? (
                         <Card>
                             <CardContent className="flex flex-col items-center justify-center py-12">
                                 <Users className="h-12 w-12 text-muted-foreground mb-4" />
@@ -649,8 +561,10 @@ export function ClinicPaymentAccountManager({
                     )}
                 </TabsContent>
 
-                <TabsContent value="company" className="space-y-4">
-                    {filteredAccounts.filter(acc => acc.account_type === 'company').length === 0 ? (
+                <TabsContent value="company" className="space-y-6 mt-0">
+                    {loading ? (
+                        <LoadingSkeleton />
+                    ) : filteredAccounts.filter(acc => acc.account_type === 'company').length === 0 ? (
                         <Card>
                             <CardContent className="flex flex-col items-center justify-center py-12">
                                 <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
