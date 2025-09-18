@@ -88,7 +88,7 @@ export default function TeamMemberSelection({ teamMembers, auth }: Props) {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center space-x-2">
                                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                                        {member.full_name}
+                                                        {member.first_name}
                                                     </h3>
                                                     {member.roles.includes('admin') && (
                                                         <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
@@ -97,9 +97,6 @@ export default function TeamMemberSelection({ teamMembers, auth }: Props) {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                    {member.email}
-                                                </p>
                                                 <div className="flex flex-wrap gap-1 mt-2">
                                                     {member.roles.slice(0, 3).map((role) => (
                                                         <Badge key={role} variant="outline" className="text-xs">
@@ -112,16 +109,6 @@ export default function TeamMemberSelection({ teamMembers, auth }: Props) {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                            </div>
-                                            
-                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                                selectedMember === member.identifier
-                                                    ? 'border-blue-500 bg-blue-500'
-                                                    : 'border-gray-300 dark:border-gray-600'
-                                            }`}>
-                                                {selectedMember === member.identifier && (
-                                                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
