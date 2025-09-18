@@ -218,10 +218,10 @@ export default function Home({ auth }: Props) {
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center">
                             <div className="w-full flex justify-between items-center mb-6">
-                                <div className="flex items-center">
-                                    <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
-                                    <div className="ml-2">
-                                        <span className="text-xl font-bold text-gray-900 dark:text-white">{auth.user.name}</span>
+                                <div className="flex items-center min-w-0 flex-1 mr-4">
+                                    <ApplicationLogo className="hidden sm:block h-8 sm:h-10 w-auto fill-current text-gray-900 dark:text-white flex-shrink-0" />
+                                    <div className="ml-0 sm:ml-2 min-w-0 flex-1">
+                                        <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate block">{auth.user.name}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
@@ -318,14 +318,14 @@ export default function Home({ auth }: Props) {
                                     <span className="bg-purple-500 text-white px-2 py-0.5 rounded-full text-xs font-medium mr-1">
                                         {subscription.plan.name}
                                     </span>
-                                    Active until {formatDate(subscription.end_date)} • Premium access
+                                
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[180px]'} landscape:pt-[140px] md:pt-[220px] overflow-y-auto mb-4`}>
+                <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[200px]'} landscape:pt-[160px] md:pt-[220px] overflow-y-auto mb-4`}>
                     {/* Show subscription message when user has no subscription */}
                     {!isLoadingSubscription && !subscription && (
                         <div className="mb-8 text-center">
@@ -386,7 +386,7 @@ export default function Home({ auth }: Props) {
                         </div>
                     )}
                     
-                    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
+                    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4 lg:gap-6 gap-y-6 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                         {apps.filter(app => {
                             // Show apps that are available (either in subscription or user-added)
                             return app.isAvailable;
@@ -397,17 +397,17 @@ export default function Home({ auth }: Props) {
                                 className="flex flex-col items-center"
                             >
                                 <div 
-                                    className={`w-20 h-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-gray-800/50`}
+                                    className={`w-16 h-16 md:w-20 md:h-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-gray-800/50`}
                                     style={{ 
                                         borderWidth: '1px', 
                                         borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.3)' : getBorderColor(app.bgColor)
                                     }}
                                 >
-                                    <div className={`text-4xl dark:text-slate-300`}>
+                                    <div className={`text-3xl md:text-4xl dark:text-slate-300`}>
                                         {app.icon}
                                     </div>
                                 </div>
-                                <h2 className="text-sm font-medium text-gray-800 dark:text-gray-300 text-center">
+                                <h2 className="text-xs md:text-sm font-medium text-gray-800 dark:text-gray-300 text-center">
                                     {app.title}
                                 </h2>
                             </InertiaLink>

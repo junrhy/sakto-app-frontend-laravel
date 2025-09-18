@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
     {
         $selectedTeamMember = null;
         $user = null;
+        $userApps = [];
         
         try {
             // Get authenticated user with multiple fallback methods
@@ -76,6 +77,13 @@ class HandleInertiaRequests extends Middleware
                 if ($request->session()->has('selected_team_member_id')) {
                     $selectedTeamMember = $user->team_members_data->firstWhere('identifier', $request->session()->get('selected_team_member_id'));
                 }
+                
+                // Get user's active apps (paid and not cancelled)
+                $userApps = \App\Models\UserApp::forUser($user->identifier)
+                    ->where('payment_status', \App\Models\UserApp::STATUS_PAID)
+                    ->where('cancelled_at', null)
+                    ->pluck('module_identifier')
+                    ->toArray();
                 
                 // Log successful authentication for debugging (remove in production)
                 if (config('app.debug')) {
@@ -138,6 +146,7 @@ class HandleInertiaRequests extends Middleware
                         ? $user->project_data['enabledModules'] 
                         : [])
                     : [],
+                'userApps' => $user ? $userApps : [],
                 'teamMembers' => $user ? $user->team_members_data : [],
                 'selectedTeamMember' => $selectedTeamMember,
             ],

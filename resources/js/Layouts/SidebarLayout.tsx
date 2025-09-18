@@ -5,6 +5,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { PageProps, User, Project } from '@/types/index';
+import { parseEnabledModules } from '@/lib/utils';
 
 interface Props {
     children: React.ReactNode;
@@ -14,6 +15,7 @@ interface Props {
         user?: User;
         project?: Project;
         modules?: string[];
+        userApps?: string[];
     };
 }
 
@@ -24,34 +26,56 @@ const getHeaderColorClass = (url: string): string => {
 
 export default function SidebarLayout({ children, header, user, auth }: Props) {
     const { url } = usePage();
-    const pageProps = usePage<{ auth: { user: any } }>().props;
+    const pageProps = usePage<{ auth: { user: any; userApps: string[] } }>().props;
     const authUser = user || pageProps.auth.user;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
+    // Parse enabled modules from project and get user apps
+    const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
+    const userApps = auth?.userApps || pageProps.auth.userApps || [];
+
+    // Helper function to check if user has access to a module (either in subscription or user-added)
+    // This now uses database relationships instead of URL-based checking
+    const hasModuleAccess = (moduleIdentifier: string) => {
+        const isInSubscription = enabledModules.includes(moduleIdentifier);
+        const isUserAdded = userApps.includes(moduleIdentifier);
+        return isInSubscription || isUserAdded;
+    };
+
+    // Helper function to check if user is currently on a specific module page
+    const isCurrentModule = (moduleIdentifier: string) => {
+        return appParam === moduleIdentifier;
+    };
+
+    // Helper function to check both access and current page (for UI elements that should only show on specific module pages)
+    const hasModulePageAccess = (moduleIdentifier: string) => {
+        return hasModuleAccess(moduleIdentifier) && isCurrentModule(moduleIdentifier);
+    };
+
     const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions') && !url.includes('dashboard');
-    const hasRetailAccess = (auth?.modules?.includes('retail') && appParam === 'retail') ?? false;
-    const hasFnbAccess = (auth?.modules?.includes('fnb') && appParam === 'fnb') ?? false;
-    const hasWarehousingAccess = (auth?.modules?.includes('warehousing') && appParam === 'warehousing') ?? false;
-    const hasTransportationAccess = (auth?.modules?.includes('transportation') && appParam === 'transportation') ?? false;
-    const hasRentalItemAccess = (auth?.modules?.includes('rental-items') && appParam === 'rental-items') ?? false;
-    const hasRentalPropertyAccess = (auth?.modules?.includes('rental-properties') && appParam === 'rental-properties') ?? false;
-    const hasClinicalAccess = (auth?.modules?.includes('clinical') && appParam === 'clinical') ?? false;
-    const hasLendingAccess = (auth?.modules?.includes('lending') && appParam === 'lending') ?? false;
-    const hasPayrollAccess = (auth?.modules?.includes('payroll') && appParam === 'payroll') ?? false;
-    const hasTravelAccess = (auth?.modules?.includes('travel') && appParam === 'travel') ?? false;
-    const hasSmsAccess = (auth?.modules?.includes('sms') && appParam === 'sms') ?? false;
-    const hasEmailAccess = (auth?.modules?.includes('email') && appParam === 'email') ?? false;
-    const hasContactsAccess = (auth?.modules?.includes('contacts') && appParam === 'contacts') ?? false;
-    const hasGenealogyAccess = (auth?.modules?.includes('genealogy') && appParam === 'genealogy') ?? false;
-    const hasEventsAccess = (auth?.modules?.includes('events') && appParam === 'events') ?? false;
-    const hasChallengesAccess = (auth?.modules?.includes('challenges') && appParam === 'challenges') ?? false;
-    const hasContentCreatorAccess = (auth?.modules?.includes('content-creator') && appParam === 'content-creator') ?? false;
-    const hasDigitalProductsAccess = (auth?.modules?.includes('digital-products') && appParam === 'digital-products') ?? false;
-    const hasPagesAccess = (auth?.modules?.includes('pages') && appParam === 'pages') ?? false;
-    const hasHealthInsuranceAccess = (auth?.modules?.includes('health-insurance') && appParam === 'health-insurance') ?? false;
-    const hasBillersAccess = (auth?.modules?.includes('billers') && appParam === 'billers') ?? false;
-    const hasBillPaymentsAccess = (auth?.modules?.includes('bill-payments') && appParam === 'bill-payments') ?? false;
-    const hasCoursesAccess = (auth?.modules?.includes('courses') && appParam === 'courses') ?? false;
+    const hasRetailAccess = hasModulePageAccess('retail');
+    const hasFnbAccess = hasModulePageAccess('fnb');
+    const hasWarehousingAccess = hasModulePageAccess('warehousing');
+    const hasTransportationAccess = hasModulePageAccess('transportation');
+    const hasRentalItemAccess = hasModulePageAccess('rental-items');
+    const hasRentalPropertyAccess = hasModulePageAccess('rental-properties');
+    const hasClinicalAccess = hasModulePageAccess('clinic');
+    const hasLendingAccess = hasModulePageAccess('lending');
+    const hasPayrollAccess = hasModulePageAccess('payroll');
+    const hasTravelAccess = hasModulePageAccess('travel');
+    const hasSmsAccess = hasModulePageAccess('sms');
+    const hasEmailAccess = hasModulePageAccess('email');
+    const hasContactsAccess = hasModulePageAccess('contacts');
+    const hasGenealogyAccess = hasModulePageAccess('genealogy');
+    const hasEventsAccess = hasModulePageAccess('events');
+    const hasChallengesAccess = hasModulePageAccess('challenges');
+    const hasContentCreatorAccess = hasModulePageAccess('content-creator');
+    const hasDigitalProductsAccess = hasModulePageAccess('digital-products');
+    const hasPagesAccess = hasModulePageAccess('pages');
+    const hasHealthInsuranceAccess = hasModulePageAccess('health-insurance');
+    const hasBillersAccess = hasModulePageAccess('billers');
+    const hasBillPaymentsAccess = hasModulePageAccess('bill-payments');
+    const hasCoursesAccess = hasModulePageAccess('courses');
 
     return (
         <ThemeProvider>
