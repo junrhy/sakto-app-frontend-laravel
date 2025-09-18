@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Patient } from '../types';
 import { formatDateTime, formatDate, formatCurrency } from '../utils';
+import { exportPatientRecordToPDF } from '../utils/pdfExport';
 
 interface PatientRecordDialogProps {
     isOpen: boolean;
@@ -64,6 +65,27 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
             age--;
         }
         return age;
+    };
+
+    const handlePrintRecord = async () => {
+        try {
+            console.log('Starting PDF generation for patient:', patient.name);
+            console.log('Patient data:', patient);
+            
+            await exportPatientRecordToPDF({
+                patient,
+                currency,
+                clinicName: 'Medical Clinic',
+                clinicAddress: '123 Medical Center Drive',
+                clinicPhone: '(555) 123-4567',
+                doctorName: 'Dr. Medical Professional'
+            });
+            
+            console.log('PDF generation completed successfully');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Error generating PDF. Please check the console for details.');
+        }
     };
 
     const getStatusColor = (status?: string) => {
@@ -388,9 +410,9 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                             <Badge variant={getStatusColor('active')}>
                                 Active
                             </Badge>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={handlePrintRecord}>
                                 <Printer className="h-4 w-4 mr-2" />
-                                Print Record
+                                Export PDF
                             </Button>
                         </div>
                     </div>
