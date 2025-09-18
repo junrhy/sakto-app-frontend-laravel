@@ -17,67 +17,67 @@ export const menuCategories: MenuCategory[] = [
         id: 'business',
         title: 'Business',
         items: [
-            { id: 'retail', title: 'Retail', href: '/dashboard?app=retail' },
-            { id: 'fnb', title: 'F&B', href: '/dashboard?app=fnb' },
-            { id: 'warehousing', title: 'Warehousing', href: '/dashboard?app=warehousing' },
-            { id: 'transportation', title: 'Transportation', href: '/dashboard?app=transportation' },
+            { id: 'retail', title: 'Retail', href: '/retail?app=retail' },
+            { id: 'fnb', title: 'F&B', href: '/pos-restaurant?app=fnb' },
+            { id: 'warehousing', title: 'Warehousing', href: '/warehousing?app=warehousing' },
+            { id: 'transportation', title: 'Transportation', href: '/transportation?app=transportation' },
         ]
     },
     {
         id: 'rental',
         title: 'Rental',
         items: [
-            { id: 'rental-items', title: 'Rental Items', href: '/dashboard?app=rental-items' },
-            { id: 'rental-properties', title: 'Rental Properties', href: '/dashboard?app=rental-properties' },
+            { id: 'rental-items', title: 'Rental Items', href: '/rental-items?app=rental-items' },
+            { id: 'rental-properties', title: 'Rental Properties', href: '/rental-properties?app=rental-properties' },
         ]
     },
     {
         id: 'medical',
         title: 'Medical',
         items: [
-            { id: 'clinic', title: 'Clinic', href: '/dashboard?app=clinic' },
-            { id: 'queue-system', title: 'Queue System', href: '/dashboard?app=queue-system', urlCheck: 'queue' },
-            { id: 'mortuary', title: 'Mortuary', href: '/dashboard?app=mortuary' },
-            { id: 'healthcare', title: 'Healthcare', href: '/dashboard?app=healthcare' },
+            { id: 'clinic', title: 'Clinic', href: '/clinic?app=clinic' },
+            { id: 'queue-system', title: 'Queue System', href: '/queue?app=queue-system', urlCheck: 'queue' },
+            { id: 'mortuary', title: 'Mortuary', href: '/mortuary?app=mortuary' },
+            { id: 'healthcare', title: 'Healthcare', href: '/health-insurance?app=health-insurance' },
         ]
     },
     {
         id: 'financial',
         title: 'Financial',
         items: [
-            { id: 'lending', title: 'Lending', href: '/dashboard?app=lending' },
-            { id: 'payroll', title: 'Payroll', href: '/dashboard?app=payroll' },
-            { id: 'billers', title: 'Billers', href: '/dashboard?app=billers' },
-            { id: 'bill-payments', title: 'Bill Payments', href: '/dashboard?app=bill-payments' },
+            { id: 'lending', title: 'Lending', href: '/loan?app=loan' },
+            { id: 'payroll', title: 'Payroll', href: '/payroll?app=payroll' },
+            { id: 'billers', title: 'Billers', href: '/billers?app=billers' },
+            { id: 'bill-payments', title: 'Bill Payments', href: '/bill-payments?app=bill-payments' },
         ]
     },
     {
         id: 'communication',
         title: 'Communication',
         items: [
-            { id: 'sms', title: 'SMS', href: '/dashboard?app=sms' },
-            { id: 'email', title: 'Email', href: '/dashboard?app=email' },
-            { id: 'contacts', title: 'Contacts', href: '/dashboard?app=contacts' },
+            { id: 'sms', title: 'SMS', href: '/sms-semaphore?app=sms' },
+            { id: 'email', title: 'Email', href: '/email?app=email' },
+            { id: 'contacts', title: 'Contacts', href: '/contacts?app=contacts' },
         ]
     },
     {
         id: 'content',
         title: 'Content & Events',
         items: [
-            { id: 'genealogy', title: 'Genealogy', href: '/dashboard?app=genealogy' },
-            { id: 'events', title: 'Events', href: '/dashboard?app=events' },
-            { id: 'challenges', title: 'Challenges', href: '/dashboard?app=challenges' },
-            { id: 'content-creator', title: 'Content Creator', href: '/dashboard?app=content-creator' },
-            { id: 'products', title: 'Products', href: '/dashboard?app=products' },
-            { id: 'pages', title: 'Pages', href: '/dashboard?app=pages' },
-            { id: 'courses', title: 'Courses', href: '/dashboard?app=courses' },
+            { id: 'genealogy', title: 'Genealogy', href: '/genealogy?app=genealogy' },
+            { id: 'events', title: 'Events', href: '/events?app=events' },
+            { id: 'challenges', title: 'Challenges', href: '/challenges?app=challenges' },
+            { id: 'content-creator', title: 'Content Creator', href: '/content-creator?app=content-creator' },
+            { id: 'products', title: 'Products', href: '/products?app=products' },
+            { id: 'pages', title: 'Pages', href: '/pages?app=pages' },
+            { id: 'courses', title: 'Courses', href: '/courses?app=courses' },
         ]
     },
     {
         id: 'travel',
         title: 'Travel',
         items: [
-            { id: 'travel', title: 'Travel', href: '/dashboard?app=travel' },
+            { id: 'travel', title: 'Travel', href: '/travel?app=travel' },
         ]
     }
 ];
