@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
 import { Button } from "@/Components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/Components/ui/alert-dialog";
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
@@ -130,6 +131,45 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
     // Diagnoses
     const [diagnoses, setDiagnoses] = useState<DiagnosisEntry[]>([]);
 
+    // Form state tracking for preventing data loss
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+
+    // Track form changes to detect unsaved data
+    useEffect(() => {
+        const hasData = !!(
+            attendingProvider.trim() ||
+            location.trim() ||
+            roomNumber.trim() ||
+            chiefComplaint.trim() ||
+            historyPresentIllness.trim() ||
+            reviewOfSystems.trim() ||
+            physicalExamination.trim() ||
+            laboratoryResults.trim() ||
+            diagnosticResults.trim() ||
+            clinicalImpression.trim() ||
+            differentialDiagnosis.trim() ||
+            treatmentPlan.trim() ||
+            medicationsPrescribed.trim() ||
+            proceduresOrdered.trim() ||
+            followUpInstructions.trim() ||
+            patientEducationProvided.trim() ||
+            patientUnderstandingLevel.trim() ||
+            interpreterLanguage.trim() ||
+            additionalNotes.trim() ||
+            Object.values(vitalSigns).some(value => typeof value === 'string' ? value.trim() : (typeof value === 'boolean' ? value : false)) ||
+            diagnoses.length > 0
+        );
+
+        setHasUnsavedChanges(hasData);
+    }, [
+        attendingProvider, location, roomNumber, chiefComplaint, historyPresentIllness,
+        reviewOfSystems, physicalExamination, laboratoryResults, diagnosticResults,
+        clinicalImpression, differentialDiagnosis, treatmentPlan, medicationsPrescribed,
+        proceduresOrdered, followUpInstructions, patientEducationProvided,
+        patientUnderstandingLevel, interpreterLanguage, additionalNotes, vitalSigns, diagnoses
+    ]);
+
     const calculateAge = (birthdate: string) => {
         if (!birthdate) return 'N/A';
         const today = new Date();
@@ -142,7 +182,7 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
         return age;
     };
 
-    const handleVitalSignChange = (field: keyof VitalSigns, value: string | boolean) => {
+    const handleVitalSignChange = (field: keyof VitalSigns, value: any) => {
         setVitalSigns(prev => ({
             ...prev,
             [field]: value
@@ -256,10 +296,11 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
         };
 
         onSubmit(encounterData);
-        handleClose();
+        resetForm();
+        onClose();
     };
 
-    const handleClose = () => {
+    const resetForm = () => {
         // Reset all form fields
         setEncounterDate(new Date());
         setEncounterType('outpatient');
@@ -304,20 +345,49 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
             pain_quality: ''
         });
         setDiagnoses([]);
+        setHasUnsavedChanges(false);
+    };
+
+    const handleClose = () => {
+        if (hasUnsavedChanges) {
+            setShowCancelConfirmation(true);
+        } else {
+            resetForm();
+            onClose();
+        }
+    };
+
+    const handleConfirmCancel = () => {
+        setShowCancelConfirmation(false);
+        resetForm();
         onClose();
+    };
+
+    const handleCancelClose = () => {
+        setShowCancelConfirmation(false);
     };
 
     if (!patient) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl">
-                        <Stethoscope className="h-6 w-6 text-gray-800 dark:text-gray-200" />
-                        New Clinical Encounter - {patient.name}
-                    </DialogTitle>
-                </DialogHeader>
+        <>
+            <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+                <DialogContent 
+                    className="max-w-7xl max-h-[95vh] overflow-hidden"
+                    onPointerDownOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-xl">
+                            <Stethoscope className="h-6 w-6 text-gray-800 dark:text-gray-200" />
+                            New Clinical Encounter - {patient.name}
+                            {hasUnsavedChanges && (
+                                <span className="text-sm text-orange-600 dark:text-orange-400 font-normal">
+                                    (Unsaved changes)
+                                </span>
+                            )}
+                        </DialogTitle>
+                    </DialogHeader>
 
                 <div className="grid grid-cols-4 gap-6 overflow-y-auto max-h-[calc(95vh-150px)] pr-4">
                     {/* Left Sidebar: Patient Context */}
@@ -1066,5 +1136,42 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
                 </div>
             </DialogContent>
         </Dialog>
+
+        {/* Cancel Confirmation Dialog */}
+        <AlertDialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-orange-500" />
+                        Unsaved Clinical Data
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You have unsaved clinical encounter data. If you close this dialog, all entered information will be lost.
+                        <br /><br />
+                        <strong>This includes:</strong>
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>SOAP documentation (Subjective, Objective, Assessment, Plan)</li>
+                            <li>Vital signs measurements</li>
+                            <li>Diagnosis information</li>
+                            <li>Patient education notes</li>
+                        </ul>
+                        <br />
+                        Are you sure you want to discard all changes and close the dialog?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={handleCancelClose}>
+                        Continue Editing
+                    </AlertDialogCancel>
+                    <AlertDialogAction 
+                        onClick={handleConfirmCancel}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                        Discard Changes
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
     );
 };
