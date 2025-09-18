@@ -16,9 +16,10 @@ import {
     Trash2,
     History
 } from 'lucide-react';
-import { Patient } from '../types';
+import { Patient, ToothData } from '../types';
 import { formatDateTime, formatDate, formatCurrency } from '../utils';
 import { exportPatientRecordToPDF } from '../utils/pdfExport';
+import DentalChart from './DentalChart';
 
 interface PatientRecordDialogProps {
     isOpen: boolean;
@@ -295,13 +296,28 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                 <h3 className="text-lg font-semibold">Dental Chart</h3>
                 <Button onClick={() => onViewDentalChart(patient)}>
                     <FileText className="h-4 w-4 mr-2" />
-                    {userRole === 'doctor' ? 'Edit Chart' : 'View Chart'}
+                    Edit Chart
                 </Button>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg text-center border border-gray-200 dark:border-gray-600">
-                <p className="text-gray-600 dark:text-gray-400">
-                    Click "View Chart" to open the interactive dental chart
-                </p>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
+                {patient.dental_chart && patient.dental_chart.length > 0 ? (
+                    <DentalChart
+                        teethData={patient.dental_chart}
+                        onToothClick={() => onViewDentalChart(patient)}
+                    />
+                ) : (
+                    <div className="min-h-[400px] flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                        <div className="text-center">
+                            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
+                                No Dental Chart Available
+                            </p>
+                            <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
+                                Click "Edit Chart" to create a dental chart for this patient
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
