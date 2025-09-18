@@ -41,6 +41,8 @@ import {
     EditPatientDialog,
     DeleteConfirmationDialog,
     AddCheckupDialog,
+    PatientRecordDialog,
+    DoctorCheckupDialog,
     AppointmentTable,
     AppointmentCalendar,
     AddAppointmentDialog,
@@ -154,9 +156,15 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     
     // Appointment state
     const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] = useState(false);
+    const [preselectedPatientForAppointment, setPreselectedPatientForAppointment] = useState<Patient | null>(null);
     const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
     const [deleteAppointmentConfirmation, setDeleteAppointmentConfirmation] = useState<Appointment | null>(null);
     const [appointmentView, setAppointmentView] = useState<'table' | 'calendar'>('table');
+
+    // New workflow state
+    const [selectedPatientForRecord, setSelectedPatientForRecord] = useState<Patient | null>(null);
+    const [isDoctorCheckupDialogOpen, setIsDoctorCheckupDialogOpen] = useState(false);
+    const [checkupPatientForDoctor, setCheckupPatientForDoctor] = useState<Patient | null>(null);
 
     // Permission checks
     const canDelete = useMemo(() => {
@@ -171,6 +179,16 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
             return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
         }
         return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Determine user role for UI behavior
+    const userRole = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            if (auth.selectedTeamMember.roles.includes('doctor')) return 'doctor';
+            if (auth.selectedTeamMember.roles.includes('admin')) return 'admin';
+            return 'assistant';
+        }
+        return auth.user.is_admin ? 'admin' : 'assistant';
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     // Event handlers
@@ -304,11 +322,52 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         openNextVisitDialog(patient.id, patient.next_visit_date);
     };
 
+    // New workflow event handlers
+    const handleOpenPatientRecord = (patient: Patient) => {
+        setSelectedPatientForRecord(patient);
+    };
+
+    const handleStartCheckup = (patient: Patient) => {
+        setCheckupPatientForDoctor(patient);
+        setIsDoctorCheckupDialogOpen(true);
+        // Close patient record dialog if open
+        setSelectedPatientForRecord(null);
+    };
+
+    const handleDoctorCheckupSubmit = async (checkupData: any) => {
+        if (!checkupPatientForDoctor) return;
+        
+        const result = await addCheckup(checkupPatientForDoctor, checkupData, { date: new Date(checkupData.date) });
+        if (result.success) {
+            // Update the patients state with the new checkup data
+            setPatients(prevPatients => 
+                prevPatients.map(patient => 
+                    patient.id === checkupPatientForDoctor.id 
+                    ? {
+                        ...patient,
+                        checkups: [...(patient.checkups || []), result.data]
+                    }
+                    : patient
+                )
+            );
+            setIsDoctorCheckupDialogOpen(false);
+            setCheckupPatientForDoctor(null);
+        }
+    };
+
+    const handleScheduleAppointment = (patient: Patient) => {
+        // Close patient record dialog and open appointment dialog with preselected patient
+        setSelectedPatientForRecord(null);
+        setPreselectedPatientForAppointment(patient);
+        setIsAddAppointmentDialogOpen(true);
+    };
+
     // Appointment event handlers
     const handleAddAppointment = async (appointment: NewAppointment) => {
         const result = await createAppointment(appointment);
         if (result.success) {
             setIsAddAppointmentDialogOpen(false);
+            setPreselectedPatientForAppointment(null); // Clear preselected patient
         }
     };
 
@@ -436,13 +495,8 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                             canDelete={canDelete}
                             onEditPatient={setEditingPatient}
                             onDeletePatient={handleDeletePatient}
-                            onAddCheckup={(patient) => {
-                                setCheckupPatient(patient);
-                                setIsCheckupDialogOpen(true);
-                            }}
-                            onShowCheckupHistory={handleShowCheckupHistory}
-                            onOpenDentalChart={openDentalChartDialog}
-                            onOpenPatientInfo={openPatientInfoDialog}
+                            onOpenPatientRecord={handleOpenPatientRecord}
+                            onScheduleAppointment={handleScheduleAppointment}
                             onEditNextVisit={handleEditNextVisit}
                         />
                     </TabsContent>
@@ -472,7 +526,10 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                             Calendar
                                         </Button>
                                     </div>
-                                    <Button onClick={() => setIsAddAppointmentDialogOpen(true)}>
+                                    <Button onClick={() => {
+                                        setPreselectedPatientForAppointment(null); // Clear any preselected patient
+                                        setIsAddAppointmentDialogOpen(true);
+                                    }}>
                                         <Calendar className="h-4 w-4 mr-2" />
                                         Schedule Appointment
                                     </Button>
@@ -756,20 +813,20 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                         <form onSubmit={handleNextVisitUpdate} className="space-y-4">
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-2">
-                                    <Label htmlFor="noNextVisit">No next visit scheduled</Label>
-                                    <Input
+                                    <input
                                         id="noNextVisit"
                                         type="checkbox"
-                                        className="w-4 h-4"
+                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                                         checked={editingNextVisit?.date === 'NA'}
                                         onChange={(e) => setEditingNextVisit(prev => 
                                             prev ? { ...prev, date: e.target.checked ? 'NA' : '' } : null
                                         )}
                                     />
+                                    <Label htmlFor="noNextVisit" className="text-gray-900 dark:text-white">No next visit scheduled</Label>
                                 </div>
                                 {editingNextVisit?.date !== 'NA' && (
                                     <div>
-                                        <Label htmlFor="nextVisitDate">Next Visit Date & Time</Label>
+                                        <Label htmlFor="nextVisitDate" className="text-gray-900 dark:text-white">Next Visit Date & Time</Label>
                                         <Input
                                             id="nextVisitDate"
                                             type="datetime-local"
@@ -778,6 +835,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                                 prev ? { ...prev, date: e.target.value || 'NA' } : null
                                             )}
                                             required={editingNextVisit?.date !== 'NA'}
+                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white [&::-webkit-calendar-picker-indicator]:dark:filter [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                                         />
                                     </div>
                                 )}
@@ -790,10 +848,14 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 {/* Add Appointment Dialog */}
                 <AddAppointmentDialog
                     isOpen={isAddAppointmentDialogOpen}
-                    onClose={() => setIsAddAppointmentDialogOpen(false)}
+                    onClose={() => {
+                        setIsAddAppointmentDialogOpen(false);
+                        setPreselectedPatientForAppointment(null); // Clear preselected patient on close
+                    }}
                     onSubmit={handleAddAppointment}
                     patients={filteredPatients}
                     currency={currency}
+                    preselectedPatient={preselectedPatientForAppointment}
                 />
 
                 {/* Edit Appointment Dialog */}
@@ -828,6 +890,39 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* Patient Record Dialog */}
+                <PatientRecordDialog
+                    isOpen={!!selectedPatientForRecord}
+                    onClose={() => setSelectedPatientForRecord(null)}
+                    patient={selectedPatientForRecord}
+                    currency={currency}
+                    userRole={userRole}
+                    canEdit={canEdit}
+                    canDelete={canDelete}
+                    onStartCheckup={handleStartCheckup}
+                    onViewDentalChart={openDentalChartDialog}
+                    onScheduleAppointment={handleScheduleAppointment}
+                    onEditPatient={setEditingPatient}
+                    onEditNextVisit={handleEditNextVisit}
+                    onDeleteCheckup={handleDeleteCheckup}
+                />
+
+                {/* Doctor Checkup Dialog */}
+                <DoctorCheckupDialog
+                    isOpen={isDoctorCheckupDialogOpen}
+                    onClose={() => {
+                        setIsDoctorCheckupDialogOpen(false);
+                        setCheckupPatientForDoctor(null);
+                    }}
+                    patient={checkupPatientForDoctor}
+                    onSubmit={handleDoctorCheckupSubmit}
+                    onViewDentalChart={openDentalChartDialog}
+                    onViewFullHistory={(patient) => {
+                        handleShowCheckupHistory(patient);
+                        setIsDoctorCheckupDialogOpen(false);
+                    }}
+                />
             </div>
         </AuthenticatedLayout>
     );

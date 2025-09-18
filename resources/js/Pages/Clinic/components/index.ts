@@ -5,6 +5,8 @@ export { DentalChartDialog } from './DentalChartDialog';
 export { EditPatientDialog } from './EditPatientDialog';
 export { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 export { AddCheckupDialog } from './AddCheckupDialog';
+export { PatientRecordDialog } from './PatientRecordDialog';
+export { DoctorCheckupDialog } from './DoctorCheckupDialog';
 export { default as AppointmentTable } from './AppointmentTable';
 export { default as AppointmentCalendar } from './AppointmentCalendar';
 export { default as DailyAppointmentsDialog } from './DailyAppointmentsDialog';

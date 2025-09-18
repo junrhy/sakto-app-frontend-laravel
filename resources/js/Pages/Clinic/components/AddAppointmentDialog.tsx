@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "../../../Components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../Components/ui/dialog";
 import { Input } from "../../../Components/ui/input";
@@ -14,6 +14,7 @@ interface AddAppointmentDialogProps {
     onSubmit: (appointment: NewAppointment) => void;
     patients: Patient[];
     currency: string;
+    preselectedPatient?: Patient | null;
 }
 
 export default function AddAppointmentDialog({ 
@@ -21,7 +22,8 @@ export default function AddAppointmentDialog({
     onClose, 
     onSubmit, 
     patients,
-    currency 
+    currency,
+    preselectedPatient
 }: AddAppointmentDialogProps) {
     const [appointment, setAppointment] = useState<NewAppointment>({
         patient_id: 0,
@@ -34,6 +36,16 @@ export default function AddAppointmentDialog({
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Effect to set preselected patient when dialog opens
+    useEffect(() => {
+        if (isOpen && preselectedPatient) {
+            setAppointment(prev => ({
+                ...prev,
+                patient_id: parseInt(preselectedPatient.id)
+            }));
+        }
+    }, [isOpen, preselectedPatient]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
