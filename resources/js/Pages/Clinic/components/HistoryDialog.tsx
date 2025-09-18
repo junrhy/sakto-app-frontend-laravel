@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/Components/ui/button";
 import { Trash2 } from 'lucide-react';
 import { Patient, HistoryType } from '../types';
-import { formatDateTime, formatCurrency } from '../utils';
+import { formatDateTime, formatDate, formatCurrency } from '../utils';
 
 interface HistoryDialogProps {
     isOpen: boolean;
@@ -55,7 +55,7 @@ export const HistoryDialog: React.FC<HistoryDialogProps> = ({
                     patient.bills?.map((bill) => (
                         <TableRow key={bill.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <TableCell className="text-gray-900 dark:text-white">{bill.bill_number}</TableCell>
-                            <TableCell className="text-gray-900 dark:text-white">{formatDateTime(bill.bill_date)}</TableCell>
+                            <TableCell className="text-gray-900 dark:text-white">{formatDate(bill.bill_date)}</TableCell>
                             <TableCell className="text-gray-900 dark:text-white">
                                 <div className="flex flex-col">
                                     <span className="text-sm text-gray-500 dark:text-gray-400">{bill.bill_details}</span>
@@ -104,7 +104,7 @@ export const HistoryDialog: React.FC<HistoryDialogProps> = ({
                 ) : (
                     patient.payments?.map((payment) => (
                         <TableRow key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <TableCell className="text-gray-900 dark:text-white">{formatDateTime(payment.payment_date)}</TableCell>
+                            <TableCell className="text-gray-900 dark:text-white">{formatDate(payment.payment_date)}</TableCell>
                             <TableCell className="text-gray-900 dark:text-white">{formatCurrency(parseFloat(payment.payment_amount), currency)}</TableCell>
                             <TableCell className="capitalize text-gray-900 dark:text-white">{payment.payment_method}</TableCell>
                             <TableCell className="text-gray-900 dark:text-white">{payment.payment_notes}</TableCell>

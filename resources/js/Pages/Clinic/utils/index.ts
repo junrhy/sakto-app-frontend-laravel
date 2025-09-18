@@ -1,12 +1,47 @@
 export const formatDateTime = (dateTimeStr: string) => {
     if (!dateTimeStr || dateTimeStr === 'NA') return 'N/A';
-    const date = new Date(dateTimeStr);
+    
+    // Handle database datetime format (2025-09-18 11:57:05)
+    let date: Date;
+    if (dateTimeStr.includes(' ') && !dateTimeStr.includes('T')) {
+        // Database datetime format - convert to ISO format
+        date = new Date(dateTimeStr.replace(' ', 'T'));
+    } else {
+        // ISO format or other standard formats
+        date = new Date(dateTimeStr);
+    }
+    
     return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
+    }).format(date);
+};
+
+export const formatDate = (dateStr: string) => {
+    if (!dateStr || dateStr === 'NA') return 'N/A';
+    
+    // Handle different date formats from the database
+    let date: Date;
+    
+    if (dateStr.includes('T')) {
+        // ISO datetime string (2025-09-18T11:57:05.000Z)
+        date = new Date(dateStr);
+    } else if (dateStr.includes(' ')) {
+        // Database datetime format (2025-09-18 11:57:05)
+        date = new Date(dateStr.replace(' ', 'T')); // Convert to ISO format
+    } else {
+        // Date-only string (2025-09-18) - parse as local date to avoid timezone issues
+        const [year, month, day] = dateStr.split('-').map(Number);
+        date = new Date(year, month - 1, day); // month is 0-indexed
+    }
+    
+    return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
     }).format(date);
 };
 

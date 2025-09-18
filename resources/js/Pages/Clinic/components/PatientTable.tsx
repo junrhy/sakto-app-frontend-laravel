@@ -21,10 +21,6 @@ interface PatientTableProps {
     canDelete: boolean;
     onEditPatient: (patient: Patient) => void;
     onDeletePatient: (patient: Patient) => void;
-    onAddBill: (patient: Patient) => void;
-    onShowBillHistory: (patient: Patient) => void;
-    onAddPayment: (patient: Patient) => void;
-    onShowPaymentHistory: (patient: Patient) => void;
     onAddCheckup: (patient: Patient) => void;
     onShowCheckupHistory: (patient: Patient) => void;
     onOpenDentalChart: (patient: Patient) => void;
@@ -46,10 +42,6 @@ export const PatientTable: React.FC<PatientTableProps> = ({
     canDelete,
     onEditPatient,
     onDeletePatient,
-    onAddBill,
-    onShowBillHistory,
-    onAddPayment,
-    onShowPaymentHistory,
     onAddCheckup,
     onShowCheckupHistory,
     onOpenDentalChart,
@@ -107,30 +99,10 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                                 </div>
                             </TableCell>
                             <TableCell className="text-gray-900 dark:text-white">
-                                <div className="flex items-center space-x-2">
-                                    <span>{formatCurrency(patient.total_bills, currency)}</span>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        onClick={() => onAddBill(patient)}
-                                    >
-                                        <PlusCircle className="h-4 w-4" /> Add Bill
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => onShowBillHistory(patient)}>
-                                        <History className="h-4 w-4" /> Bill History
-                                    </Button>
-                                </div>
+                                {formatCurrency(patient.total_bills, currency)}
                             </TableCell>
                             <TableCell className="text-gray-900 dark:text-white">
-                                <div className="flex items-center space-x-2">
-                                    <span>{formatCurrency(patient.balance, currency)}</span>
-                                    <Button variant="outline" size="sm" onClick={() => onAddPayment(patient)}>
-                                        <PlusCircle className="h-4 w-4" /> Add Payment
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => onShowPaymentHistory(patient)}>
-                                        <History className="h-4 w-4" /> Payment History
-                                    </Button>
-                                </div>
+                                {formatCurrency(patient.balance, currency)}
                             </TableCell>
                             <TableCell>
                                 <div className="flex justify-end gap-2">

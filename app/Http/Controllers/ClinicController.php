@@ -131,11 +131,21 @@ class ClinicController extends Controller
     public function addBill(Request $request, $patientId)
     {
         try {
+            // Ensure patient_id is set correctly
+            $billData = array_merge($request->all(), [
+                'patient_id' => $patientId
+            ]);
+            
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patient-bills/{$patientId}", $request->all());
+                ->post("{$this->apiUrl}/patient-bills", $billData);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to add bill'], 500);
+            return response()->json(['error' => 'Failed to add bill: ' . $e->getMessage()], 500);
         }
     }
 
@@ -160,11 +170,21 @@ class ClinicController extends Controller
     public function addPayment(Request $request, $patientId)
     {
         try {
+            // Ensure patient_id is set correctly
+            $paymentData = array_merge($request->all(), [
+                'patient_id' => $patientId
+            ]);
+            
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patient-payments/{$patientId}", $request->all());
+                ->post("{$this->apiUrl}/patient-payments", $paymentData);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to add payment'], 500);
+            return response()->json(['error' => 'Failed to add payment: ' . $e->getMessage()], 500);
         }
     }
 
@@ -191,9 +211,14 @@ class ClinicController extends Controller
         try {
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/patient-checkups/{$patientId}", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to add checkup'], 500);
+            return response()->json(['error' => 'Failed to add checkup: ' . $e->getMessage()], 500);
         }
     }
 

@@ -3,16 +3,22 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
-import { Plus, Users, Building2, CreditCard, Eye, Edit, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Textarea } from '@/Components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
+import { Plus, Users, Building2, CreditCard, Eye, Edit, Trash2, PlusCircle, History, Search } from 'lucide-react';
 import { ClinicPaymentAccount, Patient, AppCurrency } from '../types';
 import { CreateAccountForm } from './CreateAccountForm';
 import { AccountDetailsModal } from './AccountDetailsModal';
 import { AssignPatientsModal } from './AssignPatientsModal';
 import { AccountBillingModal } from './AccountBillingModal';
 import { AccountPaymentModal } from './AccountPaymentModal';
+import { HistoryDialog } from './HistoryDialog';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { formatDateTime, formatCurrency } from '../utils';
 
 interface ClinicPaymentAccountManagerProps {
     patients: Patient[];
@@ -20,6 +26,14 @@ interface ClinicPaymentAccountManagerProps {
     onAccountCreated?: (account: ClinicPaymentAccount) => void;
     onAccountUpdated?: (account: ClinicPaymentAccount) => void;
     onAccountDeleted?: (accountId: number) => void;
+    // Patient billing and payment handlers
+    onAddBill?: (patientId: string, amount: number, details: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+    onDeleteBill?: (patientId: string, billId: number) => Promise<{ success: boolean }>;
+    onShowBillHistory?: (patient: Patient) => Promise<{ success: boolean; data?: Patient }>;
+    onAddPayment?: (patientId: string, amount: number) => Promise<{ success: boolean; data?: any; error?: string }>;
+    onDeletePayment?: (patientId: string, paymentId: number) => Promise<{ success: boolean }>;
+    onShowPaymentHistory?: (patient: Patient) => Promise<{ success: boolean; data?: Patient }>;
+    onPatientsUpdate?: (patients: Patient[]) => void;
 }
 
 export function ClinicPaymentAccountManager({
@@ -27,7 +41,14 @@ export function ClinicPaymentAccountManager({
     appCurrency,
     onAccountCreated,
     onAccountUpdated,
-    onAccountDeleted
+    onAccountDeleted,
+    onAddBill,
+    onDeleteBill,
+    onShowBillHistory,
+    onAddPayment,
+    onDeletePayment,
+    onShowPaymentHistory,
+    onPatientsUpdate
 }: ClinicPaymentAccountManagerProps) {
     const [accounts, setAccounts] = useState<ClinicPaymentAccount[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,7 +58,24 @@ export function ClinicPaymentAccountManager({
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('all');
+    const [activeTab, setActiveTab] = useState('patient-billing');
+    
+    // Patient billing state
+    const [patientSearchTerm, setPatientSearchTerm] = useState('');
+    const [selectedPatientForBilling, setSelectedPatientForBilling] = useState<Patient | null>(null);
+    const [selectedPatientForPayment, setSelectedPatientForPayment] = useState<Patient | null>(null);
+    const [showingHistoryForPatient, setShowingHistoryForPatient] = useState<Patient | null>(null);
+    const [activeHistoryType, setActiveHistoryType] = useState<'bill' | 'payment'>('bill');
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    
+    // Bill form state
+    const [billAmount, setBillAmount] = useState('');
+    const [billDetails, setBillDetails] = useState('');
+    const [isBillDialogOpen, setIsBillDialogOpen] = useState(false);
+    
+    // Payment form state
+    const [paymentAmount, setPaymentAmount] = useState('');
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
     useEffect(() => {
         fetchAccounts();
@@ -132,6 +170,74 @@ export function ClinicPaymentAccountManager({
         }
     };
 
+    // Patient billing handlers
+    const handleShowBillHistory = async (patient: Patient) => {
+        if (onShowBillHistory) {
+            setIsLoadingHistory(true);
+            const result = await onShowBillHistory(patient);
+            if (result.success && result.data) {
+                setShowingHistoryForPatient(result.data);
+                setActiveHistoryType('bill');
+            }
+            setIsLoadingHistory(false);
+        }
+    };
+
+    const handleShowPaymentHistory = async (patient: Patient) => {
+        if (onShowPaymentHistory) {
+            setIsLoadingHistory(true);
+            const result = await onShowPaymentHistory(patient);
+            if (result.success && result.data) {
+                setShowingHistoryForPatient(result.data);
+                setActiveHistoryType('payment');
+            }
+            setIsLoadingHistory(false);
+        }
+    };
+
+    const handleAddBill = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedPatientForBilling || !onAddBill) return;
+        
+        const amount = parseFloat(billAmount);
+        if (isNaN(amount) || amount <= 0) {
+            toast.error('Please enter a valid bill amount.');
+            return;
+        }
+        
+        const result = await onAddBill(selectedPatientForBilling.id, amount, billDetails);
+        if (result.success) {
+            setBillAmount('');
+            setBillDetails('');
+            setIsBillDialogOpen(false);
+            setSelectedPatientForBilling(null);
+            toast.success('Bill added successfully');
+        } else {
+            toast.error(result.error || 'Failed to add bill');
+        }
+    };
+
+    const handleAddPayment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedPatientForPayment || !onAddPayment) return;
+        
+        const amount = parseFloat(paymentAmount);
+        if (isNaN(amount) || amount <= 0) {
+            toast.error('Please enter a valid payment amount.');
+            return;
+        }
+        
+        const result = await onAddPayment(selectedPatientForPayment.id, amount);
+        if (result.success) {
+            setPaymentAmount('');
+            setIsPaymentDialogOpen(false);
+            setSelectedPatientForPayment(null);
+            toast.success('Payment recorded successfully');
+        } else {
+            toast.error(result.error || 'Failed to record payment');
+        }
+    };
+
     const getStatusBadgeVariant = (status: string) => {
         switch (status) {
             case 'active': return 'default';
@@ -146,13 +252,13 @@ export function ClinicPaymentAccountManager({
     };
 
     const filteredAccounts = accounts.filter(account => {
-        if (activeTab === 'all') return true;
+        if (activeTab === 'accounts') return true;
         if (activeTab === 'group') return account.account_type === 'group';
         if (activeTab === 'company') return account.account_type === 'company';
         return true;
     });
 
-    const formatCurrency = (amount: number) => {
+    const formatCurrencyAmount = (amount: number) => {
         if (!appCurrency) return `$${amount.toFixed(2)}`;
         return `${appCurrency.symbol}${amount.toLocaleString('en-US', { 
             minimumFractionDigits: 2, 
@@ -179,7 +285,7 @@ export function ClinicPaymentAccountManager({
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">Payment Accounts</h2>
                     <p className="text-muted-foreground">
-                        Manage group and company payment accounts
+                        Manage individual patient billing and group/company payment accounts
                     </p>
                 </div>
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
@@ -205,13 +311,107 @@ export function ClinicPaymentAccountManager({
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="all">All Accounts</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="patient-billing">Patient Billing</TabsTrigger>
+                    <TabsTrigger value="accounts">All Accounts</TabsTrigger>
                     <TabsTrigger value="group">Groups</TabsTrigger>
                     <TabsTrigger value="company">Companies</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value={activeTab} className="space-y-4">
+                <TabsContent value="patient-billing" className="space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                        <div>
+                            <h3 className="text-lg font-semibold">Individual Patient Billing</h3>
+                            <p className="text-muted-foreground">Manage bills and payments for individual patients</p>
+                        </div>
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                            <Input
+                                placeholder="Search patients..."
+                                value={patientSearchTerm}
+                                onChange={(e) => setPatientSearchTerm(e.target.value)}
+                                className="pl-8 w-full bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                            />
+                        </div>
+                    </div>
+
+                    <Card>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                        <TableHead className="text-gray-900 dark:text-white">ARN</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Total Bills</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Balance</TableHead>
+                                        <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {patients
+                                        .filter(patient => 
+                                            patient.name.toLowerCase().includes(patientSearchTerm.toLowerCase()) ||
+                                            (patient.arn && patient.arn.toLowerCase().includes(patientSearchTerm.toLowerCase()))
+                                        )
+                                        .map((patient) => (
+                                        <TableRow key={patient.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {patient.arn || 'Not Set'}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">{patient.name}</TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {formatCurrency(patient.total_bills, appCurrency?.symbol || '$')}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {formatCurrency(patient.balance, appCurrency?.symbol || '$')}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex justify-end gap-2 flex-wrap">
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            setSelectedPatientForBilling(patient);
+                                                            setIsBillDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <PlusCircle className="h-4 w-4 mr-1" /> Add Bill
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        onClick={() => handleShowBillHistory(patient)}
+                                                    >
+                                                        <History className="h-4 w-4 mr-1" /> Bill History
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            setSelectedPatientForPayment(patient);
+                                                            setIsPaymentDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <PlusCircle className="h-4 w-4 mr-1" /> Add Payment
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        onClick={() => handleShowPaymentHistory(patient)}
+                                                    >
+                                                        <History className="h-4 w-4 mr-1" /> Payment History
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="accounts" className="space-y-4">
                     {filteredAccounts.length === 0 ? (
                         <Card>
                             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -259,7 +459,245 @@ export function ClinicPaymentAccountManager({
                                             <div>
                                                 <p className="text-muted-foreground">Outstanding</p>
                                                 <p className="font-medium text-red-600">
-                                                    {formatCurrency(account.total_outstanding || 0)}
+                                                    {formatCurrencyAmount(account.total_outstanding || 0)}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Contact</p>
+                                                <p className="font-medium truncate">
+                                                    {account.contact_person || 'N/A'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex space-x-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => handleViewDetails(account)}
+                                                className="flex-1"
+                                            >
+                                                <Eye className="mr-1 h-3 w-3" />
+                                                View
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedAccount(account);
+                                                    setIsAssignModalOpen(true);
+                                                }}
+                                            >
+                                                <Users className="mr-1 h-3 w-3" />
+                                                Assign
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => handleDeleteAccount(account.id)}
+                                            >
+                                                <Trash2 className="mr-1 h-3 w-3" />
+                                            </Button>
+                                        </div>
+
+                                        <div className="flex space-x-2">
+                                            <Button 
+                                                size="sm" 
+                                                className="flex-1"
+                                                onClick={() => {
+                                                    setSelectedAccount(account);
+                                                    setIsBillingModalOpen(true);
+                                                }}
+                                            >
+                                                Create Bill
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="secondary"
+                                                className="flex-1"
+                                                onClick={() => {
+                                                    setSelectedAccount(account);
+                                                    setIsPaymentModalOpen(true);
+                                                }}
+                                            >
+                                                Record Payment
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="group" className="space-y-4">
+                    {filteredAccounts.filter(acc => acc.account_type === 'group').length === 0 ? (
+                        <Card>
+                            <CardContent className="flex flex-col items-center justify-center py-12">
+                                <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">No group accounts found</h3>
+                                <p className="text-muted-foreground text-center mb-4">
+                                    Create your first group payment account
+                                </p>
+                                <Button onClick={() => setIsCreateModalOpen(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Create Group Account
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredAccounts.filter(acc => acc.account_type === 'group').map((account) => (
+                                <Card key={account.id} className="hover:shadow-md transition-shadow">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                {getAccountTypeIcon(account.account_type)}
+                                                <div>
+                                                    <CardTitle className="text-lg">{account.account_name}</CardTitle>
+                                                    <CardDescription className="font-mono text-xs">
+                                                        {account.account_code}
+                                                    </CardDescription>
+                                                </div>
+                                            </div>
+                                            <Badge variant={getStatusBadgeVariant(account.status)}>
+                                                {account.status}
+                                            </Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-muted-foreground">Type</p>
+                                                <p className="font-medium capitalize">{account.account_type}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Patients</p>
+                                                <p className="font-medium">{account.patients_count || 0}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Outstanding</p>
+                                                <p className="font-medium text-red-600">
+                                                    {formatCurrencyAmount(account.total_outstanding || 0)}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Contact</p>
+                                                <p className="font-medium truncate">
+                                                    {account.contact_person || 'N/A'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex space-x-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => handleViewDetails(account)}
+                                                className="flex-1"
+                                            >
+                                                <Eye className="mr-1 h-3 w-3" />
+                                                View
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedAccount(account);
+                                                    setIsAssignModalOpen(true);
+                                                }}
+                                            >
+                                                <Users className="mr-1 h-3 w-3" />
+                                                Assign
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => handleDeleteAccount(account.id)}
+                                            >
+                                                <Trash2 className="mr-1 h-3 w-3" />
+                                            </Button>
+                                        </div>
+
+                                        <div className="flex space-x-2">
+                                            <Button 
+                                                size="sm" 
+                                                className="flex-1"
+                                                onClick={() => {
+                                                    setSelectedAccount(account);
+                                                    setIsBillingModalOpen(true);
+                                                }}
+                                            >
+                                                Create Bill
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="secondary"
+                                                className="flex-1"
+                                                onClick={() => {
+                                                    setSelectedAccount(account);
+                                                    setIsPaymentModalOpen(true);
+                                                }}
+                                            >
+                                                Record Payment
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="company" className="space-y-4">
+                    {filteredAccounts.filter(acc => acc.account_type === 'company').length === 0 ? (
+                        <Card>
+                            <CardContent className="flex flex-col items-center justify-center py-12">
+                                <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">No company accounts found</h3>
+                                <p className="text-muted-foreground text-center mb-4">
+                                    Create your first company payment account
+                                </p>
+                                <Button onClick={() => setIsCreateModalOpen(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Create Company Account
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredAccounts.filter(acc => acc.account_type === 'company').map((account) => (
+                                <Card key={account.id} className="hover:shadow-md transition-shadow">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                {getAccountTypeIcon(account.account_type)}
+                                                <div>
+                                                    <CardTitle className="text-lg">{account.account_name}</CardTitle>
+                                                    <CardDescription className="font-mono text-xs">
+                                                        {account.account_code}
+                                                    </CardDescription>
+                                                </div>
+                                            </div>
+                                            <Badge variant={getStatusBadgeVariant(account.status)}>
+                                                {account.status}
+                                            </Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-muted-foreground">Type</p>
+                                                <p className="font-medium capitalize">{account.account_type}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Patients</p>
+                                                <p className="font-medium">{account.patients_count || 0}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-muted-foreground">Outstanding</p>
+                                                <p className="font-medium text-red-600">
+                                                    {formatCurrencyAmount(account.total_outstanding || 0)}
                                                 </p>
                                             </div>
                                             <div>
@@ -331,7 +769,131 @@ export function ClinicPaymentAccountManager({
                 </TabsContent>
             </Tabs>
 
-            {/* Modals */}
+            {/* Patient Bill Dialog */}
+            <Dialog open={isBillDialogOpen} onOpenChange={(open) => {
+                setIsBillDialogOpen(open);
+                if (!open) {
+                    setSelectedPatientForBilling(null);
+                    setBillAmount('');
+                    setBillDetails('');
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Add Bill {selectedPatientForBilling && `for ${selectedPatientForBilling.name}`}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleAddBill} className="space-y-4">
+                        <div>
+                            <Label htmlFor="billAmount">Bill Amount ({appCurrency?.symbol || '$'})</Label>
+                            <Input
+                                id="billAmount"
+                                type="number"
+                                step="0.01"
+                                value={billAmount}
+                                onChange={(e) => setBillAmount(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="billDetails">Bill Details</Label>
+                            <Textarea
+                                id="billDetails"
+                                value={billDetails}
+                                onChange={(e) => setBillDetails(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsBillDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit">Add Bill</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Patient Payment Dialog */}
+            <Dialog open={isPaymentDialogOpen} onOpenChange={(open) => {
+                setIsPaymentDialogOpen(open);
+                if (!open) {
+                    setSelectedPatientForPayment(null);
+                    setPaymentAmount('');
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Record Payment {selectedPatientForPayment && `for ${selectedPatientForPayment.name}`}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleAddPayment} className="space-y-4">
+                        <div>
+                            <Label htmlFor="paymentAmount">Payment Amount ({appCurrency?.symbol || '$'})</Label>
+                            <Input
+                                id="paymentAmount"
+                                type="number"
+                                step="0.01"
+                                value={paymentAmount}
+                                onChange={(e) => setPaymentAmount(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit">Record Payment</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* History Dialog */}
+            <HistoryDialog
+                isOpen={!!showingHistoryForPatient}
+                onClose={() => setShowingHistoryForPatient(null)}
+                patient={showingHistoryForPatient}
+                historyType={activeHistoryType}
+                isLoading={isLoadingHistory}
+                currency={appCurrency?.symbol || '$'}
+                canDelete={true}
+                onDeleteBill={onDeleteBill ? (patientId: string, billId: number) => {
+                    onDeleteBill(patientId, billId).then((result) => {
+                        if (result.success) {
+                            toast.success('Bill deleted successfully');
+                            // Refresh history
+                            if (showingHistoryForPatient && onShowBillHistory) {
+                                onShowBillHistory(showingHistoryForPatient).then((refreshResult) => {
+                                    if (refreshResult.success && refreshResult.data) {
+                                        setShowingHistoryForPatient(refreshResult.data);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } : () => {}}
+                onDeletePayment={onDeletePayment ? (patientId: string, paymentId: number) => {
+                    onDeletePayment(patientId, paymentId).then((result) => {
+                        if (result.success) {
+                            toast.success('Payment deleted successfully');
+                            // Refresh history
+                            if (showingHistoryForPatient && onShowPaymentHistory) {
+                                onShowPaymentHistory(showingHistoryForPatient).then((refreshResult) => {
+                                    if (refreshResult.success && refreshResult.data) {
+                                        setShowingHistoryForPatient(refreshResult.data);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } : () => {}}
+                onDeleteCheckup={() => {}}
+            />
+
+            {/* Account Management Modals */}
             {selectedAccount && (
                 <>
                     <AccountDetailsModal

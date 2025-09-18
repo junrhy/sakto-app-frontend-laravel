@@ -71,30 +71,16 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     } = usePatients(initialPatients);
 
     const {
-        additionalBillAmount,
-        setAdditionalBillAmount,
-        additionalBillDetails,
-        setAdditionalBillDetails,
-        additionalBillPatientId,
-        setAdditionalBillPatientId,
-        isAddBillDialogOpen,
-        setIsAddBillDialogOpen,
         addBill,
         deleteBill,
         fetchBillHistory,
-        resetBillForm
     } = useBills();
 
     const {
-        isPaymentDialogOpen,
-        setIsPaymentDialogOpen,
         processPayment,
         deletePayment,
         fetchPaymentHistory
     } = usePayments();
-
-    // Payment state
-    const [selectedPatientForPayment, setSelectedPatientForPayment] = useState<Patient | null>(null);
 
     const {
         newCheckupResult,
@@ -217,130 +203,6 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         }
     };
 
-    const handleAddBill = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (additionalBillPatientId === null) {
-            alert('Please select a patient to add a bill.');
-            return;
-        }
-        const amount = parseFloat(additionalBillAmount);
-        if (isNaN(amount) || amount <= 0) {
-            alert('Please enter a valid bill amount.');
-            return;
-        }
-        
-        const result = await addBill(additionalBillPatientId, amount, additionalBillDetails);
-        if (result.success) {
-            resetBillForm();
-        }
-    };
-
-    const handleDeleteBill = async (patientId: string, billId: number) => {
-        const result = await deleteBill(patientId, billId);
-        if (result.success) {
-            // Update patients state
-            setPatients(patients.map(patient => {
-                if (patient.id === patientId) {
-                    const billAmount = parseFloat(patient.bills.find(b => b.id === billId)?.bill_amount || '0');
-                    const updatedBills = patient.bills.filter(bill => bill.id !== billId);
-                    
-                    // Also update the showing history patient if it's the same patient
-                    if (showingHistoryForPatient?.id === patientId) {
-                        setShowingHistoryForPatient({
-                            ...showingHistoryForPatient,
-                            bills: updatedBills
-                        });
-                    }
-                    
-                    return {
-                        ...patient,
-                        bills: updatedBills,
-                        total_bills: patient.total_bills - billAmount
-                    };
-                }
-                return patient;
-            }));
-        }
-    };
-
-    const handleShowBillHistory = async (patient: Patient) => {
-        setLoading(true);
-        const result = await fetchBillHistory(patient);
-        if (result.success && result.data) {
-            updatePatientInState(result.data);
-            openHistoryDialog(result.data, 'bill');
-        }
-        setLoading(false);
-    };
-
-    const handlePayment = async (patientId: string, amount: number) => {
-        const result = await processPayment(patientId, amount);
-        if (result.success) {
-            // Update the patients state directly
-            setPatients(prevPatients => 
-                prevPatients.map(patient => {
-                    if (patient.id === patientId) {
-                        const newPayment = result.data;
-                        const updatedPayments = [...patient.payments, newPayment];
-                        const newTotalPayments = parseFloat(patient.total_payments.toString()) + amount;
-                        
-                        return {
-                            ...patient,
-                            payments: updatedPayments,
-                            total_payments: newTotalPayments,
-                            balance: patient.total_bills - newTotalPayments
-                        };
-                    }
-                    return patient;
-                })
-            );
-
-            // Reset states to close dialogs
-            closeHistoryDialog();
-            setIsPaymentDialogOpen(false);
-        } else {
-            alert(result.error);
-        }
-    };
-
-    const handleDeletePayment = async (patientId: string, paymentId: number) => {
-        const result = await deletePayment(patientId, paymentId);
-        if (result.success) {
-            // Update patients state
-            setPatients(patients.map(patient => {
-                if (patient.id === patientId) {
-                    const paymentAmount = parseFloat(patient.payments.find(p => p.id === paymentId)?.payment_amount || '0');
-                    const updatedPayments = patient.payments.filter(payment => payment.id !== paymentId);
-                    
-                    // Also update the showing history patient if it's the same patient
-                    if (showingHistoryForPatient?.id === patientId) {
-                        setShowingHistoryForPatient({
-                            ...showingHistoryForPatient,
-                            payments: updatedPayments
-                        });
-                    }
-                    
-                    return {
-                        ...patient,
-                        payments: updatedPayments,
-                        total_payments: patient.total_payments - paymentAmount,
-                        balance: patient.balance + paymentAmount
-                    };
-                }
-                return patient;
-            }));
-        }
-    };
-
-    const handleShowPaymentHistory = async (patient: Patient) => {
-        setLoading(true);
-        const result = await fetchPaymentHistory(patient);
-        if (result.success && result.data) {
-            updatePatientInState(result.data);
-            openHistoryDialog(result.data, 'payment');
-        }
-        setLoading(false);
-    };
 
     const handleAddCheckup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -574,16 +436,6 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                             canDelete={canDelete}
                             onEditPatient={setEditingPatient}
                             onDeletePatient={handleDeletePatient}
-                            onAddBill={(patient) => {
-                                setAdditionalBillPatientId(patient.id);
-                                setIsAddBillDialogOpen(true);
-                            }}
-                            onShowBillHistory={handleShowBillHistory}
-                            onAddPayment={(patient) => {
-                                setSelectedPatientForPayment(patient);
-                                setIsPaymentDialogOpen(true);
-                            }}
-                            onShowPaymentHistory={handleShowPaymentHistory}
                             onAddCheckup={(patient) => {
                                 setCheckupPatient(patient);
                                 setIsCheckupDialogOpen(true);
@@ -672,6 +524,104 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 // Optionally refresh patient data
                                 console.log('Account deleted');
                             }}
+                            onAddBill={async (patientId: string, amount: number, details: string) => {
+                                const result = await addBill(patientId, amount, details);
+                                if (result.success) {
+                                    // Update patients state
+                                    const updatedPatient = patients.find(p => p.id === patientId);
+                                    if (updatedPatient) {
+                                        const newBill = result.data;
+                                        const updatedPatients = patients.map(patient => {
+                                            if (patient.id === patientId) {
+                                                return {
+                                                    ...patient,
+                                                    bills: [...patient.bills, newBill],
+                                                    total_bills: patient.total_bills + amount,
+                                                    balance: patient.balance + amount
+                                                };
+                                            }
+                                            return patient;
+                                        });
+                                        setPatients(updatedPatients);
+                                    }
+                                }
+                                return {
+                                    success: result.success,
+                                    data: result.data,
+                                    error: typeof result.error === 'string' ? result.error : result.error?.toString()
+                                };
+                            }}
+                            onDeleteBill={async (patientId: string, billId: number) => {
+                                const result = await deleteBill(patientId, billId);
+                                if (result.success) {
+                                    // Update patients state
+                                    setPatients(patients.map(patient => {
+                                        if (patient.id === patientId) {
+                                            const billAmount = parseFloat(patient.bills.find(b => b.id === billId)?.bill_amount || '0');
+                                            const updatedBills = patient.bills.filter(bill => bill.id !== billId);
+                                            return {
+                                                ...patient,
+                                                bills: updatedBills,
+                                                total_bills: patient.total_bills - billAmount,
+                                                balance: patient.balance - billAmount
+                                            };
+                                        }
+                                        return patient;
+                                    }));
+                                }
+                                return result;
+                            }}
+                            onShowBillHistory={fetchBillHistory}
+                            onAddPayment={async (patientId: string, amount: number) => {
+                                const result = await processPayment(patientId, amount);
+                                if (result.success) {
+                                    // Update patients state
+                                    setPatients(prevPatients => 
+                                        prevPatients.map(patient => {
+                                            if (patient.id === patientId) {
+                                                const newPayment = result.data;
+                                                const updatedPayments = [...patient.payments, newPayment];
+                                                const newTotalPayments = parseFloat(patient.total_payments.toString()) + amount;
+                                                
+                                                return {
+                                                    ...patient,
+                                                    payments: updatedPayments,
+                                                    total_payments: newTotalPayments,
+                                                    balance: patient.total_bills - newTotalPayments
+                                                };
+                                            }
+                                            return patient;
+                                        })
+                                    );
+                                }
+                                return {
+                                    success: result.success,
+                                    data: result.data,
+                                    error: typeof result.error === 'string' ? result.error : result.error?.toString()
+                                };
+                            }}
+                            onDeletePayment={async (patientId: string, paymentId: number) => {
+                                const result = await deletePayment(patientId, paymentId);
+                                if (result.success) {
+                                    // Update patients state
+                                    setPatients(patients.map(patient => {
+                                        if (patient.id === patientId) {
+                                            const paymentAmount = parseFloat(patient.payments.find(p => p.id === paymentId)?.payment_amount || '0');
+                                            const updatedPayments = patient.payments.filter(payment => payment.id !== paymentId);
+                                            return {
+                                                ...patient,
+                                                payments: updatedPayments,
+                                                total_payments: patient.total_payments - paymentAmount,
+                                                balance: patient.balance + paymentAmount
+                                            };
+                                        }
+                                        return patient;
+                                    }));
+                                }
+                                return result;
+                            }}
+                            onShowPaymentHistory={fetchPaymentHistory}
+                            onPatientsUpdate={setPatients}
                         />
                     </TabsContent>
 
@@ -693,8 +643,62 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     isLoading={isLoadingHistory}
                     currency={currency}
                     canDelete={canDelete}
-                    onDeleteBill={handleDeleteBill}
-                    onDeletePayment={handleDeletePayment}
+                    onDeleteBill={async (patientId: string, billId: number) => {
+                        const result = await deleteBill(patientId, billId);
+                        if (result.success) {
+                            // Update patients state
+                            setPatients(patients.map(patient => {
+                                if (patient.id === patientId) {
+                                    const billAmount = parseFloat(patient.bills.find(b => b.id === billId)?.bill_amount || '0');
+                                    const updatedBills = patient.bills.filter(bill => bill.id !== billId);
+                                    
+                                    // Also update the showing history patient if it's the same patient
+                                    if (showingHistoryForPatient?.id === patientId) {
+                                        setShowingHistoryForPatient({
+                                            ...showingHistoryForPatient,
+                                            bills: updatedBills
+                                        });
+                                    }
+                                    
+                                    return {
+                                        ...patient,
+                                        bills: updatedBills,
+                                        total_bills: patient.total_bills - billAmount,
+                                        balance: patient.balance - billAmount
+                                    };
+                                }
+                                return patient;
+                            }));
+                        }
+                    }}
+                    onDeletePayment={async (patientId: string, paymentId: number) => {
+                        const result = await deletePayment(patientId, paymentId);
+                        if (result.success) {
+                            // Update patients state
+                            setPatients(patients.map(patient => {
+                                if (patient.id === patientId) {
+                                    const paymentAmount = parseFloat(patient.payments.find(p => p.id === paymentId)?.payment_amount || '0');
+                                    const updatedPayments = patient.payments.filter(payment => payment.id !== paymentId);
+                                    
+                                    // Also update the showing history patient if it's the same patient
+                                    if (showingHistoryForPatient?.id === patientId) {
+                                        setShowingHistoryForPatient({
+                                            ...showingHistoryForPatient,
+                                            payments: updatedPayments
+                                        });
+                                    }
+                                    
+                                    return {
+                                        ...patient,
+                                        payments: updatedPayments,
+                                        total_payments: patient.total_payments - paymentAmount,
+                                        balance: patient.balance + paymentAmount
+                                    };
+                                }
+                                return patient;
+                            }));
+                        }
+                    }}
                     onDeleteCheckup={handleDeleteCheckup}
                 />
 
@@ -742,76 +746,6 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     onSubmit={handleAddCheckup}
                 />
 
-                {/* Add Bill Dialog */}
-                <Dialog open={isAddBillDialogOpen} onOpenChange={setIsAddBillDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add Bill</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleAddBill} className="space-y-4">
-                            <div>
-                                <Label htmlFor="additionalBillAmount">Bill Amount ({currency})</Label>
-                                <Input
-                                    id="additionalBillAmount"
-                                    type="number"
-                                    value={additionalBillAmount}
-                                    onChange={(e) => setAdditionalBillAmount(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="additionalBillDetails">Bill Details</Label>
-                                <Textarea
-                                    id="additionalBillDetails"
-                                    value={additionalBillDetails}
-                                    onChange={(e) => setAdditionalBillDetails(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <Button type="submit">Add Bill</Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Add Payment Dialog */}
-                <Dialog open={isPaymentDialogOpen} onOpenChange={(open) => {
-                    setIsPaymentDialogOpen(open);
-                    if (!open) setSelectedPatientForPayment(null);
-                }}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                Make Payment {selectedPatientForPayment && `for ${selectedPatientForPayment.name}`}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            const form = e.target as HTMLFormElement;
-                            const input = form.elements.namedItem('paymentAmount') as HTMLInputElement;
-                            const amount = parseFloat(input.value);
-                            if (!isNaN(amount) && selectedPatientForPayment) {
-                                await handlePayment(selectedPatientForPayment.id, amount);
-                                form.reset();
-                                setIsPaymentDialogOpen(false);
-                                setSelectedPatientForPayment(null);
-                            }
-                        }} 
-                        className="space-y-4"
-                        >
-                            <div>
-                                <Label htmlFor="paymentAmount">Payment Amount ({currency})</Label>
-                                <Input
-                                    id="paymentAmount"
-                                    name="paymentAmount"
-                                    type="number"
-                                    placeholder="Enter amount"
-                                    required
-                                />
-                            </div>
-                            <Button type="submit">Make Payment</Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
 
                 {/* Edit Next Visit Dialog */}
                 <Dialog open={!!editingNextVisit} onOpenChange={(open) => !open && closeNextVisitDialog()}>

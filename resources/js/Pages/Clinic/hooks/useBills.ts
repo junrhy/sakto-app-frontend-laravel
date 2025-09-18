@@ -12,7 +12,7 @@ export const useBills = () => {
         try {
             const response = await axios.post(`/clinic/patients/${patientId}/bills`, {
                 patient_id: patientId,
-                bill_number: Math.floor(Math.random() * 1000000),
+                bill_number: `BILL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                 bill_date: new Date().toISOString(),
                 bill_amount: amount,
                 bill_details: details
