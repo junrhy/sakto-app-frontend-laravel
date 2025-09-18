@@ -3,7 +3,7 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { Pencil, Edit, Trash2, Search, FolderOpen, MoreHorizontal, Calendar } from 'lucide-react';
+import { Pencil, Edit, Trash2, Search, FolderOpen, MoreHorizontal, Calendar, FileText } from 'lucide-react';
 import { Patient, AppCurrency } from '../types';
 import { formatDateTime, formatCurrency, formatDate } from '../utils';
 
@@ -24,6 +24,7 @@ interface PatientTableProps {
     onOpenPatientRecord: (patient: Patient) => void;
     onScheduleAppointment: (patient: Patient) => void;
     onEditNextVisit: (patient: Patient) => void;
+    onOpenMedicalRecord?: (patient: Patient) => void;
 }
 
 export const PatientTable: React.FC<PatientTableProps> = ({
@@ -42,7 +43,8 @@ export const PatientTable: React.FC<PatientTableProps> = ({
     onDeletePatient,
     onOpenPatientRecord,
     onScheduleAppointment,
-    onEditNextVisit
+    onEditNextVisit,
+    onOpenMedicalRecord
 }) => {
     return (
         <>
@@ -143,6 +145,12 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                                                 <DropdownMenuItem onClick={() => onEditPatient(patient)}>
                                                     <Edit className="h-4 w-4 mr-2" />
                                                     Edit Patient
+                                                </DropdownMenuItem>
+                                            )}
+                                            {onOpenMedicalRecord && (
+                                                <DropdownMenuItem onClick={() => onOpenMedicalRecord(patient)}>
+                                                    <FileText className="h-4 w-4 mr-2" />
+                                                    Complete Medical Record
                                                 </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem onClick={() => onScheduleAppointment(patient)}>

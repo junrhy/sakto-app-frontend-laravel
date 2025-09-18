@@ -1013,6 +1013,24 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::post('/patient-bills/account-bill', [ClinicController::class, 'createAccountBill']);
         Route::put('/patient-bills/{billId}/status', [ClinicController::class, 'updateBillStatus']);
         Route::post('/patient-payments/account-payment', [ClinicController::class, 'createAccountPayment']);
+        
+        // Universal Medical Record System Routes
+        Route::get('/patient-encounters', [ClinicController::class, 'getPatientEncounters']);
+        Route::post('/patient-encounters', [ClinicController::class, 'createPatientEncounter']);
+        Route::get('/patient-vital-signs', [ClinicController::class, 'getPatientVitalSigns']);
+        Route::get('/patient-diagnoses', [ClinicController::class, 'getPatientDiagnoses']);
+        Route::get('/patient-allergies', [ClinicController::class, 'getPatientAllergies']);
+        Route::post('/patient-allergies', [ClinicController::class, 'createPatientAllergy']);
+        Route::put('/patient-allergies/{id}', [ClinicController::class, 'updatePatientAllergy']);
+        Route::delete('/patient-allergies/{id}', [ClinicController::class, 'deletePatientAllergy']);
+        Route::get('/patient-medications', [ClinicController::class, 'getPatientMedications']);
+        Route::post('/patient-medications', [ClinicController::class, 'createPatientMedication']);
+        Route::put('/patient-medications/{id}', [ClinicController::class, 'updatePatientMedication']);
+        Route::delete('/patient-medications/{id}', [ClinicController::class, 'deletePatientMedication']);
+        Route::get('/patient-medical-history', [ClinicController::class, 'getPatientMedicalHistory']);
+        Route::post('/patient-medical-history', [ClinicController::class, 'createPatientMedicalHistory']);
+        Route::put('/patient-medical-history/{id}', [ClinicController::class, 'updatePatientMedicalHistory']);
+        Route::delete('/patient-medical-history/{id}', [ClinicController::class, 'deletePatientMedicalHistory']);
     });
     
     // Real Estate (subscription required)

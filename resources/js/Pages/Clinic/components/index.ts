@@ -18,3 +18,9 @@ export { AccountDetailsModal } from './AccountDetailsModal';
 export { AssignPatientsModal } from './AssignPatientsModal';
 export { AccountBillingModal } from './AccountBillingModal';
 export { AccountPaymentModal } from './AccountPaymentModal';
+
+// Universal Medical Record System Components
+export { PatientAllergiesManager } from './PatientAllergiesManager';
+export { PatientMedicationsManager } from './PatientMedicationsManager';
+export { PatientMedicalHistoryManager } from './PatientMedicalHistoryManager';
+export { PatientRecordSummary } from './PatientRecordSummary';

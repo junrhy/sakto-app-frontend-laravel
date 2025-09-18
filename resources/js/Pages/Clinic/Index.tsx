@@ -8,6 +8,7 @@ import { Input } from "../../Components/ui/input";
 import { Label } from "../../Components/ui/label";
 import { Textarea } from "../../Components/ui/textarea";
 import { Users, UserPlus, Calendar, Table, Grid3X3, Package, CreditCard } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Import types
 import { 
@@ -17,7 +18,14 @@ import {
     AppCurrency,
     EditingNextVisit,
     Appointment,
-    NewAppointment
+    NewAppointment,
+    NewPatientEncounter,
+    PatientEncounter,
+    PatientVitalSigns,
+    PatientDiagnosis,
+    PatientAllergy,
+    PatientMedication,
+    PatientMedicalHistory
 } from './types';
 
 // Import hooks
@@ -46,7 +54,11 @@ import {
     AppointmentTable,
     AppointmentCalendar,
     AddAppointmentDialog,
-    EditAppointmentDialog
+    EditAppointmentDialog,
+    PatientAllergiesManager,
+    PatientMedicationsManager,
+    PatientMedicalHistoryManager,
+    PatientRecordSummary
 } from './components';
 import { ClinicPaymentAccountManager } from './components/ClinicPaymentAccountManager';
 import Inventory from './Inventory';
@@ -165,6 +177,21 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const [selectedPatientForRecord, setSelectedPatientForRecord] = useState<Patient | null>(null);
     const [isDoctorCheckupDialogOpen, setIsDoctorCheckupDialogOpen] = useState(false);
     const [checkupPatientForDoctor, setCheckupPatientForDoctor] = useState<Patient | null>(null);
+
+    // Universal Medical Record System State
+    const [isAllergiesManagerOpen, setIsAllergiesManagerOpen] = useState(false);
+    const [isMedicationsManagerOpen, setIsMedicationsManagerOpen] = useState(false);
+    const [isMedicalHistoryManagerOpen, setIsMedicalHistoryManagerOpen] = useState(false);
+    const [isPatientRecordSummaryOpen, setIsPatientRecordSummaryOpen] = useState(false);
+    const [selectedPatientForMedicalRecord, setSelectedPatientForMedicalRecord] = useState<Patient | null>(null);
+
+    // Medical record data state
+    const [patientEncounters, setPatientEncounters] = useState<PatientEncounter[]>([]);
+    const [patientVitalSigns, setPatientVitalSigns] = useState<PatientVitalSigns[]>([]);
+    const [patientDiagnoses, setPatientDiagnoses] = useState<PatientDiagnosis[]>([]);
+    const [patientAllergies, setPatientAllergies] = useState<PatientAllergy[]>([]);
+    const [patientMedications, setPatientMedications] = useState<PatientMedication[]>([]);
+    const [patientMedicalHistory, setPatientMedicalHistory] = useState<PatientMedicalHistory[]>([]);
 
     // Permission checks
     const canDelete = useMemo(() => {
@@ -341,24 +368,292 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         setSelectedPatientForRecord(null);
     };
 
-    const handleDoctorCheckupSubmit = async (checkupData: any) => {
+    const handleDoctorCheckupSubmit = async (encounterData: NewPatientEncounter) => {
         if (!checkupPatientForDoctor) return;
         
-        const result = await addCheckup(checkupPatientForDoctor, checkupData, { date: new Date(checkupData.date) });
-        if (result.success) {
-            // Update the patients state with the new checkup data
-            setPatients(prevPatients => 
-                prevPatients.map(patient => 
-                    patient.id === checkupPatientForDoctor.id 
-                    ? {
-                        ...patient,
-                        checkups: [...(patient.checkups || []), result.data]
-                    }
-                    : patient
-                )
-            );
-            setIsDoctorCheckupDialogOpen(false);
-            setCheckupPatientForDoctor(null);
+        try {
+            // Submit the comprehensive encounter via frontend controller
+            const response = await fetch('/clinic/patient-encounters', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(encounterData)
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                // Update the patient encounters state
+                setPatientEncounters(prev => [result.data, ...prev]);
+                
+                // Also update the legacy checkups for backward compatibility
+                const legacyCheckup = {
+                    id: result.data.id,
+                    checkup_date: result.data.encounter_datetime,
+                    diagnosis: result.data.clinical_impression || result.data.chief_complaint || 'Clinical encounter completed',
+                    treatment: result.data.treatment_plan || 'See encounter notes',
+                    notes: result.data.additional_notes || 'Comprehensive encounter documented'
+                };
+
+                setPatients(prevPatients => 
+                    prevPatients.map(patient => 
+                        patient.id === checkupPatientForDoctor.id 
+                        ? {
+                            ...patient,
+                            checkups: [...(patient.checkups || []), legacyCheckup],
+                            last_visit_date: result.data.encounter_datetime
+                        }
+                        : patient
+                    )
+                );
+
+                setIsDoctorCheckupDialogOpen(false);
+                setCheckupPatientForDoctor(null);
+                
+                // Show success message
+                toast.success('Clinical encounter saved successfully');
+            } else {
+                console.error('Failed to save encounter:', result.message);
+                toast.error('Failed to save encounter: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error saving encounter:', error);
+            toast.error('Error saving encounter');
+        }
+    };
+
+    // Medical Record Management Functions
+    const openPatientMedicalRecord = async (patient: Patient) => {
+        setSelectedPatientForMedicalRecord(patient);
+        
+        try {
+            // Load comprehensive medical record data via frontend controller
+            const [encountersRes, vitalSignsRes, diagnosesRes, allergiesRes, medicationsRes, historyRes] = await Promise.all([
+                fetch(`/clinic/patient-encounters?patient_id=${patient.id}`),
+                fetch(`/clinic/patient-vital-signs?patient_id=${patient.id}`),
+                fetch(`/clinic/patient-diagnoses?patient_id=${patient.id}`),
+                fetch(`/clinic/patient-allergies?patient_id=${patient.id}`),
+                fetch(`/clinic/patient-medications?patient_id=${patient.id}`),
+                fetch(`/clinic/patient-medical-history?patient_id=${patient.id}`)
+            ]);
+
+            const [encounters, vitalSigns, diagnoses, allergies, medications, history] = await Promise.all([
+                encountersRes.json(),
+                vitalSignsRes.json(),
+                diagnosesRes.json(),
+                allergiesRes.json(),
+                medicationsRes.json(),
+                historyRes.json()
+            ]);
+
+            setPatientEncounters(encounters.data?.data || []);
+            setPatientVitalSigns(vitalSigns.data?.data || []);
+            setPatientDiagnoses(diagnoses.data?.data || []);
+            setPatientAllergies(allergies.data?.data || []);
+            setPatientMedications(medications.data?.data || []);
+            setPatientMedicalHistory(history.data?.data || []);
+
+            setIsPatientRecordSummaryOpen(true);
+        } catch (error) {
+            console.error('Error loading medical record data:', error);
+            toast.error('Error loading medical record data');
+        }
+    };
+
+    const handleManageAllergies = () => {
+        setIsPatientRecordSummaryOpen(false);
+        setIsAllergiesManagerOpen(true);
+    };
+
+    const handleManageMedications = () => {
+        setIsPatientRecordSummaryOpen(false);
+        setIsMedicationsManagerOpen(true);
+    };
+
+    const handleManageMedicalHistory = () => {
+        setIsPatientRecordSummaryOpen(false);
+        setIsMedicalHistoryManagerOpen(true);
+    };
+
+    const handleAddAllergy = async (allergyData: Omit<PatientAllergy, 'id' | 'created_at' | 'updated_at' | 'patient'>) => {
+        try {
+            const response = await fetch('/clinic/patient-allergies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(allergyData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientAllergies(prev => [result.data, ...prev]);
+            }
+        } catch (error) {
+            console.error('Error adding allergy:', error);
+        }
+    };
+
+    const handleUpdateAllergy = async (id: number, allergyData: Partial<PatientAllergy>) => {
+        try {
+            const response = await fetch(`/clinic/patient-allergies/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(allergyData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientAllergies(prev => prev.map(allergy => 
+                    allergy.id === id ? result.data : allergy
+                ));
+            }
+        } catch (error) {
+            console.error('Error updating allergy:', error);
+        }
+    };
+
+    const handleDeleteAllergy = async (id: number) => {
+        try {
+            const response = await fetch(`/clinic/patient-allergies/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientAllergies(prev => prev.filter(allergy => allergy.id !== id));
+            }
+        } catch (error) {
+            console.error('Error deleting allergy:', error);
+        }
+    };
+
+    const handleAddMedication = async (medicationData: Omit<PatientMedication, 'id' | 'created_at' | 'updated_at' | 'patient'>) => {
+        try {
+            const response = await fetch('/clinic/patient-medications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(medicationData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientMedications(prev => [result.data, ...prev]);
+            }
+        } catch (error) {
+            console.error('Error adding medication:', error);
+        }
+    };
+
+    const handleUpdateMedication = async (id: number, medicationData: Partial<PatientMedication>) => {
+        try {
+            const response = await fetch(`/clinic/patient-medications/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(medicationData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientMedications(prev => prev.map(medication => 
+                    medication.id === id ? result.data : medication
+                ));
+            }
+        } catch (error) {
+            console.error('Error updating medication:', error);
+        }
+    };
+
+    const handleDeleteMedication = async (id: number) => {
+        try {
+            const response = await fetch(`/clinic/patient-medications/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientMedications(prev => prev.filter(medication => medication.id !== id));
+            }
+        } catch (error) {
+            console.error('Error deleting medication:', error);
+        }
+    };
+
+    const handleAddMedicalHistory = async (historyData: Omit<PatientMedicalHistory, 'id' | 'created_at' | 'updated_at' | 'patient'>) => {
+        try {
+            const response = await fetch('/clinic/patient-medical-history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(historyData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientMedicalHistory(prev => [result.data, ...prev]);
+            }
+        } catch (error) {
+            console.error('Error adding medical history:', error);
+        }
+    };
+
+    const handleUpdateMedicalHistory = async (id: number, historyData: Partial<PatientMedicalHistory>) => {
+        try {
+            const response = await fetch(`/clinic/patient-medical-history/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(historyData)
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientMedicalHistory(prev => prev.map(history => 
+                    history.id === id ? result.data : history
+                ));
+            }
+        } catch (error) {
+            console.error('Error updating medical history:', error);
+        }
+    };
+
+    const handleDeleteMedicalHistory = async (id: number) => {
+        try {
+            const response = await fetch(`/clinic/patient-medical-history/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                setPatientMedicalHistory(prev => prev.filter(history => history.id !== id));
+            }
+        } catch (error) {
+            console.error('Error deleting medical history:', error);
         }
     };
 
@@ -503,6 +798,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                             onEditPatient={setEditingPatient}
                             onDeletePatient={handleDeletePatient}
                             onOpenPatientRecord={handleOpenPatientRecord}
+                            onOpenMedicalRecord={openPatientMedicalRecord}
                             onScheduleAppointment={handleScheduleAppointment}
                             onEditNextVisit={handleEditNextVisit}
                         />
@@ -929,6 +1225,69 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                         handleShowCheckupHistory(patient);
                         setIsDoctorCheckupDialogOpen(false);
                     }}
+                />
+
+                {/* Universal Medical Record System Components */}
+                
+                {/* Patient Record Summary */}
+                <PatientRecordSummary
+                    isOpen={isPatientRecordSummaryOpen}
+                    onClose={() => {
+                        setIsPatientRecordSummaryOpen(false);
+                        setSelectedPatientForMedicalRecord(null);
+                    }}
+                    patient={selectedPatientForMedicalRecord}
+                    encounters={patientEncounters}
+                    vitalSigns={patientVitalSigns}
+                    diagnoses={patientDiagnoses}
+                    allergies={patientAllergies}
+                    medications={patientMedications}
+                    medicalHistory={patientMedicalHistory}
+                    onManageAllergies={handleManageAllergies}
+                    onManageMedications={handleManageMedications}
+                    onManageMedicalHistory={handleManageMedicalHistory}
+                />
+
+                {/* Patient Allergies Manager */}
+                <PatientAllergiesManager
+                    isOpen={isAllergiesManagerOpen}
+                    onClose={() => {
+                        setIsAllergiesManagerOpen(false);
+                        setIsPatientRecordSummaryOpen(true);
+                    }}
+                    patient={selectedPatientForMedicalRecord}
+                    allergies={patientAllergies}
+                    onAddAllergy={handleAddAllergy}
+                    onUpdateAllergy={handleUpdateAllergy}
+                    onDeleteAllergy={handleDeleteAllergy}
+                />
+
+                {/* Patient Medications Manager */}
+                <PatientMedicationsManager
+                    isOpen={isMedicationsManagerOpen}
+                    onClose={() => {
+                        setIsMedicationsManagerOpen(false);
+                        setIsPatientRecordSummaryOpen(true);
+                    }}
+                    patient={selectedPatientForMedicalRecord}
+                    medications={patientMedications}
+                    onAddMedication={handleAddMedication}
+                    onUpdateMedication={handleUpdateMedication}
+                    onDeleteMedication={handleDeleteMedication}
+                />
+
+                {/* Patient Medical History Manager */}
+                <PatientMedicalHistoryManager
+                    isOpen={isMedicalHistoryManagerOpen}
+                    onClose={() => {
+                        setIsMedicalHistoryManagerOpen(false);
+                        setIsPatientRecordSummaryOpen(true);
+                    }}
+                    patient={selectedPatientForMedicalRecord}
+                    medicalHistory={patientMedicalHistory}
+                    onAddHistory={handleAddMedicalHistory}
+                    onUpdateHistory={handleUpdateMedicalHistory}
+                    onDeleteHistory={handleDeleteMedicalHistory}
                 />
             </div>
         </AuthenticatedLayout>

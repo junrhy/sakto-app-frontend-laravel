@@ -824,4 +824,374 @@ class ClinicController extends Controller
             return response()->json(['error' => 'Failed to update bill status'], 500);
         }
     }
+
+    // Universal Medical Record System Endpoints
+
+    /**
+     * Get patient encounters
+     */
+    public function getPatientEncounters(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patient-encounters", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'patient_id' => $request->input('patient_id'),
+                    'status' => $request->input('status'),
+                    'encounter_type' => $request->input('encounter_type'),
+                    'date_from' => $request->input('date_from'),
+                    'date_to' => $request->input('date_to')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch patient encounters'], 500);
+        }
+    }
+
+    /**
+     * Create patient encounter
+     */
+    public function createPatientEncounter(Request $request)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/patient-encounters", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create patient encounter'], 500);
+        }
+    }
+
+    /**
+     * Get patient vital signs
+     */
+    public function getPatientVitalSigns(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patient-vital-signs", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'patient_id' => $request->input('patient_id'),
+                    'encounter_id' => $request->input('encounter_id'),
+                    'date_from' => $request->input('date_from'),
+                    'date_to' => $request->input('date_to'),
+                    'abnormal_only' => $request->input('abnormal_only')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch vital signs'], 500);
+        }
+    }
+
+    /**
+     * Get patient diagnoses
+     */
+    public function getPatientDiagnoses(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patient-diagnoses", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'patient_id' => $request->input('patient_id'),
+                    'encounter_id' => $request->input('encounter_id'),
+                    'status' => $request->input('status'),
+                    'diagnosis_type' => $request->input('diagnosis_type')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch diagnoses'], 500);
+        }
+    }
+
+    /**
+     * Get patient allergies
+     */
+    public function getPatientAllergies(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patient-allergies", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'patient_id' => $request->input('patient_id'),
+                    'allergen_type' => $request->input('allergen_type'),
+                    'severity' => $request->input('severity'),
+                    'active_only' => $request->input('active_only')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch allergies'], 500);
+        }
+    }
+
+    /**
+     * Create patient allergy
+     */
+    public function createPatientAllergy(Request $request)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/patient-allergies", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create allergy'], 500);
+        }
+    }
+
+    /**
+     * Update patient allergy
+     */
+    public function updatePatientAllergy(Request $request, $id)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/patient-allergies/{$id}", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update allergy'], 500);
+        }
+    }
+
+    /**
+     * Delete patient allergy
+     */
+    public function deletePatientAllergy(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/patient-allergies/{$id}", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete allergy'], 500);
+        }
+    }
+
+    /**
+     * Get patient medications
+     */
+    public function getPatientMedications(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patient-medications", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'patient_id' => $request->input('patient_id'),
+                    'status' => $request->input('status'),
+                    'medication_type' => $request->input('medication_type'),
+                    'current_only' => $request->input('current_only')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch medications'], 500);
+        }
+    }
+
+    /**
+     * Create patient medication
+     */
+    public function createPatientMedication(Request $request)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/patient-medications", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create medication'], 500);
+        }
+    }
+
+    /**
+     * Update patient medication
+     */
+    public function updatePatientMedication(Request $request, $id)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/patient-medications/{$id}", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update medication'], 500);
+        }
+    }
+
+    /**
+     * Delete patient medication
+     */
+    public function deletePatientMedication(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/patient-medications/{$id}", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete medication'], 500);
+        }
+    }
+
+    /**
+     * Get patient medical history
+     */
+    public function getPatientMedicalHistory(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patient-medical-history", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'patient_id' => $request->input('patient_id'),
+                    'type' => $request->input('type'),
+                    'active_only' => $request->input('active_only')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch medical history'], 500);
+        }
+    }
+
+    /**
+     * Create patient medical history
+     */
+    public function createPatientMedicalHistory(Request $request)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/patient-medical-history", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create medical history'], 500);
+        }
+    }
+
+    /**
+     * Update patient medical history
+     */
+    public function updatePatientMedicalHistory(Request $request, $id)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/patient-medical-history/{$id}", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update medical history'], 500);
+        }
+    }
+
+    /**
+     * Delete patient medical history
+     */
+    public function deletePatientMedicalHistory(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/patient-medical-history/{$id}", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete medical history'], 500);
+        }
+    }
 }
