@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import React, { useState, useRef } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { usePDF } from 'react-to-pdf';
 import { 
     Printer, 
     Stethoscope, 
@@ -26,8 +29,10 @@ import {
 } from 'lucide-react';
 import { Patient, ToothData, PatientEncounter } from '../types';
 import { formatDateTime, formatDate, formatCurrency } from '../utils';
-import { exportPatientRecordToPDF } from '../utils/pdfExport';
+import PatientRecordPDF from '../utils/pdfExport';
 import DentalChart from './DentalChart';
+import { usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 
 interface PatientRecordDialogProps {
     isOpen: boolean;
@@ -64,7 +69,28 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
     onEditNextVisit,
     onDeleteCheckup
 }) => {
+    const { auth } = usePage<any>().props;
     const [activeTab, setActiveTab] = useState('overview');
+    const [showClinicDetailsDialog, setShowClinicDetailsDialog] = useState(false);
+    const [clinicDetails, setClinicDetails] = useState({
+        name: auth.user?.name ? `${auth.user.name}` : '',
+        address: '',
+        phone: auth.user?.contact_number || '',
+        doctorName: auth.user?.name || ''
+    });
+    
+    const { toPDF, targetRef } = usePDF({
+        filename: `patient-record-${patient?.name || 'unknown'}.pdf`,
+        page: {
+            margin: 0,
+            format: 'a4',
+            orientation: 'portrait',
+        },
+        canvas: {
+            mimeType: 'image/png',
+            qualityRatio: 1
+        }
+    });
 
     if (!patient) return null;
 
@@ -80,25 +106,20 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
         return age;
     };
 
-    const handlePrintRecord = async () => {
-        try {
-            console.log('Starting PDF generation for patient:', patient.name);
-            console.log('Patient data:', patient);
-            
-            await exportPatientRecordToPDF({
-                patient,
-                currency,
-                clinicName: 'Medical Clinic',
-                clinicAddress: '123 Medical Center Drive',
-                clinicPhone: '(555) 123-4567',
-                doctorName: 'Dr. Medical Professional'
-            });
-            
-            console.log('PDF generation completed successfully');
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Error generating PDF. Please check the console for details.');
-        }
+    const handlePrintRecord = () => {
+        // Reset clinic details with user data
+        setClinicDetails({
+            name: auth.user?.name ? `${auth.user.name} Clinic` : '',
+            address: '',
+            phone: auth.user?.contact_number || '',
+            doctorName: auth.user?.name || ''
+        });
+        setShowClinicDetailsDialog(true);
+    };
+
+    const handleConfirmExport = () => {
+        setShowClinicDetailsDialog(false);
+        toPDF();
     };
 
     const getStatusColor = (status?: string) => {
@@ -538,7 +559,95 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                         </TabsContent>
                     </div>
                 </Tabs>
+                
+                {/* Hidden PDF Content */}
+                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+                    <div ref={targetRef}>
+                        <PatientRecordPDF
+                            patient={patient}
+                            encounters={encounters}
+                            currency={currency}
+                            clinicName={clinicDetails.name || 'Medical Clinic'}
+                            clinicAddress={clinicDetails.address}
+                            clinicPhone={clinicDetails.phone}
+                            doctorName={clinicDetails.doctorName}
+                        />
+                    </div>
+                </div>
             </DialogContent>
+            
+            {/* Clinic Details Dialog */}
+            <Dialog open={showClinicDetailsDialog} onOpenChange={setShowClinicDetailsDialog}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Printer className="h-5 w-5" />
+                            Clinic Details for PDF Export
+                        </DialogTitle>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Information has been prefilled from your account. Please review and update as needed.
+                        </p>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="clinicName">Clinic Name *</Label>
+                            <Input
+                                id="clinicName"
+                                placeholder="Enter clinic name"
+                                value={clinicDetails.name}
+                                onChange={(e) => setClinicDetails(prev => ({ ...prev, name: e.target.value }))}
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="clinicAddress">Clinic Address</Label>
+                            <Input
+                                id="clinicAddress"
+                                placeholder="e.g., 123 Medical Center Drive, City, State 12345"
+                                value={clinicDetails.address}
+                                onChange={(e) => setClinicDetails(prev => ({ ...prev, address: e.target.value }))}
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="clinicPhone">Clinic Phone</Label>
+                            <Input
+                                id="clinicPhone"
+                                placeholder="e.g., (555) 123-4567"
+                                value={clinicDetails.phone}
+                                onChange={(e) => setClinicDetails(prev => ({ ...prev, phone: e.target.value }))}
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="doctorName">Attending Doctor</Label>
+                            <Input
+                                id="doctorName"
+                                placeholder="e.g., Dr. John Smith, MD"
+                                value={clinicDetails.doctorName}
+                                onChange={(e) => setClinicDetails(prev => ({ ...prev, doctorName: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+                    
+                    <DialogFooter>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowClinicDetailsDialog(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            onClick={handleConfirmExport}
+                            disabled={!clinicDetails.name.trim()}
+                        >
+                            <Printer className="h-4 w-4 mr-2" />
+                            Export PDF
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </Dialog>
     );
 };
