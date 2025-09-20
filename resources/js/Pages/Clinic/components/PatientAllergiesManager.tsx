@@ -17,7 +17,7 @@ import {
     Shield,
     ShieldAlert
 } from 'lucide-react';
-import { Patient, PatientAllergy } from '../types';
+import { Patient, PatientAllergy, NewPatientAllergy } from '../types';
 import { formatDate } from '../utils';
 import { toast } from 'sonner';
 
@@ -26,7 +26,7 @@ interface PatientAllergiesManagerProps {
     onClose: () => void;
     patient: Patient | null;
     allergies: PatientAllergy[];
-    onAddAllergy: (allergy: Omit<PatientAllergy, 'id' | 'created_at' | 'updated_at' | 'patient'>) => void;
+    onAddAllergy: (allergy: NewPatientAllergy) => void;
     onUpdateAllergy: (id: number, allergy: Partial<PatientAllergy>) => void;
     onDeleteAllergy: (id: number) => void;
 }
@@ -156,7 +156,6 @@ export const PatientAllergiesManager: React.FC<PatientAllergiesManagerProps> = (
 
         const allergyData = {
             ...formData,
-            client_identifier: patient.id,
             patient_id: parseInt(patient.id),
             symptoms: selectedSymptoms
         };

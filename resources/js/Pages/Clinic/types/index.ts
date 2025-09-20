@@ -516,10 +516,14 @@ export type NewPatient = {
 // Legacy type for backward compatibility
 export type NewCheckupResult = Omit<CheckupResult, 'id'> & { date: string };
 
+// Types for creating new records (exclude fields handled by backend)
+export type NewPatientAllergy = Omit<PatientAllergy, 'id' | 'client_identifier' | 'created_at' | 'updated_at' | 'patient'>;
+export type NewPatientMedication = Omit<PatientMedication, 'id' | 'client_identifier' | 'created_at' | 'updated_at' | 'patient'>;
+export type NewPatientMedicalHistory = Omit<PatientMedicalHistory, 'id' | 'client_identifier' | 'created_at' | 'updated_at' | 'patient'>;
+
 // New comprehensive encounter type for creating new encounters
-export type NewPatientEncounter = Omit<PatientEncounter, 'id' | 'encounter_number' | 'created_at' | 'updated_at' | 'patient' | 'vital_signs' | 'diagnoses'> & {
+export type NewPatientEncounter = Omit<PatientEncounter, 'id' | 'encounter_number' | 'created_at' | 'updated_at' | 'patient' | 'vital_signs' | 'diagnoses' | 'client_identifier'> & {
     // Required fields for new encounters
-    client_identifier: string;
     patient_id: number;
     encounter_datetime: string;
     encounter_type: PatientEncounter['encounter_type'];

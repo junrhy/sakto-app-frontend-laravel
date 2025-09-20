@@ -26,13 +26,14 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Patient, NewPatientEncounter, PatientVitalSigns, PatientDiagnosis } from '../types';
+import { Patient, NewPatientEncounter, PatientVitalSigns, PatientDiagnosis, PatientEncounter } from '../types';
 import { formatDateTime, formatDate } from '../utils';
 
 interface DoctorCheckupDialogProps {
     isOpen: boolean;
     onClose: () => void;
     patient: Patient | null;
+    encounters?: PatientEncounter[];
     onSubmit: (encounterData: NewPatientEncounter) => void;
     onViewDentalChart: (patient: Patient) => void;
     onViewFullHistory: (patient: Patient) => void;
@@ -72,6 +73,7 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
     isOpen,
     onClose,
     patient,
+    encounters = [],
     onSubmit,
     onViewDentalChart,
     onViewFullHistory
@@ -250,7 +252,6 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
         }));
 
         const encounterData: NewPatientEncounter = {
-            client_identifier: patient.id, // Using patient.id as client_identifier for now
             patient_id: parseInt(patient.id),
             encounter_datetime: format(encounterDate, 'yyyy-MM-dd HH:mm:ss'),
             encounter_type: encounterType,
@@ -428,14 +429,31 @@ export const DoctorCheckupDialog: React.FC<DoctorCheckupDialogProps> = ({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {patient.checkups?.length > 0 ? (
+                                {encounters.length > 0 ? (
                                     <div className="space-y-3">
-                                        {patient.checkups.slice(-3).reverse().map(checkup => (
-                                            <div key={checkup.id} className="p-2 bg-gray-50 dark:bg-gray-700 rounded text-xs border border-gray-200 dark:border-gray-600">
-                                                <p className="font-medium text-gray-900 dark:text-white">{formatDate(checkup.checkup_date)}</p>
+                                        {encounters.slice(0, 3).map(encounter => (
+                                            <div key={encounter.id} className="p-2 bg-gray-50 dark:bg-gray-700 rounded text-xs border border-gray-200 dark:border-gray-600">
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <p className="font-medium text-gray-900 dark:text-white">
+                                                        {formatDate(encounter.encounter_datetime)}
+                                                    </p>
+                                                    <span className="text-xs text-blue-600 dark:text-blue-400">
+                                                        #{encounter.encounter_number}
+                                                    </span>
+                                                </div>
                                                 <p className="text-gray-600 dark:text-gray-300 mt-1">
-                                                    {checkup.diagnosis.substring(0, 50)}...
+                                                    <span className="font-medium">Provider:</span> {encounter.attending_provider}
                                                 </p>
+                                                {encounter.chief_complaint && (
+                                                    <p className="text-gray-600 dark:text-gray-300 mt-1">
+                                                        <span className="font-medium">Chief Complaint:</span> {encounter.chief_complaint.substring(0, 40)}...
+                                                    </p>
+                                                )}
+                                                {encounter.clinical_impression && (
+                                                    <p className="text-gray-600 dark:text-gray-300 mt-1">
+                                                        <span className="font-medium">Impression:</span> {encounter.clinical_impression.substring(0, 40)}...
+                                                    </p>
+                                                )}
                                             </div>
                                         ))}
                                         <Button 

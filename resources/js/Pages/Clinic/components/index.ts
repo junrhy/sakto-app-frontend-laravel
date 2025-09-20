@@ -23,4 +23,4 @@ export { AccountPaymentModal } from './AccountPaymentModal';
 export { PatientAllergiesManager } from './PatientAllergiesManager';
 export { PatientMedicationsManager } from './PatientMedicationsManager';
 export { PatientMedicalHistoryManager } from './PatientMedicalHistoryManager';
-export { PatientRecordSummary } from './PatientRecordSummary';
+export { PatientEncounterHistoryDialog } from './PatientEncounterHistoryDialog';

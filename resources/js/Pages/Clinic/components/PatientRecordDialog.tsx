@@ -14,9 +14,17 @@ import {
     FolderOpen,
     Plus,
     Trash2,
-    History
+    History,
+    AlertTriangle,
+    CreditCard,
+    Phone,
+    Mail,
+    MapPin,
+    Clock,
+    Users,
+    Shield
 } from 'lucide-react';
-import { Patient, ToothData } from '../types';
+import { Patient, ToothData, PatientEncounter } from '../types';
 import { formatDateTime, formatDate, formatCurrency } from '../utils';
 import { exportPatientRecordToPDF } from '../utils/pdfExport';
 import DentalChart from './DentalChart';
@@ -29,7 +37,9 @@ interface PatientRecordDialogProps {
     userRole?: 'assistant' | 'doctor' | 'nurse' | 'admin';
     canEdit: boolean;
     canDelete: boolean;
+    encounters?: PatientEncounter[];
     onStartCheckup: (patient: Patient) => void;
+    onViewCompleteRecord: (patient: Patient) => void;
     onViewDentalChart: (patient: Patient) => void;
     onScheduleAppointment: (patient: Patient) => void;
     onEditPatient: (patient: Patient) => void;
@@ -45,7 +55,9 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
     userRole = 'assistant',
     canEdit,
     canDelete,
+    encounters = [],
     onStartCheckup,
+    onViewCompleteRecord,
     onViewDentalChart,
     onScheduleAppointment,
     onEditPatient,
@@ -105,44 +117,39 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                         <History className="h-5 w-5" />
-                        Recent Medical Activity
+                        Patient Summary
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                    {patient.checkups?.length > 0 ? (
-                        patient.checkups.slice(-3).reverse().map(checkup => (
-                            <div key={checkup.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                                <div className="flex justify-between items-start mb-2">
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(checkup.checkup_date)}</p>
-                                    {canDelete && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => onDeleteCheckup(patient.id, checkup.id)}
-                                            className="text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-                                        >
-                                            <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                    )}
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                                    <strong className="text-gray-900 dark:text-white">Diagnosis:</strong> {checkup.diagnosis}
-                                </p>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                    <strong className="text-gray-900 dark:text-white">Treatment:</strong> {checkup.treatment}
-                                </p>
-                                {checkup.notes && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        {checkup.notes}
-                                    </p>
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                            No checkup history available
-                        </p>
-                    )}
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Total Encounters</p>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {encounters.length}
+                            </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Last Encounter</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                {encounters.length > 0 
+                                    ? formatDate(encounters[0].encounter_datetime) 
+                                    : 'No encounters yet'
+                                }
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
+                        <Button 
+                            onClick={() => onViewCompleteRecord(patient)}
+                            variant="outline"
+                            className="w-full"
+                        >
+                            <FileText className="h-4 w-4 mr-2" />
+                            View Complete Medical Record
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -150,160 +157,197 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">
-                        {(userRole === 'doctor' || userRole === 'nurse') ? 'Medical Actions' : 'Quick Actions'}
+                        Quick Actions
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {(userRole === 'doctor' || userRole === 'nurse') ? (
-                        <>
+                        <div className="grid grid-cols-2 gap-3">
                             <Button 
-                                className="w-full justify-start" 
+                                className="justify-start" 
                                 onClick={() => onStartCheckup(patient)}
                             >
-                                <Stethoscope className="h-4 w-4 mr-3" />
-                                Start New Checkup
+                                <Stethoscope className="h-4 w-4 mr-2" />
+                                New Clinical Visit
                             </Button>
                             <Button 
                                 variant="outline" 
-                                className="w-full justify-start" 
-                                onClick={() => onViewDentalChart(patient)}
-                            >
-                                <FileText className="h-4 w-4 mr-3" />
-                                View Dental Chart
-                            </Button>
-                            <Button 
-                                variant="outline" 
-                                className="w-full justify-start" 
-                                onClick={() => setActiveTab('checkups')}
-                            >
-                                <History className="h-4 w-4 mr-3" />
-                                Full Medical History
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button 
-                                className="w-full justify-start" 
+                                className="justify-start" 
                                 onClick={() => onScheduleAppointment(patient)}
                             >
-                                <Calendar className="h-4 w-4 mr-3" />
-                                Schedule Appointment
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Schedule Follow-up
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                className="justify-start" 
+                                onClick={() => setActiveTab('billing')}
+                            >
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                View Billing
                             </Button>
                             {canEdit && (
-                                <Button 
-                                    variant="outline" 
-                                    className="w-full justify-start" 
-                                    onClick={() => onEditPatient(patient)}
-                                >
-                                    <Edit className="h-4 w-4 mr-3" />
-                                    Update Patient Info
-                                </Button>
+                                <>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start" 
+                                        onClick={() => onEditPatient(patient)}
+                                    >
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Edit Patient Info
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start" 
+                                        onClick={() => onEditNextVisit(patient)}
+                                    >
+                                        <Clock className="h-4 w-4 mr-2" />
+                                        Set Next Visit
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button 
+                                className="justify-start" 
+                                onClick={() => onScheduleAppointment(patient)}
+                            >
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Schedule Appointment
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                className="justify-start" 
+                                onClick={() => setActiveTab('billing')}
+                            >
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                View Billing
+                            </Button>
+                            {canEdit && (
+                                <>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start" 
+                                        onClick={() => onEditPatient(patient)}
+                                    >
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Edit Patient Info
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start" 
+                                        onClick={() => onEditNextVisit(patient)}
+                                    >
+                                        <Clock className="h-4 w-4 mr-2" />
+                                        Set Next Visit
+                                    </Button>
+                                </>
                             )}
                             <Button 
                                 variant="outline" 
-                                className="w-full justify-start" 
-                                onClick={() => onEditNextVisit(patient)}
+                                className="justify-start" 
+                                onClick={handlePrintRecord}
                             >
-                                <Calendar className="h-4 w-4 mr-3" />
-                                Edit Next Visit
+                                <Printer className="h-4 w-4 mr-2" />
+                                Export PDF
                             </Button>
                             <Button 
                                 variant="outline" 
-                                className="w-full justify-start" 
-                                onClick={() => setActiveTab('billing')}
+                                className="justify-start" 
+                                onClick={() => window.open(`tel:${patient.phone}`, '_self')}
                             >
-                                <FileText className="h-4 w-4 mr-3" />
-                                View Billing
+                                <Phone className="h-4 w-4 mr-2" />
+                                Call Patient
                             </Button>
-                        </>
+                        </div>
                     )}
                 </CardContent>
             </Card>
         </div>
     );
 
-    const renderCheckupsTab = () => (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Medical History</h3>
-                {(userRole === 'doctor' || userRole === 'nurse') && (
-                    <Button onClick={() => onStartCheckup(patient)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Checkup
-                    </Button>
-                )}
-            </div>
-            
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-700">
-                        <TableHead className="text-gray-900 dark:text-white">Date</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Diagnosis</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Treatment</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Notes</TableHead>
-                        {canDelete && (
-                            <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
-                        )}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {patient.checkups?.length > 0 ? (
-                        patient.checkups.map((checkup) => (
-                            <TableRow key={checkup.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    {formatDateTime(checkup.checkup_date)}
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    {checkup.diagnosis}
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    {checkup.treatment}
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    {checkup.notes}
-                                </TableCell>
-                                {canDelete && (
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() => onDeleteCheckup(patient.id, checkup.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        ))
-                    ) : (
-                        <TableRow>
-                            <TableCell 
-                                colSpan={canDelete ? 5 : 4} 
-                                className="text-center text-gray-600 dark:text-gray-400 py-8"
+    const renderMedicalRecordsTab = () => (
+        <div className="space-y-6">
+            {/* Medical Records Management */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Complete Medical Records
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Access comprehensive medical documentation including encounters, vital signs, diagnoses, 
+                        allergies, medications, and medical history.
+                    </p>
+                    
+                    <div className="flex gap-3">
+                        <Button 
+                            onClick={() => onViewCompleteRecord(patient)}
+                            className="flex-1"
+                        >
+                            <Stethoscope className="h-4 w-4 mr-2" />
+                            View Complete Medical Record
+                        </Button>
+                        
+                        {(userRole === 'doctor' || userRole === 'nurse') && (
+                            <Button 
+                                onClick={() => onStartCheckup(patient)}
+                                variant="outline"
+                                className="flex-1"
                             >
-                                No checkup history available
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                                <Plus className="h-4 w-4 mr-2" />
+                                New Clinical Encounter
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Quick Medical Summary */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Recent Medical Activity Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Clinical Encounters</p>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {encounters.length}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Comprehensive records</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Last Encounter</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                {encounters.length > 0 
+                                    ? formatDate(encounters[0].encounter_datetime) 
+                                    : 'No encounters yet'
+                                }
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Most recent</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
         </div>
     );
 
     const renderDentalTab = () => (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Dental Chart</h3>
-                <Button onClick={() => onViewDentalChart(patient)}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Edit Chart
-                </Button>
+                <h3 className="text-lg font-semibold">Dental Chart (View Only)</h3>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
                 {patient.dental_chart && patient.dental_chart.length > 0 ? (
                     <DentalChart
                         teethData={patient.dental_chart}
-                        onToothClick={() => onViewDentalChart(patient)}
+                        onToothClick={() => {}} // Disabled - view only
                     />
                 ) : (
                     <div className="min-h-[400px] flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
@@ -313,7 +357,7 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                                 No Dental Chart Available
                             </p>
                             <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
-                                Click "Edit Chart" to create a dental chart for this patient
+                                Dental chart can be created and edited via Doctor Checkup Dialog
                             </p>
                         </div>
                     </div>
@@ -417,10 +461,10 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
                 <DialogHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pr-8">
                         <DialogTitle className="text-xl flex items-center gap-2">
                             <FolderOpen className="h-6 w-6" />
-                            Patient Record - {patient.name}
+                            Patient Management - {patient.name}
                         </DialogTitle>
                         <div className="flex items-center gap-2">
                             <Badge variant={getStatusColor('active')}>
@@ -471,11 +515,9 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
                     <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="checkups">
-                            Medical History ({patient.checkups?.length || 0})
-                        </TabsTrigger>
+                        <TabsTrigger value="medical">Medical Records</TabsTrigger>
                         <TabsTrigger value="dental">Dental Chart</TabsTrigger>
-                        <TabsTrigger value="billing">Billing</TabsTrigger>
+                        <TabsTrigger value="billing">Billing & Admin</TabsTrigger>
                     </TabsList>
 
                     <div className="mt-4 overflow-y-auto max-h-[calc(90vh-300px)]">
@@ -483,8 +525,8 @@ export const PatientRecordDialog: React.FC<PatientRecordDialogProps> = ({
                             {renderOverviewTab()}
                         </TabsContent>
 
-                        <TabsContent value="checkups" className="mt-0">
-                            {renderCheckupsTab()}
+                        <TabsContent value="medical" className="mt-0">
+                            {renderMedicalRecordsTab()}
                         </TabsContent>
 
                         <TabsContent value="dental" className="mt-0">

@@ -25,7 +25,10 @@ import {
     PatientDiagnosis,
     PatientAllergy,
     PatientMedication,
-    PatientMedicalHistory
+    PatientMedicalHistory,
+    NewPatientAllergy,
+    NewPatientMedication,
+    NewPatientMedicalHistory
 } from './types';
 
 // Import hooks
@@ -58,7 +61,7 @@ import {
     PatientAllergiesManager,
     PatientMedicationsManager,
     PatientMedicalHistoryManager,
-    PatientRecordSummary
+    PatientEncounterHistoryDialog
 } from './components';
 import { ClinicPaymentAccountManager } from './components/ClinicPaymentAccountManager';
 import Inventory from './Inventory';
@@ -175,14 +178,17 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     // New workflow state
     const [selectedPatientForRecord, setSelectedPatientForRecord] = useState<Patient | null>(null);
+    const [selectedPatientEncounters, setSelectedPatientEncounters] = useState<PatientEncounter[]>([]);
     const [isDoctorCheckupDialogOpen, setIsDoctorCheckupDialogOpen] = useState(false);
     const [checkupPatientForDoctor, setCheckupPatientForDoctor] = useState<Patient | null>(null);
+    const [isEncounterHistoryDialogOpen, setIsEncounterHistoryDialogOpen] = useState(false);
+    const [encounterHistoryPatient, setEncounterHistoryPatient] = useState<Patient | null>(null);
+    const [encounterHistoryData, setEncounterHistoryData] = useState<PatientEncounter[]>([]);
 
     // Universal Medical Record System State
     const [isAllergiesManagerOpen, setIsAllergiesManagerOpen] = useState(false);
     const [isMedicationsManagerOpen, setIsMedicationsManagerOpen] = useState(false);
     const [isMedicalHistoryManagerOpen, setIsMedicalHistoryManagerOpen] = useState(false);
-    const [isPatientRecordSummaryOpen, setIsPatientRecordSummaryOpen] = useState(false);
     const [selectedPatientForMedicalRecord, setSelectedPatientForMedicalRecord] = useState<Patient | null>(null);
 
     // Medical record data state
@@ -357,12 +363,51 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     };
 
     // New workflow event handlers
-    const handleOpenPatientRecord = (patient: Patient) => {
+    const handleOpenPatientRecord = async (patient: Patient) => {
         setSelectedPatientForRecord(patient);
+        
+        try {
+            // Load encounter data for this patient
+            const response = await fetch(`/clinic/patient-encounters?patient_id=${patient.id}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // Sort encounters by date (most recent first)
+                const sortedEncounters = (result.data?.data || []).sort((a: PatientEncounter, b: PatientEncounter) => 
+                    new Date(b.encounter_datetime).getTime() - new Date(a.encounter_datetime).getTime()
+                );
+                setSelectedPatientEncounters(sortedEncounters);
+            } else {
+                setSelectedPatientEncounters([]);
+            }
+        } catch (error) {
+            console.error('Error loading encounters:', error);
+            setSelectedPatientEncounters([]);
+        }
     };
 
-    const handleStartCheckup = (patient: Patient) => {
+    const handleStartCheckup = async (patient: Patient) => {
         setCheckupPatientForDoctor(patient);
+        
+        try {
+            // Load encounter data for context in the doctor checkup dialog
+            const response = await fetch(`/clinic/patient-encounters?patient_id=${patient.id}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // Sort encounters by date (most recent first)
+                const sortedEncounters = (result.data?.data || []).sort((a: PatientEncounter, b: PatientEncounter) => 
+                    new Date(b.encounter_datetime).getTime() - new Date(a.encounter_datetime).getTime()
+                );
+                setPatientEncounters(sortedEncounters);
+            } else {
+                setPatientEncounters([]);
+            }
+        } catch (error) {
+            console.error('Error loading encounters for context:', error);
+            setPatientEncounters([]);
+        }
+        
         setIsDoctorCheckupDialogOpen(true);
         // Close patient record dialog if open
         setSelectedPatientForRecord(null);
@@ -372,17 +417,50 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         if (!checkupPatientForDoctor) return;
         
         try {
+            // Get CSRF token more reliably
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                toast.error('Security token not found. Please refresh the page.');
+                return;
+            }
+
+            console.log('Submitting encounter data:', encounterData);
+            console.log('CSRF Token:', csrfToken);
+
             // Submit the comprehensive encounter via frontend controller
             const response = await fetch('/clinic/patient-encounters', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify(encounterData)
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('HTTP Error:', response.status, errorText);
+                
+                let errorMessage = `HTTP ${response.status}`;
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorJson.error || errorMessage;
+                } catch {
+                    errorMessage = errorText || errorMessage;
+                }
+                
+                toast.error(`Failed to save encounter: ${errorMessage}`);
+                return;
+            }
+
             const result = await response.json();
+            console.log('Response result:', result);
 
             if (result.status === 'success') {
                 // Update the patient encounters state
@@ -455,7 +533,9 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
             setPatientMedications(medications.data?.data || []);
             setPatientMedicalHistory(history.data?.data || []);
 
-            setIsPatientRecordSummaryOpen(true);
+            // Open the complete medical record dialog instead
+            setCheckupPatientForDoctor(patient);
+            setIsDoctorCheckupDialogOpen(true);
         } catch (error) {
             console.error('Error loading medical record data:', error);
             toast.error('Error loading medical record data');
@@ -463,21 +543,21 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     };
 
     const handleManageAllergies = () => {
-        setIsPatientRecordSummaryOpen(false);
+        setIsDoctorCheckupDialogOpen(false);
         setIsAllergiesManagerOpen(true);
     };
 
     const handleManageMedications = () => {
-        setIsPatientRecordSummaryOpen(false);
+        setIsDoctorCheckupDialogOpen(false);
         setIsMedicationsManagerOpen(true);
     };
 
     const handleManageMedicalHistory = () => {
-        setIsPatientRecordSummaryOpen(false);
+        setIsDoctorCheckupDialogOpen(false);
         setIsMedicalHistoryManagerOpen(true);
     };
 
-    const handleAddAllergy = async (allergyData: Omit<PatientAllergy, 'id' | 'created_at' | 'updated_at' | 'patient'>) => {
+    const handleAddAllergy = async (allergyData: NewPatientAllergy) => {
         try {
             const response = await fetch('/clinic/patient-allergies', {
                 method: 'POST',
@@ -537,7 +617,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         }
     };
 
-    const handleAddMedication = async (medicationData: Omit<PatientMedication, 'id' | 'created_at' | 'updated_at' | 'patient'>) => {
+    const handleAddMedication = async (medicationData: NewPatientMedication) => {
         try {
             const response = await fetch('/clinic/patient-medications', {
                 method: 'POST',
@@ -597,7 +677,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         }
     };
 
-    const handleAddMedicalHistory = async (historyData: Omit<PatientMedicalHistory, 'id' | 'created_at' | 'updated_at' | 'patient'>) => {
+    const handleAddMedicalHistory = async (historyData: NewPatientMedicalHistory) => {
         try {
             const response = await fetch('/clinic/patient-medical-history', {
                 method: 'POST',
@@ -660,6 +740,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const handleScheduleAppointment = (patient: Patient) => {
         // Close patient record dialog and open appointment dialog with preselected patient
         setSelectedPatientForRecord(null);
+        setSelectedPatientEncounters([]);
         setPreselectedPatientForAppointment(patient);
         setIsAddAppointmentDialogOpen(true);
     };
@@ -1197,13 +1278,25 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 {/* Patient Record Dialog */}
                 <PatientRecordDialog
                     isOpen={!!selectedPatientForRecord}
-                    onClose={() => setSelectedPatientForRecord(null)}
+                    onClose={() => {
+                        setSelectedPatientForRecord(null);
+                        setSelectedPatientEncounters([]);
+                    }}
                     patient={selectedPatientForRecord}
                     currency={currency}
                     userRole={userRole}
                     canEdit={canEdit}
                     canDelete={canDelete}
+                    encounters={selectedPatientEncounters}
                     onStartCheckup={handleStartCheckup}
+                    onViewCompleteRecord={(patient) => {
+                        // Close patient record dialog and open encounter history
+                        setSelectedPatientForRecord(null);
+                        setEncounterHistoryPatient(patient);
+                        setEncounterHistoryData(selectedPatientEncounters);
+                        setSelectedPatientEncounters([]);
+                        setIsEncounterHistoryDialogOpen(true);
+                    }}
                     onViewDentalChart={openDentalChartDialog}
                     onScheduleAppointment={handleScheduleAppointment}
                     onEditPatient={setEditingPatient}
@@ -1219,33 +1312,38 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                         setCheckupPatientForDoctor(null);
                     }}
                     patient={checkupPatientForDoctor}
+                    encounters={patientEncounters}
                     onSubmit={handleDoctorCheckupSubmit}
                     onViewDentalChart={openDentalChartDialog}
                     onViewFullHistory={(patient) => {
-                        handleShowCheckupHistory(patient);
+                        // Close doctor checkup dialog and open encounter history dialog
                         setIsDoctorCheckupDialogOpen(false);
+                        setEncounterHistoryPatient(patient);
+                        setEncounterHistoryData(patientEncounters);
+                        setIsEncounterHistoryDialogOpen(true);
                     }}
                 />
 
                 {/* Universal Medical Record System Components */}
                 
-                {/* Patient Record Summary */}
-                <PatientRecordSummary
-                    isOpen={isPatientRecordSummaryOpen}
+                {/* Patient Encounter History Dialog */}
+                <PatientEncounterHistoryDialog
+                    isOpen={isEncounterHistoryDialogOpen}
                     onClose={() => {
-                        setIsPatientRecordSummaryOpen(false);
-                        setSelectedPatientForMedicalRecord(null);
+                        setIsEncounterHistoryDialogOpen(false);
+                        setEncounterHistoryPatient(null);
+                        setEncounterHistoryData([]);
                     }}
-                    patient={selectedPatientForMedicalRecord}
-                    encounters={patientEncounters}
-                    vitalSigns={patientVitalSigns}
-                    diagnoses={patientDiagnoses}
-                    allergies={patientAllergies}
-                    medications={patientMedications}
-                    medicalHistory={patientMedicalHistory}
-                    onManageAllergies={handleManageAllergies}
-                    onManageMedications={handleManageMedications}
-                    onManageMedicalHistory={handleManageMedicalHistory}
+                    patient={encounterHistoryPatient}
+                    encounters={encounterHistoryData}
+                    onStartNewEncounter={(patient) => {
+                        // Close history dialog and open new encounter dialog
+                        setIsEncounterHistoryDialogOpen(false);
+                        setEncounterHistoryPatient(null);
+                        setEncounterHistoryData([]);
+                        setCheckupPatientForDoctor(patient);
+                        setIsDoctorCheckupDialogOpen(true);
+                    }}
                 />
 
                 {/* Patient Allergies Manager */}
@@ -1253,7 +1351,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     isOpen={isAllergiesManagerOpen}
                     onClose={() => {
                         setIsAllergiesManagerOpen(false);
-                        setIsPatientRecordSummaryOpen(true);
+                        setIsDoctorCheckupDialogOpen(true);
                     }}
                     patient={selectedPatientForMedicalRecord}
                     allergies={patientAllergies}
@@ -1267,7 +1365,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     isOpen={isMedicationsManagerOpen}
                     onClose={() => {
                         setIsMedicationsManagerOpen(false);
-                        setIsPatientRecordSummaryOpen(true);
+                        setIsDoctorCheckupDialogOpen(true);
                     }}
                     patient={selectedPatientForMedicalRecord}
                     medications={patientMedications}
@@ -1281,7 +1379,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     isOpen={isMedicalHistoryManagerOpen}
                     onClose={() => {
                         setIsMedicalHistoryManagerOpen(false);
-                        setIsPatientRecordSummaryOpen(true);
+                        setIsDoctorCheckupDialogOpen(true);
                     }}
                     patient={selectedPatientForMedicalRecord}
                     medicalHistory={patientMedicalHistory}

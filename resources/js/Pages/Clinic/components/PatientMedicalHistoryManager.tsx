@@ -21,7 +21,7 @@ import {
     Shield,
     Activity
 } from 'lucide-react';
-import { Patient, PatientMedicalHistory } from '../types';
+import { Patient, PatientMedicalHistory, NewPatientMedicalHistory } from '../types';
 import { formatDate } from '../utils';
 import { toast } from 'sonner';
 
@@ -30,7 +30,7 @@ interface PatientMedicalHistoryManagerProps {
     onClose: () => void;
     patient: Patient | null;
     medicalHistory: PatientMedicalHistory[];
-    onAddHistory: (history: Omit<PatientMedicalHistory, 'id' | 'created_at' | 'updated_at' | 'patient'>) => void;
+    onAddHistory: (history: NewPatientMedicalHistory) => void;
     onUpdateHistory: (id: number, history: Partial<PatientMedicalHistory>) => void;
     onDeleteHistory: (id: number) => void;
 }
@@ -157,7 +157,6 @@ export const PatientMedicalHistoryManager: React.FC<PatientMedicalHistoryManager
 
         const historyData = {
             ...formData,
-            client_identifier: patient.id,
             patient_id: parseInt(patient.id),
             age_at_diagnosis: formData.age_at_diagnosis ? parseInt(formData.age_at_diagnosis) : undefined
         };
@@ -303,7 +302,7 @@ export const PatientMedicalHistoryManager: React.FC<PatientMedicalHistoryManager
                     {/* Add New History Button */}
                     {!isAddingHistory && !editingHistory && (
                         <div className="mb-6 flex gap-2 flex-wrap">
-                            <Button onClick={() => handleStartAdd()} className="bg-purple-600 hover:bg-purple-700">
+                            <Button onClick={() => handleStartAdd()} className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Medical History
                             </Button>

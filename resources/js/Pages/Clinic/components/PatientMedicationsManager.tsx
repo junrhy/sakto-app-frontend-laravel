@@ -17,7 +17,7 @@ import {
     Clock,
     AlertCircle
 } from 'lucide-react';
-import { Patient, PatientMedication } from '../types';
+import { Patient, PatientMedication, NewPatientMedication } from '../types';
 import { formatDate } from '../utils';
 import { toast } from 'sonner';
 
@@ -26,7 +26,7 @@ interface PatientMedicationsManagerProps {
     onClose: () => void;
     patient: Patient | null;
     medications: PatientMedication[];
-    onAddMedication: (medication: Omit<PatientMedication, 'id' | 'created_at' | 'updated_at' | 'patient'>) => void;
+    onAddMedication: (medication: NewPatientMedication) => void;
     onUpdateMedication: (id: number, medication: Partial<PatientMedication>) => void;
     onDeleteMedication: (id: number) => void;
 }
@@ -173,7 +173,6 @@ export const PatientMedicationsManager: React.FC<PatientMedicationsManagerProps>
 
         const medicationData = {
             ...formData,
-            client_identifier: patient.id,
             patient_id: parseInt(patient.id),
             duration_days: formData.duration_days ? parseInt(formData.duration_days) : undefined,
             refills_remaining: formData.refills_remaining ? parseInt(formData.refills_remaining) : undefined
