@@ -977,6 +977,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::delete('/patients/{patientId}/checkups/{checkupId}', [ClinicController::class, 'deleteCheckup']);
         Route::put('/patients/{patientId}/dental-chart', [ClinicController::class, 'updateDentalChart']);
         Route::put('/patients/{patientId}/next-visit', [ClinicController::class, 'updateNextVisit']);
+        Route::put('/patients/{patientId}/vip-status', [ClinicController::class, 'updateVipStatus']);
         Route::get('/patients/{patientId}/bills', [ClinicController::class, 'getBills']);
         Route::get('/patients/{patientId}/payments', [ClinicController::class, 'getPayments']);
         Route::get('/patients/{patientId}/checkups', [ClinicController::class, 'getCheckups']);

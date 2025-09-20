@@ -24,3 +24,7 @@ export { PatientAllergiesManager } from './PatientAllergiesManager';
 export { PatientMedicationsManager } from './PatientMedicationsManager';
 export { PatientMedicalHistoryManager } from './PatientMedicalHistoryManager';
 export { PatientEncounterHistoryDialog } from './PatientEncounterHistoryDialog';
+
+// VIP Management Components
+export { default as VipBadge } from './VipBadge';
+export { default as VipManagementDialog } from './VipManagementDialog';

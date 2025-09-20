@@ -61,7 +61,8 @@ import {
     PatientAllergiesManager,
     PatientMedicationsManager,
     PatientMedicalHistoryManager,
-    PatientEncounterHistoryDialog
+    PatientEncounterHistoryDialog,
+    VipManagementDialog
 } from './components';
 import { ClinicPaymentAccountManager } from './components/ClinicPaymentAccountManager';
 import Inventory from './Inventory';
@@ -198,6 +199,43 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const [patientAllergies, setPatientAllergies] = useState<PatientAllergy[]>([]);
     const [patientMedications, setPatientMedications] = useState<PatientMedication[]>([]);
     const [patientMedicalHistory, setPatientMedicalHistory] = useState<PatientMedicalHistory[]>([]);
+
+    // VIP Management State
+    const [isVipManagementDialogOpen, setIsVipManagementDialogOpen] = useState(false);
+    const [selectedPatientForVip, setSelectedPatientForVip] = useState<Patient | null>(null);
+
+    // VIP Management Functions
+    const handleManageVip = (patient: Patient) => {
+        setSelectedPatientForVip(patient);
+        setIsVipManagementDialogOpen(true);
+    };
+
+    const handleUpdateVipStatus = async (patientId: string, vipData: any) => {
+        try {
+            const response = await fetch(`/clinic/patients/${patientId}/vip-status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify(vipData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update VIP status');
+            }
+
+            const updatedPatient = await response.json();
+            
+            // Update the patient in the state
+            updatePatientInState(updatedPatient.patient);
+            
+            toast.success(`VIP status updated successfully for ${updatedPatient.patient.name}`);
+        } catch (error) {
+            console.error('Error updating VIP status:', error);
+            toast.error('Failed to update VIP status');
+        }
+    };
 
     // Permission checks
     const canDelete = useMemo(() => {
@@ -882,6 +920,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                             onOpenMedicalRecord={openPatientMedicalRecord}
                             onScheduleAppointment={handleScheduleAppointment}
                             onEditNextVisit={handleEditNextVisit}
+                            onManageVip={canEdit ? handleManageVip : undefined}
                         />
                     </TabsContent>
 
@@ -1386,6 +1425,17 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     onAddHistory={handleAddMedicalHistory}
                     onUpdateHistory={handleUpdateMedicalHistory}
                     onDeleteHistory={handleDeleteMedicalHistory}
+                />
+
+                {/* VIP Management Dialog */}
+                <VipManagementDialog
+                    isOpen={isVipManagementDialogOpen}
+                    onClose={() => {
+                        setIsVipManagementDialogOpen(false);
+                        setSelectedPatientForVip(null);
+                    }}
+                    patient={selectedPatientForVip}
+                    onUpdateVipStatus={handleUpdateVipStatus}
                 />
             </div>
         </AuthenticatedLayout>

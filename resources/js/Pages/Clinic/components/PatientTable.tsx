@@ -3,9 +3,10 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { Pencil, Edit, Trash2, Search, FolderOpen, MoreHorizontal, Calendar, FileText } from 'lucide-react';
+import { Pencil, Edit, Trash2, Search, FolderOpen, MoreHorizontal, Calendar, FileText, Crown } from 'lucide-react';
 import { Patient, AppCurrency } from '../types';
 import { formatDateTime, formatCurrency, formatDate } from '../utils';
+import VipBadge from './VipBadge';
 
 interface PatientTableProps {
     patients: Patient[];
@@ -25,6 +26,7 @@ interface PatientTableProps {
     onScheduleAppointment: (patient: Patient) => void;
     onEditNextVisit: (patient: Patient) => void;
     onOpenMedicalRecord?: (patient: Patient) => void;
+    onManageVip?: (patient: Patient) => void;
 }
 
 export const PatientTable: React.FC<PatientTableProps> = ({
@@ -44,7 +46,8 @@ export const PatientTable: React.FC<PatientTableProps> = ({
     onOpenPatientRecord,
     onScheduleAppointment,
     onEditNextVisit,
-    onOpenMedicalRecord
+    onOpenMedicalRecord,
+    onManageVip
 }) => {
     return (
         <>
@@ -85,7 +88,12 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                             >
                                 {patient.arn || 'Not Set'}
                             </TableCell>
-                            <TableCell className="text-gray-900 dark:text-white">{patient.name}</TableCell>
+                            <TableCell className="text-gray-900 dark:text-white">
+                                <div className="flex items-center space-x-2">
+                                    <span>{patient.name}</span>
+                                    <VipBadge patient={patient} size="sm" />
+                                </div>
+                            </TableCell>
                             <TableCell className="text-gray-900 dark:text-white">
                                 {patient.checkups?.length > 0 ? (
                                     <div>
@@ -161,6 +169,12 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                                                 <Calendar className="h-4 w-4 mr-2" />
                                                 Edit Next Visit
                                             </DropdownMenuItem>
+                                            {onManageVip && (
+                                                <DropdownMenuItem onClick={() => onManageVip(patient)}>
+                                                    <Crown className="h-4 w-4 mr-2" />
+                                                    Manage VIP Status
+                                                </DropdownMenuItem>
+                                            )}
                                             {canDelete && (
                                                 <DropdownMenuItem 
                                                     onClick={() => onDeletePatient(patient)}

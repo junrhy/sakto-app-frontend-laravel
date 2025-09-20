@@ -1194,4 +1194,45 @@ class ClinicController extends Controller
             return response()->json(['error' => 'Failed to delete medical history'], 500);
         }
     }
+
+    /**
+     * Update patient VIP status
+     */
+    public function updateVipStatus(Request $request, $patientId)
+    {
+        try {
+            $validated = $request->validate([
+                'is_vip' => 'required|boolean',
+                'vip_tier' => 'nullable|in:standard,gold,platinum,diamond',
+                'vip_discount_percentage' => 'nullable|numeric|min:0|max:100',
+                'vip_notes' => 'nullable|string',
+                'priority_scheduling' => 'nullable|boolean',
+                'extended_consultation_time' => 'nullable|boolean',
+                'dedicated_staff_assignment' => 'nullable|boolean',
+                'complimentary_services' => 'nullable|boolean'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/patients/{$patientId}/vip-status", array_merge($validated, [
+                    'client_identifier' => auth()->user()->identifier
+                ]));
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $responseData = $response->json();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'VIP status updated successfully',
+                'patient' => $responseData['patient'] ?? null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to update VIP status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -465,6 +465,25 @@ export type Patient = {
     clinic_payment_account?: ClinicPaymentAccount;
     billing_display_name?: string;
     
+    // VIP Status and Benefits
+    is_vip?: boolean;
+    vip_tier?: 'standard' | 'gold' | 'platinum' | 'diamond';
+    vip_since?: string;
+    vip_discount_percentage?: number;
+    vip_notes?: string;
+    priority_scheduling?: boolean;
+    extended_consultation_time?: boolean;
+    dedicated_staff_assignment?: boolean;
+    complimentary_services?: boolean;
+    
+    // Computed VIP properties (from backend)
+    vip_tier_display?: {
+        name: string;
+        icon: string;
+        color: string;
+        description: string;
+    };
+    
     // Financial summary
     total_bills: number;
     total_payments: number;
@@ -547,6 +566,44 @@ export type EditingNextVisit = {
 };
 
 export type HistoryType = 'bill' | 'checkup' | 'payment' | null;
+
+// VIP-related types
+export type VipTier = 'standard' | 'gold' | 'platinum' | 'diamond';
+
+export type VipTierBenefit = {
+    name: string;
+    discount_percentage: number;
+    priority_scheduling: boolean;
+    extended_consultation_time: boolean;
+    dedicated_staff_assignment: boolean;
+    complimentary_services: boolean;
+    color: string;
+    icon: string;
+    description: string;
+};
+
+export type VipTierBenefits = {
+    [key in VipTier]: VipTierBenefit;
+};
+
+export type VipStatusUpdate = {
+    patient_id: string;
+    is_vip: boolean;
+    vip_tier?: VipTier;
+    vip_discount_percentage?: number;
+    vip_notes?: string;
+    priority_scheduling?: boolean;
+    extended_consultation_time?: boolean;
+    dedicated_staff_assignment?: boolean;
+    complimentary_services?: boolean;
+};
+
+export type VipDiscountCalculation = {
+    original_amount: number;
+    discount_percentage: number;
+    discount_amount: number;
+    final_amount: number;
+};
 
 export interface ClinicProps {
     auth: {
