@@ -24,25 +24,29 @@ const AppointmentVipBadge: React.FC<AppointmentVipBadgeProps> = ({
                 name: 'Gold VIP',
                 icon: '🥇',
                 color: 'bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700',
+                class: 'bg-yellow-500 text-white',
                 description: 'Priority scheduling + 5% discount'
             },
             platinum: {
                 name: 'Platinum VIP',
                 icon: '💎',
                 color: 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
+                class: 'bg-blue-500 text-white',
                 description: 'Extended consultation + 10% discount + complimentary services'
             },
             diamond: {
                 name: 'Diamond VIP',
                 icon: '👑',
                 color: 'bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700',
+                class: 'bg-purple-500 text-white',
                 description: 'Full VIP experience + 15% discount + dedicated staff'
             }
         };
         return configs[tier as keyof typeof configs] || configs.gold;
     };
 
-    const tierConfig = appointment.vip_tier_config || getVipTierConfig(appointment.vip_tier);
+    // Always use local config to ensure consistent structure
+    const tierConfig = getVipTierConfig(appointment.vip_tier);
     
     const badgeContent = (
         <Badge 
