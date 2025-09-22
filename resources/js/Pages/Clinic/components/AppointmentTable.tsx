@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from "../../../Components/ui/button";
 import { Badge } from "../../../Components/ui/badge";
+import { Input } from "../../../Components/ui/input";
+import { Label } from "../../../Components/ui/label";
 import { 
     Table, 
     TableBody, 
@@ -16,8 +18,9 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator 
 } from "../../../Components/ui/dropdown-menu";
-import { MoreHorizontal, Calendar, Clock, User, Phone, Mail, Edit, Trash2, CheckCircle, XCircle, CreditCard, DollarSign } from 'lucide-react';
+import { MoreHorizontal, Calendar, Clock, User, Phone, Mail, Edit, Trash2, CheckCircle, XCircle, CreditCard, DollarSign, Filter, X } from 'lucide-react';
 import { Appointment } from '../types/appointment';
+import AppointmentVipBadge from './AppointmentVipBadge';
 
 interface AppointmentTableProps {
     appointments: Appointment[];
@@ -82,8 +85,113 @@ export default function AppointmentTable({
     onUpdatePaymentStatus,
     currency 
 }: AppointmentTableProps) {
+    const [selectedDate, setSelectedDate] = useState<string>('');
+    const [showDateFilter, setShowDateFilter] = useState(false);
+
+    // Filter appointments by selected date
+    const filteredAppointments = useMemo(() => {
+        if (!selectedDate) {
+            return appointments;
+        }
+        
+        return appointments.filter(appointment => {
+            const appointmentDate = new Date(appointment.appointment_date).toISOString().split('T')[0];
+            return appointmentDate === selectedDate;
+        });
+    }, [appointments, selectedDate]);
+
+    const clearDateFilter = () => {
+        setSelectedDate('');
+        setShowDateFilter(false);
+    };
+
+    const today = new Date().toISOString().split('T')[0];
+
     return (
-        <div className="rounded-md border border-gray-200 dark:border-gray-700">
+        <div className="space-y-4">
+            {/* Date Filter Controls */}
+            <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                        <Filter className="h-4 w-4 text-gray-500" />
+                        <Label className="text-sm font-medium">Filter by Date:</Label>
+                    </div>
+                    
+                    {!showDateFilter ? (
+                        <div className="flex space-x-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedDate(today);
+                                    setShowDateFilter(true);
+                                }}
+                                className="flex items-center space-x-1"
+                            >
+                                <Calendar className="h-3 w-3" />
+                                <span>Today</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    const tomorrow = new Date();
+                                    tomorrow.setDate(tomorrow.getDate() + 1);
+                                    setSelectedDate(tomorrow.toISOString().split('T')[0]);
+                                    setShowDateFilter(true);
+                                }}
+                                className="flex items-center space-x-1"
+                            >
+                                <Calendar className="h-3 w-3" />
+                                <span>Tomorrow</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    if (!selectedDate) {
+                                        setSelectedDate(today);
+                                    }
+                                    setShowDateFilter(true);
+                                }}
+                                className="flex items-center space-x-1"
+                            >
+                                <Calendar className="h-3 w-3" />
+                                <span>Pick Date</span>
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="w-40"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={clearDateFilter}
+                                className="flex items-center space-x-1"
+                            >
+                                <X className="h-3 w-3" />
+                                <span>Clear</span>
+                            </Button>
+                        </div>
+                    )}
+                </div>
+                
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Showing {filteredAppointments.length} of {appointments.length} appointments
+                    {selectedDate && (
+                        <span className="ml-2 text-blue-600 dark:text-blue-400">
+                            for {formatDate(selectedDate + 'T00:00:00')}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            <div className="rounded-md border border-gray-200 dark:border-gray-700">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -98,18 +206,39 @@ export default function AppointmentTable({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {appointments.length === 0 ? (
+                    {filteredAppointments.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                No appointments found
+                                {selectedDate ? (
+                                    <div className="space-y-2">
+                                        <Calendar className="h-8 w-8 mx-auto text-gray-400" />
+                                        <div>No appointments found for {formatDate(selectedDate + 'T00:00:00')}</div>
+                                        <Button 
+                                            variant="link" 
+                                            size="sm"
+                                            onClick={clearDateFilter}
+                                            className="text-blue-600 hover:text-blue-800"
+                                        >
+                                            Show all appointments
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Calendar className="h-8 w-8 mx-auto text-gray-400" />
+                                        <div>No appointments found</div>
+                                    </div>
+                                )}
                             </TableCell>
                         </TableRow>
                     ) : (
-                        appointments.map((appointment) => (
+                        filteredAppointments.map((appointment) => (
                             <TableRow key={appointment.id}>
                                 <TableCell>
                                     <div className="flex flex-col">
-                                        <div className="font-medium">{appointment.patient_name}</div>
+                                        <div className="font-medium flex items-center gap-2">
+                                            {appointment.patient_name}
+                                            <AppointmentVipBadge appointment={appointment} size="sm" />
+                                        </div>
                                         <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                             {appointment.patient_phone && (
                                                 <div className="flex items-center gap-1">
@@ -229,6 +358,7 @@ export default function AppointmentTable({
                     )}
                 </TableBody>
             </Table>
+            </div>
         </div>
     );
 }

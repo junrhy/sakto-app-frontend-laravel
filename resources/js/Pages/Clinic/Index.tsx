@@ -9,6 +9,7 @@ import { Label } from "../../Components/ui/label";
 import { Textarea } from "../../Components/ui/textarea";
 import { Users, UserPlus, Calendar, Table, Grid3X3, Package, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import axios from 'axios';
 
 // Import types
 import { 
@@ -212,28 +213,21 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     const handleUpdateVipStatus = async (patientId: string, vipData: any) => {
         try {
-            const response = await fetch(`/clinic/patients/${patientId}/vip-status`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: JSON.stringify(vipData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update VIP status');
+            const response = await axios.put(`/clinic/patients/${patientId}/vip-status`, vipData);
+            
+            if (response.data.success) {
+                // Update the patient in the state
+                if (response.data.patient) {
+                    updatePatientInState(response.data.patient);
+                }
+                toast.success(`VIP status updated successfully`);
+            } else {
+                throw new Error(response.data.error || 'Failed to update VIP status');
             }
-
-            const updatedPatient = await response.json();
-            
-            // Update the patient in the state
-            updatePatientInState(updatedPatient.patient);
-            
-            toast.success(`VIP status updated successfully for ${updatedPatient.patient.name}`);
         } catch (error) {
             console.error('Error updating VIP status:', error);
-            toast.error('Failed to update VIP status');
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            toast.error(`Failed to update VIP status: ${errorMessage}`);
         }
     };
 

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Appointment } from '../types/appointment';
 import DailyAppointmentsDialog from './DailyAppointmentsDialog';
+import AppointmentVipBadge from './AppointmentVipBadge';
 
 interface AppointmentCalendarProps {
     appointments: Appointment[];
@@ -266,8 +267,9 @@ export default function AppointmentCalendar({
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium truncate">
+                                                <div className="font-medium truncate flex items-center gap-1">
                                                     {appointment.patient_name}
+                                                    <AppointmentVipBadge appointment={appointment} size="sm" showTooltip={false} />
                                                 </div>
                                                 <div className="text-xs opacity-75">
                                                     {formatTime(appointment.appointment_time)}

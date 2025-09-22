@@ -2,6 +2,9 @@ export interface Appointment {
     id: number;
     client_identifier: string;
     patient_id: number;
+    is_priority_patient: boolean;
+    priority_level: number;
+    vip_tier?: string;
     patient_name: string;
     patient_phone?: string;
     patient_email?: string;
@@ -17,6 +20,13 @@ export interface Appointment {
     cancelled_at?: string;
     created_at: string;
     updated_at: string;
+    priority_display?: string;
+    vip_tier_config?: {
+        name: string;
+        icon: string;
+        color: string;
+        class: string;
+    };
     patient?: {
         id: number;
         name: string;
