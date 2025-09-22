@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Patient } from '../types';
 import axios from 'axios';
+import { format } from 'date-fns';
 
 export const usePayments = () => {
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const [paymentDate, setPaymentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-    const processPayment = async (patientId: string, amount: number) => {
+    const processPayment = async (patientId: string, amount: number, paymentDateValue?: string) => {
         if (isNaN(amount) || amount <= 0) {
             return { success: false, error: 'Please enter a valid payment amount.' };
         }
@@ -14,7 +16,7 @@ export const usePayments = () => {
             const response = await axios.post(`/clinic/patients/${patientId}/payments`, { 
                 patient_id: patientId,
                 payment_amount: amount,
-                payment_date: new Date().toISOString(),
+                payment_date: paymentDateValue || new Date().toISOString(),
                 payment_method: 'cash',
                 payment_notes: 'Payment for bill'
             });
@@ -55,11 +57,19 @@ export const usePayments = () => {
         }
     };
 
+    const resetPaymentForm = () => {
+        setPaymentDate(format(new Date(), 'yyyy-MM-dd'));
+        setIsPaymentDialogOpen(false);
+    };
+
     return {
         isPaymentDialogOpen,
         setIsPaymentDialogOpen,
+        paymentDate,
+        setPaymentDate,
         processPayment,
         deletePayment,
-        fetchPaymentHistory
+        fetchPaymentHistory,
+        resetPaymentForm
     };
 };

@@ -1004,8 +1004,8 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 // Optionally refresh patient data
                                 console.log('Account deleted');
                             }}
-                            onAddBill={async (patientId: string, amount: number, details: string) => {
-                                const result = await addBill(patientId, amount, details);
+                            onAddBill={async (patientId: string, amount: number, details: string, billDate?: string) => {
+                                const result = await addBill(patientId, amount, details, billDate);
                                 if (result.success) {
                                     // Update patients state
                                     const updatedPatient = patients.find(p => p.id === patientId);
@@ -1052,8 +1052,8 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 return result;
                             }}
                             onShowBillHistory={fetchBillHistory}
-                            onAddPayment={async (patientId: string, amount: number) => {
-                                const result = await processPayment(patientId, amount);
+                            onAddPayment={async (patientId: string, amount: number, paymentDate?: string) => {
+                                const result = await processPayment(patientId, amount, paymentDate);
                                 if (result.success) {
                                     // Update patients state
                                     setPatients(prevPatients => 

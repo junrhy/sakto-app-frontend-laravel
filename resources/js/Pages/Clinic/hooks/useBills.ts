@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { Patient } from '../types';
 import axios from 'axios';
+import { format } from 'date-fns';
 
 export const useBills = () => {
     const [additionalBillAmount, setAdditionalBillAmount] = useState('');
     const [additionalBillDetails, setAdditionalBillDetails] = useState('');
+    const [additionalBillDate, setAdditionalBillDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [additionalBillPatientId, setAdditionalBillPatientId] = useState<string | null>(null);
     const [isAddBillDialogOpen, setIsAddBillDialogOpen] = useState(false);
 
-    const addBill = async (patientId: string, amount: number, details: string) => {
+    const addBill = async (patientId: string, amount: number, details: string, billDate?: string) => {
         try {
             const response = await axios.post(`/clinic/patients/${patientId}/bills`, {
                 patient_id: patientId,
                 bill_number: `BILL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                bill_date: new Date().toISOString(),
+                bill_date: billDate || new Date().toISOString(),
                 bill_amount: amount,
                 bill_details: details
             });
@@ -53,6 +55,7 @@ export const useBills = () => {
     const resetBillForm = () => {
         setAdditionalBillAmount('');
         setAdditionalBillDetails('');
+        setAdditionalBillDate(format(new Date(), 'yyyy-MM-dd'));
         setAdditionalBillPatientId(null);
         setIsAddBillDialogOpen(false);
     };
@@ -62,6 +65,8 @@ export const useBills = () => {
         setAdditionalBillAmount,
         additionalBillDetails,
         setAdditionalBillDetails,
+        additionalBillDate,
+        setAdditionalBillDate,
         additionalBillPatientId,
         setAdditionalBillPatientId,
         isAddBillDialogOpen,

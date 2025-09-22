@@ -18,6 +18,7 @@ import { AccountPaymentModal } from './AccountPaymentModal';
 import { HistoryDialog } from './HistoryDialog';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import { formatDateTime, formatCurrency } from '../utils';
 
 interface ClinicPaymentAccountManagerProps {
@@ -27,10 +28,10 @@ interface ClinicPaymentAccountManagerProps {
     onAccountUpdated?: (account: ClinicPaymentAccount) => void;
     onAccountDeleted?: (accountId: number) => void;
     // Patient billing and payment handlers
-    onAddBill?: (patientId: string, amount: number, details: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+    onAddBill?: (patientId: string, amount: number, details: string, billDate?: string) => Promise<{ success: boolean; data?: any; error?: string }>;
     onDeleteBill?: (patientId: string, billId: number) => Promise<{ success: boolean }>;
     onShowBillHistory?: (patient: Patient) => Promise<{ success: boolean; data?: Patient }>;
-    onAddPayment?: (patientId: string, amount: number) => Promise<{ success: boolean; data?: any; error?: string }>;
+    onAddPayment?: (patientId: string, amount: number, paymentDate?: string) => Promise<{ success: boolean; data?: any; error?: string }>;
     onDeletePayment?: (patientId: string, paymentId: number) => Promise<{ success: boolean }>;
     onShowPaymentHistory?: (patient: Patient) => Promise<{ success: boolean; data?: Patient }>;
     onPatientsUpdate?: (patients: Patient[]) => void;
@@ -71,10 +72,12 @@ export function ClinicPaymentAccountManager({
     // Bill form state
     const [billAmount, setBillAmount] = useState('');
     const [billDetails, setBillDetails] = useState('');
+    const [billDate, setBillDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [isBillDialogOpen, setIsBillDialogOpen] = useState(false);
     
     // Payment form state
     const [paymentAmount, setPaymentAmount] = useState('');
+    const [paymentDate, setPaymentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
     useEffect(() => {
@@ -205,10 +208,11 @@ export function ClinicPaymentAccountManager({
             return;
         }
         
-        const result = await onAddBill(selectedPatientForBilling.id, amount, billDetails);
+        const result = await onAddBill(selectedPatientForBilling.id, amount, billDetails, billDate);
         if (result.success) {
             setBillAmount('');
             setBillDetails('');
+            setBillDate(format(new Date(), 'yyyy-MM-dd'));
             setIsBillDialogOpen(false);
             setSelectedPatientForBilling(null);
             toast.success('Bill added successfully');
@@ -227,9 +231,10 @@ export function ClinicPaymentAccountManager({
             return;
         }
         
-        const result = await onAddPayment(selectedPatientForPayment.id, amount);
+        const result = await onAddPayment(selectedPatientForPayment.id, amount, paymentDate);
         if (result.success) {
             setPaymentAmount('');
+            setPaymentDate(format(new Date(), 'yyyy-MM-dd'));
             setIsPaymentDialogOpen(false);
             setSelectedPatientForPayment(null);
             toast.success('Payment recorded successfully');
@@ -690,6 +695,7 @@ export function ClinicPaymentAccountManager({
                     setSelectedPatientForBilling(null);
                     setBillAmount('');
                     setBillDetails('');
+                    setBillDate(format(new Date(), 'yyyy-MM-dd'));
                 }
             }}>
                 <DialogContent>
@@ -699,19 +705,31 @@ export function ClinicPaymentAccountManager({
                         </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleAddBill} className="space-y-4">
-                        <div>
-                            <Label htmlFor="billAmount">Bill Amount ({appCurrency?.symbol || '$'})</Label>
-                            <Input
-                                id="billAmount"
-                                type="number"
-                                step="0.01"
-                                value={billAmount}
-                                onChange={(e) => setBillAmount(e.target.value)}
-                                required
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="billDate">Bill Date *</Label>
+                                <Input
+                                    id="billDate"
+                                    type="date"
+                                    value={billDate}
+                                    onChange={(e) => setBillDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="billAmount">Bill Amount ({appCurrency?.symbol || '$'}) *</Label>
+                                <Input
+                                    id="billAmount"
+                                    type="number"
+                                    step="0.01"
+                                    value={billAmount}
+                                    onChange={(e) => setBillAmount(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
                         <div>
-                            <Label htmlFor="billDetails">Bill Details</Label>
+                            <Label htmlFor="billDetails">Bill Details *</Label>
                             <Textarea
                                 id="billDetails"
                                 value={billDetails}
@@ -735,6 +753,7 @@ export function ClinicPaymentAccountManager({
                 if (!open) {
                     setSelectedPatientForPayment(null);
                     setPaymentAmount('');
+                    setPaymentDate(format(new Date(), 'yyyy-MM-dd'));
                 }
             }}>
                 <DialogContent>
@@ -744,16 +763,28 @@ export function ClinicPaymentAccountManager({
                         </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleAddPayment} className="space-y-4">
-                        <div>
-                            <Label htmlFor="paymentAmount">Payment Amount ({appCurrency?.symbol || '$'})</Label>
-                            <Input
-                                id="paymentAmount"
-                                type="number"
-                                step="0.01"
-                                value={paymentAmount}
-                                onChange={(e) => setPaymentAmount(e.target.value)}
-                                required
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="paymentDate">Payment Date *</Label>
+                                <Input
+                                    id="paymentDate"
+                                    type="date"
+                                    value={paymentDate}
+                                    onChange={(e) => setPaymentDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="paymentAmount">Payment Amount ({appCurrency?.symbol || '$'}) *</Label>
+                                <Input
+                                    id="paymentAmount"
+                                    type="number"
+                                    step="0.01"
+                                    value={paymentAmount}
+                                    onChange={(e) => setPaymentAmount(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>
