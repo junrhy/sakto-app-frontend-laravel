@@ -117,6 +117,86 @@ class ExampleController extends Controller
 - Display amounts with comma separators and proper currency formatting
 - **Toast messages always use sonner** - use the sonner toast library for all notifications
 
+#### Table Styling Standards
+**CRITICAL**: All tables throughout the application MUST use the consistent Card-based styling pattern for visual consistency and proper dark mode support.
+
+**Required Table Structure**:
+```tsx
+import { Card, CardContent } from "@/Components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
+
+// ✅ CORRECT - Use Card wrapper with CardContent
+<Card>
+    <CardContent className="p-0">
+        <Table>
+            <TableHeader>
+                <TableRow className="bg-gray-50 dark:bg-gray-700">
+                    <TableHead className="text-gray-900 dark:text-white">Column 1</TableHead>
+                    <TableHead className="text-gray-900 dark:text-white">Column 2</TableHead>
+                    <TableHead className="text-gray-900 dark:text-white">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {data.map((item) => (
+                    <TableRow key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <TableCell className="text-gray-900 dark:text-white">{item.field1}</TableCell>
+                        <TableCell className="text-gray-900 dark:text-white">{item.field2}</TableCell>
+                        <TableCell className="text-gray-900 dark:text-white">
+                            {/* Action buttons */}
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </CardContent>
+</Card>
+```
+
+**❌ WRONG - Avoid these patterns**:
+```tsx
+// ❌ DON'T use simple div wrapper
+<div className="rounded-md border border-gray-200 dark:border-gray-700">
+    <Table>...</Table>
+</div>
+
+// ❌ DON'T use Card without CardContent
+<Card>
+    <Table>...</Table>
+</Card>
+
+// ❌ DON'T use CardContent without p-0
+<Card>
+    <CardContent>
+        <Table>...</Table>
+    </CardContent>
+</Card>
+```
+
+**Required Table Styling Rules**:
+1. **Wrapper**: Always use `<Card><CardContent className="p-0">` wrapper
+2. **Header Row**: Must have `className="bg-gray-50 dark:bg-gray-700"`
+3. **Header Cells**: All `<TableHead>` must have `className="text-gray-900 dark:text-white"`
+4. **Body Rows**: All `<TableRow>` must have `className="hover:bg-gray-50 dark:hover:bg-gray-700"`
+5. **Body Cells**: All `<TableCell>` must have `className="text-gray-900 dark:text-white"`
+6. **No Individual Cell Hover**: Avoid individual cell hover effects that conflict with row hover
+7. **Consistent Actions Column**: Actions column should be right-aligned with `className="text-right text-gray-900 dark:text-white"`
+
+**Why This Pattern**:
+- Provides consistent visual hierarchy with proper shadows and borders
+- Ensures perfect dark mode support across all tables
+- Eliminates styling inconsistencies between different table implementations
+- Creates a professional, polished appearance throughout the application
+- Makes maintenance easier with standardized styling
+
+**Implementation Checklist**:
+- [ ] Import Card and CardContent components
+- [ ] Wrap table in Card with CardContent className="p-0"
+- [ ] Apply consistent header styling (bg-gray-50 dark:bg-gray-700)
+- [ ] Apply consistent header text colors (text-gray-900 dark:text-white)
+- [ ] Apply consistent row hover effects (hover:bg-gray-50 dark:hover:bg-gray-700)
+- [ ] Apply consistent cell text colors (text-gray-900 dark:text-white)
+- [ ] Ensure no conflicting individual cell hover styles
+
 #### shadcn/ui Select Component Best Practices
 **CRITICAL**: When using the Select component from shadcn/ui, **NEVER use empty string values** for SelectItem components:
 

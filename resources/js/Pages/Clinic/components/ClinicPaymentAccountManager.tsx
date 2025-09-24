@@ -399,7 +399,7 @@ export function ClinicPaymentAccountManager({
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {formatCurrency(patient.balance, appCurrency?.symbol || '$')}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex justify-end gap-2 flex-wrap">
                                                     <Button 
                                                         variant="outline" 

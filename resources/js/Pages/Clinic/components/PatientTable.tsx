@@ -3,6 +3,7 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { Card, CardContent } from "@/Components/ui/card";
 import { Pencil, Edit, Trash2, Search, FolderOpen, MoreHorizontal, Calendar, FileText, Crown } from 'lucide-react';
 import { Patient, AppCurrency } from '../types';
 import { formatDateTime, formatCurrency, formatDate } from '../utils';
@@ -66,24 +67,26 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                 </div>
             </div>
 
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-700">
-                        <TableHead className="text-gray-900 dark:text-white">ARN</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Last Checkup</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Next Visit</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Total Bills ({currency})</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Total Payments ({currency})</TableHead>
-                        <TableHead className="text-gray-900 dark:text-white">Balance ({currency})</TableHead>
-                        <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
+            <Card>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                <TableHead className="text-gray-900 dark:text-white">ARN</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Last Checkup</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Next Visit</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Total Bills ({currency})</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Total Payments ({currency})</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Balance ({currency})</TableHead>
+                                <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
                 <TableBody>
                     {currentPatients.map((patient) => (
                         <TableRow key={patient.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <TableCell 
-                                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white" 
+                                className="cursor-pointer text-gray-900 dark:text-white" 
                                 onClick={() => onOpenPatientRecord(patient)}
                             >
                                 {patient.arn || 'Not Set'}
@@ -191,7 +194,9 @@ export const PatientTable: React.FC<PatientTableProps> = ({
                         </TableRow>
                     ))}
                 </TableBody>
-            </Table>
+                    </Table>
+                </CardContent>
+            </Card>
 
             <div className="flex justify-between items-center mt-4">
                 <div className="text-gray-600 dark:text-gray-400">

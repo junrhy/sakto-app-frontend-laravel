@@ -11,6 +11,7 @@ import {
     TableHeader, 
     TableRow 
 } from "../../../Components/ui/table";
+import { Card, CardContent } from "../../../Components/ui/card";
 import { 
     DropdownMenu, 
     DropdownMenuContent, 
@@ -191,20 +192,21 @@ export default function AppointmentTable({
                 </div>
             </div>
 
-            <div className="rounded-md border border-gray-200 dark:border-gray-700">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Patient</TableHead>
-                        <TableHead>Date & Time</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Doctor</TableHead>
-                        <TableHead>Fee</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Payment</TableHead>
-                        <TableHead className="w-[50px]">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
+            <Card>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                <TableHead className="text-gray-900 dark:text-white">Patient</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Date & Time</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Doctor</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Fee</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">Payment</TableHead>
+                                <TableHead className="w-[50px] text-gray-900 dark:text-white">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
                 <TableBody>
                     {filteredAppointments.length === 0 ? (
                         <TableRow>
@@ -232,8 +234,8 @@ export default function AppointmentTable({
                         </TableRow>
                     ) : (
                         filteredAppointments.map((appointment) => (
-                            <TableRow key={appointment.id}>
-                                <TableCell>
+                            <TableRow key={appointment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <TableCell className="text-gray-900 dark:text-white">
                                     <div className="flex flex-col">
                                         <div className="font-medium flex items-center gap-2">
                                             {appointment.patient_name}
@@ -255,7 +257,7 @@ export default function AppointmentTable({
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-1">
                                             <Calendar className="h-4 w-4" />
@@ -267,28 +269,28 @@ export default function AppointmentTable({
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     <Badge variant="outline" className="capitalize">
                                         {appointment.appointment_type.replace('_', ' ')}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     {appointment.doctor_name || '-'}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     {appointment.fee ? `${currency}${appointment.fee.toLocaleString()}` : '-'}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     <Badge className={getStatusColor(appointment.status)}>
                                         {appointment.status.replace('_', ' ')}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     <Badge className={getPaymentStatusColor(appointment.payment_status)}>
                                         {appointment.payment_status}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="text-gray-900 dark:text-white">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -357,8 +359,9 @@ export default function AppointmentTable({
                         ))
                     )}
                 </TableBody>
-            </Table>
-            </div>
+                    </Table>
+                </CardContent>
+            </Card>
         </div>
     );
 }
