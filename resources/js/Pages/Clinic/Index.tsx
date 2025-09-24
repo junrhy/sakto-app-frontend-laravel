@@ -98,6 +98,8 @@ export default function Clinic({
         setPatients,
         searchTerm,
         setSearchTerm,
+        nextVisitFilter,
+        setNextVisitFilter,
         currentPage,
         setCurrentPage,
         filteredPatients,
@@ -1103,6 +1105,8 @@ export default function Clinic({
                             currentPatients={currentPatients}
                             searchTerm={searchTerm}
                             setSearchTerm={setSearchTerm}
+                            nextVisitFilter={nextVisitFilter}
+                            setNextVisitFilter={setNextVisitFilter}
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
                             pageCount={pageCount}

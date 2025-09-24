@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from '@/Components/ui/label';
 import {
     Select,
@@ -7,6 +6,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import React from 'react';
 
 interface LanguageSelectorProps {
     value?: string;
@@ -122,27 +122,59 @@ const LANGUAGES = [
     { code: 'awa', name: 'Awadhi', native: 'अवधी' },
     { code: 'raj', name: 'Rajasthani', native: 'राजस्थानी' },
     { code: 'gom-Latn', name: 'Konkani (Latin)', native: 'Konkani (Latin)' },
-    { code: 'gom-Deva', name: 'Konkani (Devanagari)', native: 'कोंकणी (देवनागरी)' },
+    {
+        code: 'gom-Deva',
+        name: 'Konkani (Devanagari)',
+        native: 'कोंकणी (देवनागरी)',
+    },
     { code: 'gom-Knda', name: 'Konkani (Kannada)', native: 'ಕೊಂಕಣಿ (ಕನ್ನಡ)' },
-    { code: 'gom-Mlym', name: 'Konkani (Malayalam)', native: 'കൊങ്കണി (മലയാളം)' },
-    { code: 'gom-Gujr', name: 'Konkani (Gujarati)', native: 'કોંકણી (ગુજરાતી)' },
+    {
+        code: 'gom-Mlym',
+        name: 'Konkani (Malayalam)',
+        native: 'കൊങ്കണി (മലയാളം)',
+    },
+    {
+        code: 'gom-Gujr',
+        name: 'Konkani (Gujarati)',
+        native: 'કોંકણી (ગુજરાતી)',
+    },
     { code: 'gom-Arab', name: 'Konkani (Arabic)', native: 'کونکانی (عربی)' },
     { code: 'gom-Beng', name: 'Konkani (Bengali)', native: 'কোংকণি (বাংলা)' },
     { code: 'gom-Orya', name: 'Konkani (Odia)', native: 'କୋଂକଣି (ଓଡ଼ିଆ)' },
     { code: 'gom-Telu', name: 'Konkani (Telugu)', native: 'కొంకణి (తెలుగు)' },
     { code: 'gom-Taml', name: 'Konkani (Tamil)', native: 'கொங்கணி (தமிழ்)' },
-    { code: 'gom-Guru', name: 'Konkani (Gurmukhi)', native: 'ਕੋਂਕਣੀ (ਗੁਰਮੁਖੀ)' },
+    {
+        code: 'gom-Guru',
+        name: 'Konkani (Gurmukhi)',
+        native: 'ਕੋਂਕਣੀ (ਗੁਰਮੁਖੀ)',
+    },
     { code: 'gom-Sinh', name: 'Konkani (Sinhala)', native: 'කොංකණි (සිංහල)' },
     { code: 'gom-Thaa', name: 'Konkani (Thaana)', native: 'ކޮންކަން (ތާނަ)' },
     { code: 'gom-Mymr', name: 'Konkani (Myanmar)', native: 'ကွန်ကန် (မြန်မာ)' },
     { code: 'gom-Khmr', name: 'Konkani (Khmer)', native: 'កុងកាន (ខ្មែរ)' },
     { code: 'gom-Laoo', name: 'Konkani (Lao)', native: 'ກອງການ (ລາວ)' },
     { code: 'gom-Tibt', name: 'Konkani (Tibetan)', native: 'ཀོང་ཀན (བོད་ཡིག)' },
-    { code: 'gom-Mong', name: 'Konkani (Mongolian)', native: 'Конкан (Монгол)' },
-    { code: 'gom-Cyrl', name: 'Konkani (Cyrillic)', native: 'Конкан (Кириллица)' },
+    {
+        code: 'gom-Mong',
+        name: 'Konkani (Mongolian)',
+        native: 'Конкан (Монгол)',
+    },
+    {
+        code: 'gom-Cyrl',
+        name: 'Konkani (Cyrillic)',
+        native: 'Конкан (Кириллица)',
+    },
     { code: 'gom-Hebr', name: 'Konkani (Hebrew)', native: 'קונקן (עברית)' },
-    { code: 'gom-Armn', name: 'Konkani (Armenian)', native: 'Կոնկան (Հայերեն)' },
-    { code: 'gom-Geor', name: 'Konkani (Georgian)', native: 'კონკანი (ქართული)' },
+    {
+        code: 'gom-Armn',
+        name: 'Konkani (Armenian)',
+        native: 'Կոնկան (Հայերեն)',
+    },
+    {
+        code: 'gom-Geor',
+        name: 'Konkani (Georgian)',
+        native: 'კონკანი (ქართული)',
+    },
     { code: 'gom-Ethi', name: 'Konkani (Ethiopic)', native: 'ኮንካን (አማርኛ)' },
     { code: 'gom-Cher', name: 'Konkani (Cherokee)', native: 'ᎪᏅᎧᏂ (ᏣᎳᎩ)' },
     { code: 'gom-Osma', name: 'Konkani (Osmanya)', native: '𐒋𐒕𐒐𐒕𐒖𐒕 (𐒋𐒘𐒖𐒇𐒖𐒕)' },
@@ -151,7 +183,11 @@ const LANGUAGES = [
     { code: 'gom-Mand', name: 'Konkani (Mandaic)', native: 'ࡊࡅࡍࡊࡀࡍ (ࡌࡀࡍࡃࡀࡉࡀ)' },
     { code: 'gom-Syrc', name: 'Konkani (Syriac)', native: 'ܟܘܢܟܐܢ (ܣܘܪܝܝܐ)' },
     { code: 'gom-Thai', name: 'Konkani (Thai)', native: 'กองกาน (ไทย)' },
-    { code: 'gom-Lana', name: 'Konkani (Tai Tham)', native: 'ᨠᩫ᩠ᨦᨠᩢ᩠ᨶ (ᨲᩫ᩠ᨿᨵᩢ᩠ᨾ)' },
+    {
+        code: 'gom-Lana',
+        name: 'Konkani (Tai Tham)',
+        native: 'ᨠᩫ᩠ᨦᨠᩢ᩠ᨶ (ᨲᩫ᩠ᨿᨵᩢ᩠ᨾ)',
+    },
     { code: 'gom-Tavt', name: 'Konkani (Tai Viet)', native: 'ꪀꪮꪙꪀꪮꪙ (ꪼꪕꪼꪒ)' },
     { code: 'gom-Bali', name: 'Konkani (Balinese)', native: 'ᬓᭀᬦ᭄ᬓᬦᬶ (ᬩᬮᬶ)' },
     { code: 'gom-Batk', name: 'Konkani (Batak)', native: 'ᯂᯮᯉᯂᯮᯉ (ᯅᯖᯂ᯲)' },
@@ -160,24 +196,60 @@ const LANGUAGES = [
     { code: 'gom-Java', name: 'Konkani (Javanese)', native: 'ꦏꦺꦴꦤ꧀ꦏꦤꦶ (ꦗꦮ)' },
     { code: 'gom-Lepc', name: 'Konkani (Lepcha)', native: 'ᰀᰨᰎᰀᰨᰎ (ᰛᰧᰵᰶᰛᰧᰵᰶ)' },
     { code: 'gom-Limb', name: 'Konkani (Limbu)', native: 'ᤁᤨᤘᤁᤨᤘ (ᤕᤠᤰᤌᤢᤱ)' },
-    { code: 'gom-Mlym', name: 'Konkani (Malayalam)', native: 'കൊങ്കണി (മലയാളം)' },
-    { code: 'gom-Mtei', name: 'Konkani (Meitei Mayek)', native: 'ꯀꯣꯟꯀꯥꯟ (ꯃꯤꯇꯩꯂꯣꯟ)' },
+    {
+        code: 'gom-Mlym',
+        name: 'Konkani (Malayalam)',
+        native: 'കൊങ്കണി (മലയാളം)',
+    },
+    {
+        code: 'gom-Mtei',
+        name: 'Konkani (Meitei Mayek)',
+        native: 'ꯀꯣꯟꯀꯥꯟ (ꯃꯤꯇꯩꯂꯣꯟ)',
+    },
     { code: 'gom-Newa', name: 'Konkani (Newa)', native: '𑐎𑑀𑐣𑐎𑑀𑐣 (𑐣𑐾𑐰𑐵)' },
-    { code: 'gom-Nkoo', name: 'Konkani (N\'Ko)', native: 'ߞߏ߲ߞߊ߲ (ߒߞߏ)' },
+    { code: 'gom-Nkoo', name: "Konkani (N'Ko)", native: 'ߞߏ߲ߞߊ߲ (ߒߞߏ)' },
     { code: 'gom-Orya', name: 'Konkani (Odia)', native: 'କୋଂକଣି (ଓଡ଼ିଆ)' },
-    { code: 'gom-Saur', name: 'Konkani (Saurashtra)', native: 'ꢒ꣄ꢒꢒ (ꢱꣃꢬꢱꢴꢵꢶꢷ)' },
-    { code: 'gom-Sund', name: 'Konkani (Sundanese)', native: 'ᮊᮧᮔ᮪ᮊᮔᮤ (ᮞᮥᮔ᮪ᮓ)' },
-    { code: 'gom-Tagb', name: 'Konkani (Tagbanwa)', native: 'ᜃᜓᜈᜃᜓᜈ (ᜆᜄ᜔ᜊᜈ᜔ᜏ)' },
+    {
+        code: 'gom-Saur',
+        name: 'Konkani (Saurashtra)',
+        native: 'ꢒ꣄ꢒꢒ (ꢱꣃꢬꢱꢴꢵꢶꢷ)',
+    },
+    {
+        code: 'gom-Sund',
+        name: 'Konkani (Sundanese)',
+        native: 'ᮊᮧᮔ᮪ᮊᮔᮤ (ᮞᮥᮔ᮪ᮓ)',
+    },
+    {
+        code: 'gom-Tagb',
+        name: 'Konkani (Tagbanwa)',
+        native: 'ᜃᜓᜈᜃᜓᜈ (ᜆᜄ᜔ᜊᜈ᜔ᜏ)',
+    },
     { code: 'gom-Tale', name: 'Konkani (Tai Le)', native: 'ᥐᥨᥢᥐᥨᥢ (ᥖᥭᥰᥘᥫᥴ)' },
-    { code: 'gom-Talu', name: 'Konkani (New Tai Lue)', native: 'ᦅᦷᧃᦅᦷᧃ (ᦺᦑᦟᦹᧉ)' },
+    {
+        code: 'gom-Talu',
+        name: 'Konkani (New Tai Lue)',
+        native: 'ᦅᦷᧃᦅᦷᧃ (ᦺᦑᦟᦹᧉ)',
+    },
     { code: 'gom-Taml', name: 'Konkani (Tamil)', native: 'கொங்கணி (தமிழ்)' },
     { code: 'gom-Telu', name: 'Konkani (Telugu)', native: 'కొంకణి (తెలుగు)' },
-    { code: 'gom-Tfng', name: 'Konkani (Tifinagh)', native: 'ⴽⵓⵏⴽⴰⵏ (ⵜⵉⴼⵉⵏⴰⵖ)' },
+    {
+        code: 'gom-Tfng',
+        name: 'Konkani (Tifinagh)',
+        native: 'ⴽⵓⵏⴽⴰⵏ (ⵜⵉⴼⵉⵏⴰⵖ)',
+    },
     { code: 'gom-Tirh', name: 'Konkani (Tirhuta)', native: '𑒏𑒼𑒢𑒏𑒼𑒢 (𑒞𑒱𑒩𑒯𑒳𑒞)' },
-    { code: 'gom-Wara', name: 'Konkani (Warang Citi)', native: '𑢹𑣀𑣊𑢹𑣀𑣊 (𑢹𑣀𑣜𑣀𑣊𑣈𑣈)' },
+    {
+        code: 'gom-Wara',
+        name: 'Konkani (Warang Citi)',
+        native: '𑢹𑣀𑣊𑢹𑣀𑣊 (𑢹𑣀𑣜𑣀𑣊𑣈𑣈)',
+    },
     { code: 'gom-Xsux', name: 'Konkani (Cuneiform)', native: '𒀭𒀭𒀭 (𒀭𒀭𒀭)' },
     { code: 'gom-Yiii', name: 'Konkani (Yi)', native: 'ꇗꇗꇗ (ꆈꌠ)' },
-    { code: 'gom-Zanb', name: 'Konkani (Zanabazar Square)', native: '𑨀𑨀𑨀 (𑨀𑨀𑨀)' },
+    {
+        code: 'gom-Zanb',
+        name: 'Konkani (Zanabazar Square)',
+        native: '𑨀𑨀𑨀 (𑨀𑨀𑨀)',
+    },
 ];
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
@@ -192,9 +264,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     return (
         <div className={`space-y-2 ${className}`}>
             {label && (
-                <Label htmlFor="language-selector" className="text-gray-900 dark:text-white">
+                <Label
+                    htmlFor="language-selector"
+                    className="text-gray-900 dark:text-white"
+                >
                     {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
+                    {required && <span className="ml-1 text-red-500">*</span>}
                 </Label>
             )}
             <Select
@@ -202,18 +277,18 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                 onValueChange={onValueChange}
                 disabled={disabled}
             >
-                <SelectTrigger 
+                <SelectTrigger
                     id="language-selector"
-                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 >
                     <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
                     {LANGUAGES.map((language) => (
                         <SelectItem key={language.code} value={language.name}>
-                            <div className="flex items-center justify-between w-full">
+                            <div className="flex w-full items-center justify-between">
                                 <span>{language.name}</span>
-                                <span className="text-sm text-muted-foreground ml-2">
+                                <span className="ml-2 text-sm text-muted-foreground">
                                     {language.native}
                                 </span>
                             </div>

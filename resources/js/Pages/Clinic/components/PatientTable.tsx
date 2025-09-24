@@ -8,6 +8,13 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import { Input } from '@/Components/ui/input';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
     Table,
     TableBody,
     TableCell,
@@ -36,6 +43,8 @@ interface PatientTableProps {
     currentPatients: Patient[];
     searchTerm: string;
     setSearchTerm: (term: string) => void;
+    nextVisitFilter: 'all' | 'today' | 'tomorrow';
+    setNextVisitFilter: (filter: 'all' | 'today' | 'tomorrow') => void;
     currentPage: number;
     setCurrentPage: (page: number) => void;
     pageCount: number;
@@ -57,6 +66,8 @@ export const PatientTable: React.FC<PatientTableProps> = ({
     currentPatients,
     searchTerm,
     setSearchTerm,
+    nextVisitFilter,
+    setNextVisitFilter,
     currentPage,
     setCurrentPage,
     pageCount,
@@ -76,7 +87,29 @@ export const PatientTable: React.FC<PatientTableProps> = ({
         <>
             <div className="mb-4 flex flex-col justify-between gap-4 sm:flex-row">
                 <div className="flex flex-col gap-2 sm:flex-row">
-                    {/* Add any additional controls here */}
+                    <div className="w-full sm:w-48">
+                        <Select
+                            value={nextVisitFilter}
+                            onValueChange={(
+                                value: 'all' | 'today' | 'tomorrow',
+                            ) => setNextVisitFilter(value)}
+                        >
+                            <SelectTrigger className="w-full border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                <SelectValue placeholder="Filter by next visit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    All Patients
+                                </SelectItem>
+                                <SelectItem value="today">
+                                    Today's Visits
+                                </SelectItem>
+                                <SelectItem value="tomorrow">
+                                    Tomorrow's Visits
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <div className="relative w-full sm:w-64">
                     <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400" />

@@ -10,12 +10,46 @@ export const usePatients = (initialPatients: Patient[]) => {
         })),
     );
     const [searchTerm, setSearchTerm] = useState('');
+    const [nextVisitFilter, setNextVisitFilter] = useState<
+        'all' | 'today' | 'tomorrow'
+    >('all');
     const [currentPage, setCurrentPage] = useState(1);
     const patientsPerPage = 15;
 
-    const filteredPatients = patients.filter((patient) =>
-        patient.name?.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+    // Helper function to check if a date is today
+    const isToday = (dateString: string): boolean => {
+        if (!dateString) return false;
+        const date = new Date(dateString);
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
+    // Helper function to check if a date is tomorrow
+    const isTomorrow = (dateString: string): boolean => {
+        if (!dateString) return false;
+        const date = new Date(dateString);
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return date.toDateString() === tomorrow.toDateString();
+    };
+
+    const filteredPatients = patients.filter((patient) => {
+        // Search term filter
+        const matchesSearch = patient.name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase());
+
+        // Next visit filter
+        let matchesNextVisit = true;
+        if (nextVisitFilter === 'today') {
+            matchesNextVisit = isToday(patient.next_visit_date);
+        } else if (nextVisitFilter === 'tomorrow') {
+            matchesNextVisit = isTomorrow(patient.next_visit_date);
+        }
+        // For 'all', matchesNextVisit remains true
+
+        return matchesSearch && matchesNextVisit;
+    });
 
     const pageCount = Math.ceil(filteredPatients.length / patientsPerPage);
     const indexOfLastPatient = currentPage * patientsPerPage;
@@ -78,6 +112,8 @@ export const usePatients = (initialPatients: Patient[]) => {
         setPatients,
         searchTerm,
         setSearchTerm,
+        nextVisitFilter,
+        setNextVisitFilter,
         currentPage,
         setCurrentPage,
         filteredPatients,

@@ -594,28 +594,28 @@ export type NewPatient = {
     gender?: string;
     birthdate?: string;
     blood_type?: string;
-    
+
     // Medical Information
     medical_history?: string;
     allergies?: string;
     medications?: string;
-    
+
     // Visit Information
     next_visit_date?: string;
     next_visit_time?: string;
-    
+
     // Insurance Information
     insurance_provider?: string;
     insurance_policy_number?: string;
     insurance_expiration_date?: string;
-    
+
     // Emergency Contact Information
     emergency_contact_name?: string;
     emergency_contact_phone?: string;
     emergency_contact_relationship?: string;
     emergency_contact_address?: string;
     emergency_contact_email?: string;
-    
+
     // Social History & Additional Information
     smoking_status?: 'never' | 'former' | 'current' | 'unknown';
     alcohol_use?: 'never' | 'occasional' | 'moderate' | 'heavy' | 'unknown';
@@ -624,7 +624,7 @@ export type NewPatient = {
     has_advance_directive?: boolean;
     advance_directive_notes?: string;
     status?: 'active' | 'inactive' | 'deceased';
-    
+
     // VIP Information (optional, can be set later)
     is_vip?: boolean;
     vip_tier?: 'standard' | 'gold' | 'platinum' | 'diamond';
@@ -634,7 +634,7 @@ export type NewPatient = {
     extended_consultation_time?: boolean;
     dedicated_staff_assignment?: boolean;
     complimentary_services?: boolean;
-    
+
     // Payment Account Information
     clinic_payment_account_id?: number;
     billing_type?: 'individual' | 'account';
