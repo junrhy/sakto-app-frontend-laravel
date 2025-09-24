@@ -380,6 +380,53 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'admin'])->group
 - **Component Composition**: Build complex UIs by combining smaller components
 - **Proper File Naming**: Use descriptive names that reflect component functionality
 
+#### Global Components Best Practices
+**CRITICAL**: Always check for existing global components before creating new ones.
+
+- **Check Global Components First**: Before implementing any UI component, always check `resources/js/Components/` for existing reusable components
+- **Common Global Components Available**:
+  - `LanguageSelector` - Comprehensive language selection with 100+ languages
+  - `TextInput` - Standardized text input with consistent styling
+  - `TextArea` - Standardized textarea with consistent styling
+  - `TeamMemberSelector` - Team member selection component
+  - `StockManager` - Inventory management component
+  - `RichTextEditor` - Rich text editing capabilities
+  - `ImageUploader` - File upload with image preview
+  - `ContactSelector` - Contact selection and management
+  - `Pagination` - Standardized pagination component
+  - `Modal`, `Dialog` - Modal and dialog components
+  - `PrimaryButton`, `SecondaryButton`, `DangerButton` - Standardized button components
+
+- **When to Create Global Components**:
+  - Component will be used in 2+ different locations
+  - Component has reusable logic or styling
+  - Component represents a common UI pattern (selectors, forms, etc.)
+  - Component needs consistent behavior across the app
+
+- **Global Component Creation Guidelines**:
+  - Place in `resources/js/Components/` directory
+  - Use TypeScript interfaces for props
+  - Include comprehensive prop documentation
+  - Follow consistent naming conventions (PascalCase)
+  - Ensure proper dark mode support
+  - Include proper accessibility features
+  - Export both named and default exports when appropriate
+
+- **Import Global Components**:
+  ```tsx
+  // Preferred: Named import for clarity
+  import { LanguageSelector } from '@/Components/LanguageSelector';
+  
+  // Also acceptable: Default import
+  import LanguageSelector from '@/Components/LanguageSelector';
+  ```
+
+- **Component Reuse Priority**:
+  1. **First**: Check existing global components
+  2. **Second**: Check if existing component can be extended/modified
+  3. **Third**: Create new global component if truly needed
+  4. **Last Resort**: Create page-specific component (avoid duplication)
+
 #### Example Component Structure:
 ```
 Components/
@@ -690,6 +737,40 @@ export default function ComponentName({ data, categories }: Props) {
 - Compress and optimize images
 - Use CDN for static assets
 
+## Development Workflow Guidelines
+
+### Before Starting Any Development Task
+**CRITICAL CHECKLIST** - Always follow this order:
+
+1. **Check Global Components**: Before implementing any UI component, check `resources/js/Components/` for existing reusable components
+2. **Review Existing Patterns**: Look at similar implementations in the codebase for consistency
+3. **Check API Endpoints**: Verify if backend API endpoints already exist before creating new ones
+4. **Review Database Schema**: Check if database tables/columns already exist before creating migrations
+5. **Check Route Structure**: Verify if routes already exist before adding new ones
+
+### Component Development Workflow
+```bash
+# 1. Check what global components exist
+ls -la resources/js/Components/
+
+# 2. Check if similar functionality exists
+grep -r "similarFunctionality" resources/js/
+
+# 3. Create new global component if needed
+touch resources/js/Components/NewComponent.tsx
+
+# 4. Test the component
+npm run lint
+npm run dev
+```
+
+### Global Component Verification Process
+Before creating any new component, ask:
+- ✅ Does a similar component already exist in `resources/js/Components/`?
+- ✅ Can an existing component be extended or modified?
+- ✅ Is this component likely to be reused elsewhere?
+- ✅ Does this component follow the established design patterns?
+
 ## Testing Guidelines
 - Write unit tests for critical business logic
 - Test API endpoints thoroughly
@@ -797,6 +878,21 @@ docker-compose exec [service-name] bash
 - Consider mobile responsiveness in all UI components
 - Use proper TypeScript types for better development experience
 - Maintain backward compatibility when making API changes
+- **ALWAYS check global components first** before creating new UI components
+- **Use LanguageSelector** for any language selection needs (comprehensive 100+ languages)
+
+### Global Component Examples
+- **LanguageSelector**: Use for any language selection (patient forms, user preferences, etc.)
+  ```tsx
+  import { LanguageSelector } from '@/Components/LanguageSelector';
+  
+  <LanguageSelector
+    value={userLanguage}
+    onValueChange={setUserLanguage}
+    placeholder="Select language"
+    label="Preferred Language"
+  />
+  ```
 
 ## Troubleshooting
 - Check API connectivity if frontend requests fail

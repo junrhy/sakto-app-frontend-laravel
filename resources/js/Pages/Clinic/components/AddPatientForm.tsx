@@ -6,6 +6,9 @@ import { Textarea } from "@/Components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { Badge } from "@/Components/ui/badge";
+import { User, Heart, Phone } from "lucide-react";
+import { LanguageSelector } from "@/Components/LanguageSelector";
 import { NewPatient } from '../types';
 
 interface AddPatientFormProps {
@@ -31,11 +34,28 @@ export const AddPatientForm: React.FC<AddPatientFormProps> = ({
             </div>
 
             <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                    <TabsTrigger value="medical">Medical</TabsTrigger>
-                    <TabsTrigger value="emergency">Emergency</TabsTrigger>
-                    <TabsTrigger value="additional">Additional</TabsTrigger>
+                <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <TabsTrigger
+                        value="basic"
+                        className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                    >
+                        <User className="h-4 w-4" />
+                        <span>Basic Info</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="medical"
+                        className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                    >
+                        <Heart className="h-4 w-4" />
+                        <span>Medical</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="emergency"
+                        className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400"
+                    >
+                        <Phone className="h-4 w-4" />
+                        <span>Emergency</span>
+                    </TabsTrigger>
                 </TabsList>
 
                 <form onSubmit={onSubmit} className="space-y-6">
@@ -134,23 +154,12 @@ export const AddPatientForm: React.FC<AddPatientFormProps> = ({
                                         </Select>
                                     </div>
                                     <div>
-                                        <Label htmlFor="preferred_language" className="text-gray-900 dark:text-white">Preferred Language</Label>
-                                        <Select value={newPatient.preferred_language || 'English'} onValueChange={(value) => updateField('preferred_language', value)}>
-                                            <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
-                                                <SelectValue placeholder="Select language" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="English">English</SelectItem>
-                                                <SelectItem value="Spanish">Spanish</SelectItem>
-                                                <SelectItem value="French">French</SelectItem>
-                                                <SelectItem value="German">German</SelectItem>
-                                                <SelectItem value="Chinese">Chinese</SelectItem>
-                                                <SelectItem value="Japanese">Japanese</SelectItem>
-                                                <SelectItem value="Korean">Korean</SelectItem>
-                                                <SelectItem value="Arabic">Arabic</SelectItem>
-                                                <SelectItem value="Other">Other</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <LanguageSelector
+                                            value={newPatient.preferred_language || 'English'}
+                                            onValueChange={(value) => updateField('preferred_language', value)}
+                                            placeholder="Select language"
+                                            label="Preferred Language"
+                                        />
                                     </div>
                                 </div>
                                 <div>
@@ -378,63 +387,6 @@ export const AddPatientForm: React.FC<AddPatientFormProps> = ({
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="additional" className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Additional Information</CardTitle>
-                                <CardDescription>Advance directives and visit preferences</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <Label htmlFor="next_visit_date" className="text-gray-900 dark:text-white">Next Visit Date</Label>
-                                        <Input
-                                            id="next_visit_date"
-                                            type="date"
-                                            value={newPatient.next_visit_date || ''}
-                                            onChange={(e) => updateField('next_visit_date', e.target.value)}
-                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="next_visit_time" className="text-gray-900 dark:text-white">Next Visit Time</Label>
-                                        <Input
-                                            id="next_visit_time"
-                                            type="time"
-                                            value={newPatient.next_visit_time || ''}
-                                            onChange={(e) => updateField('next_visit_time', e.target.value)}
-                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            id="has_advance_directive"
-                                            type="checkbox"
-                                            checked={newPatient.has_advance_directive || false}
-                                            onChange={(e) => updateField('has_advance_directive', e.target.checked)}
-                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                        />
-                                        <Label htmlFor="has_advance_directive" className="text-gray-900 dark:text-white">Has Advance Directive</Label>
-                                    </div>
-                                    {newPatient.has_advance_directive && (
-                                        <div>
-                                            <Label htmlFor="advance_directive_notes" className="text-gray-900 dark:text-white">Advance Directive Notes</Label>
-                                            <Textarea
-                                                id="advance_directive_notes"
-                                                value={newPatient.advance_directive_notes || ''}
-                                                onChange={(e) => updateField('advance_directive_notes', e.target.value)}
-                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
-                                                placeholder="Details about advance directives, living will, etc."
-                                                rows={3}
-                />
-            </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
 
                     <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
                         <Button type="submit" className="min-w-32">

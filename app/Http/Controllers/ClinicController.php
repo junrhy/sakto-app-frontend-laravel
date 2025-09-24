@@ -84,13 +84,34 @@ class ClinicController extends Controller
         try {
             $clientIdentifier = auth()->user()->identifier;
             $request->merge(['client_identifier' => $clientIdentifier]);
+            
+            // Send all form fields to the backend API
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/patients", [
                     'arn' => $request->arn,
                     'name' => $request->name,
-                    'birthdate' => $request->dateOfBirth,
-                    'phone' => $request->contactNumber,
+                    'birthdate' => $request->birthdate,
+                    'phone' => $request->phone,
                     'email' => $request->email,
+                    'address' => $request->address,
+                    'gender' => $request->gender,
+                    'blood_type' => $request->blood_type,
+                    'preferred_language' => $request->preferred_language,
+                    'smoking_status' => $request->smoking_status,
+                    'alcohol_use' => $request->alcohol_use,
+                    'occupation' => $request->occupation,
+                    'status' => $request->status,
+                    'medical_history' => $request->medical_history,
+                    'allergies' => $request->allergies,
+                    'medications' => $request->medications,
+                    'emergency_contact_name' => $request->emergency_contact_name,
+                    'emergency_contact_relationship' => $request->emergency_contact_relationship,
+                    'emergency_contact_phone' => $request->emergency_contact_phone,
+                    'emergency_contact_email' => $request->emergency_contact_email,
+                    'emergency_contact_address' => $request->emergency_contact_address,
+                    'insurance_provider' => $request->insurance_provider,
+                    'insurance_policy_number' => $request->insurance_policy_number,
+                    'insurance_expiration_date' => $request->insurance_expiration_date,
                     'client_identifier' => $clientIdentifier
                 ]);
             return response()->json($response->json());
