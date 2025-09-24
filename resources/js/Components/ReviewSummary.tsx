@@ -1,7 +1,6 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Star, TrendingUp, Users, Award, CheckCircle } from 'lucide-react';
+import { Award, CheckCircle, Star } from 'lucide-react';
+import React from 'react';
 
 interface RatingDistribution {
     [key: number]: number;
@@ -24,22 +23,30 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
 }) => {
     const getRatingPercentage = (rating: number): number => {
         if (totalReviews === 0) return 0;
-        return Math.round((ratingDistribution[rating] || 0) / totalReviews * 100);
+        return Math.round(
+            ((ratingDistribution[rating] || 0) / totalReviews) * 100,
+        );
     };
 
     const getRatingLabel = (rating: number): string => {
         switch (rating) {
-            case 5: return 'Excellent';
-            case 4: return 'Very Good';
-            case 3: return 'Good';
-            case 2: return 'Fair';
-            case 1: return 'Poor';
-            default: return '';
+            case 5:
+                return 'Excellent';
+            case 4:
+                return 'Very Good';
+            case 3:
+                return 'Good';
+            case 2:
+                return 'Fair';
+            case 1:
+                return 'Poor';
+            default:
+                return '';
         }
     };
 
     return (
-        <Card className="border border-gray-200 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className="border border-gray-200 bg-white/50 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/50">
             <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Customer Reviews
@@ -52,40 +59,49 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                         <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                             {(Number(averageRating) || 0).toFixed(1)}
                         </div>
-                        <div className="flex items-center justify-center space-x-1 mt-1">
+                        <div className="mt-1 flex items-center justify-center space-x-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                     key={star}
-                                    className={`w-4 h-4 ${
-                                        star <= Math.round(Number(averageRating) || 0)
-                                            ? 'text-yellow-400 fill-current'
+                                    className={`h-4 w-4 ${
+                                        star <=
+                                        Math.round(Number(averageRating) || 0)
+                                            ? 'fill-current text-yellow-400'
                                             : 'text-gray-300 dark:text-gray-600'
                                     }`}
                                 />
                             ))}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
+                        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {totalReviews}{' '}
+                            {totalReviews === 1 ? 'review' : 'reviews'}
                         </div>
                     </div>
-                    
+
                     <div className="flex-1">
                         {/* Rating Distribution */}
                         <div className="space-y-2">
                             {[5, 4, 3, 2, 1].map((rating) => {
                                 const count = ratingDistribution[rating] || 0;
                                 const percentage = getRatingPercentage(rating);
-                                
+
                                 return (
-                                    <div key={rating} className="flex items-center space-x-2">
-                                        <div className="flex items-center space-x-1 w-8">
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">{rating}</span>
-                                            <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                                    <div
+                                        key={rating}
+                                        className="flex items-center space-x-2"
+                                    >
+                                        <div className="flex w-8 items-center space-x-1">
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                {rating}
+                                            </span>
+                                            <Star className="h-3 w-3 fill-current text-yellow-400" />
                                         </div>
-                                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                        <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                                             <div
-                                                className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
-                                                style={{ width: `${percentage}%` }}
+                                                className="h-2 rounded-full bg-yellow-400 transition-all duration-300"
+                                                style={{
+                                                    width: `${percentage}%`,
+                                                }}
                                             />
                                         </div>
                                         <div className="w-12 text-right">
@@ -101,10 +117,10 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                 </div>
 
                 {/* Review Stats */}
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+                <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 dark:border-gray-700/50">
                     {verifiedPurchaseCount > 0 && (
                         <div className="flex items-center space-x-2">
-                            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                             <div>
                                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {verifiedPurchaseCount}
@@ -115,10 +131,10 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                             </div>
                         </div>
                     )}
-                    
+
                     {featuredReviewsCount > 0 && (
                         <div className="flex items-center space-x-2">
-                            <Award className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            <Award className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                             <div>
                                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {featuredReviewsCount}
@@ -133,13 +149,16 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
 
                 {/* Rating Summary */}
                 {(Number(averageRating) || 0) > 0 && (
-                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700/50">
+                    <div className="border-t border-gray-100 pt-4 dark:border-gray-700/50">
                         <div className="text-center">
                             <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                {getRatingLabel(Math.round(Number(averageRating) || 0))}
+                                {getRatingLabel(
+                                    Math.round(Number(averageRating) || 0),
+                                )}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                                Based on {totalReviews} customer {totalReviews === 1 ? 'review' : 'reviews'}
+                                Based on {totalReviews} customer{' '}
+                                {totalReviews === 1 ? 'review' : 'reviews'}
                             </div>
                         </div>
                     </div>
@@ -149,4 +168,4 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
     );
 };
 
-export default ReviewSummary; 
+export default ReviewSummary;

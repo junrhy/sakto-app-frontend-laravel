@@ -1,21 +1,27 @@
-import { useState } from 'react';
-import { Patient, NewCheckupResult, CheckupDate } from '../types';
-import { format } from "date-fns";
 import axios from 'axios';
+import { format } from 'date-fns';
+import { useState } from 'react';
+import { CheckupDate, NewCheckupResult, Patient } from '../types';
 
 export const useCheckups = () => {
-    const [newCheckupResult, setNewCheckupResult] = useState<NewCheckupResult>({ 
-        checkup_date: '', 
-        date: '', 
-        diagnosis: '', 
-        treatment: '', 
-        notes: '' 
+    const [newCheckupResult, setNewCheckupResult] = useState<NewCheckupResult>({
+        checkup_date: '',
+        date: '',
+        diagnosis: '',
+        treatment: '',
+        notes: '',
     });
     const [checkupPatient, setCheckupPatient] = useState<Patient | null>(null);
     const [isCheckupDialogOpen, setIsCheckupDialogOpen] = useState(false);
-    const [checkupDateTime, setCheckupDateTime] = useState<CheckupDate>({ date: undefined });
+    const [checkupDateTime, setCheckupDateTime] = useState<CheckupDate>({
+        date: undefined,
+    });
 
-    const addCheckup = async (patient: Patient, checkupData: NewCheckupResult, dateTime: CheckupDate) => {
+    const addCheckup = async (
+        patient: Patient,
+        checkupData: NewCheckupResult,
+        dateTime: CheckupDate,
+    ) => {
         if (!dateTime.date) {
             return { success: false, error: 'Please select a date' };
         }
@@ -23,11 +29,14 @@ export const useCheckups = () => {
         const dateStr = format(dateTime.date, 'yyyy-MM-dd');
         const combinedResult = {
             ...checkupData,
-            checkup_date: dateStr
+            checkup_date: dateStr,
         };
 
         try {
-            const response = await axios.post(`/clinic/patients/${patient.id}/checkups`, combinedResult);
+            const response = await axios.post(
+                `/clinic/patients/${patient.id}/checkups`,
+                combinedResult,
+            );
             return { success: true, data: response.data };
         } catch (error) {
             console.error('Failed to add checkup:', error);
@@ -37,7 +46,9 @@ export const useCheckups = () => {
 
     const deleteCheckup = async (patientId: string, checkupId: number) => {
         try {
-            await axios.delete(`/clinic/patients/${patientId}/checkups/${checkupId}`);
+            await axios.delete(
+                `/clinic/patients/${patientId}/checkups/${checkupId}`,
+            );
             return { success: true };
         } catch (error) {
             console.error('Failed to delete checkup:', error);
@@ -47,13 +58,15 @@ export const useCheckups = () => {
 
     const fetchCheckupHistory = async (patient: Patient) => {
         try {
-            const response = await axios.get(`/clinic/patients/${patient.id}/checkups`);
+            const response = await axios.get(
+                `/clinic/patients/${patient.id}/checkups`,
+            );
             return {
                 success: true,
                 data: {
                     ...patient,
-                    checkups: response.data.checkups
-                }
+                    checkups: response.data.checkups,
+                },
             };
         } catch (error) {
             console.error('Failed to fetch checkup history:', error);
@@ -62,7 +75,13 @@ export const useCheckups = () => {
     };
 
     const resetCheckupForm = () => {
-        setNewCheckupResult({ checkup_date: '', date: '', diagnosis: '', treatment: '', notes: '' });
+        setNewCheckupResult({
+            checkup_date: '',
+            date: '',
+            diagnosis: '',
+            treatment: '',
+            notes: '',
+        });
         setCheckupDateTime({ date: undefined });
         setCheckupPatient(null);
         setIsCheckupDialogOpen(false);
@@ -80,6 +99,6 @@ export const useCheckups = () => {
         addCheckup,
         deleteCheckup,
         fetchCheckupHistory,
-        resetCheckupForm
+        resetCheckupForm,
     };
 };

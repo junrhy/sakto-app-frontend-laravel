@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import { Receipt } from 'lucide-react';
 import MonthlyBillingView from './MonthlyBillingView';
 
@@ -8,11 +14,12 @@ export default function BillingHistory() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Receipt className="w-5 h-5" />
+                        <Receipt className="h-5 w-5" />
                         Billing History
                     </CardTitle>
                     <CardDescription>
-                        View your app purchases and subscription billing history.
+                        View your app purchases and subscription billing
+                        history.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

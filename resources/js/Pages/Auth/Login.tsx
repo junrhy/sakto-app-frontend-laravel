@@ -2,11 +2,11 @@ import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import SocialButton from '@/Components/SocialButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import SocialButton from '@/Components/SocialButton';
 
 export default function Login({
     status,
@@ -33,69 +33,87 @@ export default function Login({
         <GuestLayout>
             <Head title="Log in" />
 
-            <div className="flex w-full min-h-screen bg-white dark:bg-gray-900">
+            <div className="flex min-h-screen w-full bg-white dark:bg-gray-900">
                 {/* Left side - Login Form */}
-                <div className="w-full md:w-1/2 flex flex-col">
+                <div className="flex w-full flex-col md:w-1/2">
                     {/* Logo Section */}
                     <div className="p-8">
-                        <img 
+                        <img
                             src="/images/tetris.png"
-                            className="h-12 w-auto block dark:hidden"
+                            className="block h-12 w-auto dark:hidden"
                             alt="Logo"
                         />
-                        <img 
+                        <img
                             src="/images/tetris-white.png"
-                            className="h-12 w-auto hidden dark:block"
+                            className="hidden h-12 w-auto dark:block"
                             alt="Logo"
                         />
                     </div>
 
                     {/* Form Section */}
-                    <div className="flex-grow flex items-center justify-center px-8 sm:px-12 lg:px-16">
+                    <div className="flex flex-grow items-center justify-center px-8 sm:px-12 lg:px-16">
                         <div className="w-full max-w-[440px]">
                             <div className="mb-8">
                                 <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                                     Welcome Back
                                 </h2>
-                                <p className="text-base text-gray-600 dark:text-gray-400 mt-2">
+                                <p className="mt-2 text-base text-gray-600 dark:text-gray-400">
                                     Please sign in to your account
                                 </p>
                             </div>
 
                             {status && (
-                                <div className="mb-4 p-4 rounded-md bg-green-50 dark:bg-green-900/50 text-sm font-medium text-green-600 dark:text-green-400">
+                                <div className="mb-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-600 dark:bg-green-900/50 dark:text-green-400">
                                     {status}
                                 </div>
                             )}
 
                             <form onSubmit={submit} className="space-y-6">
                                 <div>
-                                    <InputLabel htmlFor="email" value="Email" className="text-gray-700 dark:text-gray-300 text-base" />
+                                    <InputLabel
+                                        htmlFor="email"
+                                        value="Email"
+                                        className="text-base text-gray-700 dark:text-gray-300"
+                                    />
                                     <TextInput
                                         id="email"
                                         type="email"
                                         name="email"
                                         value={data.email}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base"
+                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         autoComplete="username"
                                         isFocused={true}
-                                        onChange={(e) => setData('email', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('email', e.target.value)
+                                        }
                                     />
-                                    <InputError message={errors.email} className="mt-2" />
+                                    <InputError
+                                        message={errors.email}
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="password" value="Password" className="text-gray-700 dark:text-gray-300 text-base" />
+                                    <InputLabel
+                                        htmlFor="password"
+                                        value="Password"
+                                        className="text-base text-gray-700 dark:text-gray-300"
+                                    />
                                     <TextInput
                                         id="password"
                                         type="password"
                                         name="password"
                                         value={data.password}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base"
+                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         autoComplete="current-password"
-                                        onChange={(e) => setData('password', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('password', e.target.value)
+                                        }
                                     />
-                                    <InputError message={errors.password} className="mt-2" />
+                                    <InputError
+                                        message={errors.password}
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div className="flex items-center justify-between">
@@ -103,7 +121,12 @@ export default function Login({
                                         <Checkbox
                                             name="remember"
                                             checked={data.remember}
-                                            onChange={(e) => setData('remember', e.target.checked)}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'remember',
+                                                    e.target.checked,
+                                                )
+                                            }
                                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                         />
                                         <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
@@ -126,7 +149,9 @@ export default function Login({
                                         <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                                     </div>
                                     <div className="relative flex justify-center text-sm">
-                                        <span className="px-2 text-gray-500 bg-white dark:bg-gray-900">Or continue with</span>
+                                        <span className="bg-white px-2 text-gray-500 dark:bg-gray-900">
+                                            Or continue with
+                                        </span>
                                     </div>
                                 </div>
 
@@ -134,7 +159,10 @@ export default function Login({
                                     <SocialButton
                                         provider="Google"
                                         icon="/images/google.svg"
-                                        onClick={() => window.location.href = route('google.redirect')}
+                                        onClick={() =>
+                                            (window.location.href =
+                                                route('google.redirect'))
+                                        }
                                         type="button"
                                     >
                                         Google
@@ -143,27 +171,69 @@ export default function Login({
 
                                 <div>
                                     <PrimaryButton
-                                        className="w-full justify-center py-3 px-4 text-base font-medium rounded-lg"
+                                        className="w-full justify-center rounded-lg px-4 py-3 text-base font-medium"
                                         disabled={processing}
                                     >
-                                        {processing ? 'Signing in...' : 'Sign in'}
+                                        {processing
+                                            ? 'Signing in...'
+                                            : 'Sign in'}
                                     </PrimaryButton>
                                 </div>
 
                                 <div className="text-center">
-                                    <div className="relative inline-block group">
-                                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 w-40 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] transform origin-bottom">
-                                            <div className="py-0.5" role="menu" aria-orientation="vertical">
+                                    <div className="group relative inline-block">
+                                        <div className="invisible absolute bottom-full left-1/2 z-[100] mb-1 w-40 origin-bottom -translate-x-1/2 transform rounded-md bg-white opacity-0 shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 group-hover:visible group-hover:opacity-100 dark:bg-gray-800">
+                                            <div
+                                                className="py-0.5"
+                                                role="menu"
+                                                aria-orientation="vertical"
+                                            >
                                                 {[
-                                                    { name: 'Community', href: route('register', { project: 'community' }) },
-                                                    { name: 'Logistics', href: route('register', { project: 'logistics' }) },
-                                                    { name: 'Medical', href: route('register', { project: 'medical' }) },
-                                                    { name: 'Enterprise', href: route('register', { project: 'enterprise' }) },
+                                                    {
+                                                        name: 'Community',
+                                                        href: route(
+                                                            'register',
+                                                            {
+                                                                project:
+                                                                    'community',
+                                                            },
+                                                        ),
+                                                    },
+                                                    {
+                                                        name: 'Logistics',
+                                                        href: route(
+                                                            'register',
+                                                            {
+                                                                project:
+                                                                    'logistics',
+                                                            },
+                                                        ),
+                                                    },
+                                                    {
+                                                        name: 'Medical',
+                                                        href: route(
+                                                            'register',
+                                                            {
+                                                                project:
+                                                                    'medical',
+                                                            },
+                                                        ),
+                                                    },
+                                                    {
+                                                        name: 'Enterprise',
+                                                        href: route(
+                                                            'register',
+                                                            {
+                                                                project:
+                                                                    'enterprise',
+                                                            },
+                                                        ),
+                                                    },
                                                 ].map((option) => (
                                                     <Link
                                                         key={option.name}
                                                         href={option.href}
-                                                        className="block px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                                                        className="block px-3 py-1.5 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700"
                                                         role="menuitem"
                                                     >
                                                         {option.name}
@@ -175,11 +245,22 @@ export default function Login({
                                             Don't have an account?{' '}
                                             <button
                                                 type="button"
-                                                className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 inline-flex items-center"
+                                                className="inline-flex items-center font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
                                             >
                                                 Sign up
-                                                <svg className="ml-1 w-4 h-4 group-hover:translate-y-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                <svg
+                                                    className="ml-1 h-4 w-4 transition-transform group-hover:translate-y-0.5"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
                                                 </svg>
                                             </button>
                                         </span>
@@ -192,16 +273,16 @@ export default function Login({
 
                 {/* Right side - Image */}
                 <div className="hidden md:block md:w-1/2">
-                    <div className="w-full h-full">
+                    <div className="h-full w-full">
                         <img
-                            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
                             alt="Office workspace with laptop and coffee"
-                            className="w-full h-full object-cover block dark:hidden"
+                            className="block h-full w-full object-cover dark:hidden"
                         />
                         <img
-                            src="https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                            src="https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
                             alt="Dark office workspace at night"
-                            className="w-full h-full object-cover hidden dark:block"
+                            className="hidden h-full w-full object-cover dark:block"
                         />
                     </div>
                 </div>

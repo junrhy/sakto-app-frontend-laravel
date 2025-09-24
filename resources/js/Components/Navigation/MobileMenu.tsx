@@ -1,5 +1,5 @@
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { menuCategories, getVisibleItems } from './MenuConfig';
+import { getVisibleItems, menuCategories } from './MenuConfig';
 
 interface MobileMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;
@@ -7,24 +7,36 @@ interface MobileMenuProps {
     url: string;
 }
 
-export default function MobileMenu({ hasModuleAccess, appParam, url }: MobileMenuProps) {
+export default function MobileMenu({
+    hasModuleAccess,
+    appParam,
+    url,
+}: MobileMenuProps) {
     return (
         <>
             {menuCategories.map((category) => {
-                const visibleItems = getVisibleItems(category, hasModuleAccess, appParam, url);
+                const visibleItems = getVisibleItems(
+                    category,
+                    hasModuleAccess,
+                    appParam,
+                    url,
+                );
                 if (visibleItems.length === 0) return null;
 
                 return (
-                    <div key={category.id} className="border-t border-gray-200 dark:border-white/10">
+                    <div
+                        key={category.id}
+                        className="border-t border-gray-200 dark:border-white/10"
+                    >
                         <div className="px-4 py-2">
-                            <div className="font-medium text-base text-gray-800 dark:text-white/90">
+                            <div className="text-base font-medium text-gray-800 dark:text-white/90">
                                 {category.title}
                             </div>
                             {visibleItems.map((item) => (
-                                <ResponsiveNavLink 
+                                <ResponsiveNavLink
                                     key={item.id}
-                                    href={item.href} 
-                                    className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                    href={item.href}
+                                    className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
                                 >
                                     {item.title}
                                 </ResponsiveNavLink>

@@ -1,11 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { Link as InertiaLink } from '@inertiajs/react';
-import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
+import BottomNav from '@/Components/BottomNav';
+import { ThemeProvider, useTheme } from '@/Components/ThemeProvider';
 import { Button } from '@/Components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
+import {
+    ArrowRightStartOnRectangleIcon,
+    CreditCardIcon,
+    QuestionMarkCircleIcon,
+    UserIcon,
+} from '@heroicons/react/24/outline';
+import { Link as InertiaLink } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 // App interface and utility functions
 interface App {
     icon: JSX.Element;
@@ -31,7 +43,9 @@ interface App {
 
 // Utility function to get icon for any app
 const getIconForApp = (app: any): JSX.Element => {
-    const IconComponent = getIconByName(app.icon || getSmartIconSuggestion(app.title));
+    const IconComponent = getIconByName(
+        app.icon || getSmartIconSuggestion(app.title),
+    );
     return <IconComponent />;
 };
 
@@ -45,17 +59,14 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
             icon: getIconForApp(app),
             isInSubscription: app.isInSubscription || false,
             isUserAdded: app.isUserAdded || false,
-            isAvailable: app.isAvailable || false
+            isAvailable: app.isAvailable || false,
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);
         return [];
     }
 };
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
-import { Sun, Moon, Monitor } from 'lucide-react';
-import { parseEnabledModules } from '@/lib/utils';
 
 interface Props {
     auth: {
@@ -106,7 +117,8 @@ export default function Home({ auth }: Props) {
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
-    const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
+    const [isLoadingSubscription, setIsLoadingSubscription] =
+        useState<boolean>(true);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
@@ -126,7 +138,9 @@ export default function Home({ auth }: Props) {
         const fetchCredits = async () => {
             try {
                 if (auth.user.identifier) {
-                    const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                    const response = await fetch(
+                        `/credits/${auth.user.identifier}/balance`,
+                    );
                     if (response.ok) {
                         const data = await response.json();
                         setCredits(data.available_credit);
@@ -142,7 +156,9 @@ export default function Home({ auth }: Props) {
             try {
                 if (auth.user.identifier) {
                     setIsLoadingSubscription(true);
-                    const response = await fetch(`/subscriptions/${auth.user.identifier}/active`);
+                    const response = await fetch(
+                        `/subscriptions/${auth.user.identifier}/active`,
+                    );
                     if (response.ok) {
                         const data = await response.json();
                         if (data.active) {
@@ -191,57 +207,88 @@ export default function Home({ auth }: Props) {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
     };
 
     return (
         <ThemeProvider>
-            <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
+            <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900">
                 {/* Message for users without subscription */}
                 {!isLoadingSubscription && !subscription && (
-                    <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
-                        <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
-                            <span className="font-medium">Subscribe to a plan to continue using all features!</span>
-                            <Button 
-                                variant="link" 
-                                size="sm" 
-                                className="text-white underline p-0 h-auto"
-                                onClick={() => window.location.href = route('subscriptions.index')}
+                    <div className="fixed left-0 right-0 top-0 z-20 bg-gradient-to-r from-blue-600 to-indigo-600 py-1 text-center text-sm text-white">
+                        <div className="container mx-auto flex flex-wrap items-center justify-center gap-2 px-4">
+                            <span className="font-medium">
+                                Subscribe to a plan to continue using all
+                                features!
+                            </span>
+                            <Button
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-white underline"
+                                onClick={() =>
+                                    (window.location.href = route(
+                                        'subscriptions.index',
+                                    ))
+                                }
                             >
                                 View Plans
                             </Button>
                         </div>
                     </div>
                 )}
-                
-                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
+
+                <div
+                    className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80`}
+                >
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center">
-                            <div className="w-full flex justify-between items-center mb-6">
-                                <div className="flex items-center min-w-0 flex-1 mr-4">
-                                    <ApplicationLogo className="hidden sm:block h-8 sm:h-10 w-auto fill-current text-gray-900 dark:text-white flex-shrink-0" />
-                                    <div className="ml-0 sm:ml-2 min-w-0 flex-1">
-                                        <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate block">{auth.user.name}</span>
+                            <div className="mb-6 flex w-full items-center justify-between">
+                                <div className="mr-4 flex min-w-0 flex-1 items-center">
+                                    <ApplicationLogo className="hidden h-8 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block sm:h-10" />
+                                    <div className="ml-0 min-w-0 flex-1 sm:ml-2">
+                                        <span className="block truncate text-lg font-bold text-gray-900 dark:text-white sm:text-xl">
+                                            {auth.user.name}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
-                                    <div className="hidden sm:flex items-center">
-                                        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shadow-sm">
+                                    <div className="hidden items-center sm:flex">
+                                        <div className="flex items-center overflow-hidden rounded-lg bg-gray-100 shadow-sm dark:bg-gray-700">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
-                                                className="text-gray-900 dark:text-white px-3 py-1.5 rounded-l-lg rounded-r-none hover:bg-gray-200 dark:hover:bg-gray-700 border-r border-gray-200 dark:border-gray-700"
+                                                onClick={() =>
+                                                    (window.location.href =
+                                                        route(
+                                                            'credits.spent-history',
+                                                            {
+                                                                clientIdentifier:
+                                                                    auth.user
+                                                                        .identifier,
+                                                            },
+                                                        ))
+                                                }
+                                                className="rounded-l-lg rounded-r-none border-r border-gray-200 px-3 py-1.5 text-gray-900 hover:bg-gray-200 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
                                             >
-                                                <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
+                                                <span className="text-sm font-medium">
+                                                    {formatNumber(credits)}{' '}
+                                                    Credits
+                                                </span>
                                             </Button>
                                             <Button
                                                 variant="secondary"
                                                 size="sm"
-                                                className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 rounded-l-none rounded-r-lg [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
-                                                onClick={() => window.location.href = route('credits.buy')}
+                                                className="flex items-center gap-1.5 rounded-l-none rounded-r-lg border-0 bg-gradient-to-r from-orange-400 to-orange-500 font-semibold text-white shadow-lg transition-all duration-200 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)] hover:from-orange-500 hover:to-orange-600 hover:shadow-xl dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700"
+                                                onClick={() =>
+                                                    (window.location.href =
+                                                        route('credits.buy'))
+                                                }
                                             >
-                                                <CreditCardIcon className="w-4 h-4" />
+                                                <CreditCardIcon className="h-4 w-4" />
                                                 Buy
                                             </Button>
                                         </div>
@@ -250,47 +297,60 @@ export default function Home({ auth }: Props) {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="sm:hidden text-white hover:text-blue-100 hover:bg-white/10"
-                                        onClick={() => window.location.href = route('credits.buy')}
+                                        className="text-white hover:bg-white/10 hover:text-blue-100 sm:hidden"
+                                        onClick={() =>
+                                            (window.location.href =
+                                                route('credits.buy'))
+                                        }
                                     >
-                                        <CreditCardIcon className="w-5 h-5" />
+                                        <CreditCardIcon className="h-5 w-5" />
                                     </Button>
                                     <div className="relative inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+                                                <Button
+                                                    variant="ghost"
+                                                    className="flex h-auto items-center gap-2 border-0 px-3 py-2 font-normal text-gray-900 no-underline transition-colors duration-200 hover:bg-white/10 hover:text-blue-900 hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 dark:text-white"
                                                 >
-                                                    <UserIcon className="w-5 h-5" />
-                                                    <span>{auth.selectedTeamMember?.full_name || auth.user.name}</span>
+                                                    <UserIcon className="h-5 w-5" />
+                                                    <span>
+                                                        {auth.selectedTeamMember
+                                                            ?.full_name ||
+                                                            auth.user.name}
+                                                    </span>
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent 
-                                                align="end" 
+                                            <DropdownMenuContent
+                                                align="end"
                                                 alignOffset={0}
                                                 sideOffset={8}
-                                                className="w-56 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                                                onCloseAutoFocus={(e) => e.preventDefault()}
+                                                className="z-50 w-56 border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+                                                onCloseAutoFocus={(e) =>
+                                                    e.preventDefault()
+                                                }
                                                 collisionPadding={16}
                                             >
                                                 <DropdownMenuItem asChild>
-                                                    <InertiaLink 
+                                                    <InertiaLink
                                                         href={route('help')}
-                                                        className="flex items-center text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        className="flex items-center text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                                                     >
-                                                        <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
+                                                        <QuestionMarkCircleIcon className="mr-2 h-5 w-5" />
                                                         <span>Help</span>
                                                     </InertiaLink>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem>
-                                                    <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
-                                                    <InertiaLink 
-                                                        href={route('logout', { project: auth.project.identifier })} 
-                                                        method="post" 
+                                                    <ArrowRightStartOnRectangleIcon className="mr-2 h-5 w-5" />
+                                                    <InertiaLink
+                                                        href={route('logout', {
+                                                            project:
+                                                                auth.project
+                                                                    .identifier,
+                                                        })}
+                                                        method="post"
                                                         as="button"
-                                                        className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        className="w-full text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                                                     >
                                                         Logout
                                                     </InertiaLink>
@@ -302,119 +362,157 @@ export default function Home({ auth }: Props) {
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center mb-6 landscape:hidden">
+                        <div className="mb-6 flex flex-col items-center landscape:hidden">
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => window.location.href = route('credits.history', { clientIdentifier: auth.user.identifier })}
-                                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                                onClick={() =>
+                                    (window.location.href = route(
+                                        'credits.history',
+                                        {
+                                            clientIdentifier:
+                                                auth.user.identifier,
+                                        },
+                                    ))
+                                }
+                                className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                             >
-                                <span className="text-lg text-gray-900 dark:text-white text-opacity-90 mt-1 text-center max-w-2xl">
+                                <span className="mt-1 max-w-2xl text-center text-lg text-gray-900 text-opacity-90 dark:text-white">
                                     {formatNumber(credits)} Credits
                                 </span>
                             </Button>
                             {subscription && (
-                                <div className="text-gray-900 dark:text-white text-opacity-80 text-sm mt-1">
-                                    <span className="bg-purple-500 text-white px-2 py-0.5 rounded-full text-xs font-medium mr-1">
+                                <div className="mt-1 text-sm text-gray-900 text-opacity-80 dark:text-white">
+                                    <span className="mr-1 rounded-full bg-purple-500 px-2 py-0.5 text-xs font-medium text-white">
                                         {subscription.plan.name}
                                     </span>
-                                
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[200px]'} landscape:pt-[160px] md:pt-[220px] overflow-y-auto mb-4`}>
+                <div
+                    className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[200px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[160px]`}
+                >
                     {/* Show subscription message when user has no subscription */}
                     {!isLoadingSubscription && !subscription && (
                         <div className="mb-8 text-center">
-                            <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 dark:from-blue-600 dark:via-purple-700 dark:to-indigo-800 rounded-2xl p-8 border-0 shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                            <div className="relative transform overflow-hidden rounded-2xl border-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 p-8 shadow-2xl transition-all duration-300 hover:scale-[1.02] dark:from-blue-600 dark:via-purple-700 dark:to-indigo-800">
                                 {/* Animated background elements */}
-                                <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                                    <div className="absolute top-4 left-4 w-20 h-20 bg-white rounded-full animate-pulse"></div>
-                                    <div className="absolute top-12 right-8 w-16 h-16 bg-white rounded-full animate-pulse delay-1000"></div>
-                                    <div className="absolute bottom-8 left-12 w-12 h-12 bg-white rounded-full animate-pulse delay-500"></div>
-                                    <div className="absolute bottom-4 right-4 w-24 h-24 bg-white rounded-full animate-pulse delay-1500"></div>
+                                <div className="absolute left-0 top-0 h-full w-full opacity-10">
+                                    <div className="absolute left-4 top-4 h-20 w-20 animate-pulse rounded-full bg-white"></div>
+                                    <div className="absolute right-8 top-12 h-16 w-16 animate-pulse rounded-full bg-white delay-1000"></div>
+                                    <div className="absolute bottom-8 left-12 h-12 w-12 animate-pulse rounded-full bg-white delay-500"></div>
+                                    <div className="delay-1500 absolute bottom-4 right-4 h-24 w-24 animate-pulse rounded-full bg-white"></div>
                                 </div>
-                                
+
                                 {/* Main content */}
                                 <div className="relative z-10">
-                                    <div className="flex justify-center mb-6">
+                                    <div className="mb-6 flex justify-center">
                                         <div className="relative">
-                                            <div className="text-6xl mb-2 animate-bounce">🚀</div>
-                                            <div className="absolute -top-2 -right-2 text-2xl animate-ping">✨</div>
+                                            <div className="mb-2 animate-bounce text-6xl">
+                                                🚀
+                                            </div>
+                                            <div className="absolute -right-2 -top-2 animate-ping text-2xl">
+                                                ✨
+                                            </div>
                                         </div>
                                     </div>
-                                    
-                                    <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-lg">
+
+                                    <h3 className="mb-3 text-2xl font-bold text-white drop-shadow-lg">
                                         Unlock Premium Features
                                     </h3>
-                                    
-                                    <p className="text-blue-100 mb-6 max-w-lg mx-auto text-lg leading-relaxed">
-                                        Get unlimited access to all apps, advanced features, and exclusive content. 
-                                        <span className="font-semibold text-white"> Start your journey today!</span>
+
+                                    <p className="mx-auto mb-6 max-w-lg text-lg leading-relaxed text-blue-100">
+                                        Get unlimited access to all apps,
+                                        advanced features, and exclusive
+                                        content.
+                                        <span className="font-semibold text-white">
+                                            {' '}
+                                            Start your journey today!
+                                        </span>
                                     </p>
-                                    
-                                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+
+                                    <div className="mb-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
                                         <div className="flex items-center text-blue-100">
-                                            <span className="text-green-400 mr-2">✓</span>
+                                            <span className="mr-2 text-green-400">
+                                                ✓
+                                            </span>
                                             <span>Unlimited Access</span>
                                         </div>
                                         <div className="flex items-center text-blue-100">
-                                            <span className="text-green-400 mr-2">✓</span>
+                                            <span className="mr-2 text-green-400">
+                                                ✓
+                                            </span>
                                             <span>Premium Support</span>
                                         </div>
                                         <div className="flex items-center text-blue-100">
-                                            <span className="text-green-400 mr-2">✓</span>
+                                            <span className="mr-2 text-green-400">
+                                                ✓
+                                            </span>
                                             <span>Advanced Features</span>
                                         </div>
                                     </div>
-                                    
-                                    <Button 
-                                        onClick={() => window.location.href = route('subscriptions.index')}
-                                        className="bg-white text-blue-600 hover:bg-blue-50 font-bold px-8 py-3 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 text-lg"
+
+                                    <Button
+                                        onClick={() =>
+                                            (window.location.href = route(
+                                                'subscriptions.index',
+                                            ))
+                                        }
+                                        className="transform rounded-xl bg-white px-8 py-3 text-lg font-bold text-blue-600 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:bg-blue-50 hover:shadow-2xl"
                                     >
                                         🎯 Explore Plans Now
                                     </Button>
-                                    
-                                    <p className="text-blue-200 text-sm mt-4 opacity-90">
+
+                                    <p className="mt-4 text-sm text-blue-200 opacity-90">
                                         Join thousands of satisfied users
                                     </p>
                                 </div>
                             </div>
                         </div>
                     )}
-                    
-                    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4 lg:gap-6 gap-y-6 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
-                        {apps.filter(app => {
-                            // Show apps that are available (either in subscription or user-added)
-                            return app.isAvailable;
-                        }).sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
-                            <InertiaLink
-                                key={app.title}
-                                href={app.route}
-                                className="flex flex-col items-center"
-                            >
-                                <div 
-                                    className={`w-16 h-16 md:w-20 md:h-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-gray-800/50`}
-                                    style={{ 
-                                        borderWidth: '1px', 
-                                        borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.3)' : getBorderColor(app.bgColor)
-                                    }}
+
+                    <div className="mx-auto grid w-full grid-cols-4 gap-3 gap-y-6 md:grid-cols-5 md:gap-4 md:gap-y-10 lg:grid-cols-6 lg:gap-6 lg:gap-y-12">
+                        {apps
+                            .filter((app) => {
+                                // Show apps that are available (either in subscription or user-added)
+                                return app.isAvailable;
+                            })
+                            .sort((a, b) => a.title.localeCompare(b.title))
+                            .map((app) => (
+                                <InertiaLink
+                                    key={app.title}
+                                    href={app.route}
+                                    className="flex flex-col items-center"
                                 >
-                                    <div className={`text-3xl md:text-4xl dark:text-slate-300`}>
-                                        {app.icon}
+                                    <div
+                                        className={`mb-2 flex h-16 w-16 transform items-center justify-center rounded-xl bg-white/80 shadow-md backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:bg-gray-800/80 dark:shadow-gray-800/50 md:h-20 md:w-20 md:rounded-2xl`}
+                                        style={{
+                                            borderWidth: '1px',
+                                            borderColor:
+                                                theme === 'dark'
+                                                    ? 'rgba(148, 163, 184, 0.3)'
+                                                    : getBorderColor(
+                                                          app.bgColor,
+                                                      ),
+                                        }}
+                                    >
+                                        <div
+                                            className={`text-3xl dark:text-slate-300 md:text-4xl`}
+                                        >
+                                            {app.icon}
+                                        </div>
                                     </div>
-                                </div>
-                                <h2 className="text-xs md:text-sm font-medium text-gray-800 dark:text-gray-300 text-center">
-                                    {app.title}
-                                </h2>
-                            </InertiaLink>
-                        ))}
+                                    <h2 className="text-center text-xs font-medium text-gray-800 dark:text-gray-300 md:text-sm">
+                                        {app.title}
+                                    </h2>
+                                </InertiaLink>
+                            ))}
                     </div>
                 </div>
-                
+
                 <BottomNav />
             </div>
         </ThemeProvider>

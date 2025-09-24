@@ -1,15 +1,20 @@
-import { User, Project } from '@/types/index';
-import React, { useMemo } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Project, User } from '@/types/index';
+import { Head, useForm } from '@inertiajs/react';
+import React, { useMemo } from 'react';
 
 interface Settings {
     default_currency: string;
@@ -53,7 +58,11 @@ export default function Settings({ auth, settings }: Props) {
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
@@ -65,13 +74,21 @@ export default function Settings({ auth, settings }: Props) {
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Products Settings</h2>}
+            auth={{
+                user: auth.user,
+                project: auth.project,
+                modules: auth.modules,
+            }}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    Products Settings
+                </h2>
+            }
         >
             <Head title="Products Settings" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <Card>
                         <CardHeader>
                             <CardTitle>Products Settings</CardTitle>
@@ -82,62 +99,107 @@ export default function Settings({ auth, settings }: Props) {
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <InputLabel htmlFor="default_currency" value="Default Currency" />
+                                    <InputLabel
+                                        htmlFor="default_currency"
+                                        value="Default Currency"
+                                    />
                                     <Input
                                         id="default_currency"
                                         type="text"
                                         className="mt-1 block w-full"
                                         value={data.default_currency}
-                                        onChange={e => setData('default_currency', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'default_currency',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="USD"
                                     />
-                                    <InputError message={errors.default_currency} className="mt-2" />
+                                    <InputError
+                                        message={errors.default_currency}
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="max_file_size" value="Maximum File Size (MB)" />
+                                    <InputLabel
+                                        htmlFor="max_file_size"
+                                        value="Maximum File Size (MB)"
+                                    />
                                     <Input
                                         id="max_file_size"
                                         type="number"
                                         className="mt-1 block w-full"
                                         value={data.max_file_size}
-                                        onChange={e => setData('max_file_size', parseInt(e.target.value))}
+                                        onChange={(e) =>
+                                            setData(
+                                                'max_file_size',
+                                                parseInt(e.target.value),
+                                            )
+                                        }
                                         min="1"
                                         max="100"
                                     />
-                                    <InputError message={errors.max_file_size} className="mt-2" />
+                                    <InputError
+                                        message={errors.max_file_size}
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="allowed_file_types" value="Allowed File Types" />
+                                    <InputLabel
+                                        htmlFor="allowed_file_types"
+                                        value="Allowed File Types"
+                                    />
                                     <Input
                                         id="allowed_file_types"
                                         type="text"
                                         className="mt-1 block w-full"
                                         value={data.allowed_file_types}
-                                        onChange={e => setData('allowed_file_types', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'allowed_file_types',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="pdf, doc, docx, mp4, mp3"
                                     />
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Comma-separated list of allowed file extensions
+                                        Comma-separated list of allowed file
+                                        extensions
                                     </p>
-                                    <InputError message={errors.allowed_file_types} className="mt-2" />
+                                    <InputError
+                                        message={errors.allowed_file_types}
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="storage_path" value="Storage Path" />
+                                    <InputLabel
+                                        htmlFor="storage_path"
+                                        value="Storage Path"
+                                    />
                                     <Input
                                         id="storage_path"
                                         type="text"
                                         className="mt-1 block w-full"
                                         value={data.storage_path}
-                                        onChange={e => setData('storage_path', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'storage_path',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="products"
                                     />
                                     <p className="mt-1 text-sm text-gray-500">
                                         Path where products will be stored
                                     </p>
-                                    <InputError message={errors.storage_path} className="mt-2" />
+                                    <InputError
+                                        message={errors.storage_path}
+                                        className="mt-2"
+                                    />
                                 </div>
 
                                 <div className="space-y-4">
@@ -146,49 +208,93 @@ export default function Settings({ auth, settings }: Props) {
                                             type="checkbox"
                                             id="watermark_enabled"
                                             checked={data.watermark_enabled}
-                                            onChange={e => setData('watermark_enabled', e.target.checked)}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'watermark_enabled',
+                                                    e.target.checked,
+                                                )
+                                            }
                                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                         />
-                                        <Label htmlFor="watermark_enabled">Enable Watermark</Label>
+                                        <Label htmlFor="watermark_enabled">
+                                            Enable Watermark
+                                        </Label>
                                     </div>
 
                                     {data.watermark_enabled && (
                                         <>
                                             <div>
-                                                <InputLabel htmlFor="watermark_text" value="Watermark Text" />
+                                                <InputLabel
+                                                    htmlFor="watermark_text"
+                                                    value="Watermark Text"
+                                                />
                                                 <Input
                                                     id="watermark_text"
                                                     type="text"
                                                     className="mt-1 block w-full"
                                                     value={data.watermark_text}
-                                                    onChange={e => setData('watermark_text', e.target.value)}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'watermark_text',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="© Your Company Name"
                                                 />
-                                                <InputError message={errors.watermark_text} className="mt-2" />
+                                                <InputError
+                                                    message={
+                                                        errors.watermark_text
+                                                    }
+                                                    className="mt-2"
+                                                />
                                             </div>
 
                                             <div>
-                                                <Label htmlFor="watermark_position">Watermark Position</Label>
+                                                <Label htmlFor="watermark_position">
+                                                    Watermark Position
+                                                </Label>
                                                 <select
                                                     id="watermark_position"
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    value={data.watermark_position}
-                                                    onChange={e => setData('watermark_position', e.target.value)}
+                                                    value={
+                                                        data.watermark_position
+                                                    }
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'watermark_position',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                 >
-                                                    <option value="top-left">Top Left</option>
-                                                    <option value="top-right">Top Right</option>
-                                                    <option value="bottom-left">Bottom Left</option>
-                                                    <option value="bottom-right">Bottom Right</option>
-                                                    <option value="center">Center</option>
+                                                    <option value="top-left">
+                                                        Top Left
+                                                    </option>
+                                                    <option value="top-right">
+                                                        Top Right
+                                                    </option>
+                                                    <option value="bottom-left">
+                                                        Bottom Left
+                                                    </option>
+                                                    <option value="bottom-right">
+                                                        Bottom Right
+                                                    </option>
+                                                    <option value="center">
+                                                        Center
+                                                    </option>
                                                 </select>
-                                                <InputError message={errors.watermark_position} className="mt-2" />
+                                                <InputError
+                                                    message={
+                                                        errors.watermark_position
+                                                    }
+                                                    className="mt-2"
+                                                />
                                             </div>
                                         </>
                                     )}
                                 </div>
 
                                 {canEdit && (
-                                    <div className="flex items-center justify-end mt-4">
+                                    <div className="mt-4 flex items-center justify-end">
                                         <PrimaryButton disabled={processing}>
                                             Save Settings
                                         </PrimaryButton>
@@ -201,4 +307,4 @@ export default function Settings({ auth, settings }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

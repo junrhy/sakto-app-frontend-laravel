@@ -28,8 +28,8 @@ export default function ConfirmPassword() {
                     Secure Area
                 </h2>
                 <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                    This is a secure area of the application. Please confirm your
-                    password before continuing.
+                    This is a secure area of the application. Please confirm
+                    your password before continuing.
                 </p>
             </div>
 
@@ -50,7 +50,7 @@ export default function ConfirmPassword() {
                 </div>
 
                 <div>
-                    <PrimaryButton 
+                    <PrimaryButton
                         className="w-full justify-center"
                         disabled={processing}
                     >

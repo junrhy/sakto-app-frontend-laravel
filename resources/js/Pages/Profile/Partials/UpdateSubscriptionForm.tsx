@@ -1,15 +1,39 @@
-import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
-import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/Components/ui/dialog';
-import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
-import { SparklesIcon, CalendarIcon, CreditCardIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
+import {
+    CalendarIcon,
+    CheckIcon,
+    CreditCardIcon,
+    SparklesIcon,
+    XMarkIcon,
+} from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface SubscriptionPlan {
@@ -53,14 +77,24 @@ interface Props {
     userIdentifier?: string;
 }
 
-export default function UpdateSubscriptionForm({ className = '', hideHeader = false, userIdentifier }: Props) {
-    const [subscription, setSubscription] = useState<UserSubscription | null>(null);
-    const [subscriptionHistory, setSubscriptionHistory] = useState<UserSubscription[]>([]);
+export default function UpdateSubscriptionForm({
+    className = '',
+    hideHeader = false,
+    userIdentifier,
+}: Props) {
+    const [subscription, setSubscription] = useState<UserSubscription | null>(
+        null,
+    );
+    const [subscriptionHistory, setSubscriptionHistory] = useState<
+        UserSubscription[]
+    >([]);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
-    const [subscriptionToCancel, setSubscriptionToCancel] = useState<string | null>(null);
+    const [subscriptionToCancel, setSubscriptionToCancel] = useState<
+        string | null
+    >(null);
     const [isCancelling, setIsCancelling] = useState(false);
 
     useEffect(() => {
@@ -70,22 +104,34 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
     const fetchSubscriptionData = async () => {
         try {
             setIsLoading(true);
-            
+
             // Fetch active subscription
             if (userIdentifier) {
-                const activeResponse = await fetch(`/subscriptions/${userIdentifier}/active`);
+                const activeResponse = await fetch(
+                    `/subscriptions/${userIdentifier}/active`,
+                );
                 if (activeResponse.ok) {
-                    const contentType = activeResponse.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
+                    const contentType =
+                        activeResponse.headers.get('content-type');
+                    if (
+                        contentType &&
+                        contentType.includes('application/json')
+                    ) {
                         const activeData = await activeResponse.json();
                         if (activeData.active) {
                             setSubscription(activeData.subscription);
                         }
                     } else {
-                        console.error('Active subscription response is not JSON');
+                        console.error(
+                            'Active subscription response is not JSON',
+                        );
                     }
                 } else {
-                    console.error('Failed to fetch active subscription:', activeResponse.status, activeResponse.statusText);
+                    console.error(
+                        'Failed to fetch active subscription:',
+                        activeResponse.status,
+                        activeResponse.statusText,
+                    );
                 }
             }
 
@@ -100,28 +146,44 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                     console.error('Plans response is not JSON');
                 }
             } else {
-                console.error('Failed to fetch plans:', plansResponse.status, plansResponse.statusText);
+                console.error(
+                    'Failed to fetch plans:',
+                    plansResponse.status,
+                    plansResponse.statusText,
+                );
             }
 
             // Fetch subscription history
             if (userIdentifier) {
-                const historyResponse = await fetch(`/subscriptions/history/${userIdentifier}`);
+                const historyResponse = await fetch(
+                    `/subscriptions/history/${userIdentifier}`,
+                );
                 if (historyResponse.ok) {
-                    const contentType = historyResponse.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
+                    const contentType =
+                        historyResponse.headers.get('content-type');
+                    if (
+                        contentType &&
+                        contentType.includes('application/json')
+                    ) {
                         const historyData = await historyResponse.json();
                         setSubscriptionHistory(historyData.history || []);
                     } else {
                         console.error('History response is not JSON');
                     }
                 } else {
-                    console.error('Failed to fetch subscription history:', historyResponse.status, historyResponse.statusText);
+                    console.error(
+                        'Failed to fetch subscription history:',
+                        historyResponse.status,
+                        historyResponse.statusText,
+                    );
                 }
             }
         } catch (error) {
             console.error('Failed to fetch subscription data:', error);
             if (error instanceof SyntaxError) {
-                toast.error('Failed to parse server response. Please refresh the page.');
+                toast.error(
+                    'Failed to parse server response. Please refresh the page.',
+                );
             } else {
                 toast.error('Failed to load subscription information');
             }
@@ -137,20 +199,42 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'PHP'
+            currency: 'PHP',
         }).format(amount);
     };
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            active: { variant: 'secondary', className: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
-            cancelled: { variant: 'secondary', className: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' },
-            expired: { variant: 'secondary', className: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' },
-            pending: { variant: 'secondary', className: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
-            failed: { variant: 'secondary', className: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' }
+            active: {
+                variant: 'secondary',
+                className:
+                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+            },
+            cancelled: {
+                variant: 'secondary',
+                className:
+                    'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+            },
+            expired: {
+                variant: 'secondary',
+                className:
+                    'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+            },
+            pending: {
+                variant: 'secondary',
+                className:
+                    'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+            },
+            failed: {
+                variant: 'secondary',
+                className:
+                    'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+            },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.expired;
+        const config =
+            statusConfig[status as keyof typeof statusConfig] ||
+            statusConfig.expired;
 
         return (
             <Badge variant={config.variant as any} className={config.className}>
@@ -173,16 +257,22 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
 
         try {
             setIsCancelling(true);
-            const response = await fetch(`/subscriptions/cancel/${subscriptionToCancel}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            const response = await fetch(
+                `/subscriptions/cancel/${subscriptionToCancel}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify({
+                        reason: cancellationReason,
+                    }),
                 },
-                body: JSON.stringify({
-                    reason: cancellationReason
-                })
-            });
+            );
 
             if (response.ok) {
                 toast.success('Subscription cancelled successfully');
@@ -209,15 +299,17 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
             <div className={`space-y-6 ${className}`}>
                 {!hideHeader && (
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Subscription Management</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                            Subscription Management
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             Manage your subscription and billing information
                         </p>
                     </div>
                 )}
                 <div className="animate-pulse space-y-4">
-                    <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                    <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div className="h-32 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+                    <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
                 </div>
             </div>
         );
@@ -227,8 +319,10 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
         <div className={`space-y-6 ${className}`}>
             {!hideHeader && (
                 <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Subscription Management</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                        Subscription Management
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         Manage your subscription and billing information
                     </p>
                 </div>
@@ -236,10 +330,10 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
 
             {/* Current Subscription */}
             {subscription ? (
-                <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <Card className="border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <SparklesIcon className="w-5 h-5" />
+                            <SparklesIcon className="h-5 w-5" />
                             Active Subscription
                         </CardTitle>
                         <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -247,55 +341,78 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Plan</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Plan
+                                </Label>
                                 <div className="flex items-center gap-2">
                                     <span className="font-semibold text-gray-900 dark:text-white">
                                         {subscription.plan.name}
                                     </span>
                                     {subscription.plan.badge_text && (
-                                        <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                        <Badge
+                                            variant="secondary"
+                                            className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                        >
                                             {subscription.plan.badge_text}
                                         </Badge>
                                     )}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Status
+                                </Label>
                                 <div>{getStatusBadge(subscription.status)}</div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Start Date
+                                </Label>
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                                    <CalendarIcon className="w-4 h-4" />
+                                    <CalendarIcon className="h-4 w-4" />
                                     {formatDate(subscription.start_date)}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">End Date</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    End Date
+                                </Label>
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                                    <CalendarIcon className="w-4 h-4" />
+                                    <CalendarIcon className="h-4 w-4" />
                                     {formatDate(subscription.end_date)}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Amount Paid
+                                </Label>
                                 <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-                                    <CreditCardIcon className="w-4 h-4" />
+                                    <CreditCardIcon className="h-4 w-4" />
                                     {formatCurrency(subscription.amount_paid)}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto Renew</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Auto Renew
+                                </Label>
                                 <div className="flex items-center gap-2">
                                     {subscription.auto_renew ? (
-                                        <CheckIcon className="w-4 h-4 text-gray-600" />
+                                        <CheckIcon className="h-4 w-4 text-gray-600" />
                                     ) : (
-                                        <XMarkIcon className="w-4 h-4 text-gray-500" />
+                                        <XMarkIcon className="h-4 w-4 text-gray-500" />
                                     )}
-                                    <span className={subscription.auto_renew ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}>
-                                        {subscription.auto_renew ? 'Enabled' : 'Disabled'}
+                                    <span
+                                        className={
+                                            subscription.auto_renew
+                                                ? 'text-gray-700 dark:text-gray-300'
+                                                : 'text-gray-500 dark:text-gray-400'
+                                        }
+                                    >
+                                        {subscription.auto_renew
+                                            ? 'Enabled'
+                                            : 'Disabled'}
                                     </span>
                                 </div>
                             </div>
@@ -304,7 +421,9 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                         <div className="flex gap-2 pt-4">
                             <Button
                                 variant="outline"
-                                onClick={() => openCancelDialog(subscription.identifier)}
+                                onClick={() =>
+                                    openCancelDialog(subscription.identifier)
+                                }
                                 className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30"
                             >
                                 Cancel Subscription
@@ -320,22 +439,23 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                     </CardContent>
                 </Card>
             ) : (
-                <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                <Card className="border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <SparklesIcon className="w-5 h-5" />
+                            <SparklesIcon className="h-5 w-5" />
                             No Active Subscription
                         </CardTitle>
                         <CardDescription className="text-gray-600 dark:text-gray-400">
-                            You don't have an active subscription. Upgrade to unlock unlimited access to all features.
+                            You don't have an active subscription. Upgrade to
+                            unlock unlimited access to all features.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button
                             onClick={handleUpgradeSubscription}
-                            className="bg-gray-600 hover:bg-gray-700 text-white"
+                            className="bg-gray-600 text-white hover:bg-gray-700"
                         >
-                            <SparklesIcon className="w-4 h-4 mr-2" />
+                            <SparklesIcon className="mr-2 h-4 w-4" />
                             View Subscription Plans
                         </Button>
                     </CardContent>
@@ -347,11 +467,12 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <CalendarIcon className="w-5 h-5" />
+                            <CalendarIcon className="h-5 w-5" />
                             Subscription History
                         </CardTitle>
                         <CardDescription>
-                            View your past subscription transactions and payments
+                            View your past subscription transactions and
+                            payments
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -377,7 +498,9 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                                                 {getStatusBadge(sub.status)}
                                             </TableCell>
                                             <TableCell>
-                                                {formatCurrency(sub.amount_paid)}
+                                                {formatCurrency(
+                                                    sub.amount_paid,
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 {formatDate(sub.start_date)}
@@ -386,7 +509,9 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                                                 {formatDate(sub.end_date)}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="capitalize">{sub.payment_method}</span>
+                                                <span className="capitalize">
+                                                    {sub.payment_method}
+                                                </span>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -403,16 +528,21 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                     <DialogHeader>
                         <DialogTitle>Cancel Subscription</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to cancel your subscription? This action cannot be undone.
+                            Are you sure you want to cancel your subscription?
+                            This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div>
-                            <Label htmlFor="cancellation-reason">Cancellation Reason</Label>
+                            <Label htmlFor="cancellation-reason">
+                                Cancellation Reason
+                            </Label>
                             <Textarea
                                 id="cancellation-reason"
                                 value={cancellationReason}
-                                onChange={(e) => setCancellationReason(e.target.value)}
+                                onChange={(e) =>
+                                    setCancellationReason(e.target.value)
+                                }
                                 placeholder="Please provide a reason for cancellation..."
                                 rows={3}
                             />
@@ -429,13 +559,17 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                         <Button
                             variant="destructive"
                             onClick={handleCancelSubscription}
-                            disabled={isCancelling || !cancellationReason.trim()}
+                            disabled={
+                                isCancelling || !cancellationReason.trim()
+                            }
                         >
-                            {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
+                            {isCancelling
+                                ? 'Cancelling...'
+                                : 'Cancel Subscription'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
     );
-} 
+}

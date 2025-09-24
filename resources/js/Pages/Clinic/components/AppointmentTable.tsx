@@ -1,25 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { Button } from "../../../Components/ui/button";
-import { Badge } from "../../../Components/ui/badge";
-import { Input } from "../../../Components/ui/input";
-import { Label } from "../../../Components/ui/label";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
-} from "../../../Components/ui/table";
-import { Card, CardContent } from "../../../Components/ui/card";
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
+import {
+    Calendar,
+    CheckCircle,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Edit,
+    Filter,
+    Mail,
+    MoreHorizontal,
+    Phone,
+    Trash2,
+    X,
+    XCircle,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Badge } from '../../../Components/ui/badge';
+import { Button } from '../../../Components/ui/button';
+import { Card, CardContent } from '../../../Components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
-    DropdownMenuSeparator 
-} from "../../../Components/ui/dropdown-menu";
-import { MoreHorizontal, Calendar, Clock, User, Phone, Mail, Edit, Trash2, CheckCircle, XCircle, CreditCard, DollarSign, Filter, X } from 'lucide-react';
+} from '../../../Components/ui/dropdown-menu';
+import { Input } from '../../../Components/ui/input';
+import { Label } from '../../../Components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '../../../Components/ui/table';
 import { Appointment } from '../types/appointment';
 import AppointmentVipBadge from './AppointmentVipBadge';
 
@@ -28,7 +42,10 @@ interface AppointmentTableProps {
     onEditAppointment: (appointment: Appointment) => void;
     onDeleteAppointment: (appointment: Appointment) => void;
     onUpdateStatus: (appointment: Appointment, status: string) => void;
-    onUpdatePaymentStatus: (appointment: Appointment, paymentStatus: string) => void;
+    onUpdatePaymentStatus: (
+        appointment: Appointment,
+        paymentStatus: string,
+    ) => void;
     currency: string;
 }
 
@@ -66,7 +83,7 @@ const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
     });
 };
 
@@ -74,17 +91,17 @@ const formatTime = (timeString: string) => {
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
     });
 };
 
-export default function AppointmentTable({ 
-    appointments, 
-    onEditAppointment, 
-    onDeleteAppointment, 
+export default function AppointmentTable({
+    appointments,
+    onEditAppointment,
+    onDeleteAppointment,
     onUpdateStatus,
     onUpdatePaymentStatus,
-    currency 
+    currency,
 }: AppointmentTableProps) {
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [showDateFilter, setShowDateFilter] = useState(false);
@@ -94,9 +111,11 @@ export default function AppointmentTable({
         if (!selectedDate) {
             return appointments;
         }
-        
-        return appointments.filter(appointment => {
-            const appointmentDate = new Date(appointment.appointment_date).toISOString().split('T')[0];
+
+        return appointments.filter((appointment) => {
+            const appointmentDate = new Date(appointment.appointment_date)
+                .toISOString()
+                .split('T')[0];
             return appointmentDate === selectedDate;
         });
     }, [appointments, selectedDate]);
@@ -111,13 +130,15 @@ export default function AppointmentTable({
     return (
         <div className="space-y-4">
             {/* Date Filter Controls */}
-            <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                 <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                         <Filter className="h-4 w-4 text-gray-500" />
-                        <Label className="text-sm font-medium">Filter by Date:</Label>
+                        <Label className="text-sm font-medium">
+                            Filter by Date:
+                        </Label>
                     </div>
-                    
+
                     {!showDateFilter ? (
                         <div className="flex space-x-2">
                             <Button
@@ -138,7 +159,9 @@ export default function AppointmentTable({
                                 onClick={() => {
                                     const tomorrow = new Date();
                                     tomorrow.setDate(tomorrow.getDate() + 1);
-                                    setSelectedDate(tomorrow.toISOString().split('T')[0]);
+                                    setSelectedDate(
+                                        tomorrow.toISOString().split('T')[0],
+                                    );
                                     setShowDateFilter(true);
                                 }}
                                 className="flex items-center space-x-1"
@@ -166,7 +189,9 @@ export default function AppointmentTable({
                             <Input
                                 type="date"
                                 value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
+                                onChange={(e) =>
+                                    setSelectedDate(e.target.value)
+                                }
                                 className="w-40"
                             />
                             <Button
@@ -181,9 +206,10 @@ export default function AppointmentTable({
                         </div>
                     )}
                 </div>
-                
+
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {filteredAppointments.length} of {appointments.length} appointments
+                    Showing {filteredAppointments.length} of{' '}
+                    {appointments.length} appointments
                     {selectedDate && (
                         <span className="ml-2 text-blue-600 dark:text-blue-400">
                             for {formatDate(selectedDate + 'T00:00:00')}
@@ -197,168 +223,289 @@ export default function AppointmentTable({
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                <TableHead className="text-gray-900 dark:text-white">Patient</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Date & Time</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Doctor</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Fee</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Payment</TableHead>
-                                <TableHead className="w-[50px] text-gray-900 dark:text-white">Actions</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Patient
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Date & Time
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Type
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Doctor
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Fee
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Payment
+                                </TableHead>
+                                <TableHead className="w-[50px] text-gray-900 dark:text-white">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
-                <TableBody>
-                    {filteredAppointments.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                {selectedDate ? (
-                                    <div className="space-y-2">
-                                        <Calendar className="h-8 w-8 mx-auto text-gray-400" />
-                                        <div>No appointments found for {formatDate(selectedDate + 'T00:00:00')}</div>
-                                        <Button 
-                                            variant="link" 
-                                            size="sm"
-                                            onClick={clearDateFilter}
-                                            className="text-blue-600 hover:text-blue-800"
-                                        >
-                                            Show all appointments
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <Calendar className="h-8 w-8 mx-auto text-gray-400" />
-                                        <div>No appointments found</div>
-                                    </div>
-                                )}
-                            </TableCell>
-                        </TableRow>
-                    ) : (
-                        filteredAppointments.map((appointment) => (
-                            <TableRow key={appointment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    <div className="flex flex-col">
-                                        <div className="font-medium flex items-center gap-2">
-                                            {appointment.patient_name}
-                                            <AppointmentVipBadge appointment={appointment} size="sm" />
-                                        </div>
-                                        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                            {appointment.patient_phone && (
-                                                <div className="flex items-center gap-1">
-                                                    <Phone className="h-3 w-3" />
-                                                    {appointment.patient_phone}
+                        <TableBody>
+                            {filteredAppointments.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={8}
+                                        className="py-8 text-center text-gray-500 dark:text-gray-400"
+                                    >
+                                        {selectedDate ? (
+                                            <div className="space-y-2">
+                                                <Calendar className="mx-auto h-8 w-8 text-gray-400" />
+                                                <div>
+                                                    No appointments found for{' '}
+                                                    {formatDate(
+                                                        selectedDate +
+                                                            'T00:00:00',
+                                                    )}
                                                 </div>
-                                            )}
-                                            {appointment.patient_email && (
-                                                <div className="flex items-center gap-1">
-                                                    <Mail className="h-3 w-3" />
-                                                    {appointment.patient_email}
+                                                <Button
+                                                    variant="link"
+                                                    size="sm"
+                                                    onClick={clearDateFilter}
+                                                    className="text-blue-600 hover:text-blue-800"
+                                                >
+                                                    Show all appointments
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <Calendar className="mx-auto h-8 w-8 text-gray-400" />
+                                                <div>No appointments found</div>
+                                            </div>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filteredAppointments.map((appointment) => (
+                                    <TableRow
+                                        key={appointment.id}
+                                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2 font-medium">
+                                                    {appointment.patient_name}
+                                                    <AppointmentVipBadge
+                                                        appointment={
+                                                            appointment
+                                                        }
+                                                        size="sm"
+                                                    />
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4" />
-                                            {formatDate(appointment.appointment_date)}
-                                        </div>
-                                        <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-                                            <Clock className="h-3 w-3" />
-                                            {formatTime(appointment.appointment_time)}
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    <Badge variant="outline" className="capitalize">
-                                        {appointment.appointment_type.replace('_', ' ')}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    {appointment.doctor_name || '-'}
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    {appointment.fee ? `${currency}${appointment.fee.toLocaleString()}` : '-'}
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    <Badge className={getStatusColor(appointment.status)}>
-                                        {appointment.status.replace('_', ' ')}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    <Badge className={getPaymentStatusColor(appointment.payment_status)}>
-                                        {appointment.payment_status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-gray-900 dark:text-white">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => onEditAppointment(appointment)}>
-                                                <Edit className="mr-2 h-4 w-4" />
-                                                Edit
-                                            </DropdownMenuItem>
-                                            {appointment.status === 'scheduled' && (
-                                                <DropdownMenuItem onClick={() => onUpdateStatus(appointment, 'confirmed')}>
-                                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                                    Confirm
-                                                </DropdownMenuItem>
-                                            )}
-                                            {appointment.status === 'confirmed' && (
-                                                <DropdownMenuItem onClick={() => onUpdateStatus(appointment, 'completed')}>
-                                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                                    Mark Complete
-                                                </DropdownMenuItem>
-                                            )}
-                                            {appointment.status !== 'cancelled' && (
-                                                <DropdownMenuItem onClick={() => onUpdateStatus(appointment, 'cancelled')}>
-                                                    <XCircle className="mr-2 h-4 w-4" />
-                                                    Cancel
-                                                </DropdownMenuItem>
-                                            )}
-                                            
-                                            <DropdownMenuSeparator />
-                                            
-                                            {/* Payment Status Options */}
-                                            {appointment.payment_status !== 'paid' && (
-                                                <DropdownMenuItem onClick={() => onUpdatePaymentStatus(appointment, 'paid')}>
-                                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                                    Mark as Paid
-                                                </DropdownMenuItem>
-                                            )}
-                                            {appointment.payment_status !== 'partial' && (
-                                                <DropdownMenuItem onClick={() => onUpdatePaymentStatus(appointment, 'partial')}>
-                                                    <DollarSign className="mr-2 h-4 w-4" />
-                                                    Mark as Partial
-                                                </DropdownMenuItem>
-                                            )}
-                                            {appointment.payment_status !== 'pending' && (
-                                                <DropdownMenuItem onClick={() => onUpdatePaymentStatus(appointment, 'pending')}>
-                                                    <CreditCard className="mr-2 h-4 w-4" />
-                                                    Mark as Pending
-                                                </DropdownMenuItem>
-                                            )}
-                                            
-                                            <DropdownMenuSeparator />
-                                            
-                                            <DropdownMenuItem 
-                                                onClick={() => onDeleteAppointment(appointment)}
-                                                className="text-red-600 dark:text-red-400"
+                                                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                                    {appointment.patient_phone && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Phone className="h-3 w-3" />
+                                                            {
+                                                                appointment.patient_phone
+                                                            }
+                                                        </div>
+                                                    )}
+                                                    {appointment.patient_email && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Mail className="h-3 w-3" />
+                                                            {
+                                                                appointment.patient_email
+                                                            }
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-4 w-4" />
+                                                    {formatDate(
+                                                        appointment.appointment_date,
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                                    <Clock className="h-3 w-3" />
+                                                    {formatTime(
+                                                        appointment.appointment_time,
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <Badge
+                                                variant="outline"
+                                                className="capitalize"
                                             >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))
-                    )}
-                </TableBody>
+                                                {appointment.appointment_type.replace(
+                                                    '_',
+                                                    ' ',
+                                                )}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {appointment.doctor_name || '-'}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {appointment.fee
+                                                ? `${currency}${appointment.fee.toLocaleString()}`
+                                                : '-'}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <Badge
+                                                className={getStatusColor(
+                                                    appointment.status,
+                                                )}
+                                            >
+                                                {appointment.status.replace(
+                                                    '_',
+                                                    ' ',
+                                                )}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <Badge
+                                                className={getPaymentStatusColor(
+                                                    appointment.payment_status,
+                                                )}
+                                            >
+                                                {appointment.payment_status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="h-8 w-8 p-0"
+                                                    >
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        onClick={() =>
+                                                            onEditAppointment(
+                                                                appointment,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    {appointment.status ===
+                                                        'scheduled' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onUpdateStatus(
+                                                                    appointment,
+                                                                    'confirmed',
+                                                                )
+                                                            }
+                                                        >
+                                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                                            Confirm
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {appointment.status ===
+                                                        'confirmed' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onUpdateStatus(
+                                                                    appointment,
+                                                                    'completed',
+                                                                )
+                                                            }
+                                                        >
+                                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                                            Mark Complete
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {appointment.status !==
+                                                        'cancelled' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onUpdateStatus(
+                                                                    appointment,
+                                                                    'cancelled',
+                                                                )
+                                                            }
+                                                        >
+                                                            <XCircle className="mr-2 h-4 w-4" />
+                                                            Cancel
+                                                        </DropdownMenuItem>
+                                                    )}
+
+                                                    <DropdownMenuSeparator />
+
+                                                    {/* Payment Status Options */}
+                                                    {appointment.payment_status !==
+                                                        'paid' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onUpdatePaymentStatus(
+                                                                    appointment,
+                                                                    'paid',
+                                                                )
+                                                            }
+                                                        >
+                                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                                            Mark as Paid
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {appointment.payment_status !==
+                                                        'partial' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onUpdatePaymentStatus(
+                                                                    appointment,
+                                                                    'partial',
+                                                                )
+                                                            }
+                                                        >
+                                                            <DollarSign className="mr-2 h-4 w-4" />
+                                                            Mark as Partial
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {appointment.payment_status !==
+                                                        'pending' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                onUpdatePaymentStatus(
+                                                                    appointment,
+                                                                    'pending',
+                                                                )
+                                                            }
+                                                        >
+                                                            <CreditCard className="mr-2 h-4 w-4" />
+                                                            Mark as Pending
+                                                        </DropdownMenuItem>
+                                                    )}
+
+                                                    <DropdownMenuSeparator />
+
+                                                    <DropdownMenuItem
+                                                        onClick={() =>
+                                                            onDeleteAppointment(
+                                                                appointment,
+                                                            )
+                                                        }
+                                                        className="text-red-600 dark:text-red-400"
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
                     </Table>
                 </CardContent>
             </Card>

@@ -1,74 +1,95 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { Button } from "../../Components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../Components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "../../Components/ui/dialog";
-import { Input } from "../../Components/ui/input";
-import { Label } from "../../Components/ui/label";
-import { Textarea } from "../../Components/ui/textarea";
-import { Users, UserPlus, Calendar, Table, Grid3X3, Package, CreditCard } from 'lucide-react';
-import { toast } from 'sonner';
 import axios from 'axios';
+import {
+    Calendar,
+    CreditCard,
+    Grid3X3,
+    Package,
+    Table,
+    UserPlus,
+    Users,
+} from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '../../Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../../Components/ui/dialog';
+import { Input } from '../../Components/ui/input';
+import { Label } from '../../Components/ui/label';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from '../../Components/ui/tabs';
+import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
 
 // Import types
-import { 
-    ClinicProps, 
-    NewPatient, 
-    Patient, 
-    AppCurrency,
-    EditingNextVisit,
+import {
     Appointment,
+    ClinicProps,
     NewAppointment,
-    NewPatientEncounter,
-    PatientEncounter,
-    PatientVitalSigns,
-    PatientDiagnosis,
-    PatientAllergy,
-    PatientMedication,
-    PatientMedicalHistory,
+    NewPatient,
     NewPatientAllergy,
+    NewPatientEncounter,
+    NewPatientMedicalHistory,
     NewPatientMedication,
-    NewPatientMedicalHistory
+    Patient,
+    PatientAllergy,
+    PatientDiagnosis,
+    PatientEncounter,
+    PatientMedicalHistory,
+    PatientMedication,
+    PatientVitalSigns,
 } from './types';
 
 // Import hooks
 import {
-    usePatients,
+    useAppointments,
     useBills,
-    usePayments,
     useCheckups,
     useDentalChart,
-    useNextVisit,
     useHistory,
-    useAppointments
+    useNextVisit,
+    usePatients,
+    usePayments,
 } from './hooks';
 
 // Import components
 import {
-    PatientTable,
-    AddPatientForm,
-    HistoryDialog,
-    DentalChartDialog,
-    EditPatientDialog,
-    DeleteConfirmationDialog,
-    AddCheckupDialog,
-    PatientRecordDialog,
-    DoctorCheckupDialog,
-    AppointmentTable,
-    AppointmentCalendar,
     AddAppointmentDialog,
+    AddCheckupDialog,
+    AddPatientForm,
+    AppointmentCalendar,
+    AppointmentTable,
+    DeleteConfirmationDialog,
+    DentalChartDialog,
+    DoctorCheckupDialog,
     EditAppointmentDialog,
+    EditPatientDialog,
+    HistoryDialog,
     PatientAllergiesManager,
-    PatientMedicationsManager,
-    PatientMedicalHistoryManager,
     PatientEncounterHistoryDialog,
-    VipManagementDialog
+    PatientMedicalHistoryManager,
+    PatientMedicationsManager,
+    PatientRecordDialog,
+    PatientTable,
+    VipManagementDialog,
 } from './components';
 import { ClinicPaymentAccountManager } from './components/ClinicPaymentAccountManager';
 import Inventory from './Inventory';
 
-export default function Clinic({ auth, initialPatients = [], appCurrency = null, error = null }: ClinicProps) {
+export default function Clinic({
+    auth,
+    initialPatients = [],
+    appCurrency = null,
+    error = null,
+}: ClinicProps) {
     const currency = appCurrency ? appCurrency.symbol : '$';
 
     // Initialize hooks
@@ -86,20 +107,13 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         addPatient: addPatientToAPI,
         updatePatient: updatePatientInAPI,
         deletePatient: deletePatientFromAPI,
-        updatePatientInState
+        updatePatientInState,
     } = usePatients(initialPatients);
 
-    const {
-        addBill,
-        deleteBill,
-        fetchBillHistory,
-    } = useBills();
+    const { addBill, deleteBill, fetchBillHistory } = useBills();
 
-    const {
-        processPayment,
-        deletePayment,
-        fetchPaymentHistory
-    } = usePayments();
+    const { processPayment, deletePayment, fetchPaymentHistory } =
+        usePayments();
 
     const {
         newCheckupResult,
@@ -113,7 +127,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         addCheckup,
         deleteCheckup,
         fetchCheckupHistory,
-        resetCheckupForm
+        resetCheckupForm,
     } = useCheckups();
 
     const {
@@ -126,7 +140,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         openDentalChartDialog,
         handleToothClick,
         saveDentalChartChanges,
-        openPatientInfoDialog
+        openPatientInfoDialog,
     } = useDentalChart();
 
     const {
@@ -134,7 +148,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         setEditingNextVisit,
         updateNextVisit,
         openNextVisitDialog,
-        closeNextVisitDialog
+        closeNextVisitDialog,
     } = useNextVisit();
 
     const {
@@ -145,7 +159,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         isLoadingHistory,
         openHistoryDialog,
         closeHistoryDialog,
-        setLoading
+        setLoading,
     } = useHistory();
 
     const {
@@ -157,53 +171,86 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         updateAppointment,
         deleteAppointment,
         updateAppointmentStatus,
-        updateAppointmentPaymentStatus
+        updateAppointmentPaymentStatus,
     } = useAppointments();
 
     // Local state
-    const [newPatient, setNewPatient] = useState<NewPatient>({ 
-        arn: '',
-        name: '', 
-        dateOfBirth: '', 
-        contactNumber: '', 
-        email: '', 
+    const [newPatient, setNewPatient] = useState<NewPatient>({
+        name: '',
     });
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
-    const [deleteConfirmation, setDeleteConfirmation] = useState<Patient | null>(null);
-    
+    const [deleteConfirmation, setDeleteConfirmation] =
+        useState<Patient | null>(null);
+
     // Appointment state
-    const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] = useState(false);
-    const [preselectedPatientForAppointment, setPreselectedPatientForAppointment] = useState<Patient | null>(null);
-    const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
-    const [deleteAppointmentConfirmation, setDeleteAppointmentConfirmation] = useState<Appointment | null>(null);
-    const [appointmentView, setAppointmentView] = useState<'table' | 'calendar'>('table');
+    const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] =
+        useState(false);
+    const [
+        preselectedPatientForAppointment,
+        setPreselectedPatientForAppointment,
+    ] = useState<Patient | null>(null);
+    const [editingAppointment, setEditingAppointment] =
+        useState<Appointment | null>(null);
+    const [deleteAppointmentConfirmation, setDeleteAppointmentConfirmation] =
+        useState<Appointment | null>(null);
+    const [appointmentView, setAppointmentView] = useState<
+        'table' | 'calendar'
+    >('table');
 
     // New workflow state
-    const [selectedPatientForRecord, setSelectedPatientForRecord] = useState<Patient | null>(null);
-    const [selectedPatientEncounters, setSelectedPatientEncounters] = useState<PatientEncounter[]>([]);
-    const [isDoctorCheckupDialogOpen, setIsDoctorCheckupDialogOpen] = useState(false);
-    const [checkupPatientForDoctor, setCheckupPatientForDoctor] = useState<Patient | null>(null);
-    const [isEncounterHistoryDialogOpen, setIsEncounterHistoryDialogOpen] = useState(false);
-    const [encounterHistoryPatient, setEncounterHistoryPatient] = useState<Patient | null>(null);
-    const [encounterHistoryData, setEncounterHistoryData] = useState<PatientEncounter[]>([]);
+    const [selectedPatientForRecord, setSelectedPatientForRecord] =
+        useState<Patient | null>(null);
+    const [selectedPatientEncounters, setSelectedPatientEncounters] = useState<
+        PatientEncounter[]
+    >([]);
+    const [isDoctorCheckupDialogOpen, setIsDoctorCheckupDialogOpen] =
+        useState(false);
+    const [checkupPatientForDoctor, setCheckupPatientForDoctor] =
+        useState<Patient | null>(null);
+    const [isEncounterHistoryDialogOpen, setIsEncounterHistoryDialogOpen] =
+        useState(false);
+    const [encounterHistoryPatient, setEncounterHistoryPatient] =
+        useState<Patient | null>(null);
+    const [encounterHistoryData, setEncounterHistoryData] = useState<
+        PatientEncounter[]
+    >([]);
 
     // Universal Medical Record System State
     const [isAllergiesManagerOpen, setIsAllergiesManagerOpen] = useState(false);
-    const [isMedicationsManagerOpen, setIsMedicationsManagerOpen] = useState(false);
-    const [isMedicalHistoryManagerOpen, setIsMedicalHistoryManagerOpen] = useState(false);
-    const [selectedPatientForMedicalRecord, setSelectedPatientForMedicalRecord] = useState<Patient | null>(null);
+    const [isMedicationsManagerOpen, setIsMedicationsManagerOpen] =
+        useState(false);
+    const [isMedicalHistoryManagerOpen, setIsMedicalHistoryManagerOpen] =
+        useState(false);
+    const [
+        selectedPatientForMedicalRecord,
+        setSelectedPatientForMedicalRecord,
+    ] = useState<Patient | null>(null);
 
     // Medical record data state
-    const [patientEncounters, setPatientEncounters] = useState<PatientEncounter[]>([]);
-    const [patientVitalSigns, setPatientVitalSigns] = useState<PatientVitalSigns[]>([]);
-    const [patientDiagnoses, setPatientDiagnoses] = useState<PatientDiagnosis[]>([]);
-    const [patientAllergies, setPatientAllergies] = useState<PatientAllergy[]>([]);
-    const [patientMedications, setPatientMedications] = useState<PatientMedication[]>([]);
-    const [patientMedicalHistory, setPatientMedicalHistory] = useState<PatientMedicalHistory[]>([]);
+    const [patientEncounters, setPatientEncounters] = useState<
+        PatientEncounter[]
+    >([]);
+    const [patientVitalSigns, setPatientVitalSigns] = useState<
+        PatientVitalSigns[]
+    >([]);
+    const [patientDiagnoses, setPatientDiagnoses] = useState<
+        PatientDiagnosis[]
+    >([]);
+    const [patientAllergies, setPatientAllergies] = useState<PatientAllergy[]>(
+        [],
+    );
+    const [patientMedications, setPatientMedications] = useState<
+        PatientMedication[]
+    >([]);
+    const [patientMedicalHistory, setPatientMedicalHistory] = useState<
+        PatientMedicalHistory[]
+    >([]);
 
     // VIP Management State
-    const [isVipManagementDialogOpen, setIsVipManagementDialogOpen] = useState(false);
-    const [selectedPatientForVip, setSelectedPatientForVip] = useState<Patient | null>(null);
+    const [isVipManagementDialogOpen, setIsVipManagementDialogOpen] =
+        useState(false);
+    const [selectedPatientForVip, setSelectedPatientForVip] =
+        useState<Patient | null>(null);
 
     // VIP Management Functions
     const handleManageVip = (patient: Patient) => {
@@ -213,8 +260,11 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     const handleUpdateVipStatus = async (patientId: string, vipData: any) => {
         try {
-            const response = await axios.put(`/clinic/patients/${patientId}/vip-status`, vipData);
-            
+            const response = await axios.put(
+                `/clinic/patients/${patientId}/vip-status`,
+                vipData,
+            );
+
             if (response.data.success) {
                 // Update the patient in the state
                 if (response.data.patient) {
@@ -222,11 +272,16 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 }
                 toast.success(`VIP status updated successfully`);
             } else {
-                throw new Error(response.data.error || 'Failed to update VIP status');
+                throw new Error(
+                    response.data.error || 'Failed to update VIP status',
+                );
             }
         } catch (error) {
             console.error('Error updating VIP status:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'Unknown error occurred';
             toast.error(`Failed to update VIP status: ${errorMessage}`);
         }
     };
@@ -234,19 +289,24 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     // Permission checks
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || 
-                   auth.selectedTeamMember.roles.includes('manager') || 
-                   auth.selectedTeamMember.roles.includes('doctor') ||
-                   auth.selectedTeamMember.roles.includes('nurse') ||
-                   auth.selectedTeamMember.roles.includes('assistant') ||
-                   auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('doctor') ||
+                auth.selectedTeamMember.roles.includes('nurse') ||
+                auth.selectedTeamMember.roles.includes('assistant') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
@@ -254,9 +314,11 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     // Determine user role for UI behavior
     const userRole = useMemo(() => {
         if (auth.selectedTeamMember) {
-            if (auth.selectedTeamMember.roles.includes('doctor')) return 'doctor';
+            if (auth.selectedTeamMember.roles.includes('doctor'))
+                return 'doctor';
             if (auth.selectedTeamMember.roles.includes('nurse')) return 'nurse';
-            if (auth.selectedTeamMember.roles.includes('assistant')) return 'assistant';
+            if (auth.selectedTeamMember.roles.includes('assistant'))
+                return 'assistant';
             if (auth.selectedTeamMember.roles.includes('admin')) return 'admin';
             return 'assistant'; // fallback for other roles (user, supervisor, viewer)
         }
@@ -268,7 +330,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         e.preventDefault();
         const result = await addPatientToAPI(newPatient);
         if (result.success) {
-            setNewPatient({ arn: '', name: '', dateOfBirth: '', contactNumber: '', email: '' });
+            setNewPatient({ name: '' });
         }
     };
 
@@ -293,52 +355,65 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         }
     };
 
-
     const handleAddCheckup = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!checkupPatient || !checkupDateTime.date) return;
 
-        const result = await addCheckup(checkupPatient, newCheckupResult, checkupDateTime);
+        const result = await addCheckup(
+            checkupPatient,
+            newCheckupResult,
+            checkupDateTime,
+        );
         if (result.success) {
             // Update the patients state with the new checkup data
-            setPatients(prevPatients => 
-                prevPatients.map(patient => 
-                    patient.id === checkupPatient.id 
-                    ? {
-                        ...patient,
-                        checkups: [...(patient.checkups || []), result.data]
-                    }
-                    : patient
-                )
+            setPatients((prevPatients) =>
+                prevPatients.map((patient) =>
+                    patient.id === checkupPatient.id
+                        ? {
+                              ...patient,
+                              checkups: [
+                                  ...(patient.checkups || []),
+                                  result.data,
+                              ],
+                          }
+                        : patient,
+                ),
             );
 
             resetCheckupForm();
         }
     };
 
-    const handleDeleteCheckup = async (patientId: string, checkupId: number) => {
+    const handleDeleteCheckup = async (
+        patientId: string,
+        checkupId: number,
+    ) => {
         const result = await deleteCheckup(patientId, checkupId);
         if (result.success) {
             // Update patients state
-            setPatients(patients.map(patient => {
-                if (patient.id === patientId) {
-                    const updatedCheckups = patient.checkups.filter(checkup => checkup.id !== checkupId);
-                    
-                    // Also update the showing history patient if it's the same patient
-                    if (showingHistoryForPatient?.id === patientId) {
-                        setShowingHistoryForPatient({
-                            ...showingHistoryForPatient,
-                            checkups: updatedCheckups
-                        });
+            setPatients(
+                patients.map((patient) => {
+                    if (patient.id === patientId) {
+                        const updatedCheckups = patient.checkups.filter(
+                            (checkup) => checkup.id !== checkupId,
+                        );
+
+                        // Also update the showing history patient if it's the same patient
+                        if (showingHistoryForPatient?.id === patientId) {
+                            setShowingHistoryForPatient({
+                                ...showingHistoryForPatient,
+                                checkups: updatedCheckups,
+                            });
+                        }
+
+                        return {
+                            ...patient,
+                            checkups: updatedCheckups,
+                        };
                     }
-                    
-                    return {
-                        ...patient,
-                        checkups: updatedCheckups
-                    };
-                }
-                return patient;
-            }));
+                    return patient;
+                }),
+            );
         }
     };
 
@@ -355,10 +430,12 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const handleSaveDentalChart = async () => {
         const result = await saveDentalChartChanges();
         if (result.success && result.data) {
-            setPatients(prevPatients =>
-                prevPatients.map(p =>
-                    p.id === selectedPatient?.id ? { ...p, dental_chart: result.data!.dental_chart } : p
-                )
+            setPatients((prevPatients) =>
+                prevPatients.map((p) =>
+                    p.id === selectedPatient?.id
+                        ? { ...p, dental_chart: result.data!.dental_chart }
+                        : p,
+                ),
             );
         }
     };
@@ -366,25 +443,34 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     const handleNextVisitUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (editingNextVisit) {
-            const result = await updateNextVisit(editingNextVisit.patientId, editingNextVisit.date);
+            const result = await updateNextVisit(
+                editingNextVisit.patientId,
+                editingNextVisit.date,
+            );
             if (result.success && result.data) {
-                setPatients(patients.map(patient => {
-                    if (patient.id === editingNextVisit.patientId) {
-                        return {
-                            ...patient,
-                            next_visit_date: result.data!.next_visit_date,
-                            next_visit_time: result.data!.next_visit_time || patient.next_visit_time
-                        };
-                    }
-                    return patient;
-                }));
-                
+                setPatients(
+                    patients.map((patient) => {
+                        if (patient.id === editingNextVisit.patientId) {
+                            return {
+                                ...patient,
+                                next_visit_date: result.data!.next_visit_date,
+                                next_visit_time:
+                                    result.data!.next_visit_time ||
+                                    patient.next_visit_time,
+                            };
+                        }
+                        return patient;
+                    }),
+                );
+
                 // Close the dialog
-                const dialogTrigger = document.querySelector('[data-state="open"]') as HTMLElement;
+                const dialogTrigger = document.querySelector(
+                    '[data-state="open"]',
+                ) as HTMLElement;
                 if (dialogTrigger) {
                     dialogTrigger.click();
                 }
-                
+
                 closeNextVisitDialog();
             }
         }
@@ -397,16 +483,20 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     // New workflow event handlers
     const handleOpenPatientRecord = async (patient: Patient) => {
         setSelectedPatientForRecord(patient);
-        
+
         try {
             // Load encounter data for this patient
-            const response = await fetch(`/clinic/patient-encounters?patient_id=${patient.id}`);
+            const response = await fetch(
+                `/clinic/patient-encounters?patient_id=${patient.id}`,
+            );
             const result = await response.json();
-            
+
             if (result.status === 'success') {
                 // Sort encounters by date (most recent first)
-                const sortedEncounters = (result.data?.data || []).sort((a: PatientEncounter, b: PatientEncounter) => 
-                    new Date(b.encounter_datetime).getTime() - new Date(a.encounter_datetime).getTime()
+                const sortedEncounters = (result.data?.data || []).sort(
+                    (a: PatientEncounter, b: PatientEncounter) =>
+                        new Date(b.encounter_datetime).getTime() -
+                        new Date(a.encounter_datetime).getTime(),
                 );
                 setSelectedPatientEncounters(sortedEncounters);
             } else {
@@ -420,16 +510,20 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     const handleStartCheckup = async (patient: Patient) => {
         setCheckupPatientForDoctor(patient);
-        
+
         try {
             // Load encounter data for context in the doctor checkup dialog
-            const response = await fetch(`/clinic/patient-encounters?patient_id=${patient.id}`);
+            const response = await fetch(
+                `/clinic/patient-encounters?patient_id=${patient.id}`,
+            );
             const result = await response.json();
-            
+
             if (result.status === 'success') {
                 // Sort encounters by date (most recent first)
-                const sortedEncounters = (result.data?.data || []).sort((a: PatientEncounter, b: PatientEncounter) => 
-                    new Date(b.encounter_datetime).getTime() - new Date(a.encounter_datetime).getTime()
+                const sortedEncounters = (result.data?.data || []).sort(
+                    (a: PatientEncounter, b: PatientEncounter) =>
+                        new Date(b.encounter_datetime).getTime() -
+                        new Date(a.encounter_datetime).getTime(),
                 );
                 setPatientEncounters(sortedEncounters);
             } else {
@@ -439,22 +533,28 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
             console.error('Error loading encounters for context:', error);
             setPatientEncounters([]);
         }
-        
+
         setIsDoctorCheckupDialogOpen(true);
         // Close patient record dialog if open
         setSelectedPatientForRecord(null);
     };
 
-    const handleDoctorCheckupSubmit = async (encounterData: NewPatientEncounter) => {
+    const handleDoctorCheckupSubmit = async (
+        encounterData: NewPatientEncounter,
+    ) => {
         if (!checkupPatientForDoctor) return;
-        
+
         try {
             // Get CSRF token more reliably
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute('content');
+
             if (!csrfToken) {
                 console.error('CSRF token not found');
-                toast.error('Security token not found. Please refresh the page.');
+                toast.error(
+                    'Security token not found. Please refresh the page.',
+                );
                 return;
             }
 
@@ -467,26 +567,30 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
-                body: JSON.stringify(encounterData)
+                body: JSON.stringify(encounterData),
             });
 
             console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            console.log(
+                'Response headers:',
+                Object.fromEntries(response.headers.entries()),
+            );
 
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('HTTP Error:', response.status, errorText);
-                
+
                 let errorMessage = `HTTP ${response.status}`;
                 try {
                     const errorJson = JSON.parse(errorText);
-                    errorMessage = errorJson.message || errorJson.error || errorMessage;
+                    errorMessage =
+                        errorJson.message || errorJson.error || errorMessage;
                 } catch {
                     errorMessage = errorText || errorMessage;
                 }
-                
+
                 toast.error(`Failed to save encounter: ${errorMessage}`);
                 return;
             }
@@ -496,32 +600,42 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
             if (result.status === 'success') {
                 // Update the patient encounters state
-                setPatientEncounters(prev => [result.data, ...prev]);
-                
+                setPatientEncounters((prev) => [result.data, ...prev]);
+
                 // Also update the legacy checkups for backward compatibility
                 const legacyCheckup = {
                     id: result.data.id,
                     checkup_date: result.data.encounter_datetime,
-                    diagnosis: result.data.clinical_impression || result.data.chief_complaint || 'Clinical encounter completed',
-                    treatment: result.data.treatment_plan || 'See encounter notes',
-                    notes: result.data.additional_notes || 'Comprehensive encounter documented'
+                    diagnosis:
+                        result.data.clinical_impression ||
+                        result.data.chief_complaint ||
+                        'Clinical encounter completed',
+                    treatment:
+                        result.data.treatment_plan || 'See encounter notes',
+                    notes:
+                        result.data.additional_notes ||
+                        'Comprehensive encounter documented',
                 };
 
-                setPatients(prevPatients => 
-                    prevPatients.map(patient => 
-                        patient.id === checkupPatientForDoctor.id 
-                        ? {
-                            ...patient,
-                            checkups: [...(patient.checkups || []), legacyCheckup],
-                            last_visit_date: result.data.encounter_datetime
-                        }
-                        : patient
-                    )
+                setPatients((prevPatients) =>
+                    prevPatients.map((patient) =>
+                        patient.id === checkupPatientForDoctor.id
+                            ? {
+                                  ...patient,
+                                  checkups: [
+                                      ...(patient.checkups || []),
+                                      legacyCheckup,
+                                  ],
+                                  last_visit_date:
+                                      result.data.encounter_datetime,
+                              }
+                            : patient,
+                    ),
                 );
 
                 setIsDoctorCheckupDialogOpen(false);
                 setCheckupPatientForDoctor(null);
-                
+
                 // Show success message
                 toast.success('Clinical encounter saved successfully');
             } else {
@@ -537,25 +651,41 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
     // Medical Record Management Functions
     const openPatientMedicalRecord = async (patient: Patient) => {
         setSelectedPatientForMedicalRecord(patient);
-        
+
         try {
             // Load comprehensive medical record data via frontend controller
-            const [encountersRes, vitalSignsRes, diagnosesRes, allergiesRes, medicationsRes, historyRes] = await Promise.all([
+            const [
+                encountersRes,
+                vitalSignsRes,
+                diagnosesRes,
+                allergiesRes,
+                medicationsRes,
+                historyRes,
+            ] = await Promise.all([
                 fetch(`/clinic/patient-encounters?patient_id=${patient.id}`),
                 fetch(`/clinic/patient-vital-signs?patient_id=${patient.id}`),
                 fetch(`/clinic/patient-diagnoses?patient_id=${patient.id}`),
                 fetch(`/clinic/patient-allergies?patient_id=${patient.id}`),
                 fetch(`/clinic/patient-medications?patient_id=${patient.id}`),
-                fetch(`/clinic/patient-medical-history?patient_id=${patient.id}`)
+                fetch(
+                    `/clinic/patient-medical-history?patient_id=${patient.id}`,
+                ),
             ]);
 
-            const [encounters, vitalSigns, diagnoses, allergies, medications, history] = await Promise.all([
+            const [
+                encounters,
+                vitalSigns,
+                diagnoses,
+                allergies,
+                medications,
+                history,
+            ] = await Promise.all([
                 encountersRes.json(),
                 vitalSignsRes.json(),
                 diagnosesRes.json(),
                 allergiesRes.json(),
                 medicationsRes.json(),
-                historyRes.json()
+                historyRes.json(),
             ]);
 
             setPatientEncounters(encounters.data?.data || []);
@@ -595,36 +725,47 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(allergyData)
+                body: JSON.stringify(allergyData),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientAllergies(prev => [result.data, ...prev]);
+                setPatientAllergies((prev) => [result.data, ...prev]);
             }
         } catch (error) {
             console.error('Error adding allergy:', error);
         }
     };
 
-    const handleUpdateAllergy = async (id: number, allergyData: Partial<PatientAllergy>) => {
+    const handleUpdateAllergy = async (
+        id: number,
+        allergyData: Partial<PatientAllergy>,
+    ) => {
         try {
             const response = await fetch(`/clinic/patient-allergies/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(allergyData)
+                body: JSON.stringify(allergyData),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientAllergies(prev => prev.map(allergy => 
-                    allergy.id === id ? result.data : allergy
-                ));
+                setPatientAllergies((prev) =>
+                    prev.map((allergy) =>
+                        allergy.id === id ? result.data : allergy,
+                    ),
+                );
             }
         } catch (error) {
             console.error('Error updating allergy:', error);
@@ -636,55 +777,73 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
             const response = await fetch(`/clinic/patient-allergies/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientAllergies(prev => prev.filter(allergy => allergy.id !== id));
+                setPatientAllergies((prev) =>
+                    prev.filter((allergy) => allergy.id !== id),
+                );
             }
         } catch (error) {
             console.error('Error deleting allergy:', error);
         }
     };
 
-    const handleAddMedication = async (medicationData: NewPatientMedication) => {
+    const handleAddMedication = async (
+        medicationData: NewPatientMedication,
+    ) => {
         try {
             const response = await fetch('/clinic/patient-medications', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(medicationData)
+                body: JSON.stringify(medicationData),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientMedications(prev => [result.data, ...prev]);
+                setPatientMedications((prev) => [result.data, ...prev]);
             }
         } catch (error) {
             console.error('Error adding medication:', error);
         }
     };
 
-    const handleUpdateMedication = async (id: number, medicationData: Partial<PatientMedication>) => {
+    const handleUpdateMedication = async (
+        id: number,
+        medicationData: Partial<PatientMedication>,
+    ) => {
         try {
             const response = await fetch(`/clinic/patient-medications/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(medicationData)
+                body: JSON.stringify(medicationData),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientMedications(prev => prev.map(medication => 
-                    medication.id === id ? result.data : medication
-                ));
+                setPatientMedications((prev) =>
+                    prev.map((medication) =>
+                        medication.id === id ? result.data : medication,
+                    ),
+                );
             }
         } catch (error) {
             console.error('Error updating medication:', error);
@@ -696,55 +855,76 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
             const response = await fetch(`/clinic/patient-medications/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientMedications(prev => prev.filter(medication => medication.id !== id));
+                setPatientMedications((prev) =>
+                    prev.filter((medication) => medication.id !== id),
+                );
             }
         } catch (error) {
             console.error('Error deleting medication:', error);
         }
     };
 
-    const handleAddMedicalHistory = async (historyData: NewPatientMedicalHistory) => {
+    const handleAddMedicalHistory = async (
+        historyData: NewPatientMedicalHistory,
+    ) => {
         try {
             const response = await fetch('/clinic/patient-medical-history', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(historyData)
+                body: JSON.stringify(historyData),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientMedicalHistory(prev => [result.data, ...prev]);
+                setPatientMedicalHistory((prev) => [result.data, ...prev]);
             }
         } catch (error) {
             console.error('Error adding medical history:', error);
         }
     };
 
-    const handleUpdateMedicalHistory = async (id: number, historyData: Partial<PatientMedicalHistory>) => {
+    const handleUpdateMedicalHistory = async (
+        id: number,
+        historyData: Partial<PatientMedicalHistory>,
+    ) => {
         try {
-            const response = await fetch(`/clinic/patient-medical-history/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            const response = await fetch(
+                `/clinic/patient-medical-history/${id}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify(historyData),
                 },
-                body: JSON.stringify(historyData)
-            });
+            );
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientMedicalHistory(prev => prev.map(history => 
-                    history.id === id ? result.data : history
-                ));
+                setPatientMedicalHistory((prev) =>
+                    prev.map((history) =>
+                        history.id === id ? result.data : history,
+                    ),
+                );
             }
         } catch (error) {
             console.error('Error updating medical history:', error);
@@ -753,16 +933,24 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
     const handleDeleteMedicalHistory = async (id: number) => {
         try {
-            const response = await fetch(`/clinic/patient-medical-history/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
+            const response = await fetch(
+                `/clinic/patient-medical-history/${id}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                },
+            );
 
             const result = await response.json();
             if (result.status === 'success') {
-                setPatientMedicalHistory(prev => prev.filter(history => history.id !== id));
+                setPatientMedicalHistory((prev) =>
+                    prev.filter((history) => history.id !== id),
+                );
             }
         } catch (error) {
             console.error('Error deleting medical history:', error);
@@ -790,7 +978,10 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         setEditingAppointment(appointment);
     };
 
-    const handleUpdateAppointment = async (id: number, appointment: Partial<NewAppointment>) => {
+    const handleUpdateAppointment = async (
+        id: number,
+        appointment: Partial<NewAppointment>,
+    ) => {
         const result = await updateAppointment(id, appointment);
         if (result.success) {
             setEditingAppointment(null);
@@ -808,15 +999,26 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         }
     };
 
-    const handleUpdateAppointmentStatus = async (appointment: Appointment, status: string) => {
-        const result = await updateAppointmentStatus(appointment.id, { status: status as any });
+    const handleUpdateAppointmentStatus = async (
+        appointment: Appointment,
+        status: string,
+    ) => {
+        const result = await updateAppointmentStatus(appointment.id, {
+            status: status as any,
+        });
         if (result.success) {
             // Status updated successfully
         }
     };
 
-    const handleUpdateAppointmentPaymentStatus = async (appointment: Appointment, paymentStatus: string) => {
-        const result = await updateAppointmentPaymentStatus(appointment.id, paymentStatus);
+    const handleUpdateAppointmentPaymentStatus = async (
+        appointment: Appointment,
+        paymentStatus: string,
+    ) => {
+        const result = await updateAppointmentPaymentStatus(
+            appointment.id,
+            paymentStatus,
+        );
         if (result.success) {
             // Payment status updated successfully
         }
@@ -837,55 +1039,55 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
         >
             <Head title="Clinic" />
 
-            <div className="p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 <Tabs defaultValue="patients" className="space-y-6">
                     <div className="border-b border-gray-200 dark:border-gray-700">
-                        <TabsList className="h-auto p-0 bg-transparent border-0 rounded-none">
-                            <TabsTrigger 
-                                value="patients" 
-                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                        <TabsList className="h-auto rounded-none border-0 bg-transparent p-0">
+                            <TabsTrigger
+                                value="patients"
+                                className="relative rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
                             >
                                 <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
                                     <span>Patients</span>
-                                    <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+                                    <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                                         {filteredPatients.length}
                                     </span>
                                 </div>
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="appointments" 
-                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            <TabsTrigger
+                                value="appointments"
+                                className="relative rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
                             >
                                 <div className="flex items-center gap-2">
                                     <Calendar className="h-4 w-4" />
                                     <span>Appointments</span>
-                                    <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+                                    <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                                         {appointments.length}
                                     </span>
                                 </div>
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="inventory" 
-                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            <TabsTrigger
+                                value="inventory"
+                                className="relative rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
                             >
                                 <div className="flex items-center gap-2">
                                     <Package className="h-4 w-4" />
                                     <span>Inventory</span>
                                 </div>
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="payment-accounts" 
-                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            <TabsTrigger
+                                value="payment-accounts"
+                                className="relative rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
                             >
                                 <div className="flex items-center gap-2">
                                     <CreditCard className="h-4 w-4" />
                                     <span>Payment Accounts</span>
                                 </div>
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="add-patient" 
-                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            <TabsTrigger
+                                value="add-patient"
+                                className="relative rounded-none border-b-2 border-transparent px-6 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
                             >
                                 <div className="flex items-center gap-2">
                                     <UserPlus className="h-4 w-4" />
@@ -920,55 +1122,85 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
 
                     <TabsContent value="appointments">
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-semibold">Appointments</h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold">
+                                    Appointments
+                                </h3>
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700">
                                         <Button
-                                            variant={appointmentView === 'table' ? 'default' : 'ghost'}
+                                            variant={
+                                                appointmentView === 'table'
+                                                    ? 'default'
+                                                    : 'ghost'
+                                            }
                                             size="sm"
-                                            onClick={() => setAppointmentView('table')}
+                                            onClick={() =>
+                                                setAppointmentView('table')
+                                            }
                                             className="rounded-r-none"
                                         >
-                                            <Table className="h-4 w-4 mr-2" />
+                                            <Table className="mr-2 h-4 w-4" />
                                             Table
                                         </Button>
                                         <Button
-                                            variant={appointmentView === 'calendar' ? 'default' : 'ghost'}
+                                            variant={
+                                                appointmentView === 'calendar'
+                                                    ? 'default'
+                                                    : 'ghost'
+                                            }
                                             size="sm"
-                                            onClick={() => setAppointmentView('calendar')}
+                                            onClick={() =>
+                                                setAppointmentView('calendar')
+                                            }
                                             className="rounded-l-none"
                                         >
-                                            <Grid3X3 className="h-4 w-4 mr-2" />
+                                            <Grid3X3 className="mr-2 h-4 w-4" />
                                             Calendar
                                         </Button>
                                     </div>
-                                    <Button onClick={() => {
-                                        setPreselectedPatientForAppointment(null); // Clear any preselected patient
-                                        setIsAddAppointmentDialogOpen(true);
-                                    }}>
-                                        <Calendar className="h-4 w-4 mr-2" />
+                                    <Button
+                                        onClick={() => {
+                                            setPreselectedPatientForAppointment(
+                                                null,
+                                            ); // Clear any preselected patient
+                                            setIsAddAppointmentDialogOpen(true);
+                                        }}
+                                    >
+                                        <Calendar className="mr-2 h-4 w-4" />
                                         Schedule Appointment
                                     </Button>
                                 </div>
                             </div>
-                            
+
                             {appointmentView === 'table' ? (
                                 <AppointmentTable
                                     appointments={appointments}
                                     onEditAppointment={handleEditAppointment}
-                                    onDeleteAppointment={handleDeleteAppointment}
-                                    onUpdateStatus={handleUpdateAppointmentStatus}
-                                    onUpdatePaymentStatus={handleUpdateAppointmentPaymentStatus}
+                                    onDeleteAppointment={
+                                        handleDeleteAppointment
+                                    }
+                                    onUpdateStatus={
+                                        handleUpdateAppointmentStatus
+                                    }
+                                    onUpdatePaymentStatus={
+                                        handleUpdateAppointmentPaymentStatus
+                                    }
                                     currency={currency}
                                 />
                             ) : (
                                 <AppointmentCalendar
                                     appointments={appointments}
                                     onEditAppointment={handleEditAppointment}
-                                    onDeleteAppointment={handleDeleteAppointment}
-                                    onUpdateStatus={handleUpdateAppointmentStatus}
-                                    onUpdatePaymentStatus={handleUpdateAppointmentPaymentStatus}
+                                    onDeleteAppointment={
+                                        handleDeleteAppointment
+                                    }
+                                    onUpdateStatus={
+                                        handleUpdateAppointmentStatus
+                                    }
+                                    onUpdatePaymentStatus={
+                                        handleUpdateAppointmentPaymentStatus
+                                    }
                                     currency={currency}
                                 />
                             )}
@@ -976,10 +1208,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     </TabsContent>
 
                     <TabsContent value="inventory">
-                        <Inventory 
-                            auth={auth} 
-                            appCurrency={appCurrency} 
-                        />
+                        <Inventory auth={auth} appCurrency={appCurrency} />
                     </TabsContent>
 
                     <TabsContent value="payment-accounts">
@@ -998,99 +1227,188 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                                 // Optionally refresh patient data
                                 console.log('Account deleted');
                             }}
-                            onAddBill={async (patientId: string, amount: number, details: string, billDate?: string) => {
-                                const result = await addBill(patientId, amount, details, billDate);
+                            onAddBill={async (
+                                patientId: string,
+                                amount: number,
+                                details: string,
+                                billDate?: string,
+                            ) => {
+                                const result = await addBill(
+                                    patientId,
+                                    amount,
+                                    details,
+                                    billDate,
+                                );
                                 if (result.success) {
                                     // Update patients state
-                                    const updatedPatient = patients.find(p => p.id === patientId);
+                                    const updatedPatient = patients.find(
+                                        (p) => p.id === patientId,
+                                    );
                                     if (updatedPatient) {
                                         const newBill = result.data;
-                                        const updatedPatients = patients.map(patient => {
-                                            if (patient.id === patientId) {
-                                                return {
-                                                    ...patient,
-                                                    bills: [...patient.bills, newBill],
-                                                    total_bills: patient.total_bills + amount,
-                                                    balance: patient.balance + amount
-                                                };
-                                            }
-                                            return patient;
-                                        });
+                                        const updatedPatients = patients.map(
+                                            (patient) => {
+                                                if (patient.id === patientId) {
+                                                    return {
+                                                        ...patient,
+                                                        bills: [
+                                                            ...patient.bills,
+                                                            newBill,
+                                                        ],
+                                                        total_bills:
+                                                            patient.total_bills +
+                                                            amount,
+                                                        balance:
+                                                            patient.balance +
+                                                            amount,
+                                                    };
+                                                }
+                                                return patient;
+                                            },
+                                        );
                                         setPatients(updatedPatients);
                                     }
                                 }
                                 return {
                                     success: result.success,
                                     data: result.data,
-                                    error: typeof result.error === 'string' ? result.error : result.error?.toString()
+                                    error:
+                                        typeof result.error === 'string'
+                                            ? result.error
+                                            : result.error?.toString(),
                                 };
                             }}
-                            onDeleteBill={async (patientId: string, billId: number) => {
-                                const result = await deleteBill(patientId, billId);
+                            onDeleteBill={async (
+                                patientId: string,
+                                billId: number,
+                            ) => {
+                                const result = await deleteBill(
+                                    patientId,
+                                    billId,
+                                );
                                 if (result.success) {
                                     // Update patients state
-                                    setPatients(patients.map(patient => {
-                                        if (patient.id === patientId) {
-                                            const billAmount = parseFloat(patient.bills.find(b => b.id === billId)?.bill_amount || '0');
-                                            const updatedBills = patient.bills.filter(bill => bill.id !== billId);
-                                            return {
-                                                ...patient,
-                                                bills: updatedBills,
-                                                total_bills: patient.total_bills - billAmount,
-                                                balance: patient.balance - billAmount
-                                            };
-                                        }
-                                        return patient;
-                                    }));
+                                    setPatients(
+                                        patients.map((patient) => {
+                                            if (patient.id === patientId) {
+                                                const billAmount = parseFloat(
+                                                    patient.bills.find(
+                                                        (b) => b.id === billId,
+                                                    )?.bill_amount || '0',
+                                                );
+                                                const updatedBills =
+                                                    patient.bills.filter(
+                                                        (bill) =>
+                                                            bill.id !== billId,
+                                                    );
+                                                return {
+                                                    ...patient,
+                                                    bills: updatedBills,
+                                                    total_bills:
+                                                        patient.total_bills -
+                                                        billAmount,
+                                                    balance:
+                                                        patient.balance -
+                                                        billAmount,
+                                                };
+                                            }
+                                            return patient;
+                                        }),
+                                    );
                                 }
                                 return result;
                             }}
                             onShowBillHistory={fetchBillHistory}
-                            onAddPayment={async (patientId: string, amount: number, paymentDate?: string) => {
-                                const result = await processPayment(patientId, amount, paymentDate);
+                            onAddPayment={async (
+                                patientId: string,
+                                amount: number,
+                                paymentDate?: string,
+                            ) => {
+                                const result = await processPayment(
+                                    patientId,
+                                    amount,
+                                    paymentDate,
+                                );
                                 if (result.success) {
                                     // Update patients state
-                                    setPatients(prevPatients => 
-                                        prevPatients.map(patient => {
+                                    setPatients((prevPatients) =>
+                                        prevPatients.map((patient) => {
                                             if (patient.id === patientId) {
                                                 const newPayment = result.data;
-                                                const updatedPayments = [...patient.payments, newPayment];
-                                                const newTotalPayments = parseFloat(patient.total_payments.toString()) + amount;
-                                                
+                                                const updatedPayments = [
+                                                    ...patient.payments,
+                                                    newPayment,
+                                                ];
+                                                const newTotalPayments =
+                                                    parseFloat(
+                                                        patient.total_payments.toString(),
+                                                    ) + amount;
+
                                                 return {
                                                     ...patient,
                                                     payments: updatedPayments,
-                                                    total_payments: newTotalPayments,
-                                                    balance: patient.total_bills - newTotalPayments
+                                                    total_payments:
+                                                        newTotalPayments,
+                                                    balance:
+                                                        patient.total_bills -
+                                                        newTotalPayments,
                                                 };
                                             }
                                             return patient;
-                                        })
+                                        }),
                                     );
                                 }
                                 return {
                                     success: result.success,
                                     data: result.data,
-                                    error: typeof result.error === 'string' ? result.error : result.error?.toString()
+                                    error:
+                                        typeof result.error === 'string'
+                                            ? result.error
+                                            : result.error?.toString(),
                                 };
                             }}
-                            onDeletePayment={async (patientId: string, paymentId: number) => {
-                                const result = await deletePayment(patientId, paymentId);
+                            onDeletePayment={async (
+                                patientId: string,
+                                paymentId: number,
+                            ) => {
+                                const result = await deletePayment(
+                                    patientId,
+                                    paymentId,
+                                );
                                 if (result.success) {
                                     // Update patients state
-                                    setPatients(patients.map(patient => {
-                                        if (patient.id === patientId) {
-                                            const paymentAmount = parseFloat(patient.payments.find(p => p.id === paymentId)?.payment_amount || '0');
-                                            const updatedPayments = patient.payments.filter(payment => payment.id !== paymentId);
-                                            return {
-                                                ...patient,
-                                                payments: updatedPayments,
-                                                total_payments: patient.total_payments - paymentAmount,
-                                                balance: patient.balance + paymentAmount
-                                            };
-                                        }
-                                        return patient;
-                                    }));
+                                    setPatients(
+                                        patients.map((patient) => {
+                                            if (patient.id === patientId) {
+                                                const paymentAmount =
+                                                    parseFloat(
+                                                        patient.payments.find(
+                                                            (p) =>
+                                                                p.id ===
+                                                                paymentId,
+                                                        )?.payment_amount ||
+                                                            '0',
+                                                    );
+                                                const updatedPayments =
+                                                    patient.payments.filter(
+                                                        (payment) =>
+                                                            payment.id !==
+                                                            paymentId,
+                                                    );
+                                                return {
+                                                    ...patient,
+                                                    payments: updatedPayments,
+                                                    total_payments:
+                                                        patient.total_payments -
+                                                        paymentAmount,
+                                                    balance:
+                                                        patient.balance +
+                                                        paymentAmount,
+                                                };
+                                            }
+                                            return patient;
+                                        }),
+                                    );
                                 }
                                 return result;
                             }}
@@ -1121,56 +1439,93 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                         const result = await deleteBill(patientId, billId);
                         if (result.success) {
                             // Update patients state
-                            setPatients(patients.map(patient => {
-                                if (patient.id === patientId) {
-                                    const billAmount = parseFloat(patient.bills.find(b => b.id === billId)?.bill_amount || '0');
-                                    const updatedBills = patient.bills.filter(bill => bill.id !== billId);
-                                    
-                                    // Also update the showing history patient if it's the same patient
-                                    if (showingHistoryForPatient?.id === patientId) {
-                                        setShowingHistoryForPatient({
-                                            ...showingHistoryForPatient,
-                                            bills: updatedBills
-                                        });
+                            setPatients(
+                                patients.map((patient) => {
+                                    if (patient.id === patientId) {
+                                        const billAmount = parseFloat(
+                                            patient.bills.find(
+                                                (b) => b.id === billId,
+                                            )?.bill_amount || '0',
+                                        );
+                                        const updatedBills =
+                                            patient.bills.filter(
+                                                (bill) => bill.id !== billId,
+                                            );
+
+                                        // Also update the showing history patient if it's the same patient
+                                        if (
+                                            showingHistoryForPatient?.id ===
+                                            patientId
+                                        ) {
+                                            setShowingHistoryForPatient({
+                                                ...showingHistoryForPatient,
+                                                bills: updatedBills,
+                                            });
+                                        }
+
+                                        return {
+                                            ...patient,
+                                            bills: updatedBills,
+                                            total_bills:
+                                                patient.total_bills -
+                                                billAmount,
+                                            balance:
+                                                patient.balance - billAmount,
+                                        };
                                     }
-                                    
-                                    return {
-                                        ...patient,
-                                        bills: updatedBills,
-                                        total_bills: patient.total_bills - billAmount,
-                                        balance: patient.balance - billAmount
-                                    };
-                                }
-                                return patient;
-                            }));
+                                    return patient;
+                                }),
+                            );
                         }
                     }}
-                    onDeletePayment={async (patientId: string, paymentId: number) => {
-                        const result = await deletePayment(patientId, paymentId);
+                    onDeletePayment={async (
+                        patientId: string,
+                        paymentId: number,
+                    ) => {
+                        const result = await deletePayment(
+                            patientId,
+                            paymentId,
+                        );
                         if (result.success) {
                             // Update patients state
-                            setPatients(patients.map(patient => {
-                                if (patient.id === patientId) {
-                                    const paymentAmount = parseFloat(patient.payments.find(p => p.id === paymentId)?.payment_amount || '0');
-                                    const updatedPayments = patient.payments.filter(payment => payment.id !== paymentId);
-                                    
-                                    // Also update the showing history patient if it's the same patient
-                                    if (showingHistoryForPatient?.id === patientId) {
-                                        setShowingHistoryForPatient({
-                                            ...showingHistoryForPatient,
-                                            payments: updatedPayments
-                                        });
+                            setPatients(
+                                patients.map((patient) => {
+                                    if (patient.id === patientId) {
+                                        const paymentAmount = parseFloat(
+                                            patient.payments.find(
+                                                (p) => p.id === paymentId,
+                                            )?.payment_amount || '0',
+                                        );
+                                        const updatedPayments =
+                                            patient.payments.filter(
+                                                (payment) =>
+                                                    payment.id !== paymentId,
+                                            );
+
+                                        // Also update the showing history patient if it's the same patient
+                                        if (
+                                            showingHistoryForPatient?.id ===
+                                            patientId
+                                        ) {
+                                            setShowingHistoryForPatient({
+                                                ...showingHistoryForPatient,
+                                                payments: updatedPayments,
+                                            });
+                                        }
+
+                                        return {
+                                            ...patient,
+                                            payments: updatedPayments,
+                                            total_payments:
+                                                patient.total_payments -
+                                                paymentAmount,
+                                            balance:
+                                                patient.balance + paymentAmount,
+                                        };
                                     }
-                                    
-                                    return {
-                                        ...patient,
-                                        payments: updatedPayments,
-                                        total_payments: patient.total_payments - paymentAmount,
-                                        balance: patient.balance + paymentAmount
-                                    };
-                                }
-                                return patient;
-                            }));
+                                    return patient;
+                                }),
+                            );
                         }
                     }}
                     onDeleteCheckup={handleDeleteCheckup}
@@ -1220,39 +1575,77 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                     onSubmit={handleAddCheckup}
                 />
 
-
                 {/* Edit Next Visit Dialog */}
-                <Dialog open={!!editingNextVisit} onOpenChange={(open) => !open && closeNextVisitDialog()}>
+                <Dialog
+                    open={!!editingNextVisit}
+                    onOpenChange={(open) => !open && closeNextVisitDialog()}
+                >
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Edit Next Visit</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleNextVisitUpdate} className="space-y-4">
+                        <form
+                            onSubmit={handleNextVisitUpdate}
+                            className="space-y-4"
+                        >
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-2">
                                     <input
                                         id="noNextVisit"
                                         type="checkbox"
-                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                        checked={editingNextVisit?.date === 'NA'}
-                                        onChange={(e) => setEditingNextVisit(prev => 
-                                            prev ? { ...prev, date: e.target.checked ? 'NA' : '' } : null
-                                        )}
+                                        className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+                                        checked={
+                                            editingNextVisit?.date === 'NA'
+                                        }
+                                        onChange={(e) =>
+                                            setEditingNextVisit((prev) =>
+                                                prev
+                                                    ? {
+                                                          ...prev,
+                                                          date: e.target.checked
+                                                              ? 'NA'
+                                                              : '',
+                                                      }
+                                                    : null,
+                                            )
+                                        }
                                     />
-                                    <Label htmlFor="noNextVisit" className="text-gray-900 dark:text-white">No next visit scheduled</Label>
+                                    <Label
+                                        htmlFor="noNextVisit"
+                                        className="text-gray-900 dark:text-white"
+                                    >
+                                        No next visit scheduled
+                                    </Label>
                                 </div>
                                 {editingNextVisit?.date !== 'NA' && (
                                     <div>
-                                        <Label htmlFor="nextVisitDate" className="text-gray-900 dark:text-white">Next Visit Date & Time</Label>
+                                        <Label
+                                            htmlFor="nextVisitDate"
+                                            className="text-gray-900 dark:text-white"
+                                        >
+                                            Next Visit Date & Time
+                                        </Label>
                                         <Input
                                             id="nextVisitDate"
                                             type="datetime-local"
                                             value={editingNextVisit?.date || ''}
-                                            onChange={(e) => setEditingNextVisit(prev => 
-                                                prev ? { ...prev, date: e.target.value || 'NA' } : null
-                                            )}
-                                            required={editingNextVisit?.date !== 'NA'}
-                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white [&::-webkit-calendar-picker-indicator]:dark:filter [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                                            onChange={(e) =>
+                                                setEditingNextVisit((prev) =>
+                                                    prev
+                                                        ? {
+                                                              ...prev,
+                                                              date:
+                                                                  e.target
+                                                                      .value ||
+                                                                  'NA',
+                                                          }
+                                                        : null,
+                                                )
+                                            }
+                                            required={
+                                                editingNextVisit?.date !== 'NA'
+                                            }
+                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:dark:filter"
                                         />
                                     </div>
                                 )}
@@ -1286,21 +1679,37 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 />
 
                 {/* Delete Appointment Confirmation Dialog */}
-                <Dialog open={!!deleteAppointmentConfirmation} onOpenChange={(open) => !open && setDeleteAppointmentConfirmation(null)}>
+                <Dialog
+                    open={!!deleteAppointmentConfirmation}
+                    onOpenChange={(open) =>
+                        !open && setDeleteAppointmentConfirmation(null)
+                    }
+                >
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Delete Appointment</DialogTitle>
                         </DialogHeader>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Are you sure you want to delete this appointment? This action cannot be undone.
+                            Are you sure you want to delete this appointment?
+                            This action cannot be undone.
                         </p>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setDeleteAppointmentConfirmation(null)}>
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    setDeleteAppointmentConfirmation(null)
+                                }
+                            >
                                 Cancel
                             </Button>
-                            <Button 
-                                variant="destructive" 
-                                onClick={() => deleteAppointmentConfirmation && handleConfirmDeleteAppointment(deleteAppointmentConfirmation.id)}
+                            <Button
+                                variant="destructive"
+                                onClick={() =>
+                                    deleteAppointmentConfirmation &&
+                                    handleConfirmDeleteAppointment(
+                                        deleteAppointmentConfirmation.id,
+                                    )
+                                }
                             >
                                 Delete
                             </Button>
@@ -1358,7 +1767,7 @@ export default function Clinic({ auth, initialPatients = [], appCurrency = null,
                 />
 
                 {/* Universal Medical Record System Components */}
-                
+
                 {/* Patient Encounter History Dialog */}
                 <PatientEncounterHistoryDialog
                     isOpen={isEncounterHistoryDialogOpen}

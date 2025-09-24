@@ -1,16 +1,40 @@
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import { Pencil2Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { FilterIcon, PackageIcon, SearchIcon, TruckIcon } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { Badge } from "@/Components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/Components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { PackageIcon, SearchIcon, FilterIcon, XIcon, TruckIcon } from "lucide-react";
-import { CargoItem, CargoFormData } from "../types";
-import { useCargoMonitoring, useShipmentTracking, useFleetManagement } from "../hooks";
-import CargoUnloadingDialog from "./CargoUnloadingDialog";
+import {
+    useCargoMonitoring,
+    useFleetManagement,
+    useShipmentTracking,
+} from '../hooks';
+import { CargoFormData, CargoItem } from '../types';
+import CargoUnloadingDialog from './CargoUnloadingDialog';
 
 export default function CargoMonitoring() {
     const {
@@ -22,7 +46,7 @@ export default function CargoMonitoring() {
         updateCargoItem,
         deleteCargoItem,
         getCargoByShipment,
-        fetchCargoItems
+        fetchCargoItems,
     } = useCargoMonitoring();
 
     const { shipments } = useShipmentTracking();
@@ -44,7 +68,7 @@ export default function CargoMonitoring() {
         description: '',
         specialHandling: '',
         temperature: '',
-        humidity: ''
+        humidity: '',
     });
     const [editingCargoId, setEditingCargoId] = useState<string>('');
     const [newCargo, setNewCargo] = useState<CargoFormData>({
@@ -54,36 +78,71 @@ export default function CargoMonitoring() {
         description: '',
         specialHandling: '',
         temperature: '',
-        humidity: ''
+        humidity: '',
     });
     const [isUnloadingDialogOpen, setIsUnloadingDialogOpen] = useState(false);
-    const [selectedCargoForUnloading, setSelectedCargoForUnloading] = useState<CargoItem | null>(null);
+    const [selectedCargoForUnloading, setSelectedCargoForUnloading] =
+        useState<CargoItem | null>(null);
 
-    const filteredCargoItems = (cargoItems || []).filter(cargo => {
+    const filteredCargoItems = (cargoItems || []).filter((cargo) => {
         const searchTerm = cargoSearch.toLowerCase();
-        const shipment = shipments.find(s => s.id === cargo.shipment_id);
-        const truck = shipment ? trucks.find(t => t.id === shipment.truck_id) : null;
-        
-        const matchesSearch = (
+        const shipment = shipments.find((s) => s.id === cargo.shipment_id);
+        const truck = shipment
+            ? trucks.find((t) => t.id === shipment.truck_id)
+            : null;
+
+        const matchesSearch =
             (cargo.name && cargo.name.toLowerCase().includes(searchTerm)) ||
-            (cargo.description && cargo.description.toLowerCase().includes(searchTerm)) ||
-            (cargo.special_handling && cargo.special_handling.toLowerCase().includes(searchTerm))
+            (cargo.description &&
+                cargo.description.toLowerCase().includes(searchTerm)) ||
+            (cargo.special_handling &&
+                cargo.special_handling.toLowerCase().includes(searchTerm));
+
+        const matchesTruckFilter =
+            truckFilter === 'all' ||
+            !truckFilter ||
+            (truck &&
+                truck.plate_number
+                    .toLowerCase()
+                    .includes(truckFilter.toLowerCase()));
+
+        const matchesOriginFilter =
+            originFilter === 'all' ||
+            !originFilter ||
+            (shipment &&
+                shipment.origin
+                    .toLowerCase()
+                    .includes(originFilter.toLowerCase()));
+
+        const matchesDestinationFilter =
+            destinationFilter === 'all' ||
+            !destinationFilter ||
+            (shipment &&
+                shipment.destination
+                    .toLowerCase()
+                    .includes(destinationFilter.toLowerCase()));
+
+        const matchesStatusFilter =
+            statusFilter === 'all' ||
+            !statusFilter ||
+            cargo.status === statusFilter;
+
+        return (
+            matchesSearch &&
+            matchesTruckFilter &&
+            matchesOriginFilter &&
+            matchesDestinationFilter &&
+            matchesStatusFilter
         );
-        
-        const matchesTruckFilter = truckFilter === "all" || !truckFilter || (truck && truck.plate_number.toLowerCase().includes(truckFilter.toLowerCase()));
-        
-        const matchesOriginFilter = originFilter === "all" || !originFilter || (shipment && shipment.origin.toLowerCase().includes(originFilter.toLowerCase()));
-        
-        const matchesDestinationFilter = destinationFilter === "all" || !destinationFilter || (shipment && shipment.destination.toLowerCase().includes(destinationFilter.toLowerCase()));
-        
-        const matchesStatusFilter = statusFilter === "all" || !statusFilter || cargo.status === statusFilter;
-        
-        return matchesSearch && matchesTruckFilter && matchesOriginFilter && matchesDestinationFilter && matchesStatusFilter;
     });
 
     // Get unique origins and destinations for filter options
-    const uniqueOrigins = Array.from(new Set(shipments.map(shipment => shipment.origin))).sort();
-    const uniqueDestinations = Array.from(new Set(shipments.map(shipment => shipment.destination))).sort();
+    const uniqueOrigins = Array.from(
+        new Set(shipments.map((shipment) => shipment.origin)),
+    ).sort();
+    const uniqueDestinations = Array.from(
+        new Set(shipments.map((shipment) => shipment.destination)),
+    ).sort();
 
     const handleAddCargoItem = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,7 +159,7 @@ export default function CargoMonitoring() {
                 description: '',
                 specialHandling: '',
                 temperature: '',
-                humidity: ''
+                humidity: '',
             });
             setSelectedShipmentId('');
         } catch (error) {
@@ -117,14 +176,14 @@ export default function CargoMonitoring() {
             description: cargo.description || '',
             specialHandling: cargo.special_handling || '',
             temperature: cargo.temperature?.toString() || '',
-            humidity: cargo.humidity?.toString() || ''
+            humidity: cargo.humidity?.toString() || '',
         });
         setIsEditDialogOpen(true);
     };
 
     const saveEditedCargoItem = async (cargoId: string) => {
         try {
-            const cargo = (cargoItems || []).find(c => c.id === cargoId);
+            const cargo = (cargoItems || []).find((c) => c.id === cargoId);
             if (cargo) {
                 await updateCargoItem(cargoId, {
                     shipmentId: cargo.shipment_id,
@@ -135,7 +194,7 @@ export default function CargoMonitoring() {
                     specialHandling: editingCargo.specialHandling,
                     status: cargo.status,
                     temperature: editingCargo.temperature,
-                    humidity: editingCargo.humidity
+                    humidity: editingCargo.humidity,
                 });
             }
             setIsEditDialogOpen(false);
@@ -151,7 +210,7 @@ export default function CargoMonitoring() {
 
     const confirmDeleteCargoItem = async () => {
         if (!cargoToDelete) return;
-        
+
         try {
             await deleteCargoItem(cargoToDelete.id);
             setShowDeleteDialog(false);
@@ -161,7 +220,10 @@ export default function CargoMonitoring() {
         }
     };
 
-    const handleUpdateCargoStatus = async (cargoId: string, status: CargoItem['status']) => {
+    const handleUpdateCargoStatus = async (
+        cargoId: string,
+        status: CargoItem['status'],
+    ) => {
         try {
             await updateCargoStatus(cargoId, status);
         } catch (error) {
@@ -179,16 +241,18 @@ export default function CargoMonitoring() {
         fetchCargoItems();
     };
 
-
-
     if (loading) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-gray-900 dark:text-gray-100">Cargo Monitoring</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">
+                        Cargo Monitoring
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading cargo data...</div>
+                    <div className="py-4 text-center text-gray-600 dark:text-gray-400">
+                        Loading cargo data...
+                    </div>
                 </CardContent>
             </Card>
         );
@@ -198,10 +262,14 @@ export default function CargoMonitoring() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-gray-900 dark:text-gray-100">Cargo Monitoring</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">
+                        Cargo Monitoring
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4 text-red-500 dark:text-red-400">Error: {error}</div>
+                    <div className="py-4 text-center text-red-500 dark:text-red-400">
+                        Error: {error}
+                    </div>
                 </CardContent>
             </Card>
         );
@@ -209,22 +277,29 @@ export default function CargoMonitoring() {
 
     return (
         <div className="bg-white dark:bg-gray-800">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                        <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
                             <PackageIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Cargo Monitoring</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Track and manage cargo items</p>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                Cargo Monitoring
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Track and manage cargo items
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center space-x-3">
                         <div className="text-sm text-gray-600 dark:text-gray-400">
                             {filteredCargoItems.length} items
                         </div>
-                        <Button onClick={() => setIsEditDialogOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm">
+                        <Button
+                            onClick={() => setIsEditDialogOpen(true)}
+                            className="bg-purple-600 text-white shadow-sm hover:bg-purple-700"
+                        >
                             <PlusIcon className="mr-2 h-4 w-4" />
                             Add Cargo
                         </Button>
@@ -233,388 +308,671 @@ export default function CargoMonitoring() {
             </div>
             <div className="p-6">
                 {/* Enhanced Search and Filters Section */}
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center space-x-2 mb-4">
+                <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900/50">
+                    <div className="mb-4 flex items-center space-x-2">
                         <FilterIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Search & Filters</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Search & Filters
+                        </h3>
                     </div>
 
                     {/* Search and Filters in One Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                         {/* Search Input */}
                         <div className="lg:col-span-1">
                             <div className="relative">
-                                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400 dark:text-gray-500" />
                                 <Input
                                     placeholder="Search cargo items..."
                                     value={cargoSearch}
-                                    onChange={(e) => setCargoSearch(e.target.value)}
-                                    className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:focus:border-purple-400"
+                                    onChange={(e) =>
+                                        setCargoSearch(e.target.value)
+                                    }
+                                    className="border-gray-300 bg-white pl-10 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-purple-400"
                                 />
                             </div>
                         </div>
-                        
+
                         {/* Truck Filter */}
                         <div className="lg:col-span-1">
-                            <Select value={truckFilter} onValueChange={setTruckFilter}>
-                                <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:focus:border-purple-400">
+                            <Select
+                                value={truckFilter}
+                                onValueChange={setTruckFilter}
+                            >
+                                <SelectTrigger className="border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-purple-400">
                                     <SelectValue placeholder="All Trucks" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <SelectItem value="all" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">All Trucks</SelectItem>
+                                <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <SelectItem
+                                        value="all"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        All Trucks
+                                    </SelectItem>
                                     {trucks.map((truck) => (
-                                        <SelectItem key={truck.id} value={truck.plate_number} className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <SelectItem
+                                            key={truck.id}
+                                            value={truck.plate_number}
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
                                             {truck.plate_number} - {truck.model}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         {/* Origin Filter */}
                         <div className="lg:col-span-1">
-                            <Select value={originFilter} onValueChange={setOriginFilter}>
-                                <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:focus:border-purple-400">
+                            <Select
+                                value={originFilter}
+                                onValueChange={setOriginFilter}
+                            >
+                                <SelectTrigger className="border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-purple-400">
                                     <SelectValue placeholder="All Origins" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <SelectItem value="all" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">All Origins</SelectItem>
+                                <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <SelectItem
+                                        value="all"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        All Origins
+                                    </SelectItem>
                                     {uniqueOrigins.map((origin) => (
-                                        <SelectItem key={origin} value={origin} className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <SelectItem
+                                            key={origin}
+                                            value={origin}
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
                                             {origin}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         {/* Destination Filter */}
                         <div className="lg:col-span-1">
-                            <Select value={destinationFilter} onValueChange={setDestinationFilter}>
-                                <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:focus:border-purple-400">
+                            <Select
+                                value={destinationFilter}
+                                onValueChange={setDestinationFilter}
+                            >
+                                <SelectTrigger className="border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-purple-400">
                                     <SelectValue placeholder="All Destinations" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <SelectItem value="all" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">All Destinations</SelectItem>
+                                <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <SelectItem
+                                        value="all"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        All Destinations
+                                    </SelectItem>
                                     {uniqueDestinations.map((destination) => (
-                                        <SelectItem key={destination} value={destination} className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <SelectItem
+                                            key={destination}
+                                            value={destination}
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
                                             {destination}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         {/* Status Filter */}
                         <div className="lg:col-span-1">
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:focus:border-purple-400">
+                            <Select
+                                value={statusFilter}
+                                onValueChange={setStatusFilter}
+                            >
+                                <SelectTrigger className="border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:border-purple-400">
                                     <SelectValue placeholder="All Status" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <SelectItem value="all" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">All Status</SelectItem>
-                                    <SelectItem value="Loaded" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Loaded</SelectItem>
-                                    <SelectItem value="In Transit" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">In Transit</SelectItem>
-                                    <SelectItem value="Delivered" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Delivered</SelectItem>
+                                <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <SelectItem
+                                        value="all"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        All Status
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="Loaded"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        Loaded
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="In Transit"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        In Transit
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="Delivered"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        Delivered
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
-
                 </div>
-                
-                <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+
+                <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <Table>
                         <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
                             <TableRow className="border-gray-200 dark:border-gray-700">
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Name</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Shipment</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Truck</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Quantity</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Unloaded</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Remaining</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Date Loaded</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
-                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Name
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Shipment
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Truck
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Quantity
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Unloaded
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Remaining
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Date Loaded
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Status
+                                </TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
-                    <TableBody>
-                        {filteredCargoItems.map((item) => {
-                            const shipment = shipments.find(s => s.id === item.shipment_id);
-                            const truck = shipment ? trucks.find(t => t.id === shipment.truck_id) : null;
-                            return (
-                                <TableRow key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                                    <TableCell>
-                                        <div>
-                                            <div className="font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
-                                            {item.description && (
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">{item.description}</div>
+                        <TableBody>
+                            {filteredCargoItems.map((item) => {
+                                const shipment = shipments.find(
+                                    (s) => s.id === item.shipment_id,
+                                );
+                                const truck = shipment
+                                    ? trucks.find(
+                                          (t) => t.id === shipment.truck_id,
+                                      )
+                                    : null;
+                                return (
+                                    <TableRow
+                                        key={item.id}
+                                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                                    >
+                                        <TableCell>
+                                            <div>
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {item.name}
+                                                </div>
+                                                {item.description && (
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {item.description}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {shipment ? (
+                                                <div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                        #{shipment.id}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {shipment.origin} →{' '}
+                                                        {shipment.destination}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-500 dark:text-gray-400">
+                                                    Unknown
+                                                </span>
                                             )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {shipment ? (
-                                            <div>
-                                                <div className="font-medium text-gray-900 dark:text-gray-100">#{shipment.id}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {shipment.origin} → {shipment.destination}
+                                        </TableCell>
+                                        <TableCell>
+                                            {truck ? (
+                                                <div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {truck.plate_number}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {truck.model}
+                                                    </div>
                                                 </div>
+                                            ) : (
+                                                <span className="text-gray-500 dark:text-gray-400">
+                                                    Unknown
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">
+                                            {item.quantity.toLocaleString()}{' '}
+                                            {item.unit}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">
+                                            <div className="flex items-center space-x-1">
+                                                <span className="font-medium text-blue-600 dark:text-blue-400">
+                                                    {(
+                                                        item.total_unloaded_quantity ||
+                                                        0
+                                                    ).toLocaleString()}
+                                                </span>
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {item.unit}
+                                                </span>
                                             </div>
-                                        ) : (
-                                            <span className="text-gray-500 dark:text-gray-400">Unknown</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {truck ? (
-                                            <div>
-                                                <div className="font-medium text-gray-900 dark:text-gray-100">{truck.plate_number}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {truck.model}
-                                                </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">
+                                            <div className="flex items-center space-x-1">
+                                                <span className="font-medium text-orange-600 dark:text-orange-400">
+                                                    {(
+                                                        item.remaining_quantity ||
+                                                        item.quantity
+                                                    ).toLocaleString()}
+                                                </span>
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {item.unit}
+                                                </span>
                                             </div>
-                                        ) : (
-                                            <span className="text-gray-500 dark:text-gray-400">Unknown</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-gray-100">
-                                        {item.quantity.toLocaleString()} {item.unit}
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-gray-100">
-                                        <div className="flex items-center space-x-1">
-                                            <span className="text-blue-600 dark:text-blue-400 font-medium">
-                                                {(item.total_unloaded_quantity || 0).toLocaleString()}
-                                            </span>
-                                            <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                                {item.unit}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-gray-100">
-                                        <div className="flex items-center space-x-1">
-                                            <span className="text-orange-600 dark:text-orange-400 font-medium">
-                                                {(item.remaining_quantity || item.quantity).toLocaleString()}
-                                            </span>
-                                            <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                                {item.unit}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-gray-100">
-                                        {item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }) : 'N/A'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col space-y-1">
-                                            <Badge variant={
-                                                item.status === 'Delivered' ? 'default' :
-                                                item.status === 'In Transit' ? 'secondary' :
-                                                item.status === 'Damaged' ? 'destructive' :
-                                                'outline'
-                                            }>
-                                                {item.status}
-                                            </Badge>
-                                            {item.is_partially_unloaded && (
-                                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800">
-                                                    Partially Delivered
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">
+                                            {item.created_at
+                                                ? new Date(
+                                                      item.created_at,
+                                                  ).toLocaleDateString(
+                                                      'en-US',
+                                                      {
+                                                          year: 'numeric',
+                                                          month: 'short',
+                                                          day: 'numeric',
+                                                          hour: '2-digit',
+                                                          minute: '2-digit',
+                                                      },
+                                                  )
+                                                : 'N/A'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col space-y-1">
+                                                <Badge
+                                                    variant={
+                                                        item.status ===
+                                                        'Delivered'
+                                                            ? 'default'
+                                                            : item.status ===
+                                                                'In Transit'
+                                                              ? 'secondary'
+                                                              : item.status ===
+                                                                  'Damaged'
+                                                                ? 'destructive'
+                                                                : 'outline'
+                                                    }
+                                                >
+                                                    {item.status}
                                                 </Badge>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-1">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleOpenUnloadingDialog(item)}
-                                                disabled={item.status === 'Loaded'}
-                                                className={`h-8 w-8 p-0 ${
-                                                    item.status === 'Loaded'
-                                                        ? 'opacity-50 cursor-not-allowed'
-                                                        : 'hover:bg-green-50 dark:hover:bg-green-900/20'
-                                                }`}
-                                                title={
-                                                    item.status === 'Loaded'
-                                                        ? 'Cargo must be in transit to manage unloading'
-                                                        : 'Manage unloading records'
-                                                }
-                                            >
-                                                <TruckIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleEditCargoItem(item)}
-                                                disabled={item.status === 'In Transit' || item.status === 'Delivered'}
-                                                className={`h-8 w-8 p-0 ${
-                                                    item.status === 'In Transit' || item.status === 'Delivered'
-                                                        ? 'opacity-50 cursor-not-allowed'
-                                                        : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                                                }`}
-                                                title={
-                                                    item.status === 'In Transit'
-                                                        ? 'Cannot edit cargo items that are in transit'
-                                                        : item.status === 'Delivered'
-                                                        ? 'Cannot edit cargo items that are delivered'
-                                                        : 'Edit cargo item'
-                                                }
-                                            >
-                                                <Pencil2Icon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteCargoItem(item)}
-                                                disabled={item.status === 'In Transit' || item.status === 'Delivered'}
-                                                className={`h-8 w-8 p-0 ${
-                                                    item.status === 'In Transit' || item.status === 'Delivered'
-                                                        ? 'opacity-50 cursor-not-allowed'
-                                                        : 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                                                }`}
-                                                title={
-                                                    item.status === 'In Transit' || item.status === 'Delivered'
-                                                        ? 'Cannot delete cargo items that are in transit or delivered'
-                                                        : 'Delete cargo item'
-                                                }
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
+                                                {item.is_partially_unloaded && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-yellow-200 bg-yellow-50 text-xs text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300"
+                                                    >
+                                                        Partially Delivered
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex gap-1">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleOpenUnloadingDialog(
+                                                            item,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        item.status === 'Loaded'
+                                                    }
+                                                    className={`h-8 w-8 p-0 ${
+                                                        item.status === 'Loaded'
+                                                            ? 'cursor-not-allowed opacity-50'
+                                                            : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                                                    }`}
+                                                    title={
+                                                        item.status === 'Loaded'
+                                                            ? 'Cargo must be in transit to manage unloading'
+                                                            : 'Manage unloading records'
+                                                    }
+                                                >
+                                                    <TruckIcon className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleEditCargoItem(
+                                                            item,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        item.status ===
+                                                            'In Transit' ||
+                                                        item.status ===
+                                                            'Delivered'
+                                                    }
+                                                    className={`h-8 w-8 p-0 ${
+                                                        item.status ===
+                                                            'In Transit' ||
+                                                        item.status ===
+                                                            'Delivered'
+                                                            ? 'cursor-not-allowed opacity-50'
+                                                            : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                                    }`}
+                                                    title={
+                                                        item.status ===
+                                                        'In Transit'
+                                                            ? 'Cannot edit cargo items that are in transit'
+                                                            : item.status ===
+                                                                'Delivered'
+                                                              ? 'Cannot edit cargo items that are delivered'
+                                                              : 'Edit cargo item'
+                                                    }
+                                                >
+                                                    <Pencil2Icon className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleDeleteCargoItem(
+                                                            item,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        item.status ===
+                                                            'In Transit' ||
+                                                        item.status ===
+                                                            'Delivered'
+                                                    }
+                                                    className={`h-8 w-8 p-0 ${
+                                                        item.status ===
+                                                            'In Transit' ||
+                                                        item.status ===
+                                                            'Delivered'
+                                                            ? 'cursor-not-allowed opacity-50'
+                                                            : 'hover:bg-red-50 dark:hover:bg-red-900/20'
+                                                    }`}
+                                                    title={
+                                                        item.status ===
+                                                            'In Transit' ||
+                                                        item.status ===
+                                                            'Delivered'
+                                                            ? 'Cannot delete cargo items that are in transit or delivered'
+                                                            : 'Delete cargo item'
+                                                    }
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
                     </Table>
                 </div>
             </div>
-            
+
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
                         <DialogTitle className="text-gray-900 dark:text-gray-100">
-                            {editingCargoId ? 'Edit Cargo Item' : 'Add New Cargo Item'}
+                            {editingCargoId
+                                ? 'Edit Cargo Item'
+                                : 'Add New Cargo Item'}
                         </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        if (editingCargoId) {
-                            saveEditedCargoItem(editingCargoId);
-                        } else {
-                            handleAddCargoItem(e);
-                        }
-                    }}>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (editingCargoId) {
+                                saveEditedCargoItem(editingCargoId);
+                            } else {
+                                handleAddCargoItem(e);
+                            }
+                        }}
+                    >
                         <div className="grid gap-4 py-4">
                             {!editingCargoId && (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipment</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Shipment
+                                    </label>
                                     <Select
-                                        value={selectedShipmentId || ""}
-                                        onValueChange={(value) => setSelectedShipmentId(value)}
+                                        value={selectedShipmentId || ''}
+                                        onValueChange={(value) =>
+                                            setSelectedShipmentId(value)
+                                        }
                                     >
-                                        <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                        <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                                             <SelectValue placeholder="Select a shipment">
-                                                {selectedShipmentId && shipments.find(shipment => shipment.id === selectedShipmentId) && 
-                                                    `#${shipments.find(shipment => shipment.id === selectedShipmentId)?.id} - ${shipments.find(shipment => shipment.id === selectedShipmentId)?.origin} → ${shipments.find(shipment => shipment.id === selectedShipmentId)?.destination}`
-                                                }
+                                                {selectedShipmentId &&
+                                                    shipments.find(
+                                                        (shipment) =>
+                                                            shipment.id ===
+                                                            selectedShipmentId,
+                                                    ) &&
+                                                    `#${shipments.find((shipment) => shipment.id === selectedShipmentId)?.id} - ${shipments.find((shipment) => shipment.id === selectedShipmentId)?.origin} → ${shipments.find((shipment) => shipment.id === selectedShipmentId)?.destination}`}
                                             </SelectValue>
                                         </SelectTrigger>
-                                        <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                        <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                                             {shipments.map((shipment) => (
-                                                <SelectItem key={shipment.id} value={shipment.id.toString()} className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                                    #{shipment.id} - {shipment.origin} → {shipment.destination} ({shipment.status})
+                                                <SelectItem
+                                                    key={shipment.id}
+                                                    value={shipment.id.toString()}
+                                                    className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                                >
+                                                    #{shipment.id} -{' '}
+                                                    {shipment.origin} →{' '}
+                                                    {shipment.destination} (
+                                                    {shipment.status})
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                     {shipments.length === 0 && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">No shipments available</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            No shipments available
+                                        </p>
                                     )}
                                 </div>
                             )}
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Input 
-                                    placeholder="Name" 
-                                    value={editingCargoId ? editingCargo.name : newCargo.name} 
-                                    onChange={(e) => editingCargoId ? 
-                                        setEditingCargo({ ...editingCargo, name: e.target.value }) :
-                                        setNewCargo({ ...newCargo, name: e.target.value })
+                                <Input
+                                    placeholder="Name"
+                                    value={
+                                        editingCargoId
+                                            ? editingCargo.name
+                                            : newCargo.name
                                     }
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    onChange={(e) =>
+                                        editingCargoId
+                                            ? setEditingCargo({
+                                                  ...editingCargo,
+                                                  name: e.target.value,
+                                              })
+                                            : setNewCargo({
+                                                  ...newCargo,
+                                                  name: e.target.value,
+                                              })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
-                                <Input 
-                                    placeholder="Quantity" 
-                                    type="number" 
-                                    value={editingCargoId ? editingCargo.quantity : newCargo.quantity} 
-                                    onChange={(e) => editingCargoId ? 
-                                        setEditingCargo({ ...editingCargo, quantity: e.target.value }) :
-                                        setNewCargo({ ...newCargo, quantity: e.target.value })
+                                <Input
+                                    placeholder="Quantity"
+                                    type="number"
+                                    value={
+                                        editingCargoId
+                                            ? editingCargo.quantity
+                                            : newCargo.quantity
                                     }
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    onChange={(e) =>
+                                        editingCargoId
+                                            ? setEditingCargo({
+                                                  ...editingCargo,
+                                                  quantity: e.target.value,
+                                              })
+                                            : setNewCargo({
+                                                  ...newCargo,
+                                                  quantity: e.target.value,
+                                              })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
                                 <Select
-                                    value={(editingCargoId ? editingCargo.unit : newCargo.unit) || ""}
-                                    onValueChange={(value) => editingCargoId ? 
-                                        setEditingCargo({ ...editingCargo, unit: value as CargoItem['unit'] }) :
-                                        setNewCargo({ ...newCargo, unit: value as CargoItem['unit'] })
+                                    value={
+                                        (editingCargoId
+                                            ? editingCargo.unit
+                                            : newCargo.unit) || ''
+                                    }
+                                    onValueChange={(value) =>
+                                        editingCargoId
+                                            ? setEditingCargo({
+                                                  ...editingCargo,
+                                                  unit: value as CargoItem['unit'],
+                                              })
+                                            : setNewCargo({
+                                                  ...newCargo,
+                                                  unit: value as CargoItem['unit'],
+                                              })
                                     }
                                 >
-                                    <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                    <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                                         <SelectValue placeholder="Select unit" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                        <SelectItem value="kg" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">kg</SelectItem>
-                                        <SelectItem value="pieces" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">pieces</SelectItem>
-                                        <SelectItem value="pallets" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">pallets</SelectItem>
-                                        <SelectItem value="boxes" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">boxes</SelectItem>
+                                    <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                                        <SelectItem
+                                            value="kg"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
+                                            kg
+                                        </SelectItem>
+                                        <SelectItem
+                                            value="pieces"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
+                                            pieces
+                                        </SelectItem>
+                                        <SelectItem
+                                            value="pallets"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
+                                            pallets
+                                        </SelectItem>
+                                        <SelectItem
+                                            value="boxes"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                        >
+                                            boxes
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <Input 
-                                placeholder="Description" 
-                                value={editingCargoId ? editingCargo.description : newCargo.description} 
-                                onChange={(e) => editingCargoId ? 
-                                    setEditingCargo({ ...editingCargo, description: e.target.value }) :
-                                    setNewCargo({ ...newCargo, description: e.target.value })
+                            <Input
+                                placeholder="Description"
+                                value={
+                                    editingCargoId
+                                        ? editingCargo.description
+                                        : newCargo.description
                                 }
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                onChange={(e) =>
+                                    editingCargoId
+                                        ? setEditingCargo({
+                                              ...editingCargo,
+                                              description: e.target.value,
+                                          })
+                                        : setNewCargo({
+                                              ...newCargo,
+                                              description: e.target.value,
+                                          })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
-                            <Input 
-                                placeholder="Special Handling" 
-                                value={editingCargoId ? editingCargo.specialHandling : newCargo.specialHandling} 
-                                onChange={(e) => editingCargoId ? 
-                                    setEditingCargo({ ...editingCargo, specialHandling: e.target.value }) :
-                                    setNewCargo({ ...newCargo, specialHandling: e.target.value })
+                            <Input
+                                placeholder="Special Handling"
+                                value={
+                                    editingCargoId
+                                        ? editingCargo.specialHandling
+                                        : newCargo.specialHandling
                                 }
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                onChange={(e) =>
+                                    editingCargoId
+                                        ? setEditingCargo({
+                                              ...editingCargo,
+                                              specialHandling: e.target.value,
+                                          })
+                                        : setNewCargo({
+                                              ...newCargo,
+                                              specialHandling: e.target.value,
+                                          })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
                             <div className="grid grid-cols-2 items-center gap-4">
-                                <Input 
-                                    placeholder="Temperature" 
-                                    type="number" 
-                                    value={editingCargoId ? editingCargo.temperature : newCargo.temperature} 
-                                    onChange={(e) => editingCargoId ? 
-                                        setEditingCargo({ ...editingCargo, temperature: e.target.value }) :
-                                        setNewCargo({ ...newCargo, temperature: e.target.value })
+                                <Input
+                                    placeholder="Temperature"
+                                    type="number"
+                                    value={
+                                        editingCargoId
+                                            ? editingCargo.temperature
+                                            : newCargo.temperature
                                     }
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    onChange={(e) =>
+                                        editingCargoId
+                                            ? setEditingCargo({
+                                                  ...editingCargo,
+                                                  temperature: e.target.value,
+                                              })
+                                            : setNewCargo({
+                                                  ...newCargo,
+                                                  temperature: e.target.value,
+                                              })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
-                                <Input 
-                                    placeholder="Humidity" 
-                                    type="number" 
-                                    value={editingCargoId ? editingCargo.humidity : newCargo.humidity} 
-                                    onChange={(e) => editingCargoId ? 
-                                        setEditingCargo({ ...editingCargo, humidity: e.target.value }) :
-                                        setNewCargo({ ...newCargo, humidity: e.target.value })
+                                <Input
+                                    placeholder="Humidity"
+                                    type="number"
+                                    value={
+                                        editingCargoId
+                                            ? editingCargo.humidity
+                                            : newCargo.humidity
                                     }
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    onChange={(e) =>
+                                        editingCargoId
+                                            ? setEditingCargo({
+                                                  ...editingCargo,
+                                                  humidity: e.target.value,
+                                              })
+                                            : setNewCargo({
+                                                  ...newCargo,
+                                                  humidity: e.target.value,
+                                              })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
                             </div>
-                            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
+                            <Button
+                                type="submit"
+                                className="bg-purple-600 text-white hover:bg-purple-700"
+                            >
                                 {editingCargoId ? 'Save Changes' : 'Add Cargo'}
                             </Button>
                         </div>
@@ -624,68 +982,86 @@ export default function CargoMonitoring() {
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent className="max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="max-w-md border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                            <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
                                 <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
                             </div>
                             <div>
-                                <DialogTitle className="text-gray-900 dark:text-gray-100">Delete Cargo Item</DialogTitle>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">
+                                    Delete Cargo Item
+                                </DialogTitle>
                                 <DialogDescription className="text-gray-600 dark:text-gray-400">
                                     This action cannot be undone.
                                 </DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
-                    
+
                     <div className="py-4">
-                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Name:</span>
-                                    <span className="text-sm text-gray-900 dark:text-gray-100">{cargoToDelete?.name}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Quantity:</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Name:
+                                    </span>
                                     <span className="text-sm text-gray-900 dark:text-gray-100">
-                                        {cargoToDelete?.quantity} {cargoToDelete?.unit}
+                                        {cargoToDelete?.name}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
-                                    <span className="text-sm text-gray-900 dark:text-gray-100">{cargoToDelete?.status}</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Quantity:
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                        {cargoToDelete?.quantity}{' '}
+                                        {cargoToDelete?.unit}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Status:
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                        {cargoToDelete?.status}
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
                             <div className="flex items-start space-x-2">
-                                <TrashIcon className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                                <TrashIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400" />
                                 <div className="text-sm text-red-800 dark:text-red-200">
-                                    <p className="font-medium">Warning: This will permanently delete the cargo item and all associated data.</p>
-                                    <p className="mt-1">This action cannot be undone.</p>
+                                    <p className="font-medium">
+                                        Warning: This will permanently delete
+                                        the cargo item and all associated data.
+                                    </p>
+                                    <p className="mt-1">
+                                        This action cannot be undone.
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <DialogFooter className="gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => {
                                 setShowDeleteDialog(false);
                                 setCargoToDelete(null);
                             }}
-                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={confirmDeleteCargoItem}
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            className="bg-red-600 text-white hover:bg-red-700"
                         >
-                            <TrashIcon className="w-4 h-4 mr-2" />
+                            <TrashIcon className="mr-2 h-4 w-4" />
                             Delete Cargo Item
                         </Button>
                     </DialogFooter>

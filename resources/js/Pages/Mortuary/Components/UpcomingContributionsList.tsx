@@ -1,11 +1,29 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { format } from 'date-fns';
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Input } from '@/Components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { formatCurrency } from '@/lib/utils';
+import { format } from 'date-fns';
+import {
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+} from 'lucide-react';
+import { useState } from 'react';
 
 interface Member {
     id: string;
@@ -32,7 +50,11 @@ interface Props {
     };
 }
 
-export default function UpcomingContributionsList({ members, contributions, appCurrency }: Props) {
+export default function UpcomingContributionsList({
+    members,
+    contributions,
+    appCurrency,
+}: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('all');
     const [monthlyPage, setMonthlyPage] = useState(1);
@@ -42,15 +64,19 @@ export default function UpcomingContributionsList({ members, contributions, appC
 
     const getNextContributionDate = (member: Member) => {
         const lastContribution = contributions
-            .filter(c => c.member_id === member.id)
-            .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())[0];
+            .filter((c) => c.member_id === member.id)
+            .sort(
+                (a, b) =>
+                    new Date(b.payment_date).getTime() -
+                    new Date(a.payment_date).getTime(),
+            )[0];
 
-        const startDate = lastContribution 
+        const startDate = lastContribution
             ? new Date(lastContribution.payment_date)
             : new Date(member.membership_start_date);
 
         const currentDate = new Date();
-        let nextDate = new Date(startDate);
+        const nextDate = new Date(startDate);
 
         // Keep adding intervals until we find a date that's in the future
         while (nextDate <= currentDate) {
@@ -73,48 +99,83 @@ export default function UpcomingContributionsList({ members, contributions, appC
     };
 
     const upcomingContributions = members
-        .filter(member => member.status === 'active')
-        .map(member => ({
+        .filter((member) => member.status === 'active')
+        .map((member) => ({
             ...member,
-            nextContributionDate: getNextContributionDate(member)
+            nextContributionDate: getNextContributionDate(member),
         }))
-        .filter(member => member.nextContributionDate)
-        .sort((a, b) => a.nextContributionDate!.getTime() - b.nextContributionDate!.getTime());
+        .filter((member) => member.nextContributionDate)
+        .sort(
+            (a, b) =>
+                a.nextContributionDate!.getTime() -
+                b.nextContributionDate!.getTime(),
+        );
 
     // Filter by search query and group
-    const filterContributions = (contributions: typeof upcomingContributions) => {
+    const filterContributions = (
+        contributions: typeof upcomingContributions,
+    ) => {
         let filtered = contributions;
-        
+
         if (searchQuery) {
-            filtered = filtered.filter(member => 
-                member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (member.group && member.group.toLowerCase().includes(searchQuery.toLowerCase()))
+            filtered = filtered.filter(
+                (member) =>
+                    member.name
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) ||
+                    (member.group &&
+                        member.group
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())),
             );
         }
-        
+
         if (selectedGroup !== 'all') {
-            filtered = filtered.filter(member => member.group === selectedGroup);
+            filtered = filtered.filter(
+                (member) => member.group === selectedGroup,
+            );
         }
-        
+
         return filtered;
     };
 
-    const calculateTotalContributions = (contributions: typeof upcomingContributions) => {
-        return Number(contributions.reduce((total, member) => total + Number(member.contribution_amount), 0));
+    const calculateTotalContributions = (
+        contributions: typeof upcomingContributions,
+    ) => {
+        return Number(
+            contributions.reduce(
+                (total, member) => total + Number(member.contribution_amount),
+                0,
+            ),
+        );
     };
 
     const monthlyContributions = filterContributions(
-        upcomingContributions.filter(member => member.contribution_frequency.toLowerCase() === 'monthly')
+        upcomingContributions.filter(
+            (member) =>
+                member.contribution_frequency.toLowerCase() === 'monthly',
+        ),
     );
     const quarterlyContributions = filterContributions(
-        upcomingContributions.filter(member => member.contribution_frequency.toLowerCase() === 'quarterly')
+        upcomingContributions.filter(
+            (member) =>
+                member.contribution_frequency.toLowerCase() === 'quarterly',
+        ),
     );
     const annualContributions = filterContributions(
-        upcomingContributions.filter(member => member.contribution_frequency.toLowerCase() === 'annually')
+        upcomingContributions.filter(
+            (member) =>
+                member.contribution_frequency.toLowerCase() === 'annually',
+        ),
     );
 
     // Get unique groups for filter dropdown
-    const groups = ['all', ...Array.from(new Set(upcomingContributions.map(m => m.group).filter(Boolean)))].sort();
+    const groups = [
+        'all',
+        ...Array.from(
+            new Set(upcomingContributions.map((m) => m.group).filter(Boolean)),
+        ),
+    ].sort();
 
     // Reset to first page when search query or group changes
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +199,12 @@ export default function UpcomingContributionsList({ members, contributions, appC
         setAnnualPage(1);
     };
 
-    const renderPagination = (contributions: typeof upcomingContributions, currentPage: number, setCurrentPage: (page: number) => void, frequency: string) => {
+    const renderPagination = (
+        contributions: typeof upcomingContributions,
+        currentPage: number,
+        setCurrentPage: (page: number) => void,
+        frequency: string,
+    ) => {
         const totalPages = Math.ceil(contributions.length / itemsPerPage);
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
@@ -146,7 +212,7 @@ export default function UpcomingContributionsList({ members, contributions, appC
         const getPageNumbers = () => {
             const pages = [];
             const maxVisiblePages = 5;
-            
+
             if (totalPages <= maxVisiblePages) {
                 for (let i = 1; i <= totalPages; i++) {
                     pages.push(i);
@@ -174,22 +240,26 @@ export default function UpcomingContributionsList({ members, contributions, appC
                     pages.push(totalPages);
                 }
             }
-            
+
             return pages;
         };
 
         return (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
                 <div className="flex items-center space-x-4 text-sm text-gray-700 dark:text-gray-300">
                     <span>
-                        Showing {startIndex + 1} to {Math.min(endIndex, contributions.length)} of {contributions.length} {frequency} contributions
+                        Showing {startIndex + 1} to{' '}
+                        {Math.min(endIndex, contributions.length)} of{' '}
+                        {contributions.length} {frequency} contributions
                     </span>
                     <span className="text-gray-400">|</span>
                     <span>Items per page:</span>
                     <select
                         value={itemsPerPage}
-                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                        onChange={(e) =>
+                            handleItemsPerPageChange(Number(e.target.value))
+                        }
+                        className="rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                     >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
@@ -197,7 +267,7 @@ export default function UpcomingContributionsList({ members, contributions, appC
                         <option value={50}>50</option>
                     </select>
                 </div>
-                
+
                 {totalPages > 1 && (
                     <div className="flex items-center gap-2">
                         <Button
@@ -205,35 +275,43 @@ export default function UpcomingContributionsList({ members, contributions, appC
                             size="sm"
                             onClick={() => setCurrentPage(1)}
                             disabled={currentPage === 1}
-                            className="h-8 w-8 p-0 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                            className="h-8 w-8 border-gray-300 p-0 text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
                             <ChevronsLeft className="h-4 w-4" />
                         </Button>
-                        
+
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setCurrentPage(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="h-8 w-8 p-0 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                            className="h-8 w-8 border-gray-300 p-0 text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        
+
                         <div className="flex items-center gap-1">
                             {getPageNumbers().map((page, index) => (
                                 <div key={index}>
                                     {page === '...' ? (
-                                        <span className="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>
+                                        <span className="px-2 py-1 text-gray-500 dark:text-gray-400">
+                                            ...
+                                        </span>
                                     ) : (
                                         <Button
-                                            variant={currentPage === page ? "default" : "outline"}
+                                            variant={
+                                                currentPage === page
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                             size="sm"
-                                            onClick={() => setCurrentPage(page as number)}
+                                            onClick={() =>
+                                                setCurrentPage(page as number)
+                                            }
                                             className={`h-8 w-8 p-0 ${
-                                                currentPage === page 
-                                                    ? "bg-blue-600 text-white hover:bg-blue-700" 
-                                                    : "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                currentPage === page
+                                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                                    : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
                                             }`}
                                         >
                                             {page}
@@ -242,23 +320,23 @@ export default function UpcomingContributionsList({ members, contributions, appC
                                 </div>
                             ))}
                         </div>
-                        
+
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setCurrentPage(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="h-8 w-8 p-0 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                            className="h-8 w-8 border-gray-300 p-0 text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>
-                        
+
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setCurrentPage(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="h-8 w-8 p-0 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                            className="h-8 w-8 border-gray-300 p-0 text-gray-700 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
                             <ChevronsRight className="h-4 w-4" />
                         </Button>
@@ -268,18 +346,18 @@ export default function UpcomingContributionsList({ members, contributions, appC
         );
     };
 
-    const ContributionTable = ({ 
-        contributions, 
-        title, 
-        currentPage, 
-        setCurrentPage, 
-        frequency 
-    }: { 
-        contributions: typeof upcomingContributions, 
-        title: string, 
-        currentPage: number, 
-        setCurrentPage: (page: number) => void, 
-        frequency: string 
+    const ContributionTable = ({
+        contributions,
+        title,
+        currentPage,
+        setCurrentPage,
+        frequency,
+    }: {
+        contributions: typeof upcomingContributions;
+        title: string;
+        currentPage: number;
+        setCurrentPage: (page: number) => void;
+        frequency: string;
     }) => {
         const totalPages = Math.ceil(contributions.length / itemsPerPage);
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -287,44 +365,68 @@ export default function UpcomingContributionsList({ members, contributions, appC
         const currentContributions = contributions.slice(startIndex, endIndex);
 
         return (
-            <div className="bg-white dark:bg-gray-950 rounded-lg shadow-lg overflow-hidden dark:border dark:border-gray-800">
-                <div className="p-4 border-b dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+            <div className="overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-gray-800 dark:bg-gray-950">
+                <div className="border-b bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {title}
+                    </h3>
                 </div>
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-gray-50 dark:bg-gray-900/50 dark:border-gray-800">
-                                <TableHead className="font-semibold dark:text-gray-200">Member Name</TableHead>
-                                <TableHead className="font-semibold dark:text-gray-200">Group</TableHead>
-                                <TableHead className="font-semibold dark:text-gray-200">Contribution Amount</TableHead>
-                                <TableHead className="font-semibold dark:text-gray-200">Next Contribution Date</TableHead>
+                            <TableRow className="bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50">
+                                <TableHead className="font-semibold dark:text-gray-200">
+                                    Member Name
+                                </TableHead>
+                                <TableHead className="font-semibold dark:text-gray-200">
+                                    Group
+                                </TableHead>
+                                <TableHead className="font-semibold dark:text-gray-200">
+                                    Contribution Amount
+                                </TableHead>
+                                <TableHead className="font-semibold dark:text-gray-200">
+                                    Next Contribution Date
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {currentContributions.map((member) => (
-                                <TableRow key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 dark:border-gray-800 transition-colors duration-200">
-                                    <TableCell className="font-medium dark:text-gray-100">{member.name}</TableCell>
+                                <TableRow
+                                    key={member.id}
+                                    className="transition-colors duration-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900/50"
+                                >
+                                    <TableCell className="font-medium dark:text-gray-100">
+                                        {member.name}
+                                    </TableCell>
                                     <TableCell className="dark:text-gray-200">
                                         {member.group || 'No Group'}
                                     </TableCell>
                                     <TableCell>
                                         <span className="font-medium text-blue-600 dark:text-blue-400">
-                                            {formatCurrency(member.contribution_amount, appCurrency.symbol)}
+                                            {formatCurrency(
+                                                member.contribution_amount,
+                                                appCurrency.symbol,
+                                            )}
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        {member.nextContributionDate && 
+                                        {member.nextContributionDate && (
                                             <span className="text-gray-600 dark:text-gray-400">
-                                                {format(member.nextContributionDate, 'MMM dd, yyyy')}
+                                                {format(
+                                                    member.nextContributionDate,
+                                                    'MMM dd, yyyy',
+                                                )}
                                             </span>
-                                        }
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
                             {currentContributions.length === 0 && (
                                 <TableRow className="dark:border-gray-800">
-                                    <TableCell colSpan={4} className="text-center text-muted-foreground dark:text-gray-400 py-4">
+                                    <TableCell
+                                        colSpan={4}
+                                        className="py-4 text-center text-muted-foreground dark:text-gray-400"
+                                    >
                                         No matching contributions found
                                     </TableCell>
                                 </TableRow>
@@ -332,39 +434,53 @@ export default function UpcomingContributionsList({ members, contributions, appC
                         </TableBody>
                     </Table>
                 </div>
-                {renderPagination(contributions, currentPage, setCurrentPage, frequency)}
+                {renderPagination(
+                    contributions,
+                    currentPage,
+                    setCurrentPage,
+                    frequency,
+                )}
             </div>
         );
     };
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 p-4 bg-white dark:bg-gray-950 rounded-lg shadow-lg dark:border dark:border-gray-800">
+            <div className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-lg dark:border dark:border-gray-800 dark:bg-gray-950">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Upcoming Contributions</h2>
-                    <div className="flex items-center gap-4 min-w-[400px]">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        Upcoming Contributions
+                    </h2>
+                    <div className="flex min-w-[400px] items-center gap-4">
                         <Input
                             type="search"
                             placeholder="Search by member name or group..."
                             value={searchQuery}
                             onChange={handleSearchChange}
-                            className="w-full dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 dark:placeholder-gray-500 focus:dark:border-blue-500 focus:dark:ring-blue-500/20"
+                            className="w-full dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 focus:dark:border-blue-500 focus:dark:ring-blue-500/20"
                         />
                     </div>
                 </div>
-                
+
                 {/* Group Filter */}
                 <div className="flex items-center gap-4">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Filter by Group:
                     </label>
-                    <Select value={selectedGroup} onValueChange={handleGroupChange}>
-                        <SelectTrigger className="w-64 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100">
+                    <Select
+                        value={selectedGroup}
+                        onValueChange={handleGroupChange}
+                    >
+                        <SelectTrigger className="w-64 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                             {groups.map((group) => (
-                                <SelectItem key={group} value={group} className="text-lg py-3">
+                                <SelectItem
+                                    key={group}
+                                    value={group}
+                                    className="py-3 text-lg"
+                                >
                                     {group === 'all' ? 'All Groups' : group}
                                 </SelectItem>
                             ))}
@@ -372,29 +488,57 @@ export default function UpcomingContributionsList({ members, contributions, appC
                     </Select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg dark:border dark:border-gray-800">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Upcoming</div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    <div className="rounded-lg bg-gray-50 p-4 dark:border dark:border-gray-800 dark:bg-gray-900">
+                        <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                            Total Upcoming
+                        </div>
                         <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(calculateTotalContributions(upcomingContributions), appCurrency.symbol)}
+                            {formatCurrency(
+                                calculateTotalContributions(
+                                    upcomingContributions,
+                                ),
+                                appCurrency.symbol,
+                            )}
                         </div>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg dark:border dark:border-gray-800">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly Total</div>
+                    <div className="rounded-lg bg-gray-50 p-4 dark:border dark:border-gray-800 dark:bg-gray-900">
+                        <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                            Monthly Total
+                        </div>
                         <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(calculateTotalContributions(monthlyContributions), appCurrency.symbol)}
+                            {formatCurrency(
+                                calculateTotalContributions(
+                                    monthlyContributions,
+                                ),
+                                appCurrency.symbol,
+                            )}
                         </div>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg dark:border dark:border-gray-800">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Quarterly Total</div>
+                    <div className="rounded-lg bg-gray-50 p-4 dark:border dark:border-gray-800 dark:bg-gray-900">
+                        <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                            Quarterly Total
+                        </div>
                         <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(calculateTotalContributions(quarterlyContributions), appCurrency.symbol)}
+                            {formatCurrency(
+                                calculateTotalContributions(
+                                    quarterlyContributions,
+                                ),
+                                appCurrency.symbol,
+                            )}
                         </div>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg dark:border dark:border-gray-800">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Annual Total</div>
+                    <div className="rounded-lg bg-gray-50 p-4 dark:border dark:border-gray-800 dark:bg-gray-900">
+                        <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                            Annual Total
+                        </div>
                         <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(calculateTotalContributions(annualContributions), appCurrency.symbol)}
+                            {formatCurrency(
+                                calculateTotalContributions(
+                                    annualContributions,
+                                ),
+                                appCurrency.symbol,
+                            )}
                         </div>
                     </div>
                 </div>
@@ -402,38 +546,40 @@ export default function UpcomingContributionsList({ members, contributions, appC
 
             <div className="space-y-8">
                 {monthlyContributions.length > 0 && (
-                    <ContributionTable 
-                        contributions={monthlyContributions} 
-                        title="Monthly Contributions" 
+                    <ContributionTable
+                        contributions={monthlyContributions}
+                        title="Monthly Contributions"
                         currentPage={monthlyPage}
                         setCurrentPage={setMonthlyPage}
                         frequency="monthly"
                     />
                 )}
                 {quarterlyContributions.length > 0 && (
-                    <ContributionTable 
-                        contributions={quarterlyContributions} 
-                        title="Quarterly Contributions" 
+                    <ContributionTable
+                        contributions={quarterlyContributions}
+                        title="Quarterly Contributions"
                         currentPage={quarterlyPage}
                         setCurrentPage={setQuarterlyPage}
                         frequency="quarterly"
                     />
                 )}
                 {annualContributions.length > 0 && (
-                    <ContributionTable 
-                        contributions={annualContributions} 
-                        title="Annual Contributions" 
+                    <ContributionTable
+                        contributions={annualContributions}
+                        title="Annual Contributions"
                         currentPage={annualPage}
                         setCurrentPage={setAnnualPage}
                         frequency="annual"
                     />
                 )}
-                {monthlyContributions.length === 0 && quarterlyContributions.length === 0 && annualContributions.length === 0 && (
-                    <div className="text-center text-muted-foreground dark:text-gray-400 py-12 bg-gray-50 dark:bg-gray-900 rounded-lg dark:border dark:border-gray-800">
-                        No upcoming contributions found
-                    </div>
-                )}
+                {monthlyContributions.length === 0 &&
+                    quarterlyContributions.length === 0 &&
+                    annualContributions.length === 0 && (
+                        <div className="rounded-lg bg-gray-50 py-12 text-center text-muted-foreground dark:border dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
+                            No upcoming contributions found
+                        </div>
+                    )}
             </div>
         </div>
     );
-} 
+}

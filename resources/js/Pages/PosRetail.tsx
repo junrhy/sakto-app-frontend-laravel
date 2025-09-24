@@ -1,17 +1,36 @@
-import { User, Project } from '@/types/index';
+import { Button } from '@/Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    Dialog as PreviewDialog,
+    DialogContent as PreviewDialogContent,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { useState, useMemo } from "react";
 import { PageProps } from '@/types';
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
+import { Project, User } from '@/types/index';
+import { Head, router } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
-import { Dialog as PreviewDialog, DialogContent as PreviewDialogContent } from "@/Components/ui/dialog";
-import { useEffect } from "react";
+import { useMemo, useState } from 'react';
 
 interface Product {
     id: number;
@@ -21,7 +40,7 @@ interface Product {
     images: string[] | null;
     quantity: number;
 }
-  
+
 interface OrderItem {
     id: number;
     name: string;
@@ -29,7 +48,7 @@ interface OrderItem {
     price: number;
     price_formatted: string;
 }
-  
+
 const ITEMS_PER_PAGE = 5;
 
 interface Props extends PageProps {
@@ -52,157 +71,218 @@ interface Props extends PageProps {
     };
 }
 
-export default function PosRetail({ products: initialProducts, appCurrency, auth }: Props) {
+export default function PosRetail({
+    products: initialProducts,
+    appCurrency,
+    auth,
+}: Props) {
     const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [searchTerm, setSearchTerm] = useState<string>("");
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [filteredProducts, setFilteredProducts] =
+        useState<Product[]>(products);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
-    const [cashReceived, setCashReceived] = useState<string>("");
-    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+    const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] =
+        useState(false);
+    const [cashReceived, setCashReceived] = useState<string>('');
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(
+        null,
+    );
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
-    
+
     const handleSearch = (term: string) => {
         setSearchTerm(term);
         const regex = new RegExp(term.split('').join('.*'), 'i');
         setFilteredProducts(
-          products.filter((product) => regex.test(product.name))
+            products.filter((product) => regex.test(product.name)),
         );
         setCurrentPage(1);
-      };
-    
+    };
+
     const addItemToOrder = (product: Product) => {
         if (product.quantity > 0) {
-            const existingItem = orderItems.find(item => item.id === product.id);
+            const existingItem = orderItems.find(
+                (item) => item.id === product.id,
+            );
             if (existingItem) {
                 if (existingItem.quantity < product.quantity) {
-                    setOrderItems(orderItems.map(item =>
-                        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-                    ));
-                    setProducts(products.map(p => 
-                        p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p
-                    ));
+                    setOrderItems(
+                        orderItems.map((item) =>
+                            item.id === product.id
+                                ? { ...item, quantity: item.quantity + 1 }
+                                : item,
+                        ),
+                    );
+                    setProducts(
+                        products.map((p) =>
+                            p.id === product.id
+                                ? { ...p, quantity: p.quantity - 1 }
+                                : p,
+                        ),
+                    );
                 } else {
-                    alert("Cannot add more items than available in inventory.");
+                    alert('Cannot add more items than available in inventory.');
                 }
             } else {
                 setOrderItems([...orderItems, { ...product, quantity: 1 }]);
-                setProducts(products.map(p => 
-                    p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p
-                ));
+                setProducts(
+                    products.map((p) =>
+                        p.id === product.id
+                            ? { ...p, quantity: p.quantity - 1 }
+                            : p,
+                    ),
+                );
             }
         } else {
-            alert("This product is out of stock.");
+            alert('This product is out of stock.');
         }
     };
-    
+
     const removeItemFromOrder = (id: number) => {
-        const itemToRemove = orderItems.find(item => item.id === id);
+        const itemToRemove = orderItems.find((item) => item.id === id);
         if (itemToRemove) {
-            setProducts(products.map(p => 
-                p.id === id ? { ...p, quantity: p.quantity + itemToRemove.quantity } : p
-            ));
+            setProducts(
+                products.map((p) =>
+                    p.id === id
+                        ? { ...p, quantity: p.quantity + itemToRemove.quantity }
+                        : p,
+                ),
+            );
         }
         setOrderItems(orderItems.filter((item) => item.id !== id));
     };
-    
+
     const updateItemQuantity = (id: number, newQuantity: number) => {
-        const product = products.find(p => p.id === id);
-        const existingItem = orderItems.find(item => item.id === id);
-        
+        const product = products.find((p) => p.id === id);
+        const existingItem = orderItems.find((item) => item.id === id);
+
         if (product && existingItem) {
             // Calculate the difference in quantity
             const quantityDifference = newQuantity - existingItem.quantity;
 
-            if (newQuantity <= product.quantity + existingItem.quantity && newQuantity >= 0) {
-                setOrderItems(orderItems.map(item =>
-                    item.id === id ? { ...item, quantity: newQuantity } : item
-                ));
+            if (
+                newQuantity <= product.quantity + existingItem.quantity &&
+                newQuantity >= 0
+            ) {
+                setOrderItems(
+                    orderItems.map((item) =>
+                        item.id === id
+                            ? { ...item, quantity: newQuantity }
+                            : item,
+                    ),
+                );
                 // Update product quantity based on the difference
-                setProducts(products.map(p => 
-                    p.id === id ? { ...p, quantity: p.quantity - quantityDifference } : p
-                ));
+                setProducts(
+                    products.map((p) =>
+                        p.id === id
+                            ? {
+                                  ...p,
+                                  quantity: p.quantity - quantityDifference,
+                              }
+                            : p,
+                    ),
+                );
             } else {
-                alert("Cannot add more items than available in inventory.");
+                alert('Cannot add more items than available in inventory.');
             }
         } else {
-            alert("Product not found.");
+            alert('Product not found.');
         }
     };
-    
-    const totalAmount = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
-    
+
+    const totalAmount = orderItems.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0,
+    );
+
     const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
     const paginatedProducts = filteredProducts.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
+        currentPage * ITEMS_PER_PAGE,
     );
-    
+
     const getPageNumbers = () => {
         const pageNumbers = [];
         const maxVisiblePages = 5;
-    
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
+        let startPage = Math.max(
+            1,
+            currentPage - Math.floor(maxVisiblePages / 2),
+        );
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
-    
+
         for (let i = startPage; i <= endPage; i++) {
             pageNumbers.push(i);
         }
-    
+
         return pageNumbers;
     };
-    
+
     const handleCompleteSale = () => {
         setIsCompleteSaleDialogOpen(true);
     };
-    
+
     const confirmCompleteSale = async () => {
         const cashReceivedAmount = parseFloat(cashReceived);
-        if (paymentMethod === 'cash' && (isNaN(cashReceivedAmount) || cashReceivedAmount < totalAmount)) {
-            alert("Invalid amount received. Please enter a valid amount.");
+        if (
+            paymentMethod === 'cash' &&
+            (isNaN(cashReceivedAmount) || cashReceivedAmount < totalAmount)
+        ) {
+            alert('Invalid amount received. Please enter a valid amount.');
             return;
         }
 
-        const change = paymentMethod === 'cash' ? cashReceivedAmount - totalAmount : 0;
+        const change =
+            paymentMethod === 'cash' ? cashReceivedAmount - totalAmount : 0;
 
         // Prepare sale data
         const saleData = {
-            items: orderItems.map(item => ({
+            items: orderItems.map((item) => ({
                 id: item.id,
                 quantity: item.quantity,
-                price: item.price
+                price: item.price,
             })),
             total_amount: totalAmount,
             cash_received: paymentMethod === 'cash' ? cashReceivedAmount : null,
             change: paymentMethod === 'cash' ? change : null,
-            payment_method: paymentMethod // Add payment method to the data
+            payment_method: paymentMethod, // Add payment method to the data
         };
 
         // Handle cash payment processing
         if (paymentMethod === 'cash') {
-            alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nPayment Method: Cash Received: $${cashReceivedAmount.toFixed(2)}\nChange: $${change.toFixed(2)}`);
+            alert(
+                `Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nPayment Method: Cash Received: $${cashReceivedAmount.toFixed(2)}\nChange: $${change.toFixed(2)}`,
+            );
         } else {
-            alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nPayment Method: Card Payment`);
+            alert(
+                `Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nPayment Method: Card Payment`,
+            );
         }
 
         // Send sale data to the backend using Inertia
@@ -210,24 +290,27 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
             await router.post('/pos-retail', saleData);
             // Reset the order and close the dialog
             setOrderItems([]);
-            setCashReceived("");
+            setCashReceived('');
             setIsCompleteSaleDialogOpen(false);
         } catch (error) {
-            console.error("Error completing sale:", error);
-            alert("There was an error completing the sale. Please try again.");
+            console.error('Error completing sale:', error);
+            alert('There was an error completing the sale. Please try again.');
         }
     };
 
     const ImagePreviewModal = () => {
         if (!selectedImageUrl) return null;
-        
+
         return (
-            <PreviewDialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
+            <PreviewDialog
+                open={isImagePreviewOpen}
+                onOpenChange={setIsImagePreviewOpen}
+            >
                 <PreviewDialogContent className="max-w-3xl">
-                    <img 
-                        src={selectedImageUrl} 
-                        alt="Product preview" 
-                        className="w-full h-auto"
+                    <img
+                        src={selectedImageUrl}
+                        alt="Product preview"
+                        className="h-auto w-full"
                         onClick={() => setIsImagePreviewOpen(false)}
                     />
                 </PreviewDialogContent>
@@ -237,7 +320,11 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
+            auth={{
+                user: auth.user,
+                project: auth.project,
+                modules: auth.modules,
+            }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Point of Sale
@@ -248,7 +335,7 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
 
             <ImagePreviewModal />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Product Search</CardTitle>
@@ -275,36 +362,71 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
                                         <TableRow key={product.id}>
                                             <TableCell>
                                                 <div className="flex gap-1">
-                                                    {product.images && product.images.length > 0 ? (
-                                                        product.images.slice(0, 3).map((image, index) => (
-                                                            <div 
-                                                                key={index}
-                                                                className="w-[50px] h-[50px] overflow-hidden bg-gray-100 flex items-center justify-center"
-                                                            >
-                                                                <img 
-                                                                    src={image} 
-                                                                    alt={`${product.name} ${index + 1}`}
-                                                                    className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                                                    onClick={() => {
-                                                                        setSelectedImageUrl(image);
-                                                                        setIsImagePreviewOpen(true);
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        ))
+                                                    {product.images &&
+                                                    product.images.length >
+                                                        0 ? (
+                                                        product.images
+                                                            .slice(0, 3)
+                                                            .map(
+                                                                (
+                                                                    image,
+                                                                    index,
+                                                                ) => (
+                                                                    <div
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="flex h-[50px] w-[50px] items-center justify-center overflow-hidden bg-gray-100"
+                                                                    >
+                                                                        <img
+                                                                            src={
+                                                                                image
+                                                                            }
+                                                                            alt={`${product.name} ${index + 1}`}
+                                                                            className="h-full w-full cursor-pointer object-cover transition-opacity hover:opacity-80"
+                                                                            onClick={() => {
+                                                                                setSelectedImageUrl(
+                                                                                    image,
+                                                                                );
+                                                                                setIsImagePreviewOpen(
+                                                                                    true,
+                                                                                );
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                ),
+                                                            )
                                                     ) : (
-                                                        <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
+                                                        <div className="flex h-[50px] w-[50px] items-center justify-center bg-gray-200">
                                                             <Upload className="h-6 w-6 text-gray-400" />
                                                         </div>
                                                     )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{product.name}</TableCell>
-                                            <TableCell>{product.price_formatted}</TableCell>
-                                            <TableCell>{product.quantity}</TableCell>
+                                            <TableCell>
+                                                {product.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {product.price_formatted}
+                                            </TableCell>
+                                            <TableCell>
+                                                {product.quantity}
+                                            </TableCell>
                                             <TableCell>
                                                 {canEdit && (
-                                                    <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0} className="p-4">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            addItemToOrder(
+                                                                product,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            product.quantity ===
+                                                            0
+                                                        }
+                                                        className="p-4"
+                                                    >
                                                         Add
                                                     </Button>
                                                 )}
@@ -313,28 +435,48 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
                                     ))}
                                 </TableBody>
                             </Table>
-                            <div className="flex justify-between items-center mt-4">
+                            <div className="mt-4 flex items-center justify-between">
                                 <div>
-                                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} entries
+                                    Showing{' '}
+                                    {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
+                                    {Math.min(
+                                        currentPage * ITEMS_PER_PAGE,
+                                        filteredProducts.length,
+                                    )}{' '}
+                                    of {filteredProducts.length} entries
                                 </div>
                                 <div className="flex gap-2">
                                     <Button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.max(prev - 1, 1),
+                                            )
+                                        }
                                         disabled={currentPage === 1}
                                     >
                                         Previous
                                     </Button>
-                                    {getPageNumbers().map(pageNumber => (
+                                    {getPageNumbers().map((pageNumber) => (
                                         <Button
                                             key={pageNumber}
-                                            variant={pageNumber === currentPage ? "default" : "outline"}
-                                            onClick={() => setCurrentPage(pageNumber)}
+                                            variant={
+                                                pageNumber === currentPage
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
+                                            onClick={() =>
+                                                setCurrentPage(pageNumber)
+                                            }
                                         >
                                             {pageNumber}
                                         </Button>
                                     ))}
                                     <Button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.min(prev + 1, totalPages),
+                                            )
+                                        }
                                         disabled={currentPage === totalPages}
                                     >
                                         Next
@@ -366,18 +508,60 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
                                         <TableCell>
                                             {canEdit && (
                                                 <div className="flex items-center space-x-2">
-                                                    <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)} className="p-4">-</Button>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            updateItemQuantity(
+                                                                item.id,
+                                                                item.quantity -
+                                                                    1,
+                                                            )
+                                                        }
+                                                        className="p-4"
+                                                    >
+                                                        -
+                                                    </Button>
                                                     <span>{item.quantity}</span>
-                                                    <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)} className="p-4">+</Button>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            updateItemQuantity(
+                                                                item.id,
+                                                                item.quantity +
+                                                                    1,
+                                                            )
+                                                        }
+                                                        className="p-4"
+                                                    >
+                                                        +
+                                                    </Button>
                                                 </div>
                                             )}
-                                            {!canEdit && <span>{item.quantity}</span>}
+                                            {!canEdit && (
+                                                <span>{item.quantity}</span>
+                                            )}
                                         </TableCell>
-                                        <TableCell>{item.price_formatted}</TableCell>
-                                        <TableCell>{appCurrency.symbol}{(item.price * item.quantity).toFixed(2)}</TableCell>
+                                        <TableCell>
+                                            {item.price_formatted}
+                                        </TableCell>
+                                        <TableCell>
+                                            {appCurrency.symbol}
+                                            {(
+                                                item.price * item.quantity
+                                            ).toFixed(2)}
+                                        </TableCell>
                                         <TableCell>
                                             {canDelete && (
-                                                <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)} className="p-4">
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        removeItemFromOrder(
+                                                            item.id,
+                                                        )
+                                                    }
+                                                    className="p-4"
+                                                >
                                                     Remove
                                                 </Button>
                                             )}
@@ -388,50 +572,94 @@ export default function PosRetail({ products: initialProducts, appCurrency, auth
                         </Table>
                     </CardContent>
                     <CardFooter className="flex justify-between">
-                        <div>Total: {appCurrency.symbol}{totalAmount.toFixed(2)}</div>
+                        <div>
+                            Total: {appCurrency.symbol}
+                            {totalAmount.toFixed(2)}
+                        </div>
                         {canEdit && (
-                            <Button onClick={handleCompleteSale} disabled={orderItems.length === 0} className="p-4">Complete Sale</Button>
+                            <Button
+                                onClick={handleCompleteSale}
+                                disabled={orderItems.length === 0}
+                                className="p-4"
+                            >
+                                Complete Sale
+                            </Button>
                         )}
                     </CardFooter>
                 </Card>
             </div>
 
-            <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
-                <DialogContent aria-describedby="complete-sale-description" className="p-6">
+            <Dialog
+                open={isCompleteSaleDialogOpen}
+                onOpenChange={setIsCompleteSaleDialogOpen}
+            >
+                <DialogContent
+                    aria-describedby="complete-sale-description"
+                    className="p-6"
+                >
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-semibold">Complete Sale</DialogTitle>
+                        <DialogTitle className="text-lg font-semibold">
+                            Complete Sale
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                        <Label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">Payment Method</Label>
-                        <select 
-                            id="paymentMethod" 
-                            value={paymentMethod} 
-                            onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card')}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                        <Label
+                            htmlFor="paymentMethod"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Payment Method
+                        </Label>
+                        <select
+                            id="paymentMethod"
+                            value={paymentMethod}
+                            onChange={(e) =>
+                                setPaymentMethod(
+                                    e.target.value as 'cash' | 'card',
+                                )
+                            }
+                            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500"
                         >
                             <option value="cash">Cash</option>
                             <option value="card">Card</option>
                         </select>
                         {paymentMethod === 'cash' && (
                             <>
-                                <Label htmlFor="cashReceived" className="block text-sm font-medium text-gray-700 mt-4">Cash Received</Label>
+                                <Label
+                                    htmlFor="cashReceived"
+                                    className="mt-4 block text-sm font-medium text-gray-700"
+                                >
+                                    Cash Received
+                                </Label>
                                 <Input
                                     id="cashReceived"
                                     type="number"
                                     value={cashReceived}
-                                    onChange={(e) => setCashReceived(e.target.value)}
+                                    onChange={(e) =>
+                                        setCashReceived(e.target.value)
+                                    }
                                     placeholder="Enter amount received"
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500"
                                 />
                             </>
                         )}
                     </div>
                     <DialogFooter className="flex justify-between">
-                        <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)} className="p-4">Cancel</Button>
-                        <Button onClick={confirmCompleteSale} className="bg-blue-600 text-white hover:bg-blue-700 p-4">Confirm Sale</Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsCompleteSaleDialogOpen(false)}
+                            className="p-4"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={confirmCompleteSale}
+                            className="bg-blue-600 p-4 text-white hover:bg-blue-700"
+                        >
+                            Confirm Sale
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog> 
+            </Dialog>
         </AuthenticatedLayout>
     );
 }

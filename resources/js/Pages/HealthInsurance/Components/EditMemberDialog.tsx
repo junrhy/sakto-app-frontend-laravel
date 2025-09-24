@@ -1,10 +1,21 @@
-import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { useToast } from '@/Components/ui/use-toast';
+import { useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 interface Contribution {
@@ -38,10 +49,17 @@ interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     member: (Member & { contributions: Contribution[] }) | null;
-    onMemberUpdated: (member: Member & { contributions: Contribution[] }) => void;
+    onMemberUpdated: (
+        member: Member & { contributions: Contribution[] },
+    ) => void;
 }
 
-export default function EditMemberDialog({ open, onOpenChange, member, onMemberUpdated }: Props) {
+export default function EditMemberDialog({
+    open,
+    onOpenChange,
+    member,
+    onMemberUpdated,
+}: Props) {
     const { toast } = useToast();
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const { data, setData, put, processing, errors, reset } = useForm({
@@ -60,9 +78,15 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
     useEffect(() => {
         if (member) {
             // Format dates if they exist
-            const formattedDob = member.date_of_birth ? new Date(member.date_of_birth).toISOString().split('T')[0] : '';
-            const formattedStartDate = member.membership_start_date ? new Date(member.membership_start_date).toISOString().split('T')[0] : '';
-            
+            const formattedDob = member.date_of_birth
+                ? new Date(member.date_of_birth).toISOString().split('T')[0]
+                : '';
+            const formattedStartDate = member.membership_start_date
+                ? new Date(member.membership_start_date)
+                      .toISOString()
+                      .split('T')[0]
+                : '';
+
             setData({
                 name: member.name,
                 date_of_birth: formattedDob,
@@ -95,7 +119,8 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
             const dob = new Date(data.date_of_birth);
             const today = new Date();
             if (dob > today) {
-                newErrors.date_of_birth = 'Date of birth cannot be in the future';
+                newErrors.date_of_birth =
+                    'Date of birth cannot be in the future';
             }
         }
 
@@ -120,26 +145,37 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
 
         // Membership start date validation
         if (!data.membership_start_date) {
-            newErrors.membership_start_date = 'Membership start date is required';
+            newErrors.membership_start_date =
+                'Membership start date is required';
         } else {
             const startDate = new Date(data.membership_start_date);
             const today = new Date();
             if (startDate > today) {
-                newErrors.membership_start_date = 'Start date cannot be in the future';
+                newErrors.membership_start_date =
+                    'Start date cannot be in the future';
             }
         }
 
         // Contribution amount validation
         if (!data.contribution_amount) {
             newErrors.contribution_amount = 'Contribution amount is required';
-        } else if (isNaN(Number(data.contribution_amount)) || Number(data.contribution_amount) < 0) {
-            newErrors.contribution_amount = 'Contribution amount must be a positive number';
+        } else if (
+            isNaN(Number(data.contribution_amount)) ||
+            Number(data.contribution_amount) < 0
+        ) {
+            newErrors.contribution_amount =
+                'Contribution amount must be a positive number';
         }
 
         // Contribution frequency validation
         if (!data.contribution_frequency) {
-            newErrors.contribution_frequency = 'Contribution frequency is required';
-        } else if (!['monthly', 'quarterly', 'annually'].includes(data.contribution_frequency)) {
+            newErrors.contribution_frequency =
+                'Contribution frequency is required';
+        } else if (
+            !['monthly', 'quarterly', 'annually'].includes(
+                data.contribution_frequency,
+            )
+        ) {
             newErrors.contribution_frequency = 'Invalid contribution frequency';
         }
 
@@ -163,9 +199,9 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
         const validationErrors = validateForm();
         if (Object.keys(validationErrors).length > 0) {
             toast({
-                title: "Validation Error",
-                description: "Please check the form for errors",
-                variant: "destructive",
+                title: 'Validation Error',
+                description: 'Please check the form for errors',
+                variant: 'destructive',
             });
             return;
         }
@@ -176,8 +212,8 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                 setFieldErrors({});
                 onOpenChange(false);
                 toast({
-                    title: "Success",
-                    description: "Member updated successfully",
+                    title: 'Success',
+                    description: 'Member updated successfully',
                 });
                 // Add delay before reloading to show toast
                 setTimeout(() => {
@@ -187,9 +223,9 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
             onError: (errors) => {
                 setFieldErrors(errors);
                 toast({
-                    title: "Error",
-                    description: "Failed to update member",
-                    variant: "destructive",
+                    title: 'Error',
+                    description: 'Failed to update member',
+                    variant: 'destructive',
                 });
             },
         });
@@ -197,7 +233,7 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Edit Member</DialogTitle>
                 </DialogHeader>
@@ -210,10 +246,12 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             placeholder="Enter name"
-                            className={fieldErrors.name ? "border-red-500" : ""}
+                            className={fieldErrors.name ? 'border-red-500' : ''}
                         />
                         {fieldErrors.name && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.name}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.name}
+                            </p>
                         )}
                     </div>
 
@@ -223,11 +261,19 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             id="date_of_birth"
                             type="date"
                             value={data.date_of_birth}
-                            onChange={(e) => setData('date_of_birth', e.target.value)}
-                            className={fieldErrors.date_of_birth ? "border-red-500" : ""}
+                            onChange={(e) =>
+                                setData('date_of_birth', e.target.value)
+                            }
+                            className={
+                                fieldErrors.date_of_birth
+                                    ? 'border-red-500'
+                                    : ''
+                            }
                         />
                         {fieldErrors.date_of_birth && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.date_of_birth}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.date_of_birth}
+                            </p>
                         )}
                     </div>
 
@@ -237,7 +283,11 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             value={data.gender}
                             onValueChange={(value) => setData('gender', value)}
                         >
-                            <SelectTrigger className={fieldErrors.gender ? "border-red-500" : ""}>
+                            <SelectTrigger
+                                className={
+                                    fieldErrors.gender ? 'border-red-500' : ''
+                                }
+                            >
                                 <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                             <SelectContent>
@@ -247,7 +297,9 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             </SelectContent>
                         </Select>
                         {fieldErrors.gender && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.gender}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.gender}
+                            </p>
                         )}
                     </div>
 
@@ -257,12 +309,20 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             id="contact_number"
                             type="text"
                             value={data.contact_number}
-                            onChange={(e) => setData('contact_number', e.target.value)}
+                            onChange={(e) =>
+                                setData('contact_number', e.target.value)
+                            }
                             placeholder="Enter contact number"
-                            className={fieldErrors.contact_number ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.contact_number
+                                    ? 'border-red-500'
+                                    : ''
+                            }
                         />
                         {fieldErrors.contact_number && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.contact_number}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.contact_number}
+                            </p>
                         )}
                     </div>
 
@@ -274,59 +334,99 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             value={data.address}
                             onChange={(e) => setData('address', e.target.value)}
                             placeholder="Enter address"
-                            className={fieldErrors.address ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.address ? 'border-red-500' : ''
+                            }
                         />
                         {fieldErrors.address && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.address}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.address}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="membership_start_date">Membership Start Date</Label>
+                        <Label htmlFor="membership_start_date">
+                            Membership Start Date
+                        </Label>
                         <Input
                             id="membership_start_date"
                             type="date"
                             value={data.membership_start_date}
-                            onChange={(e) => setData('membership_start_date', e.target.value)}
-                            className={fieldErrors.membership_start_date ? "border-red-500" : ""}
+                            onChange={(e) =>
+                                setData('membership_start_date', e.target.value)
+                            }
+                            className={
+                                fieldErrors.membership_start_date
+                                    ? 'border-red-500'
+                                    : ''
+                            }
                         />
                         {fieldErrors.membership_start_date && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.membership_start_date}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.membership_start_date}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="contribution_amount">Contribution Amount</Label>
+                        <Label htmlFor="contribution_amount">
+                            Contribution Amount
+                        </Label>
                         <Input
                             id="contribution_amount"
                             type="number"
                             value={data.contribution_amount}
-                            onChange={(e) => setData('contribution_amount', e.target.value)}
+                            onChange={(e) =>
+                                setData('contribution_amount', e.target.value)
+                            }
                             placeholder="Enter contribution amount"
-                            className={fieldErrors.contribution_amount ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.contribution_amount
+                                    ? 'border-red-500'
+                                    : ''
+                            }
                         />
                         {fieldErrors.contribution_amount && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.contribution_amount}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.contribution_amount}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="contribution_frequency">Contribution Frequency</Label>
+                        <Label htmlFor="contribution_frequency">
+                            Contribution Frequency
+                        </Label>
                         <Select
                             value={data.contribution_frequency}
-                            onValueChange={(value) => setData('contribution_frequency', value)}
+                            onValueChange={(value) =>
+                                setData('contribution_frequency', value)
+                            }
                         >
-                            <SelectTrigger className={fieldErrors.contribution_frequency ? "border-red-500" : ""}>
+                            <SelectTrigger
+                                className={
+                                    fieldErrors.contribution_frequency
+                                        ? 'border-red-500'
+                                        : ''
+                                }
+                            >
                                 <SelectValue placeholder="Select frequency" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                <SelectItem value="annually">Annually</SelectItem>
+                                <SelectItem value="quarterly">
+                                    Quarterly
+                                </SelectItem>
+                                <SelectItem value="annually">
+                                    Annually
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                         {fieldErrors.contribution_frequency && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.contribution_frequency}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.contribution_frequency}
+                            </p>
                         )}
                     </div>
 
@@ -336,16 +436,24 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             value={data.status}
                             onValueChange={(value) => setData('status', value)}
                         >
-                            <SelectTrigger className={fieldErrors.status ? "border-red-500" : ""}>
+                            <SelectTrigger
+                                className={
+                                    fieldErrors.status ? 'border-red-500' : ''
+                                }
+                            >
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                <SelectItem value="inactive">
+                                    Inactive
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                         {fieldErrors.status && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.status}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.status}
+                            </p>
                         )}
                     </div>
 
@@ -357,10 +465,14 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                             value={data.group}
                             onChange={(e) => setData('group', e.target.value)}
                             placeholder="Enter group name"
-                            className={fieldErrors.group ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.group ? 'border-red-500' : ''
+                            }
                         />
                         {fieldErrors.group && (
-                            <p className="text-sm text-red-500 mt-1">{fieldErrors.group}</p>
+                            <p className="mt-1 text-sm text-red-500">
+                                {fieldErrors.group}
+                            </p>
                         )}
                     </div>
 
@@ -383,4 +495,4 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
             </DialogContent>
         </Dialog>
     );
-} 
+}

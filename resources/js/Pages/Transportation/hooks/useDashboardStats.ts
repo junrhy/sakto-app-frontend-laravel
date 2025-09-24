@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { DashboardStats as DashboardStatsType } from '../types';
 
 export const useDashboardStats = () => {
@@ -15,11 +15,16 @@ export const useDashboardStats = () => {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const [fleetStatsResponse, shipmentStatsResponse, cargoStatsResponse, bookingStatsResponse] = await Promise.all([
+            const [
+                fleetStatsResponse,
+                shipmentStatsResponse,
+                cargoStatsResponse,
+                bookingStatsResponse,
+            ] = await Promise.all([
                 axios.get('/transportation/fleet/stats'),
                 axios.get('/transportation/shipments/stats'),
                 axios.get('/transportation/cargo/stats'),
-                axios.get('/transportation/bookings/stats')
+                axios.get('/transportation/bookings/stats'),
             ]);
 
             const fleetStats = fleetStatsResponse.data || {};
@@ -33,9 +38,11 @@ export const useDashboardStats = () => {
                 delayedShipments: shipmentStats.delayed_shipments || 0,
                 totalRevenue: bookingStats.total_revenue || 0,
                 // Trend data
-                activeShipmentsTrend: shipmentStats.in_transit_shipments_trend || 0,
+                activeShipmentsTrend:
+                    shipmentStats.in_transit_shipments_trend || 0,
                 availableTrucksTrend: fleetStats.available_trucks_trend || 0,
-                delayedShipmentsTrend: shipmentStats.delayed_shipments_trend || 0,
+                delayedShipmentsTrend:
+                    shipmentStats.delayed_shipments_trend || 0,
                 totalRevenueTrend: bookingStats.total_revenue_trend || 0,
             });
         } catch (error) {
@@ -54,6 +61,6 @@ export const useDashboardStats = () => {
         stats,
         loading,
         error,
-        fetchStats
+        fetchStats,
     };
 };

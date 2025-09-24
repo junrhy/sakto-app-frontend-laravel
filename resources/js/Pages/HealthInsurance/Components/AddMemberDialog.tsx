@@ -1,16 +1,25 @@
-import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { useToast } from '@/Components/ui/use-toast';
-import { useState, useEffect, useRef } from 'react';
-import { UserPlus, Plus, Trash2, Users, Upload, Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
 import { router } from '@inertiajs/react';
-import { Separator } from '@/Components/ui/separator';
+import { Download, Plus, Trash2, Upload, UserPlus, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Contact {
     id: string;
@@ -49,7 +58,12 @@ interface Props {
     };
 }
 
-export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, appCurrency }: Props) {
+export default function AddMemberDialog({
+    open,
+    onOpenChange,
+    onMemberAdded,
+    appCurrency,
+}: Props) {
     const { toast } = useToast();
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
@@ -66,13 +80,13 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
             contribution_frequency: '',
             status: 'active',
             group: '',
-        }
+        },
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Use router for posting individual members
     const [processing, setProcessing] = useState(false);
-    
+
     // CSV import functionality
     const [showCsvImport, setShowCsvImport] = useState(false);
     const [csvData, setCsvData] = useState<MemberFormData[]>([]);
@@ -87,18 +101,20 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
             // Reset states when dialog closes
             setShowContactSearch(false);
             setSelectedContacts([]);
-            setMembers([{
-                name: '',
-                date_of_birth: '',
-                gender: '',
-                contact_number: '',
-                address: '',
-                membership_start_date: '',
-                contribution_amount: '',
-                contribution_frequency: '',
-                status: 'active',
-                group: '',
-            }]);
+            setMembers([
+                {
+                    name: '',
+                    date_of_birth: '',
+                    gender: '',
+                    contact_number: '',
+                    address: '',
+                    membership_start_date: '',
+                    contribution_amount: '',
+                    contribution_frequency: '',
+                    status: 'active',
+                    group: '',
+                },
+            ]);
             // Reset processing state
             setProcessing(false);
             // Reset CSV import state
@@ -123,23 +139,31 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
         } catch (error) {
             console.error('Error fetching contacts:', error);
             toast({
-                title: "Error",
-                description: "Failed to fetch contacts",
-                variant: "destructive",
+                title: 'Error',
+                description: 'Failed to fetch contacts',
+                variant: 'destructive',
             });
         }
     };
 
     const handleContactSelect = (contactIds: string[]) => {
         setSelectedContacts(contactIds);
-        
+
         // Create member entries for selected contacts
-        const selectedContactData = contacts.filter(c => contactIds.includes(c.id));
-        const newMembers = selectedContactData.map(contact => {
-            const formattedDate = contact.date_of_birth ? new Date(contact.date_of_birth).toISOString().split('T')[0] : '';
+        const selectedContactData = contacts.filter((c) =>
+            contactIds.includes(c.id),
+        );
+        const newMembers = selectedContactData.map((contact) => {
+            const formattedDate = contact.date_of_birth
+                ? new Date(contact.date_of_birth).toISOString().split('T')[0]
+                : '';
             return {
                 name: `${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`.trim(),
-                contact_number: contact.call_number || contact.sms_number || contact.whatsapp || '',
+                contact_number:
+                    contact.call_number ||
+                    contact.sms_number ||
+                    contact.whatsapp ||
+                    '',
                 address: contact.address || '',
                 date_of_birth: formattedDate,
                 gender: contact.gender || '',
@@ -150,24 +174,27 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                 group: '',
             };
         });
-        
+
         setMembers(newMembers);
         setShowContactSearch(false);
     };
 
     const addMember = () => {
-        setMembers([...members, {
-            name: '',
-            date_of_birth: '',
-            gender: '',
-            contact_number: '',
-            address: '',
-            membership_start_date: '',
-            contribution_amount: '',
-            contribution_frequency: '',
-            status: 'active',
-            group: '',
-        }]);
+        setMembers([
+            ...members,
+            {
+                name: '',
+                date_of_birth: '',
+                gender: '',
+                contact_number: '',
+                address: '',
+                membership_start_date: '',
+                contribution_amount: '',
+                contribution_frequency: '',
+                status: 'active',
+                group: '',
+            },
+        ]);
     };
 
     const removeMember = (index: number) => {
@@ -176,7 +203,11 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
         }
     };
 
-    const updateMember = (index: number, field: keyof MemberFormData, value: string) => {
+    const updateMember = (
+        index: number,
+        field: keyof MemberFormData,
+        value: string,
+    ) => {
         const updatedMembers = [...members];
         updatedMembers[index] = { ...updatedMembers[index], [field]: value };
         setMembers(updatedMembers);
@@ -191,46 +222,55 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
             // Submit each member individually using Inertia router
             for (const member of members) {
                 if (!member.name.trim()) continue; // Skip empty entries
-                
+
                 // Submit using Inertia router.post
                 await new Promise<void>((resolve, reject) => {
-                    router.post(route('health-insurance.members.store'), member as any, {
-                        onSuccess: () => {
-                            resolve();
+                    router.post(
+                        route('health-insurance.members.store'),
+                        member as any,
+                        {
+                            onSuccess: () => {
+                                resolve();
+                            },
+                            onError: (errors: any) => {
+                                const errorMessage = Object.entries(errors)
+                                    .map(
+                                        ([field, message]) =>
+                                            `${field}: ${message}`,
+                                    )
+                                    .join('; ');
+                                reject(new Error(errorMessage));
+                            },
+                            preserveScroll: true,
+                            preserveState: true,
                         },
-                        onError: (errors: any) => {
-                            const errorMessage = Object.entries(errors)
-                                .map(([field, message]) => `${field}: ${message}`)
-                                .join('; ');
-                            reject(new Error(errorMessage));
-                        },
-                        preserveScroll: true,
-                        preserveState: true,
-                    });
+                    );
                 });
             }
 
             toast({
-                title: "Success",
-                description: `${members.filter(m => m.name.trim()).length} member(s) added successfully`,
+                title: 'Success',
+                description: `${members.filter((m) => m.name.trim()).length} member(s) added successfully`,
             });
 
             // Reset and close
-            setMembers([{
-                name: '',
-                date_of_birth: '',
-                gender: '',
-                contact_number: '',
-                address: '',
-                membership_start_date: '',
-                contribution_amount: '',
-                contribution_frequency: '',
-                status: 'active',
-                group: '',
-            }]);
+            setMembers([
+                {
+                    name: '',
+                    date_of_birth: '',
+                    gender: '',
+                    contact_number: '',
+                    address: '',
+                    membership_start_date: '',
+                    contribution_amount: '',
+                    contribution_frequency: '',
+                    status: 'active',
+                    group: '',
+                },
+            ]);
             setSelectedContacts([]);
             onOpenChange(false);
-            
+
             // Reload page after delay
             setTimeout(() => {
                 window.location.reload();
@@ -238,9 +278,12 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
         } catch (error) {
             console.error('Error adding members:', error);
             toast({
-                title: "Error",
-                description: error instanceof Error ? error.message : "Failed to add some members",
-                variant: "destructive",
+                title: 'Error',
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to add some members',
+                variant: 'destructive',
             });
         } finally {
             setIsSubmitting(false);
@@ -248,22 +291,28 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
         }
     };
 
-    const validMembers = members.filter(m => m.name.trim());
+    const validMembers = members.filter((m) => m.name.trim());
 
     // CSV parsing function
     const parseCSV = (csvText: string): MemberFormData[] => {
-        const lines = csvText.split('\n').filter(line => line.trim());
+        const lines = csvText.split('\n').filter((line) => line.trim());
         if (lines.length < 2) {
-            throw new Error('CSV must have at least a header row and one data row');
+            throw new Error(
+                'CSV must have at least a header row and one data row',
+            );
         }
 
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        const headers = lines[0]
+            .split(',')
+            .map((h) => h.trim().toLowerCase().replace(/"/g, ''));
         const dataRows = lines.slice(1);
         const errors: string[] = [];
         const parsedData: MemberFormData[] = [];
 
         dataRows.forEach((row, index) => {
-            const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
+            const values = row
+                .split(',')
+                .map((v) => v.trim().replace(/"/g, ''));
             const member: MemberFormData = {
                 name: '',
                 date_of_birth: '',
@@ -343,13 +392,19 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                 errors.push(`Row ${index + 2}: Address is required`);
             }
             if (!member.membership_start_date) {
-                errors.push(`Row ${index + 2}: Membership start date is required`);
+                errors.push(
+                    `Row ${index + 2}: Membership start date is required`,
+                );
             }
             if (!member.contribution_amount) {
-                errors.push(`Row ${index + 2}: Contribution amount is required`);
+                errors.push(
+                    `Row ${index + 2}: Contribution amount is required`,
+                );
             }
             if (!member.contribution_frequency) {
-                errors.push(`Row ${index + 2}: Contribution frequency is required`);
+                errors.push(
+                    `Row ${index + 2}: Contribution frequency is required`,
+                );
             }
 
             parsedData.push(member);
@@ -366,9 +421,9 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
 
         if (!file.name.toLowerCase().endsWith('.csv')) {
             toast({
-                title: "Error",
-                description: "Please select a CSV file",
-                variant: "destructive",
+                title: 'Error',
+                description: 'Please select a CSV file',
+                variant: 'destructive',
             });
             return;
         }
@@ -379,24 +434,27 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                 const csvText = e.target?.result as string;
                 const parsedData = parseCSV(csvText);
                 setCsvData(parsedData);
-                
+
                 if (csvErrors.length === 0) {
                     toast({
-                        title: "Success",
+                        title: 'Success',
                         description: `Successfully parsed ${parsedData.length} members from CSV`,
                     });
                 } else {
                     toast({
-                        title: "Warning",
+                        title: 'Warning',
                         description: `Parsed ${parsedData.length} members with ${csvErrors.length} validation errors`,
-                        variant: "destructive",
+                        variant: 'destructive',
                     });
                 }
             } catch (error) {
                 toast({
-                    title: "Error",
-                    description: error instanceof Error ? error.message : "Failed to parse CSV file",
-                    variant: "destructive",
+                    title: 'Error',
+                    description:
+                        error instanceof Error
+                            ? error.message
+                            : 'Failed to parse CSV file',
+                    variant: 'destructive',
                 });
             }
         };
@@ -406,14 +464,14 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
     // Import CSV data to members
     const importCsvData = () => {
         if (csvData.length === 0) return;
-        
+
         setMembers(csvData);
         setShowCsvImport(false);
         setCsvData([]);
         setCsvErrors([]);
-        
+
         toast({
-            title: "Success",
+            title: 'Success',
             description: `Imported ${csvData.length} members from CSV`,
         });
     };
@@ -423,7 +481,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
         const template = `name,date_of_birth,gender,contact_number,address,membership_start_date,contribution_amount,contribution_frequency,status,group
 "John Doe","1990-01-01","male","09123456789","123 Main St","2024-01-01","500","monthly","active","Group A"
 "Jane Smith","1985-05-15","female","09876543210","456 Oak Ave","2024-01-01","750","quarterly","active","Group B"`;
-        
+
         const blob = new Blob([template], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -436,28 +494,34 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
     };
 
     return (
-        <Dialog open={open} onOpenChange={processing ? undefined : onOpenChange}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <Dialog
+            open={open}
+            onOpenChange={processing ? undefined : onOpenChange}
+        >
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
                         Add Members
                         <Badge variant="secondary" className="ml-2">
-                            {validMembers.length} member{validMembers.length !== 1 ? 's' : ''}
+                            {validMembers.length} member
+                            {validMembers.length !== 1 ? 's' : ''}
                         </Badge>
                     </DialogTitle>
                 </DialogHeader>
-                
+
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
+                    <Card className="border-2 border-dashed border-gray-300 dark:border-gray-600">
                         <CardContent className="p-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                 {!showContactSearch ? (
                                     <Button
                                         type="button"
                                         variant="outline"
                                         className="h-12"
-                                        onClick={() => setShowContactSearch(true)}
+                                        onClick={() =>
+                                            setShowContactSearch(true)
+                                        }
                                         disabled={processing}
                                     >
                                         <UserPlus className="mr-2 h-4 w-4" />
@@ -465,13 +529,17 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                     </Button>
                                 ) : (
                                     <div className="sm:col-span-3">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-sm font-medium">Select Contact:</span>
+                                        <div className="mb-2 flex items-center gap-2">
+                                            <span className="text-sm font-medium">
+                                                Select Contact:
+                                            </span>
                                             <Button
                                                 type="button"
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => setShowContactSearch(false)}
+                                                onClick={() =>
+                                                    setShowContactSearch(false)
+                                                }
                                                 disabled={processing}
                                             >
                                                 Cancel
@@ -479,7 +547,9 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         </div>
                                         <Select
                                             value={selectedContacts[0] || ''}
-                                            onValueChange={(value) => handleContactSelect([value])}
+                                            onValueChange={(value) =>
+                                                handleContactSelect([value])
+                                            }
                                             disabled={processing}
                                         >
                                             <SelectTrigger>
@@ -487,7 +557,10 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {contacts.map((contact) => (
-                                                    <SelectItem key={contact.id} value={contact.id}>
+                                                    <SelectItem
+                                                        key={contact.id}
+                                                        value={contact.id}
+                                                    >
                                                         {`${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`}
                                                     </SelectItem>
                                                 ))}
@@ -495,7 +568,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         </Select>
                                     </div>
                                 )}
-                                
+
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -506,7 +579,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                     <Upload className="mr-2 h-4 w-4" />
                                     Import CSV
                                 </Button>
-                                
+
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -525,7 +598,9 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                         <Card>
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm">Import CSV File</CardTitle>
+                                    <CardTitle className="text-sm">
+                                        Import CSV File
+                                    </CardTitle>
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -539,7 +614,12 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div>
-                                    <Label htmlFor="csv-file" className="text-sm">Select CSV File</Label>
+                                    <Label
+                                        htmlFor="csv-file"
+                                        className="text-sm"
+                                    >
+                                        Select CSV File
+                                    </Label>
                                     <Input
                                         id="csv-file"
                                         type="file"
@@ -550,11 +630,14 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         disabled={processing}
                                     />
                                 </div>
-                                
+
                                 {csvData.length > 0 && (
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="text-sm font-medium">Preview ({csvData.length} members)</h4>
+                                            <h4 className="text-sm font-medium">
+                                                Preview ({csvData.length}{' '}
+                                                members)
+                                            </h4>
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
@@ -563,8 +646,11 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                     onClick={() => {
                                                         setCsvData([]);
                                                         setCsvErrors([]);
-                                                        if (fileInputRef.current) {
-                                                            fileInputRef.current.value = '';
+                                                        if (
+                                                            fileInputRef.current
+                                                        ) {
+                                                            fileInputRef.current.value =
+                                                                '';
                                                         }
                                                     }}
                                                     disabled={processing}
@@ -581,53 +667,104 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 </Button>
                                             </div>
                                         </div>
-                                        
-                                        <div className="max-h-32 overflow-y-auto border rounded-md p-2">
+
+                                        <div className="max-h-32 overflow-y-auto rounded-md border p-2">
                                             <table className="w-full text-xs">
                                                 <thead>
                                                     <tr className="border-b">
-                                                        <th className="text-left p-1">Name</th>
-                                                        <th className="text-left p-1">DOB</th>
-                                                        <th className="text-left p-1">Gender</th>
-                                                        <th className="text-left p-1">Contact</th>
-                                                        <th className="text-left p-1">Amount</th>
+                                                        <th className="p-1 text-left">
+                                                            Name
+                                                        </th>
+                                                        <th className="p-1 text-left">
+                                                            DOB
+                                                        </th>
+                                                        <th className="p-1 text-left">
+                                                            Gender
+                                                        </th>
+                                                        <th className="p-1 text-left">
+                                                            Contact
+                                                        </th>
+                                                        <th className="p-1 text-left">
+                                                            Amount
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {csvData.slice(0, 3).map((member, index) => (
-                                                        <tr key={index} className="border-b">
-                                                            <td className="p-1">{member.name}</td>
-                                                            <td className="p-1">{member.date_of_birth}</td>
-                                                            <td className="p-1">{member.gender}</td>
-                                                            <td className="p-1">{member.contact_number}</td>
-                                                            <td className="p-1">{member.contribution_amount}</td>
-                                                        </tr>
-                                                    ))}
+                                                    {csvData
+                                                        .slice(0, 3)
+                                                        .map(
+                                                            (member, index) => (
+                                                                <tr
+                                                                    key={index}
+                                                                    className="border-b"
+                                                                >
+                                                                    <td className="p-1">
+                                                                        {
+                                                                            member.name
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-1">
+                                                                        {
+                                                                            member.date_of_birth
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-1">
+                                                                        {
+                                                                            member.gender
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-1">
+                                                                        {
+                                                                            member.contact_number
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-1">
+                                                                        {
+                                                                            member.contribution_amount
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+                                                            ),
+                                                        )}
                                                     {csvData.length > 3 && (
                                                         <tr>
-                                                            <td colSpan={5} className="p-1 text-center text-gray-500">
-                                                                ... and {csvData.length - 3} more
+                                                            <td
+                                                                colSpan={5}
+                                                                className="p-1 text-center text-gray-500"
+                                                            >
+                                                                ... and{' '}
+                                                                {csvData.length -
+                                                                    3}{' '}
+                                                                more
                                                             </td>
                                                         </tr>
                                                     )}
                                                 </tbody>
                                             </table>
                                         </div>
-                                        
+
                                         {csvErrors.length > 0 && (
-                                            <div className="bg-red-50 border border-red-200 rounded-md p-2">
-                                                <h5 className="text-sm font-medium text-red-800 mb-1">
+                                            <div className="rounded-md border border-red-200 bg-red-50 p-2">
+                                                <h5 className="mb-1 text-sm font-medium text-red-800">
                                                     Errors ({csvErrors.length})
                                                 </h5>
                                                 <div className="max-h-24 overflow-y-auto">
-                                                    {csvErrors.slice(0, 5).map((error, index) => (
-                                                        <p key={index} className="text-xs text-red-700 mb-0.5">
-                                                            {error}
-                                                        </p>
-                                                    ))}
+                                                    {csvErrors
+                                                        .slice(0, 5)
+                                                        .map((error, index) => (
+                                                            <p
+                                                                key={index}
+                                                                className="mb-0.5 text-xs text-red-700"
+                                                            >
+                                                                {error}
+                                                            </p>
+                                                        ))}
                                                     {csvErrors.length > 5 && (
                                                         <p className="text-xs text-red-700">
-                                                            ... and {csvErrors.length - 5} more errors
+                                                            ... and{' '}
+                                                            {csvErrors.length -
+                                                                5}{' '}
+                                                            more errors
                                                         </p>
                                                     )}
                                                 </div>
@@ -644,13 +781,17 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                             <Card key={index} className="relative">
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
-                                        <CardTitle className="text-sm">Member {index + 1}</CardTitle>
+                                        <CardTitle className="text-sm">
+                                            Member {index + 1}
+                                        </CardTitle>
                                         {members.length > 1 && (
                                             <Button
                                                 type="button"
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => removeMember(index)}
+                                                onClick={() =>
+                                                    removeMember(index)
+                                                }
                                                 className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
                                                 disabled={processing}
                                             >
@@ -662,22 +803,40 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                 <CardContent className="space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <Label htmlFor={`name-${index}`}>Full Name</Label>
+                                            <Label htmlFor={`name-${index}`}>
+                                                Full Name
+                                            </Label>
                                             <Input
                                                 id={`name-${index}`}
                                                 value={member.name}
-                                                onChange={(e) => updateMember(index, 'name', e.target.value)}
+                                                onChange={(e) =>
+                                                    updateMember(
+                                                        index,
+                                                        'name',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter full name"
                                                 disabled={processing}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor={`date_of_birth-${index}`}>Date of Birth</Label>
+                                            <Label
+                                                htmlFor={`date_of_birth-${index}`}
+                                            >
+                                                Date of Birth
+                                            </Label>
                                             <Input
                                                 id={`date_of_birth-${index}`}
                                                 type="date"
                                                 value={member.date_of_birth}
-                                                onChange={(e) => updateMember(index, 'date_of_birth', e.target.value)}
+                                                onChange={(e) =>
+                                                    updateMember(
+                                                        index,
+                                                        'date_of_birth',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 disabled={processing}
                                             />
                                         </div>
@@ -685,28 +844,52 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <Label htmlFor={`gender-${index}`}>Gender</Label>
+                                            <Label htmlFor={`gender-${index}`}>
+                                                Gender
+                                            </Label>
                                             <Select
                                                 value={member.gender}
-                                                onValueChange={(value) => updateMember(index, 'gender', value)}
+                                                onValueChange={(value) =>
+                                                    updateMember(
+                                                        index,
+                                                        'gender',
+                                                        value,
+                                                    )
+                                                }
                                                 disabled={processing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select gender" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="male">Male</SelectItem>
-                                                    <SelectItem value="female">Female</SelectItem>
-                                                    <SelectItem value="other">Other</SelectItem>
+                                                    <SelectItem value="male">
+                                                        Male
+                                                    </SelectItem>
+                                                    <SelectItem value="female">
+                                                        Female
+                                                    </SelectItem>
+                                                    <SelectItem value="other">
+                                                        Other
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div>
-                                            <Label htmlFor={`contact_number-${index}`}>Contact Number</Label>
+                                            <Label
+                                                htmlFor={`contact_number-${index}`}
+                                            >
+                                                Contact Number
+                                            </Label>
                                             <Input
                                                 id={`contact_number-${index}`}
                                                 value={member.contact_number}
-                                                onChange={(e) => updateMember(index, 'contact_number', e.target.value)}
+                                                onChange={(e) =>
+                                                    updateMember(
+                                                        index,
+                                                        'contact_number',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter contact number"
                                                 disabled={processing}
                                             />
@@ -714,11 +897,19 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                     </div>
 
                                     <div>
-                                        <Label htmlFor={`address-${index}`}>Address</Label>
+                                        <Label htmlFor={`address-${index}`}>
+                                            Address
+                                        </Label>
                                         <Input
                                             id={`address-${index}`}
                                             value={member.address}
-                                            onChange={(e) => updateMember(index, 'address', e.target.value)}
+                                            onChange={(e) =>
+                                                updateMember(
+                                                    index,
+                                                    'address',
+                                                    e.target.value,
+                                                )
+                                            }
                                             placeholder="Enter address"
                                             disabled={processing}
                                         />
@@ -726,24 +917,48 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <Label htmlFor={`membership_start_date-${index}`}>Membership Start Date</Label>
+                                            <Label
+                                                htmlFor={`membership_start_date-${index}`}
+                                            >
+                                                Membership Start Date
+                                            </Label>
                                             <Input
                                                 id={`membership_start_date-${index}`}
                                                 type="date"
-                                                value={member.membership_start_date}
-                                                onChange={(e) => updateMember(index, 'membership_start_date', e.target.value)}
+                                                value={
+                                                    member.membership_start_date
+                                                }
+                                                onChange={(e) =>
+                                                    updateMember(
+                                                        index,
+                                                        'membership_start_date',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 disabled={processing}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor={`contribution_amount-${index}`}>Premium ({appCurrency.symbol})</Label>
+                                            <Label
+                                                htmlFor={`contribution_amount-${index}`}
+                                            >
+                                                Premium ({appCurrency.symbol})
+                                            </Label>
                                             <Input
                                                 id={`contribution_amount-${index}`}
                                                 type="number"
                                                 step="0.01"
                                                 min="0"
-                                                value={member.contribution_amount}
-                                                onChange={(e) => updateMember(index, 'contribution_amount', e.target.value)}
+                                                value={
+                                                    member.contribution_amount
+                                                }
+                                                onChange={(e) =>
+                                                    updateMember(
+                                                        index,
+                                                        'contribution_amount',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter premium amount"
                                                 disabled={processing}
                                             />
@@ -752,44 +967,82 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
 
                                     <div className="grid grid-cols-3 gap-3">
                                         <div>
-                                            <Label htmlFor={`contribution_frequency-${index}`}>Frequency</Label>
+                                            <Label
+                                                htmlFor={`contribution_frequency-${index}`}
+                                            >
+                                                Frequency
+                                            </Label>
                                             <Select
-                                                value={member.contribution_frequency}
-                                                onValueChange={(value) => updateMember(index, 'contribution_frequency', value)}
+                                                value={
+                                                    member.contribution_frequency
+                                                }
+                                                onValueChange={(value) =>
+                                                    updateMember(
+                                                        index,
+                                                        'contribution_frequency',
+                                                        value,
+                                                    )
+                                                }
                                                 disabled={processing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select frequency" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                                                    <SelectItem value="annually">Annually</SelectItem>
+                                                    <SelectItem value="monthly">
+                                                        Monthly
+                                                    </SelectItem>
+                                                    <SelectItem value="quarterly">
+                                                        Quarterly
+                                                    </SelectItem>
+                                                    <SelectItem value="annually">
+                                                        Annually
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div>
-                                            <Label htmlFor={`status-${index}`}>Status</Label>
+                                            <Label htmlFor={`status-${index}`}>
+                                                Status
+                                            </Label>
                                             <Select
                                                 value={member.status}
-                                                onValueChange={(value) => updateMember(index, 'status', value)}
+                                                onValueChange={(value) =>
+                                                    updateMember(
+                                                        index,
+                                                        'status',
+                                                        value,
+                                                    )
+                                                }
                                                 disabled={processing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="active">Active</SelectItem>
-                                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                                    <SelectItem value="active">
+                                                        Active
+                                                    </SelectItem>
+                                                    <SelectItem value="inactive">
+                                                        Inactive
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div>
-                                            <Label htmlFor={`group-${index}`}>Group</Label>
+                                            <Label htmlFor={`group-${index}`}>
+                                                Group
+                                            </Label>
                                             <Input
                                                 id={`group-${index}`}
                                                 value={member.group}
-                                                onChange={(e) => updateMember(index, 'group', e.target.value)}
+                                                onChange={(e) =>
+                                                    updateMember(
+                                                        index,
+                                                        'group',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter group name"
                                                 disabled={processing}
                                             />
@@ -811,7 +1064,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                         Add Another Member
                     </Button>
 
-                    <div className="flex justify-end gap-2 pt-4 border-t">
+                    <div className="flex justify-end gap-2 border-t pt-4">
                         <Button
                             type="button"
                             variant="outline"
@@ -820,15 +1073,21 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            type="submit" 
-                            disabled={processing || isSubmitting || validMembers.length === 0}
+                        <Button
+                            type="submit"
+                            disabled={
+                                processing ||
+                                isSubmitting ||
+                                validMembers.length === 0
+                            }
                         >
-                            {processing || isSubmitting ? 'Adding...' : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
+                            {processing || isSubmitting
+                                ? 'Adding...'
+                                : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
                         </Button>
                     </div>
                 </form>
             </DialogContent>
         </Dialog>
     );
-} 
+}

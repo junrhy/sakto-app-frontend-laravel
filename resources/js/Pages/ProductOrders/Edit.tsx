@@ -1,33 +1,8 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Textarea } from '@/Components/ui/textarea';
-import { formatCurrency } from '@/lib/utils';
-import { format } from 'date-fns';
-import { 
-    ArrowLeft, 
-    Save, 
-    Package, 
-    User, 
-    Mail, 
-    Phone, 
-    MapPin, 
-    CreditCard,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Truck,
-    Archive,
-    DollarSign,
-    Calendar,
-    FileText
-} from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -43,6 +18,28 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { Textarea } from '@/Components/ui/textarea';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatCurrency } from '@/lib/utils';
+import { PageProps } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { format } from 'date-fns';
+import {
+    Archive,
+    ArrowLeft,
+    CheckCircle,
+    Clock,
+    FileText,
+    Mail,
+    MapPin,
+    Package,
+    Phone,
+    Save,
+    Truck,
+    User,
+    XCircle,
+} from 'lucide-react';
+import React, { useState } from 'react';
 
 interface OrderItem {
     product_id: number;
@@ -51,7 +48,14 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number;
-    status?: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'out_of_stock';
+    status?:
+        | 'pending'
+        | 'confirmed'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'cancelled'
+        | 'out_of_stock';
 }
 
 interface Order {
@@ -68,9 +72,26 @@ interface Order {
     shipping_fee: number;
     discount_amount: number;
     total_amount: number;
-    order_status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-    payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
-    payment_method?: 'cash' | 'card' | 'bank_transfer' | 'digital_wallet' | 'cod';
+    order_status:
+        | 'pending'
+        | 'confirmed'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'cancelled'
+        | 'refunded';
+    payment_status:
+        | 'pending'
+        | 'paid'
+        | 'failed'
+        | 'refunded'
+        | 'partially_refunded';
+    payment_method?:
+        | 'cash'
+        | 'card'
+        | 'bank_transfer'
+        | 'digital_wallet'
+        | 'cod';
     payment_reference?: string;
     notes?: string;
     created_at: string;
@@ -100,26 +121,26 @@ export default function Edit({ auth, order, currency, errors }: Props) {
         payment_reference: order.payment_reference || '',
         shipping_address: order.shipping_address || '',
         billing_address: order.billing_address || '',
-        order_items: order.order_items.map(item => ({
+        order_items: order.order_items.map((item) => ({
             ...item,
-            status: item.status || 'pending'
+            status: item.status || 'pending',
         })),
-        notes: order.notes || ''
+        notes: order.notes || '',
     });
 
     const handleInputChange = (field: string, value: string) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
+            [field]: value,
         }));
     };
 
     const handleItemStatusChange = (itemIndex: number, status: string) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            order_items: prev.order_items.map((item, index) => 
-                index === itemIndex ? { ...item, status: status as any } : item
-            )
+            order_items: prev.order_items.map((item, index) =>
+                index === itemIndex ? { ...item, status: status as any } : item,
+            ),
         }));
     };
 
@@ -128,7 +149,10 @@ export default function Edit({ auth, order, currency, errors }: Props) {
         setProcessing(true);
 
         try {
-            await router.put(route('product-orders.update', order.id), formData);
+            await router.put(
+                route('product-orders.update', order.id),
+                formData,
+            );
         } catch (error) {
             console.error('Error updating order:', error);
         } finally {
@@ -138,21 +162,44 @@ export default function Edit({ auth, order, currency, errors }: Props) {
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
-            confirmed: { color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300', icon: CheckCircle },
-            processing: { color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300', icon: Package },
-            shipped: { color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300', icon: Truck },
-            delivered: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
-            cancelled: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
-            refunded: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: Archive },
+            pending: {
+                color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                icon: Clock,
+            },
+            confirmed: {
+                color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                icon: CheckCircle,
+            },
+            processing: {
+                color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
+                icon: Package,
+            },
+            shipped: {
+                color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300',
+                icon: Truck,
+            },
+            delivered: {
+                color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                icon: CheckCircle,
+            },
+            cancelled: {
+                color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+                icon: XCircle,
+            },
+            refunded: {
+                color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300',
+                icon: Archive,
+            },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+        const config =
+            statusConfig[status as keyof typeof statusConfig] ||
+            statusConfig.pending;
         const Icon = config.icon;
 
         return (
             <Badge className={config.color}>
-                <Icon className="w-3 h-3 mr-1" />
+                <Icon className="mr-1 h-3 w-3" />
                 {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
         );
@@ -160,42 +207,86 @@ export default function Edit({ auth, order, currency, errors }: Props) {
 
     const getItemStatusBadge = (status?: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
-            confirmed: { color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300', icon: CheckCircle },
-            processing: { color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300', icon: Package },
-            shipped: { color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300', icon: Truck },
-            delivered: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
-            cancelled: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
-            out_of_stock: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: XCircle },
+            pending: {
+                color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                icon: Clock,
+            },
+            confirmed: {
+                color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                icon: CheckCircle,
+            },
+            processing: {
+                color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
+                icon: Package,
+            },
+            shipped: {
+                color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300',
+                icon: Truck,
+            },
+            delivered: {
+                color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                icon: CheckCircle,
+            },
+            cancelled: {
+                color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+                icon: XCircle,
+            },
+            out_of_stock: {
+                color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300',
+                icon: XCircle,
+            },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+        const config =
+            statusConfig[status as keyof typeof statusConfig] ||
+            statusConfig.pending;
         const Icon = config.icon;
 
         return (
             <Badge className={config.color}>
-                <Icon className="w-3 h-3 mr-1" />
-                {status ? status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ') : 'Pending'}
+                <Icon className="mr-1 h-3 w-3" />
+                {status
+                    ? status.charAt(0).toUpperCase() +
+                      status.slice(1).replace('_', ' ')
+                    : 'Pending'}
             </Badge>
         );
     };
 
     const getPaymentStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
-            paid: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
-            failed: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
-            refunded: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: Archive },
-            partially_refunded: { color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300', icon: Archive },
+            pending: {
+                color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                icon: Clock,
+            },
+            paid: {
+                color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                icon: CheckCircle,
+            },
+            failed: {
+                color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+                icon: XCircle,
+            },
+            refunded: {
+                color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300',
+                icon: Archive,
+            },
+            partially_refunded: {
+                color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
+                icon: Archive,
+            },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+        const config =
+            statusConfig[status as keyof typeof statusConfig] ||
+            statusConfig.pending;
         const Icon = config.icon;
 
         return (
             <Badge className={config.color}>
-                <Icon className="w-3 h-3 mr-1" />
-                {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
+                <Icon className="mr-1 h-3 w-3" />
+                {status.replace('_', ' ').charAt(0).toUpperCase() +
+                    status.replace('_', ' ').slice(1)}
             </Badge>
         );
     };
@@ -203,17 +294,24 @@ export default function Edit({ auth, order, currency, errors }: Props) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Edit Order</h2>}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    Edit Order
+                </h2>
+            }
         >
             <Head title={`Edit Order ${order.order_number}`} />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Error Messages */}
                     {errors && Object.keys(errors).length > 0 && (
                         <div className="mb-6">
                             {Object.entries(errors).map(([key, message]) => (
-                                <div key={key} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-2">
+                                <div
+                                    key={key}
+                                    className="mb-2 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+                                >
                                     {message}
                                 </div>
                             ))}
@@ -221,11 +319,11 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                     )}
 
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="mb-6 flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                             <Link href={route('product-orders.show', order.id)}>
                                 <Button variant="outline">
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
                                     Back to Order
                                 </Button>
                             </Link>
@@ -234,94 +332,173 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                     Edit Order {order.order_number}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Created on {format(new Date(order.created_at), 'MMMM dd, yyyy \'at\' HH:mm')}
+                                    Created on{' '}
+                                    {format(
+                                        new Date(order.created_at),
+                                        "MMMM dd, yyyy 'at' HH:mm",
+                                    )}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             {/* Main Content */}
-                            <div className="lg:col-span-2 space-y-6">
+                            <div className="space-y-6 lg:col-span-2">
                                 {/* Order Information */}
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <Package className="w-4 h-4 mr-2" />
+                                            <Package className="mr-2 h-4 w-4" />
                                             Order Information
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             <div>
-                                                <Label htmlFor="order_status">Order Status</Label>
-                                                <Select 
-                                                    value={formData.order_status} 
-                                                    onValueChange={(value) => handleInputChange('order_status', value)}
+                                                <Label htmlFor="order_status">
+                                                    Order Status
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        formData.order_status
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        handleInputChange(
+                                                            'order_status',
+                                                            value,
+                                                        )
+                                                    }
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="pending">Pending</SelectItem>
-                                                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                                                        <SelectItem value="processing">Processing</SelectItem>
-                                                        <SelectItem value="shipped">Shipped</SelectItem>
-                                                        <SelectItem value="delivered">Delivered</SelectItem>
-                                                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                                                        <SelectItem value="refunded">Refunded</SelectItem>
+                                                        <SelectItem value="pending">
+                                                            Pending
+                                                        </SelectItem>
+                                                        <SelectItem value="confirmed">
+                                                            Confirmed
+                                                        </SelectItem>
+                                                        <SelectItem value="processing">
+                                                            Processing
+                                                        </SelectItem>
+                                                        <SelectItem value="shipped">
+                                                            Shipped
+                                                        </SelectItem>
+                                                        <SelectItem value="delivered">
+                                                            Delivered
+                                                        </SelectItem>
+                                                        <SelectItem value="cancelled">
+                                                            Cancelled
+                                                        </SelectItem>
+                                                        <SelectItem value="refunded">
+                                                            Refunded
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
 
                                             <div>
-                                                <Label htmlFor="payment_status">Payment Status</Label>
-                                                <Select 
-                                                    value={formData.payment_status} 
-                                                    onValueChange={(value) => handleInputChange('payment_status', value)}
+                                                <Label htmlFor="payment_status">
+                                                    Payment Status
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        formData.payment_status
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        handleInputChange(
+                                                            'payment_status',
+                                                            value,
+                                                        )
+                                                    }
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="pending">Pending</SelectItem>
-                                                        <SelectItem value="paid">Paid</SelectItem>
-                                                        <SelectItem value="failed">Failed</SelectItem>
-                                                        <SelectItem value="refunded">Refunded</SelectItem>
-                                                        <SelectItem value="partially_refunded">Partially Refunded</SelectItem>
+                                                        <SelectItem value="pending">
+                                                            Pending
+                                                        </SelectItem>
+                                                        <SelectItem value="paid">
+                                                            Paid
+                                                        </SelectItem>
+                                                        <SelectItem value="failed">
+                                                            Failed
+                                                        </SelectItem>
+                                                        <SelectItem value="refunded">
+                                                            Refunded
+                                                        </SelectItem>
+                                                        <SelectItem value="partially_refunded">
+                                                            Partially Refunded
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             <div>
-                                                <Label htmlFor="payment_method">Payment Method</Label>
-                                                <Select 
-                                                    value={formData.payment_method || 'none'} 
-                                                    onValueChange={(value) => handleInputChange('payment_method', value === 'none' ? '' : value)}
+                                                <Label htmlFor="payment_method">
+                                                    Payment Method
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        formData.payment_method ||
+                                                        'none'
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        handleInputChange(
+                                                            'payment_method',
+                                                            value === 'none'
+                                                                ? ''
+                                                                : value,
+                                                        )
+                                                    }
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select payment method" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="none">Not specified</SelectItem>
-                                                        <SelectItem value="cash">Cash</SelectItem>
-                                                        <SelectItem value="card">Credit/Debit Card</SelectItem>
-                                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                                        <SelectItem value="digital_wallet">Digital Wallet</SelectItem>
-                                                        <SelectItem value="cod">Cash on Delivery</SelectItem>
+                                                        <SelectItem value="none">
+                                                            Not specified
+                                                        </SelectItem>
+                                                        <SelectItem value="cash">
+                                                            Cash
+                                                        </SelectItem>
+                                                        <SelectItem value="card">
+                                                            Credit/Debit Card
+                                                        </SelectItem>
+                                                        <SelectItem value="bank_transfer">
+                                                            Bank Transfer
+                                                        </SelectItem>
+                                                        <SelectItem value="digital_wallet">
+                                                            Digital Wallet
+                                                        </SelectItem>
+                                                        <SelectItem value="cod">
+                                                            Cash on Delivery
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
 
                                             <div>
-                                                <Label htmlFor="payment_reference">Payment Reference</Label>
+                                                <Label htmlFor="payment_reference">
+                                                    Payment Reference
+                                                </Label>
                                                 <Input
                                                     id="payment_reference"
-                                                    value={formData.payment_reference}
-                                                    onChange={(e) => handleInputChange('payment_reference', e.target.value)}
+                                                    value={
+                                                        formData.payment_reference
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            'payment_reference',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Payment reference number"
                                                 />
                                             </div>
@@ -333,28 +510,44 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <MapPin className="w-4 h-4 mr-2" />
+                                            <MapPin className="mr-2 h-4 w-4" />
                                             Addresses
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div>
-                                            <Label htmlFor="shipping_address">Shipping Address</Label>
+                                            <Label htmlFor="shipping_address">
+                                                Shipping Address
+                                            </Label>
                                             <Textarea
                                                 id="shipping_address"
-                                                value={formData.shipping_address}
-                                                onChange={(e) => handleInputChange('shipping_address', e.target.value)}
+                                                value={
+                                                    formData.shipping_address
+                                                }
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        'shipping_address',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter shipping address"
                                                 rows={3}
                                             />
                                         </div>
 
                                         <div>
-                                            <Label htmlFor="billing_address">Billing Address</Label>
+                                            <Label htmlFor="billing_address">
+                                                Billing Address
+                                            </Label>
                                             <Textarea
                                                 id="billing_address"
                                                 value={formData.billing_address}
-                                                onChange={(e) => handleInputChange('billing_address', e.target.value)}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        'billing_address',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter billing address (if different from shipping)"
                                                 rows={3}
                                             />
@@ -366,14 +559,19 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <FileText className="w-4 h-4 mr-2" />
+                                            <FileText className="mr-2 h-4 w-4" />
                                             Notes
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <Textarea
                                             value={formData.notes}
-                                            onChange={(e) => handleInputChange('notes', e.target.value)}
+                                            onChange={(e) =>
+                                                handleInputChange(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
                                             placeholder="Add any notes about this order"
                                             rows={4}
                                         />
@@ -387,23 +585,29 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <User className="w-4 h-4 mr-2" />
+                                            <User className="mr-2 h-4 w-4" />
                                             Customer Information
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div className="flex items-center text-sm">
-                                            <Mail className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-gray-900 dark:text-gray-100">{order.customer_email}</span>
+                                            <Mail className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {order.customer_email}
+                                            </span>
                                         </div>
                                         <div className="flex items-center text-sm">
-                                            <User className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-gray-900 dark:text-gray-100">{order.customer_name}</span>
+                                            <User className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {order.customer_name}
+                                            </span>
                                         </div>
                                         {order.customer_phone && (
                                             <div className="flex items-center text-sm">
-                                                <Phone className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-                                                <span className="text-gray-900 dark:text-gray-100">{order.customer_phone}</span>
+                                                <Phone className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <span className="text-gray-900 dark:text-gray-100">
+                                                    {order.customer_phone}
+                                                </span>
                                             </div>
                                         )}
                                     </CardContent>
@@ -413,32 +617,66 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <Package className="w-4 h-4 mr-2" />
+                                            <Package className="mr-2 h-4 w-4" />
                                             Order Summary
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.subtotal, currency.symbol)}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Subtotal:
+                                            </span>
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {formatCurrency(
+                                                    order.subtotal,
+                                                    currency.symbol,
+                                                )}
+                                            </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Tax:</span>
-                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.tax_amount, currency.symbol)}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Tax:
+                                            </span>
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {formatCurrency(
+                                                    order.tax_amount,
+                                                    currency.symbol,
+                                                )}
+                                            </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
-                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.shipping_fee, currency.symbol)}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Shipping:
+                                            </span>
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {formatCurrency(
+                                                    order.shipping_fee,
+                                                    currency.symbol,
+                                                )}
+                                            </span>
                                         </div>
                                         {order.discount_amount > 0 && (
                                             <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                                                 <span>Discount:</span>
-                                                <span>-{formatCurrency(order.discount_amount, currency.symbol)}</span>
+                                                <span>
+                                                    -
+                                                    {formatCurrency(
+                                                        order.discount_amount,
+                                                        currency.symbol,
+                                                    )}
+                                                </span>
                                             </div>
                                         )}
-                                        <div className="flex justify-between font-medium text-lg border-t border-gray-200 dark:border-gray-700 pt-2">
-                                            <span className="text-gray-900 dark:text-gray-100">Total:</span>
-                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.total_amount, currency.symbol)}</span>
+                                        <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-medium dark:border-gray-700">
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                Total:
+                                            </span>
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {formatCurrency(
+                                                    order.total_amount,
+                                                    currency.symbol,
+                                                )}
+                                            </span>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -452,54 +690,124 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead>Product</TableHead>
-                                                    <TableHead>Quantity</TableHead>
+                                                    <TableHead>
+                                                        Product
+                                                    </TableHead>
+                                                    <TableHead>
+                                                        Quantity
+                                                    </TableHead>
                                                     <TableHead>Price</TableHead>
-                                                    <TableHead>Status</TableHead>
+                                                    <TableHead>
+                                                        Status
+                                                    </TableHead>
                                                     <TableHead>Total</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {formData.order_items.map((item, index) => (
-                                                    <TableRow key={index}>
-                                                        <TableCell>
-                                                            <div className="font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
-                                                            {item.variant_id && item.attributes && (
-                                                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {Object.entries(item.attributes).map(([key, value]) => (
-                                                                            <Badge key={key} variant="secondary" className="text-xs">
-                                                                                {key}: {value}
-                                                                            </Badge>
-                                                                        ))}
-                                                                    </div>
+                                                {formData.order_items.map(
+                                                    (item, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>
+                                                                <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                                    {item.name}
                                                                 </div>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell className="text-gray-900 dark:text-gray-100">{item.quantity}</TableCell>
-                                                        <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price, currency.symbol)}</TableCell>
-                                                        <TableCell>
-                                                            <Select 
-                                                                value={item.status || 'pending'} 
-                                                                onValueChange={(value) => handleItemStatusChange(index, value)}
-                                                            >
-                                                                <SelectTrigger className="w-32">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="pending">Pending</SelectItem>
-                                                                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                                                                    <SelectItem value="processing">Processing</SelectItem>
-                                                                    <SelectItem value="shipped">Shipped</SelectItem>
-                                                                    <SelectItem value="delivered">Delivered</SelectItem>
-                                                                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                                                                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </TableCell>
-                                                        <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.quantity, currency.symbol)}</TableCell>
-                                                    </TableRow>
-                                                ))}
+                                                                {item.variant_id &&
+                                                                    item.attributes && (
+                                                                        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                            <div className="flex flex-wrap gap-1">
+                                                                                {Object.entries(
+                                                                                    item.attributes,
+                                                                                ).map(
+                                                                                    ([
+                                                                                        key,
+                                                                                        value,
+                                                                                    ]) => (
+                                                                                        <Badge
+                                                                                            key={
+                                                                                                key
+                                                                                            }
+                                                                                            variant="secondary"
+                                                                                            className="text-xs"
+                                                                                        >
+                                                                                            {
+                                                                                                key
+                                                                                            }
+
+                                                                                            :{' '}
+                                                                                            {
+                                                                                                value
+                                                                                            }
+                                                                                        </Badge>
+                                                                                    ),
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                            </TableCell>
+                                                            <TableCell className="text-gray-900 dark:text-gray-100">
+                                                                {item.quantity}
+                                                            </TableCell>
+                                                            <TableCell className="text-gray-900 dark:text-gray-100">
+                                                                {formatCurrency(
+                                                                    item.price,
+                                                                    currency.symbol,
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Select
+                                                                    value={
+                                                                        item.status ||
+                                                                        'pending'
+                                                                    }
+                                                                    onValueChange={(
+                                                                        value,
+                                                                    ) =>
+                                                                        handleItemStatusChange(
+                                                                            index,
+                                                                            value,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <SelectTrigger className="w-32">
+                                                                        <SelectValue />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="pending">
+                                                                            Pending
+                                                                        </SelectItem>
+                                                                        <SelectItem value="confirmed">
+                                                                            Confirmed
+                                                                        </SelectItem>
+                                                                        <SelectItem value="processing">
+                                                                            Processing
+                                                                        </SelectItem>
+                                                                        <SelectItem value="shipped">
+                                                                            Shipped
+                                                                        </SelectItem>
+                                                                        <SelectItem value="delivered">
+                                                                            Delivered
+                                                                        </SelectItem>
+                                                                        <SelectItem value="cancelled">
+                                                                            Cancelled
+                                                                        </SelectItem>
+                                                                        <SelectItem value="out_of_stock">
+                                                                            Out
+                                                                            of
+                                                                            Stock
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </TableCell>
+                                                            <TableCell className="text-gray-900 dark:text-gray-100">
+                                                                {formatCurrency(
+                                                                    item.price *
+                                                                        item.quantity,
+                                                                    currency.symbol,
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ),
+                                                )}
                                             </TableBody>
                                         </Table>
                                     </CardContent>
@@ -512,15 +820,23 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Order Status</label>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Order Status
+                                            </label>
                                             <div className="mt-1">
-                                                {getStatusBadge(order.order_status)}
+                                                {getStatusBadge(
+                                                    order.order_status,
+                                                )}
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Status</label>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Payment Status
+                                            </label>
                                             <div className="mt-1">
-                                                {getPaymentStatusBadge(order.payment_status)}
+                                                {getPaymentStatusBadge(
+                                                    order.payment_status,
+                                                )}
                                             </div>
                                         </div>
                                     </CardContent>
@@ -529,14 +845,14 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                         </div>
 
                         {/* Form Actions */}
-                        <div className="flex justify-end space-x-4 mt-6">
+                        <div className="mt-6 flex justify-end space-x-4">
                             <Link href={route('product-orders.show', order.id)}>
                                 <Button variant="outline" type="button">
                                     Cancel
                                 </Button>
                             </Link>
                             <Button type="submit" disabled={processing}>
-                                <Save className="w-4 h-4 mr-2" />
+                                <Save className="mr-2 h-4 w-4" />
                                 {processing ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </div>
@@ -545,4 +861,4 @@ export default function Edit({ auth, order, currency, errors }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

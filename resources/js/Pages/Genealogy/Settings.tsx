@@ -1,23 +1,18 @@
-import React, { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/Components/ui/card";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/Components/ui/tabs";
-import { Label } from "@/Components/ui/label";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
+} from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface ElectedOfficial {
@@ -74,19 +69,23 @@ export default function Settings({ settings, auth }: Props) {
             website: settings.organization_info?.website || '',
             address: settings.organization_info?.address || '',
             banner: settings.organization_info?.banner || '',
-            logo: settings.organization_info?.logo || ''
+            logo: settings.organization_info?.logo || '',
         },
         auth: {
             username: settings.auth?.username || '',
-            password: settings.auth?.password || ''
+            password: settings.auth?.password || '',
         },
-        elected_officials: settings.elected_officials || []
+        elected_officials: settings.elected_officials || [],
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
@@ -95,17 +94,23 @@ export default function Settings({ settings, auth }: Props) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            console.log('Submitting form data:', JSON.stringify(formData, null, 2));
+            console.log(
+                'Submitting form data:',
+                JSON.stringify(formData, null, 2),
+            );
             const response = await axios.post('/genealogy/settings', formData);
             console.log('Response data:', response.data);
-            toast.success(response.data.message || 'Settings updated successfully');
-            
+            toast.success(
+                response.data.message || 'Settings updated successfully',
+            );
+
             // Update the form data with the returned data if available
             if (response.data.data) {
                 setFormData(response.data.data);
             }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.error || 'Failed to update settings';
+            const errorMessage =
+                error.response?.data?.error || 'Failed to update settings';
             toast.error(errorMessage);
             console.error('Settings update error:', error);
             console.error('Error response:', error.response?.data);
@@ -116,7 +121,7 @@ export default function Settings({ settings, auth }: Props) {
 
     const updateFormData = (path: string, value: any) => {
         const keys = path.split('.');
-        setFormData(prev => {
+        setFormData((prev) => {
             const newData = { ...prev };
             let current: any = newData;
             for (let i = 0; i < keys.length - 1; i++) {
@@ -130,7 +135,7 @@ export default function Settings({ settings, auth }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl leading-tight">
+                <h2 className="text-xl font-semibold leading-tight">
                     Organization Settings
                 </h2>
             }
@@ -138,7 +143,7 @@ export default function Settings({ settings, auth }: Props) {
             <Head title="Organization Settings" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <Card>
                         <CardHeader>
                             <CardTitle>Organization Settings</CardTitle>
@@ -148,11 +153,20 @@ export default function Settings({ settings, auth }: Props) {
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                <Tabs defaultValue="organization" className="space-y-4">
+                                <Tabs
+                                    defaultValue="organization"
+                                    className="space-y-4"
+                                >
                                     <TabsList>
-                                        <TabsTrigger value="organization">Organization Info</TabsTrigger>
-                                        <TabsTrigger value="auth">Authentication</TabsTrigger>
-                                        <TabsTrigger value="officials">Elected Officials</TabsTrigger>
+                                        <TabsTrigger value="organization">
+                                            Organization Info
+                                        </TabsTrigger>
+                                        <TabsTrigger value="auth">
+                                            Authentication
+                                        </TabsTrigger>
+                                        <TabsTrigger value="officials">
+                                            Elected Officials
+                                        </TabsTrigger>
                                     </TabsList>
 
                                     <TabsContent value="organization">
@@ -160,8 +174,17 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-2">
                                                 <Label>Family Name</Label>
                                                 <Input
-                                                    value={formData.organization_info.family_name}
-                                                    onChange={(e) => updateFormData('organization_info.family_name', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .family_name
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.family_name',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter family name"
                                                 />
                                             </div>
@@ -170,8 +193,17 @@ export default function Settings({ settings, auth }: Props) {
                                                 <Label>Email</Label>
                                                 <Input
                                                     type="email"
-                                                    value={formData.organization_info.email}
-                                                    onChange={(e) => updateFormData('organization_info.email', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .email
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.email',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter email address"
                                                 />
                                             </div>
@@ -179,8 +211,17 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-2">
                                                 <Label>Contact Number</Label>
                                                 <Input
-                                                    value={formData.organization_info.contact_number}
-                                                    onChange={(e) => updateFormData('organization_info.contact_number', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .contact_number
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.contact_number',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter contact number"
                                                 />
                                             </div>
@@ -188,8 +229,17 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-2">
                                                 <Label>Website</Label>
                                                 <Input
-                                                    value={formData.organization_info.website}
-                                                    onChange={(e) => updateFormData('organization_info.website', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .website
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.website',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter website URL"
                                                 />
                                             </div>
@@ -197,8 +247,17 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-2">
                                                 <Label>Address</Label>
                                                 <Input
-                                                    value={formData.organization_info.address}
-                                                    onChange={(e) => updateFormData('organization_info.address', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .address
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.address',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter organization address"
                                                 />
                                             </div>
@@ -207,8 +266,17 @@ export default function Settings({ settings, auth }: Props) {
                                                 <Label>Banner Image URL</Label>
                                                 <Input
                                                     type="url"
-                                                    value={formData.organization_info.banner}
-                                                    onChange={(e) => updateFormData('organization_info.banner', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .banner
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.banner',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter banner image URL"
                                                 />
                                             </div>
@@ -217,8 +285,17 @@ export default function Settings({ settings, auth }: Props) {
                                                 <Label>Logo URL</Label>
                                                 <Input
                                                     type="url"
-                                                    value={formData.organization_info.logo}
-                                                    onChange={(e) => updateFormData('organization_info.logo', e.target.value)}
+                                                    value={
+                                                        formData
+                                                            .organization_info
+                                                            .logo
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'organization_info.logo',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter logo image URL"
                                                 />
                                             </div>
@@ -230,8 +307,15 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-2">
                                                 <Label>Username</Label>
                                                 <Input
-                                                    value={formData.auth.username}
-                                                    onChange={(e) => updateFormData('auth.username', e.target.value)}
+                                                    value={
+                                                        formData.auth.username
+                                                    }
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'auth.username',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter username"
                                                 />
                                             </div>
@@ -240,7 +324,12 @@ export default function Settings({ settings, auth }: Props) {
                                                 <Label>Password</Label>
                                                 <Input
                                                     type="password"
-                                                    onChange={(e) => updateFormData('auth.password', e.target.value)}
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'auth.password',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter new password"
                                                 />
                                             </div>
@@ -249,120 +338,246 @@ export default function Settings({ settings, auth }: Props) {
 
                                     <TabsContent value="officials">
                                         <div className="space-y-6">
-                                            {formData.elected_officials.map((group, groupIndex) => (
-                                                <div key={groupIndex} className="space-y-4 p-4 border rounded-lg">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex-1 space-y-2">
-                                                            <Label>Group Name</Label>
-                                                            <Input
-                                                                value={group.name}
-                                                                onChange={(e) => {
-                                                                    const newGroups = [...formData.elected_officials];
-                                                                    newGroups[groupIndex].name = e.target.value;
-                                                                    updateFormData('elected_officials', newGroups);
-                                                                }}
-                                                                placeholder="Enter group name"
-                                                            />
+                                            {formData.elected_officials.map(
+                                                (group, groupIndex) => (
+                                                    <div
+                                                        key={groupIndex}
+                                                        className="space-y-4 rounded-lg border p-4"
+                                                    >
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex-1 space-y-2">
+                                                                <Label>
+                                                                    Group Name
+                                                                </Label>
+                                                                <Input
+                                                                    value={
+                                                                        group.name
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) => {
+                                                                        const newGroups =
+                                                                            [
+                                                                                ...formData.elected_officials,
+                                                                            ];
+                                                                        newGroups[
+                                                                            groupIndex
+                                                                        ].name =
+                                                                            e.target.value;
+                                                                        updateFormData(
+                                                                            'elected_officials',
+                                                                            newGroups,
+                                                                        );
+                                                                    }}
+                                                                    placeholder="Enter group name"
+                                                                />
+                                                            </div>
+                                                            {canEdit && (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="destructive"
+                                                                    className="ml-4"
+                                                                    onClick={() => {
+                                                                        const newGroups =
+                                                                            formData.elected_officials.filter(
+                                                                                (
+                                                                                    _,
+                                                                                    index,
+                                                                                ) =>
+                                                                                    index !==
+                                                                                    groupIndex,
+                                                                            );
+                                                                        updateFormData(
+                                                                            'elected_officials',
+                                                                            newGroups,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Remove Group
+                                                                </Button>
+                                                            )}
                                                         </div>
-                                                        {canEdit && (
+
+                                                        <div className="space-y-4">
+                                                            {group.officials.map(
+                                                                (
+                                                                    official,
+                                                                    officialIndex,
+                                                                ) => (
+                                                                    <div
+                                                                        key={
+                                                                            officialIndex
+                                                                        }
+                                                                        className="flex items-end gap-4"
+                                                                    >
+                                                                        <div className="flex-1 space-y-2">
+                                                                            <Label>
+                                                                                Name
+                                                                            </Label>
+                                                                            <Input
+                                                                                value={
+                                                                                    official.name
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    const newGroups =
+                                                                                        [
+                                                                                            ...formData.elected_officials,
+                                                                                        ];
+                                                                                    newGroups[
+                                                                                        groupIndex
+                                                                                    ].officials[
+                                                                                        officialIndex
+                                                                                    ].name =
+                                                                                        e.target.value;
+                                                                                    updateFormData(
+                                                                                        'elected_officials',
+                                                                                        newGroups,
+                                                                                    );
+                                                                                }}
+                                                                                placeholder="Official's name"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="flex-1 space-y-2">
+                                                                            <Label>
+                                                                                Position
+                                                                            </Label>
+                                                                            <Input
+                                                                                value={
+                                                                                    official.position
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    const newGroups =
+                                                                                        [
+                                                                                            ...formData.elected_officials,
+                                                                                        ];
+                                                                                    newGroups[
+                                                                                        groupIndex
+                                                                                    ].officials[
+                                                                                        officialIndex
+                                                                                    ].position =
+                                                                                        e.target.value;
+                                                                                    updateFormData(
+                                                                                        'elected_officials',
+                                                                                        newGroups,
+                                                                                    );
+                                                                                }}
+                                                                                placeholder="Official's position"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="flex-1 space-y-2">
+                                                                            <Label>
+                                                                                Profile
+                                                                                URL
+                                                                            </Label>
+                                                                            <Input
+                                                                                type="url"
+                                                                                value={
+                                                                                    official.profile_url
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    const newGroups =
+                                                                                        [
+                                                                                            ...formData.elected_officials,
+                                                                                        ];
+                                                                                    newGroups[
+                                                                                        groupIndex
+                                                                                    ].officials[
+                                                                                        officialIndex
+                                                                                    ].profile_url =
+                                                                                        e.target.value;
+                                                                                    updateFormData(
+                                                                                        'elected_officials',
+                                                                                        newGroups,
+                                                                                    );
+                                                                                }}
+                                                                                placeholder="Member's profile URL"
+                                                                            />
+                                                                        </div>
+                                                                        {canEdit && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="destructive"
+                                                                                onClick={() => {
+                                                                                    const newGroups =
+                                                                                        [
+                                                                                            ...formData.elected_officials,
+                                                                                        ];
+                                                                                    newGroups[
+                                                                                        groupIndex
+                                                                                    ].officials =
+                                                                                        group.officials.filter(
+                                                                                            (
+                                                                                                _,
+                                                                                                index,
+                                                                                            ) =>
+                                                                                                index !==
+                                                                                                officialIndex,
+                                                                                        );
+                                                                                    updateFormData(
+                                                                                        'elected_officials',
+                                                                                        newGroups,
+                                                                                    );
+                                                                                }}
+                                                                            >
+                                                                                Remove
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                ),
+                                                            )}
+
                                                             <Button
                                                                 type="button"
-                                                                variant="destructive"
-                                                                className="ml-4"
+                                                                variant="outline"
                                                                 onClick={() => {
-                                                                    const newGroups = formData.elected_officials.filter((_, index) => index !== groupIndex);
-                                                                    updateFormData('elected_officials', newGroups);
+                                                                    const newGroups =
+                                                                        [
+                                                                            ...formData.elected_officials,
+                                                                        ];
+                                                                    newGroups[
+                                                                        groupIndex
+                                                                    ].officials.push(
+                                                                        {
+                                                                            name: '',
+                                                                            position:
+                                                                                '',
+                                                                            profile_url:
+                                                                                '',
+                                                                        },
+                                                                    );
+                                                                    updateFormData(
+                                                                        'elected_officials',
+                                                                        newGroups,
+                                                                    );
                                                                 }}
                                                             >
-                                                                Remove Group
+                                                                Add Official
                                                             </Button>
-                                                        )}
+                                                        </div>
                                                     </div>
+                                                ),
+                                            )}
 
-                                                    <div className="space-y-4">
-                                                        {group.officials.map((official, officialIndex) => (
-                                                            <div key={officialIndex} className="flex items-end gap-4">
-                                                                <div className="flex-1 space-y-2">
-                                                                    <Label>Name</Label>
-                                                                    <Input
-                                                                        value={official.name}
-                                                                        onChange={(e) => {
-                                                                            const newGroups = [...formData.elected_officials];
-                                                                            newGroups[groupIndex].officials[officialIndex].name = e.target.value;
-                                                                            updateFormData('elected_officials', newGroups);
-                                                                        }}
-                                                                        placeholder="Official's name"
-                                                                    />
-                                                                </div>
-                                                                <div className="flex-1 space-y-2">
-                                                                    <Label>Position</Label>
-                                                                    <Input
-                                                                        value={official.position}
-                                                                        onChange={(e) => {
-                                                                            const newGroups = [...formData.elected_officials];
-                                                                            newGroups[groupIndex].officials[officialIndex].position = e.target.value;
-                                                                            updateFormData('elected_officials', newGroups);
-                                                                        }}
-                                                                        placeholder="Official's position"
-                                                                    />
-                                                                </div>
-                                                                <div className="flex-1 space-y-2">
-                                                                    <Label>Profile URL</Label>
-                                                                    <Input
-                                                                        type="url"
-                                                                        value={official.profile_url}
-                                                                        onChange={(e) => {
-                                                                            const newGroups = [...formData.elected_officials];
-                                                                            newGroups[groupIndex].officials[officialIndex].profile_url = e.target.value;
-                                                                            updateFormData('elected_officials', newGroups);
-                                                                        }}
-                                                                        placeholder="Member's profile URL"
-                                                                    />
-                                                                </div>
-                                                                {canEdit && (
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="destructive"
-                                                                        onClick={() => {
-                                                                            const newGroups = [...formData.elected_officials];
-                                                                            newGroups[groupIndex].officials = group.officials.filter((_, index) => index !== officialIndex);
-                                                                            updateFormData('elected_officials', newGroups);
-                                                                        }}
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                const newGroups = [...formData.elected_officials];
-                                                                newGroups[groupIndex].officials.push({ 
-                                                                    name: '', 
-                                                                    position: '',
-                                                                    profile_url: ''
-                                                                });
-                                                                updateFormData('elected_officials', newGroups);
-                                                            }}
-                                                        >
-                                                            Add Official
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            
                                             <Button
                                                 type="button"
                                                 onClick={() => {
-                                                    const newGroups = [...formData.elected_officials];
+                                                    const newGroups = [
+                                                        ...formData.elected_officials,
+                                                    ];
                                                     newGroups.push({
                                                         name: '',
-                                                        officials: []
+                                                        officials: [],
                                                     });
-                                                    updateFormData('elected_officials', newGroups);
+                                                    updateFormData(
+                                                        'elected_officials',
+                                                        newGroups,
+                                                    );
                                                 }}
                                             >
                                                 Add New Group
@@ -394,4 +609,4 @@ export default function Settings({ settings, auth }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

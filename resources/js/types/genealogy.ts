@@ -44,4 +44,4 @@ export interface FamilyTreeProps {
         };
     };
     familyMembers: FamilyMember[];
-} 
+}

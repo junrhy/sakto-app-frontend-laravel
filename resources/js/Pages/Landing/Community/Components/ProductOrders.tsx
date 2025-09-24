@@ -1,1558 +1,2144 @@
-import React, { useState, useEffect } from 'react';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Separator } from '@/Components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
-  Calendar,
-  Package,
-  Receipt,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  RefreshCw,
-  ShoppingBag,
-  AlertCircle,
-  FileText,
-  CreditCard,
-  Download,
-  FileSpreadsheet,
-  X,
-  Filter,
-  ChevronDown,
-  ChevronUp,
-  Search,
-  TrendingUp,
-  DollarSign,
-  BarChart3,
-  Eye,
-  EyeOff,
-  Grid3X3,
-  List,
-  SortAsc,
-  SortDesc,
-  Clock,
-  Save,
-  Loader2
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { Separator } from '@/Components/ui/separator';
+import {
+    AlertCircle,
+    Calendar,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Download,
+    FileSpreadsheet,
+    FileText,
+    Filter,
+    Grid3X3,
+    List,
+    Loader2,
+    Mail,
+    MapPin,
+    Package,
+    Phone,
+    RefreshCw,
+    Save,
+    Search,
+    ShoppingBag,
+    SortAsc,
+    SortDesc,
+    TrendingUp,
+    User,
+    X,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface OrderItem {
-  product_id: number;
-  variant_id?: number;
-  attributes?: any;
-  name: string;
-  quantity: number;
-  price: number;
-  status: string;
-  is_target_product: boolean;
-  shipping_fee?: number;
+    product_id: number;
+    variant_id?: number;
+    attributes?: any;
+    name: string;
+    quantity: number;
+    price: number;
+    status: string;
+    is_target_product: boolean;
+    shipping_fee?: number;
 }
 
 interface ProductOrder {
-  id: number;
-  order_number: string;
-  client_identifier: string;
-  contact_id: number;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string;
-  shipping_address: string;
-  billing_address: string;
-  order_items: OrderItem[];
-  subtotal: number;
-  tax_amount: number;
-  shipping_fee: number;
-  discount_amount: number;
-  total_amount: number;
-  order_status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
-  payment_method: string;
-  payment_reference: string;
-  notes: string;
-  paid_at: string | null;
-  shipped_at: string | null;
-  delivered_at: string | null;
-  created_at: string;
-  updated_at: string;
+    id: number;
+    order_number: string;
+    client_identifier: string;
+    contact_id: number;
+    customer_name: string;
+    customer_email: string;
+    customer_phone: string;
+    shipping_address: string;
+    billing_address: string;
+    order_items: OrderItem[];
+    subtotal: number;
+    tax_amount: number;
+    shipping_fee: number;
+    discount_amount: number;
+    total_amount: number;
+    order_status:
+        | 'pending'
+        | 'confirmed'
+        | 'processing'
+        | 'shipped'
+        | 'delivered'
+        | 'cancelled'
+        | 'refunded';
+    payment_status:
+        | 'pending'
+        | 'paid'
+        | 'failed'
+        | 'refunded'
+        | 'partially_refunded';
+    payment_method: string;
+    payment_reference: string;
+    notes: string;
+    paid_at: string | null;
+    shipped_at: string | null;
+    delivered_at: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
 interface ProductOrdersProps {
-  member: {
-    id: number;
-    identifier?: string;
-  };
-  appCurrency?: { code: string; symbol: string } | null;
-  contactId?: number;
-  productId: number;
+    member: {
+        id: number;
+        identifier?: string;
+    };
+    appCurrency?: { code: string; symbol: string } | null;
+    contactId?: number;
+    productId: number;
 }
 
-export default function ProductOrders({ member, appCurrency, contactId, productId }: ProductOrdersProps) {
-  const [orders, setOrders] = useState<ProductOrder[]>([]);
-  const [allOrders, setAllOrders] = useState<ProductOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [exporting, setExporting] = useState(false);
-  
-  // Filter states
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('pending');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
-  
-  // Search state
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  
-  // Expanded cards state
-  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
-  
-  // View mode state
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+export default function ProductOrders({
+    member,
+    appCurrency,
+    contactId,
+    productId,
+}: ProductOrdersProps) {
+    const [orders, setOrders] = useState<ProductOrder[]>([]);
+    const [allOrders, setAllOrders] = useState<ProductOrder[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalOrders, setTotalOrders] = useState(0);
+    const [exporting, setExporting] = useState(false);
 
-  // Order item status update states
-  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
-  const [itemStatusUpdates, setItemStatusUpdates] = useState<Record<string, string>>({});
+    // Filter states
+    const [orderStatusFilter, setOrderStatusFilter] =
+        useState<string>('pending');
+    const [paymentStatusFilter, setPaymentStatusFilter] =
+        useState<string>('all');
 
-  // Format price with currency
-  const formatPrice = (price: number | string | null | undefined): string => {
-    if (price === null || price === undefined) {
-      const symbol = appCurrency?.symbol || '$';
-      return `${symbol}0.00`;
-    }
-    const numericPrice = typeof price === 'string' ? parseFloat(price) || 0 : price;
-    const symbol = appCurrency?.symbol || '$';
-    return `${symbol}${numericPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
+    // Search state
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Get status color and label
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return {
-          color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-          label: 'Pending',
-          icon: '⏳'
-        };
-      case 'confirmed':
-        return {
-          color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-          label: 'Confirmed',
-          icon: '✅'
-        };
-      case 'processing':
-        return {
-          color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-          label: 'Processing',
-          icon: '⚙️'
-        };
-      case 'shipped':
-        return {
-          color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-          label: 'Shipped',
-          icon: '📦'
-        };
-      case 'delivered':
-        return {
-          color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
-          label: 'Delivered',
-          icon: '🎉'
-        };
-      case 'cancelled':
-        return {
-          color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
-          label: 'Cancelled',
-          icon: '❌'
-        };
-      case 'refunded':
-        return {
-          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
-          label: 'Refunded',
-          icon: '💰'
-        };
-      default:
-        return {
-          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
-          label: status,
-          icon: '❓'
-        };
-    }
-  };
+    // Expanded cards state
+    const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
 
-  // Get order item status color and label
-  const getOrderItemStatusInfo = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return {
-          color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-          label: 'Pending',
-          icon: '⏳'
-        };
-      case 'confirmed':
-        return {
-          color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-          label: 'Confirmed',
-          icon: '✅'
-        };
-      case 'processing':
-        return {
-          color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-          label: 'Processing',
-          icon: '⚙️'
-        };
-      case 'shipped':
-        return {
-          color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-          label: 'Shipped',
-          icon: '📦'
-        };
-      case 'delivered':
-        return {
-          color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
-          label: 'Delivered',
-          icon: '🎉'
-        };
-      case 'cancelled':
-        return {
-          color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
-          label: 'Cancelled',
-          icon: '❌'
-        };
-      case 'refunded':
-        return {
-          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
-          label: 'Refunded',
-          icon: '↩️'
-        };
-      default:
-        return {
-          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
-          label: status || 'Unknown',
-          icon: '❓'
-        };
-    }
-  };
+    // View mode state
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+    const [showFilters, setShowFilters] = useState(false);
+    const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Get payment status color and label
-  const getPaymentStatusInfo = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return {
-          color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-          label: 'Pending',
-          icon: '💳'
-        };
-      case 'paid':
-        return {
-          color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
-          label: 'Paid',
-          icon: '✅'
-        };
-      case 'failed':
-        return {
-          color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
-          label: 'Failed',
-          icon: '❌'
-        };
-      case 'refunded':
-        return {
-          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
-          label: 'Refunded',
-          icon: '💰'
-        };
-      case 'partially_refunded':
-        return {
-          color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800',
-          label: 'Partial Refund',
-          icon: '💰'
-        };
-      default:
-        return {
-          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
-          label: status,
-          icon: '❓'
-        };
-    }
-  };
+    // Order item status update states
+    const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+    const [itemStatusUpdates, setItemStatusUpdates] = useState<
+        Record<string, string>
+    >({});
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Format payment method
-  const formatPaymentMethod = (method: string | null | undefined): string => {
-    if (!method) return 'Not specified';
-    
-    switch (method.toLowerCase()) {
-      case 'cash':
-        return 'Cash';
-      case 'card':
-        return 'Credit/Debit Card';
-      case 'bank_transfer':
-        return 'Bank Transfer';
-      case 'digital_wallet':
-        return 'Digital Wallet';
-      case 'cod':
-        return 'Cash on Delivery';
-      default:
-        return method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, ' ');
-    }
-  };
-
-  // Get target product items from order
-  const getTargetProductItems = (order: ProductOrder) => {
-    return order.order_items.filter(item => item.is_target_product);
-  };
-
-  // Get filtered orders for export
-  const getFilteredOrdersForExport = () => {
-    let filteredOrders = [...allOrders];
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filteredOrders = filteredOrders.filter(order => {
-        return (
-          order.order_number.toLowerCase().includes(query) ||
-          order.customer_name.toLowerCase().includes(query) ||
-          order.customer_email.toLowerCase().includes(query) ||
-          (order.customer_phone && order.customer_phone.toLowerCase().includes(query)) ||
-          (order.shipping_address && order.shipping_address.toLowerCase().includes(query)) ||
-          (order.billing_address && order.billing_address.toLowerCase().includes(query)) ||
-          (order.payment_method && order.payment_method.toLowerCase().includes(query)) ||
-          (order.payment_reference && order.payment_reference.toLowerCase().includes(query)) ||
-          (order.notes && order.notes.toLowerCase().includes(query))
-        );
-      });
-    }
-
-    // Apply order status filter
-    if (orderStatusFilter !== 'all') {
-      filteredOrders = filteredOrders.filter(order => order.order_status === orderStatusFilter);
-    }
-
-    // Apply payment status filter
-    if (paymentStatusFilter !== 'all') {
-      filteredOrders = filteredOrders.filter(order => order.payment_status === paymentStatusFilter);
-    }
-
-    return filteredOrders;
-  };
-
-  // Calculate summary statistics
-  const getSummaryStats = () => {
-    const filteredOrders = getFilteredOrdersForExport();
-    const totalRevenue = filteredOrders.reduce((sum, order) => {
-      const targetItems = getTargetProductItems(order);
-      const targetRevenue = targetItems.reduce((itemSum, item) => itemSum + (item.quantity * item.price), 0);
-      return sum + targetRevenue;
-    }, 0);
-    
-    const totalQuantity = filteredOrders.reduce((sum, order) => {
-      const targetItems = getTargetProductItems(order);
-      return sum + targetItems.reduce((itemSum, item) => itemSum + item.quantity, 0);
-    }, 0);
-    
-    const paidOrders = filteredOrders.filter(order => order.payment_status === 'paid').length;
-    const pendingOrders = filteredOrders.filter(order => order.payment_status === 'pending').length;
-    
-    return {
-      totalRevenue,
-      totalQuantity,
-      paidOrders,
-      pendingOrders,
-      totalOrders: filteredOrders.length
+    // Format price with currency
+    const formatPrice = (price: number | string | null | undefined): string => {
+        if (price === null || price === undefined) {
+            const symbol = appCurrency?.symbol || '$';
+            return `${symbol}0.00`;
+        }
+        const numericPrice =
+            typeof price === 'string' ? parseFloat(price) || 0 : price;
+        const symbol = appCurrency?.symbol || '$';
+        return `${symbol}${numericPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
-  };
 
-  // Sort orders
-  const getSortedOrders = (ordersToSort: ProductOrder[]) => {
-    return [...ordersToSort].sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case 'date':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          break;
-        case 'amount':
-          const aRevenue = getTargetProductItems(a).reduce((sum, item) => sum + (item.quantity * item.price), 0);
-          const bRevenue = getTargetProductItems(b).reduce((sum, item) => sum + (item.quantity * item.price), 0);
-          comparison = aRevenue - bRevenue;
-          break;
-        case 'status':
-          comparison = a.order_status.localeCompare(b.order_status);
-          break;
-      }
-      
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  // Export to CSV
-  const exportToCSV = async () => {
-    setExporting(true);
-    try {
-      const allOrdersData = getFilteredOrdersForExport();
-      console.log('Orders data for CSV export:', allOrdersData);
-      
-      if (allOrdersData.length === 0) {
-        setError('No orders to export');
-        return;
-      }
-
-      const currencySymbol = appCurrency?.symbol || '$';
-      
-      // CSV Headers
-      const headers = [
-        'Order Number',
-        'Order Date',
-        'Customer Name',
-        'Customer Email',
-        'Customer Phone',
-        'Shipping Address',
-        'Billing Address',
-        'Order Status',
-        'Payment Status',
-        'Payment Method',
-        'Payment Reference',
-        'Product Quantity',
-        'Product Price',
-        'Product Revenue',
-        'Product Shipping Fee',
-        'Order Subtotal',
-        'Tax Amount',
-        'Shipping Fee',
-        'Discount Amount',
-        'Order Total',
-        'Paid At',
-        'Shipped At',
-        'Delivered At',
-        'Notes'
-      ];
-
-      // Helper function to safely format numbers
-      const safeNumberFormat = (value: number | null | undefined): string => {
-        if (value === null || value === undefined || isNaN(value)) {
-          return `${currencySymbol}0.00`;
+    // Get status color and label
+    const getStatusInfo = (status: string) => {
+        switch (status) {
+            case 'pending':
+                return {
+                    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+                    label: 'Pending',
+                    icon: '⏳',
+                };
+            case 'confirmed':
+                return {
+                    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                    label: 'Confirmed',
+                    icon: '✅',
+                };
+            case 'processing':
+                return {
+                    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+                    label: 'Processing',
+                    icon: '⚙️',
+                };
+            case 'shipped':
+                return {
+                    color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+                    label: 'Shipped',
+                    icon: '📦',
+                };
+            case 'delivered':
+                return {
+                    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+                    label: 'Delivered',
+                    icon: '🎉',
+                };
+            case 'cancelled':
+                return {
+                    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+                    label: 'Cancelled',
+                    icon: '❌',
+                };
+            case 'refunded':
+                return {
+                    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                    label: 'Refunded',
+                    icon: '💰',
+                };
+            default:
+                return {
+                    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                    label: status,
+                    icon: '❓',
+                };
         }
-        return `${currencySymbol}${Number(value).toFixed(2)}`;
-      };
+    };
 
-      // Helper function to escape CSV values
-      const escapeCSVValue = (value: any): string => {
-        if (value === null || value === undefined) {
-          return '';
+    // Get order item status color and label
+    const getOrderItemStatusInfo = (status: string) => {
+        switch (status) {
+            case 'pending':
+                return {
+                    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+                    label: 'Pending',
+                    icon: '⏳',
+                };
+            case 'confirmed':
+                return {
+                    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                    label: 'Confirmed',
+                    icon: '✅',
+                };
+            case 'processing':
+                return {
+                    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+                    label: 'Processing',
+                    icon: '⚙️',
+                };
+            case 'shipped':
+                return {
+                    color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+                    label: 'Shipped',
+                    icon: '📦',
+                };
+            case 'delivered':
+                return {
+                    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+                    label: 'Delivered',
+                    icon: '🎉',
+                };
+            case 'cancelled':
+                return {
+                    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+                    label: 'Cancelled',
+                    icon: '❌',
+                };
+            case 'refunded':
+                return {
+                    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                    label: 'Refunded',
+                    icon: '↩️',
+                };
+            default:
+                return {
+                    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                    label: status || 'Unknown',
+                    icon: '❓',
+                };
         }
-        const stringValue = String(value);
-        // Escape quotes and wrap in quotes if contains comma, quote, or newline
-        const escaped = stringValue.replace(/"/g, '""');
-        if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n') || escaped.includes('\r')) {
-          return `"${escaped}"`;
+    };
+
+    // Get payment status color and label
+    const getPaymentStatusInfo = (status: string) => {
+        switch (status) {
+            case 'pending':
+                return {
+                    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+                    label: 'Pending',
+                    icon: '💳',
+                };
+            case 'paid':
+                return {
+                    color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+                    label: 'Paid',
+                    icon: '✅',
+                };
+            case 'failed':
+                return {
+                    color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+                    label: 'Failed',
+                    icon: '❌',
+                };
+            case 'refunded':
+                return {
+                    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                    label: 'Refunded',
+                    icon: '💰',
+                };
+            case 'partially_refunded':
+                return {
+                    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+                    label: 'Partial Refund',
+                    icon: '💰',
+                };
+            default:
+                return {
+                    color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+                    label: status,
+                    icon: '❓',
+                };
         }
-        return escaped;
-      };
+    };
 
-      // CSV Data
-      const csvData = allOrdersData.map((order: ProductOrder) => {
-        try {
-          const targetItems = getTargetProductItems(order);
-          const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
-          const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-          const targetPrice = targetItems[0]?.price || 0;
-          const targetShippingFee = targetItems[0]?.shipping_fee || 0;
-
-          const row = [
-            escapeCSVValue(order.order_number),
-            escapeCSVValue(formatDate(order.created_at)),
-            escapeCSVValue(order.customer_name),
-            escapeCSVValue(order.customer_email),
-            escapeCSVValue(order.customer_phone || ''),
-            escapeCSVValue(order.shipping_address || ''),
-            escapeCSVValue(order.billing_address || ''),
-            escapeCSVValue(getStatusInfo(order.order_status).label),
-            escapeCSVValue(getPaymentStatusInfo(order.payment_status).label),
-            escapeCSVValue(formatPaymentMethod(order.payment_method)),
-            escapeCSVValue(order.payment_reference || ''),
-            escapeCSVValue(targetQuantity),
-            escapeCSVValue(safeNumberFormat(targetPrice)),
-            escapeCSVValue(safeNumberFormat(targetRevenue)),
-            escapeCSVValue(safeNumberFormat(targetShippingFee)),
-            escapeCSVValue(safeNumberFormat(order.subtotal)),
-            escapeCSVValue(safeNumberFormat(order.tax_amount)),
-            escapeCSVValue(safeNumberFormat(order.shipping_fee)),
-            escapeCSVValue(safeNumberFormat(order.discount_amount)),
-            escapeCSVValue(safeNumberFormat(order.total_amount)),
-            escapeCSVValue(order.paid_at ? formatDate(order.paid_at) : ''),
-            escapeCSVValue(order.shipped_at ? formatDate(order.shipped_at) : ''),
-            escapeCSVValue(order.delivered_at ? formatDate(order.delivered_at) : ''),
-            escapeCSVValue(order.notes || '')
-          ];
-          
-          console.log('CSV row for order', order.order_number, ':', row);
-          return row;
-        } catch (rowError) {
-          console.error('Error processing order for CSV:', order.order_number, rowError);
-          throw rowError;
-        }
-      });
-
-      // Create CSV content
-      const csvContent = [
-        headers.join(','),
-        ...csvData.map((row: any[]) => row.join(','))
-      ].join('\n');
-
-      // Add BOM for proper UTF-8 encoding in Excel
-      const BOM = '\uFEFF';
-      const csvWithBOM = BOM + csvContent;
-
-      // Download file
-      const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `product-orders-${productId}-${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) ? ' (filtered)' : '';
-      setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to CSV${filterText}`);
-    } catch (err) {
-      console.error('CSV Export Error:', err);
-      setError(`Failed to export orders to CSV: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  // Export to Excel (XLSX)
-  const exportToExcel = async () => {
-    setExporting(true);
-    try {
-      const allOrdersData = getFilteredOrdersForExport();
-      if (allOrdersData.length === 0) {
-        setError('No orders to export');
-        return;
-      }
-
-      // Check if xlsx library is available
-      try {
-        const XLSX = await import('xlsx');
-        const currencySymbol = appCurrency?.symbol || '$';
-        
-        // Prepare data for Excel
-        const excelData = allOrdersData.map((order: ProductOrder) => {
-          const targetItems = getTargetProductItems(order);
-          const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
-          const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-          const targetPrice = targetItems[0]?.price || 0;
-          const targetShippingFee = targetItems[0]?.shipping_fee || 0;
-
-          return {
-            'Order Number': order.order_number,
-            'Order Date': formatDate(order.created_at),
-            'Customer Name': order.customer_name,
-            'Customer Email': order.customer_email,
-            'Customer Phone': order.customer_phone || '',
-            'Shipping Address': order.shipping_address || '',
-            'Billing Address': order.billing_address || '',
-            'Order Status': getStatusInfo(order.order_status).label,
-            'Payment Status': getPaymentStatusInfo(order.payment_status).label,
-            'Payment Method': formatPaymentMethod(order.payment_method),
-            'Payment Reference': order.payment_reference || '',
-            'Product Quantity': targetQuantity,
-            'Product Price': targetPrice,
-            'Product Revenue': targetRevenue,
-            'Product Shipping Fee': targetShippingFee,
-            'Order Subtotal': order.subtotal,
-            'Tax Amount': order.tax_amount,
-            'Shipping Fee': order.shipping_fee,
-            'Discount Amount': order.discount_amount,
-            'Order Total': order.total_amount,
-            'Paid At': order.paid_at ? formatDate(order.paid_at) : '',
-            'Shipped At': order.shipped_at ? formatDate(order.shipped_at) : '',
-            'Delivered At': order.delivered_at ? formatDate(order.delivered_at) : '',
-            'Notes': order.notes || ''
-          };
+    // Format date
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
         });
+    };
 
-        // Create workbook and worksheet
-        const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(excelData);
+    // Format payment method
+    const formatPaymentMethod = (method: string | null | undefined): string => {
+        if (!method) return 'Not specified';
 
-        // Add worksheet to workbook
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+        switch (method.toLowerCase()) {
+            case 'cash':
+                return 'Cash';
+            case 'card':
+                return 'Credit/Debit Card';
+            case 'bank_transfer':
+                return 'Bank Transfer';
+            case 'digital_wallet':
+                return 'Digital Wallet';
+            case 'cod':
+                return 'Cash on Delivery';
+            default:
+                return (
+                    method.charAt(0).toUpperCase() +
+                    method.slice(1).replace(/_/g, ' ')
+                );
+        }
+    };
 
-        // Generate and download file
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-                 link.setAttribute('download', `product-orders-${productId}-${new Date().toISOString().split('T')[0]}.xlsx`);
-         link.style.visibility = 'hidden';
-         document.body.appendChild(link);
-         link.click();
-         document.body.removeChild(link);
-         
-         const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) ? ' (filtered)' : '';
-         setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to Excel${filterText}`);
-       } catch (importError) {
-         setError('Excel export requires the xlsx package. Please install it: npm install xlsx');
-       }
-     } catch (err) {
-       setError('Failed to export orders to Excel');
-     } finally {
-       setExporting(false);
-     }
-  };
+    // Get target product items from order
+    const getTargetProductItems = (order: ProductOrder) => {
+        return order.order_items.filter((item) => item.is_target_product);
+    };
 
-  // Fetch all orders
-  const fetchOrders = async () => {
-    if (!contactId) {
-      setLoading(false);
-      return;
-    }
+    // Get filtered orders for export
+    const getFilteredOrdersForExport = () => {
+        let filteredOrders = [...allOrders];
 
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        client_identifier: member.identifier || member.id.toString(),
-        contact_id: contactId.toString(),
-        per_page: '1000' // Get all orders for client-side filtering
-      });
+        // Apply search filter
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            filteredOrders = filteredOrders.filter((order) => {
+                return (
+                    order.order_number.toLowerCase().includes(query) ||
+                    order.customer_name.toLowerCase().includes(query) ||
+                    order.customer_email.toLowerCase().includes(query) ||
+                    (order.customer_phone &&
+                        order.customer_phone.toLowerCase().includes(query)) ||
+                    (order.shipping_address &&
+                        order.shipping_address.toLowerCase().includes(query)) ||
+                    (order.billing_address &&
+                        order.billing_address.toLowerCase().includes(query)) ||
+                    (order.payment_method &&
+                        order.payment_method.toLowerCase().includes(query)) ||
+                    (order.payment_reference &&
+                        order.payment_reference
+                            .toLowerCase()
+                            .includes(query)) ||
+                    (order.notes && order.notes.toLowerCase().includes(query))
+                );
+            });
+        }
 
-      const response = await fetch(`/m/${member.identifier || member.id}/products/${productId}/orders?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        const fetchedOrders = data.data || [];
-        setAllOrders(fetchedOrders);
-        setTotalOrders(fetchedOrders.length);
-      } else {
-        setError('Failed to fetch orders');
-      }
-    } catch (err) {
-      setError('An error occurred while fetching orders');
-    } finally {
-      setLoading(false);
-    }
-  };
+        // Apply order status filter
+        if (orderStatusFilter !== 'all') {
+            filteredOrders = filteredOrders.filter(
+                (order) => order.order_status === orderStatusFilter,
+            );
+        }
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [orderStatusFilter, paymentStatusFilter]);
+        // Apply payment status filter
+        if (paymentStatusFilter !== 'all') {
+            filteredOrders = filteredOrders.filter(
+                (order) => order.payment_status === paymentStatusFilter,
+            );
+        }
 
-  // Clear all filters and search
-  const clearFilters = () => {
-    setOrderStatusFilter('all');
-    setPaymentStatusFilter('all');
-    setSearchQuery('');
-  };
+        return filteredOrders;
+    };
 
-  // Toggle card expansion
-  const toggleCardExpansion = (orderId: number) => {
-    setExpandedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(orderId)) {
-        newSet.delete(orderId);
-      } else {
-        newSet.add(orderId);
-      }
-      return newSet;
-    });
-  };
+    // Calculate summary statistics
+    const getSummaryStats = () => {
+        const filteredOrders = getFilteredOrdersForExport();
+        const totalRevenue = filteredOrders.reduce((sum, order) => {
+            const targetItems = getTargetProductItems(order);
+            const targetRevenue = targetItems.reduce(
+                (itemSum, item) => itemSum + item.quantity * item.price,
+                0,
+            );
+            return sum + targetRevenue;
+        }, 0);
 
-  // Check if card is expanded
-  const isCardExpanded = (orderId: number) => expandedCards.has(orderId);
+        const totalQuantity = filteredOrders.reduce((sum, order) => {
+            const targetItems = getTargetProductItems(order);
+            return (
+                sum +
+                targetItems.reduce(
+                    (itemSum, item) => itemSum + item.quantity,
+                    0,
+                )
+            );
+        }, 0);
 
-  // Filter and paginate orders on the frontend
-  const getFilteredAndPaginatedOrders = () => {
-    let filteredOrders = [...allOrders];
+        const paidOrders = filteredOrders.filter(
+            (order) => order.payment_status === 'paid',
+        ).length;
+        const pendingOrders = filteredOrders.filter(
+            (order) => order.payment_status === 'pending',
+        ).length;
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filteredOrders = filteredOrders.filter(order => {
-        return (
-          order.order_number.toLowerCase().includes(query) ||
-          order.customer_name.toLowerCase().includes(query) ||
-          order.customer_email.toLowerCase().includes(query) ||
-          (order.customer_phone && order.customer_phone.toLowerCase().includes(query)) ||
-          (order.shipping_address && order.shipping_address.toLowerCase().includes(query)) ||
-          (order.billing_address && order.billing_address.toLowerCase().includes(query)) ||
-          (order.payment_method && order.payment_method.toLowerCase().includes(query)) ||
-          (order.payment_reference && order.payment_reference.toLowerCase().includes(query)) ||
-          (order.notes && order.notes.toLowerCase().includes(query))
-        );
-      });
-    }
-
-    // Apply order status filter
-    if (orderStatusFilter !== 'all') {
-      filteredOrders = filteredOrders.filter(order => order.order_status === orderStatusFilter);
-    }
-
-    // Apply payment status filter
-    if (paymentStatusFilter !== 'all') {
-      filteredOrders = filteredOrders.filter(order => order.payment_status === paymentStatusFilter);
-    }
+        return {
+            totalRevenue,
+            totalQuantity,
+            paidOrders,
+            pendingOrders,
+            totalOrders: filteredOrders.length,
+        };
+    };
 
     // Sort orders
-    filteredOrders = getSortedOrders(filteredOrders);
+    const getSortedOrders = (ordersToSort: ProductOrder[]) => {
+        return [...ordersToSort].sort((a, b) => {
+            let comparison = 0;
 
-    // Update total count
-    setTotalOrders(filteredOrders.length);
+            switch (sortBy) {
+                case 'date':
+                    comparison =
+                        new Date(a.created_at).getTime() -
+                        new Date(b.created_at).getTime();
+                    break;
+                case 'amount':
+                    const aRevenue = getTargetProductItems(a).reduce(
+                        (sum, item) => sum + item.quantity * item.price,
+                        0,
+                    );
+                    const bRevenue = getTargetProductItems(b).reduce(
+                        (sum, item) => sum + item.quantity * item.price,
+                        0,
+                    );
+                    comparison = aRevenue - bRevenue;
+                    break;
+                case 'status':
+                    comparison = a.order_status.localeCompare(b.order_status);
+                    break;
+            }
 
-    // Calculate pagination
-    const itemsPerPage = viewMode === 'grid' ? 12 : 15;
-    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-    setTotalPages(totalPages);
+            return sortOrder === 'asc' ? comparison : -comparison;
+        });
+    };
 
-    // Ensure current page is within bounds
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
+    // Export to CSV
+    const exportToCSV = async () => {
+        setExporting(true);
+        try {
+            const allOrdersData = getFilteredOrdersForExport();
+            console.log('Orders data for CSV export:', allOrdersData);
 
-    // Get paginated results
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredOrders.slice(startIndex, endIndex);
-  };
+            if (allOrdersData.length === 0) {
+                setError('No orders to export');
+                return;
+            }
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [orderStatusFilter, paymentStatusFilter]);
+            const currencySymbol = appCurrency?.symbol || '$';
 
-  // Fetch orders on component mount and when dependencies change
-  useEffect(() => {
-    fetchOrders();
-  }, [contactId, member.identifier, member.id, productId]);
+            // CSV Headers
+            const headers = [
+                'Order Number',
+                'Order Date',
+                'Customer Name',
+                'Customer Email',
+                'Customer Phone',
+                'Shipping Address',
+                'Billing Address',
+                'Order Status',
+                'Payment Status',
+                'Payment Method',
+                'Payment Reference',
+                'Product Quantity',
+                'Product Price',
+                'Product Revenue',
+                'Product Shipping Fee',
+                'Order Subtotal',
+                'Tax Amount',
+                'Shipping Fee',
+                'Discount Amount',
+                'Order Total',
+                'Paid At',
+                'Shipped At',
+                'Delivered At',
+                'Notes',
+            ];
 
-  // Update filtered orders when filters, search, or page changes
-  useEffect(() => {
-    if (allOrders.length > 0) {
-      const filteredOrders = getFilteredAndPaginatedOrders();
-      setOrders(filteredOrders);
-    }
-  }, [allOrders, orderStatusFilter, paymentStatusFilter, searchQuery, currentPage, viewMode, sortBy, sortOrder]);
+            // Helper function to safely format numbers
+            const safeNumberFormat = (
+                value: number | null | undefined,
+            ): string => {
+                if (value === null || value === undefined || isNaN(value)) {
+                    return `${currencySymbol}0.00`;
+                }
+                return `${currencySymbol}${Number(value).toFixed(2)}`;
+            };
 
-  // Auto-dismiss success message
-  useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-      }, 5000); // Auto-dismiss after 5 seconds
+            // Helper function to escape CSV values
+            const escapeCSVValue = (value: any): string => {
+                if (value === null || value === undefined) {
+                    return '';
+                }
+                const stringValue = String(value);
+                // Escape quotes and wrap in quotes if contains comma, quote, or newline
+                const escaped = stringValue.replace(/"/g, '""');
+                if (
+                    escaped.includes(',') ||
+                    escaped.includes('"') ||
+                    escaped.includes('\n') ||
+                    escaped.includes('\r')
+                ) {
+                    return `"${escaped}"`;
+                }
+                return escaped;
+            };
 
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
+            // CSV Data
+            const csvData = allOrdersData.map((order: ProductOrder) => {
+                try {
+                    const targetItems = getTargetProductItems(order);
+                    const targetQuantity = targetItems.reduce(
+                        (sum, item) => sum + item.quantity,
+                        0,
+                    );
+                    const targetRevenue = targetItems.reduce(
+                        (sum, item) => sum + item.quantity * item.price,
+                        0,
+                    );
+                    const targetPrice = targetItems[0]?.price || 0;
+                    const targetShippingFee = targetItems[0]?.shipping_fee || 0;
 
-  // Update order item status
-  const updateOrderItemStatus = async (orderId: number, productId: number, newStatus: string) => {
-    const updateKey = `${orderId}-${productId}`;
-    setUpdatingItems(prev => new Set(prev).add(updateKey));
-    
-    try {
-      const response = await fetch(`/product-orders/${orderId}/items/${productId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
+                    const row = [
+                        escapeCSVValue(order.order_number),
+                        escapeCSVValue(formatDate(order.created_at)),
+                        escapeCSVValue(order.customer_name),
+                        escapeCSVValue(order.customer_email),
+                        escapeCSVValue(order.customer_phone || ''),
+                        escapeCSVValue(order.shipping_address || ''),
+                        escapeCSVValue(order.billing_address || ''),
+                        escapeCSVValue(getStatusInfo(order.order_status).label),
+                        escapeCSVValue(
+                            getPaymentStatusInfo(order.payment_status).label,
+                        ),
+                        escapeCSVValue(
+                            formatPaymentMethod(order.payment_method),
+                        ),
+                        escapeCSVValue(order.payment_reference || ''),
+                        escapeCSVValue(targetQuantity),
+                        escapeCSVValue(safeNumberFormat(targetPrice)),
+                        escapeCSVValue(safeNumberFormat(targetRevenue)),
+                        escapeCSVValue(safeNumberFormat(targetShippingFee)),
+                        escapeCSVValue(safeNumberFormat(order.subtotal)),
+                        escapeCSVValue(safeNumberFormat(order.tax_amount)),
+                        escapeCSVValue(safeNumberFormat(order.shipping_fee)),
+                        escapeCSVValue(safeNumberFormat(order.discount_amount)),
+                        escapeCSVValue(safeNumberFormat(order.total_amount)),
+                        escapeCSVValue(
+                            order.paid_at ? formatDate(order.paid_at) : '',
+                        ),
+                        escapeCSVValue(
+                            order.shipped_at
+                                ? formatDate(order.shipped_at)
+                                : '',
+                        ),
+                        escapeCSVValue(
+                            order.delivered_at
+                                ? formatDate(order.delivered_at)
+                                : '',
+                        ),
+                        escapeCSVValue(order.notes || ''),
+                    ];
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update item status');
-      }
+                    console.log(
+                        'CSV row for order',
+                        order.order_number,
+                        ':',
+                        row,
+                    );
+                    return row;
+                } catch (rowError) {
+                    console.error(
+                        'Error processing order for CSV:',
+                        order.order_number,
+                        rowError,
+                    );
+                    throw rowError;
+                }
+            });
 
-      const result = await response.json();
-      
-      // Update the local state with the new order data
-      setAllOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === orderId ? result.order : order
-        )
-      );
-      
-      setSuccessMessage(`Item status updated to ${getOrderItemStatusInfo(newStatus).label}`);
-      
-      // Clear the status update from local state
-      setItemStatusUpdates(prev => {
-        const newUpdates = { ...prev };
-        delete newUpdates[updateKey];
-        return newUpdates;
-      });
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update item status';
-      setError(errorMessage);
-    } finally {
-      setUpdatingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(updateKey);
-        return newSet;
-      });
-    }
-  };
+            // Create CSV content
+            const csvContent = [
+                headers.join(','),
+                ...csvData.map((row: any[]) => row.join(',')),
+            ].join('\n');
 
-  // Handle status change for an item
-  const handleItemStatusChange = (orderId: number, productId: number, newStatus: string) => {
-    const updateKey = `${orderId}-${productId}`;
-    setItemStatusUpdates(prev => ({
-      ...prev,
-      [updateKey]: newStatus
-    }));
-  };
+            // Add BOM for proper UTF-8 encoding in Excel
+            const BOM = '\uFEFF';
+            const csvWithBOM = BOM + csvContent;
 
-  // Check if an item is being updated
-  const isItemUpdating = (orderId: number, productId: number) => {
-    return updatingItems.has(`${orderId}-${productId}`);
-  };
+            // Download file
+            const blob = new Blob([csvWithBOM], {
+                type: 'text/csv;charset=utf-8;',
+            });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute(
+                'download',
+                `product-orders-${productId}-${new Date().toISOString().split('T')[0]}.csv`,
+            );
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-  // Get the current status for an item (either updated or original)
-  const getItemCurrentStatus = (order: ProductOrder, item: OrderItem) => {
-    const updateKey = `${order.id}-${item.product_id}`;
-    return itemStatusUpdates[updateKey] || item.status;
-  };
+            const filterText =
+                orderStatusFilter !== 'all' ||
+                paymentStatusFilter !== 'all' ||
+                searchQuery.trim()
+                    ? ' (filtered)'
+                    : '';
+            setSuccessMessage(
+                `Successfully exported ${allOrdersData.length} orders to CSV${filterText}`,
+            );
+        } catch (err) {
+            console.error('CSV Export Error:', err);
+            setError(
+                `Failed to export orders to CSV: ${err instanceof Error ? err.message : 'Unknown error'}`,
+            );
+        } finally {
+            setExporting(false);
+        }
+    };
 
-  if (!contactId) {
-    return (
-      <div className="text-center text-muted-foreground py-8">
-        <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-        <p className="text-sm">Please log in to view orders</p>
-      </div>
-    );
-  }
+    // Export to Excel (XLSX)
+    const exportToExcel = async () => {
+        setExporting(true);
+        try {
+            const allOrdersData = getFilteredOrdersForExport();
+            if (allOrdersData.length === 0) {
+                setError('No orders to export');
+                return;
+            }
 
-  if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-        <p className="text-sm text-muted-foreground mt-2">Loading orders...</p>
-      </div>
-    );
-  }
+            // Check if xlsx library is available
+            try {
+                const XLSX = await import('xlsx');
+                const currencySymbol = appCurrency?.symbol || '$';
 
-  if (error) {
-    return (
-      <div className="text-center text-destructive py-8">
-        <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-        <p className="text-sm">{error}</p>
-        <Button onClick={fetchOrders} className="mt-2" size="sm">
-          <RefreshCw className="w-4 h-4 mr-1" />
-          Retry
-        </Button>
-      </div>
-    );
-  }
+                // Prepare data for Excel
+                const excelData = allOrdersData.map((order: ProductOrder) => {
+                    const targetItems = getTargetProductItems(order);
+                    const targetQuantity = targetItems.reduce(
+                        (sum, item) => sum + item.quantity,
+                        0,
+                    );
+                    const targetRevenue = targetItems.reduce(
+                        (sum, item) => sum + item.quantity * item.price,
+                        0,
+                    );
+                    const targetPrice = targetItems[0]?.price || 0;
+                    const targetShippingFee = targetItems[0]?.shipping_fee || 0;
 
-  const stats = getSummaryStats();
+                    return {
+                        'Order Number': order.order_number,
+                        'Order Date': formatDate(order.created_at),
+                        'Customer Name': order.customer_name,
+                        'Customer Email': order.customer_email,
+                        'Customer Phone': order.customer_phone || '',
+                        'Shipping Address': order.shipping_address || '',
+                        'Billing Address': order.billing_address || '',
+                        'Order Status': getStatusInfo(order.order_status).label,
+                        'Payment Status': getPaymentStatusInfo(
+                            order.payment_status,
+                        ).label,
+                        'Payment Method': formatPaymentMethod(
+                            order.payment_method,
+                        ),
+                        'Payment Reference': order.payment_reference || '',
+                        'Product Quantity': targetQuantity,
+                        'Product Price': targetPrice,
+                        'Product Revenue': targetRevenue,
+                        'Product Shipping Fee': targetShippingFee,
+                        'Order Subtotal': order.subtotal,
+                        'Tax Amount': order.tax_amount,
+                        'Shipping Fee': order.shipping_fee,
+                        'Discount Amount': order.discount_amount,
+                        'Order Total': order.total_amount,
+                        'Paid At': order.paid_at
+                            ? formatDate(order.paid_at)
+                            : '',
+                        'Shipped At': order.shipped_at
+                            ? formatDate(order.shipped_at)
+                            : '',
+                        'Delivered At': order.delivered_at
+                            ? formatDate(order.delivered_at)
+                            : '',
+                        Notes: order.notes || '',
+                    };
+                });
 
-  return (
-    <div className="h-full flex flex-col space-y-6 overflow-y-auto">
-      {/* Success Message */}
-      {successMessage && (
-        <div className="relative p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 rounded-lg">
-          <p className="text-sm pr-8">{successMessage}</p>
-          <button
-            onClick={() => setSuccessMessage(null)}
-            className="absolute top-2 right-2 text-green-400 hover:text-green-600"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+                // Create workbook and worksheet
+                const workbook = XLSX.utils.book_new();
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
 
-      {/* Error Message */}
-      {error && (
-        <div className="relative p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg">
-          <p className="text-sm pr-8">{error}</p>
-          <button
-            onClick={() => setError(null)}
-            className="absolute top-2 right-2 text-destructive hover:text-destructive/80"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+                // Add worksheet to workbook
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
 
-      {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Orders</p>
-                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.totalOrders}</p>
-              </div>
-              <ShoppingBag className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatPrice(stats.totalRevenue)}</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-green-600 dark:text-green-400" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Total Quantity</p>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.totalQuantity}</p>
-              </div>
-              <Package className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Paid Orders</p>
-                <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{stats.paidOrders}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-800">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending Orders</p>
-                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.pendingOrders}</p>
-              </div>
-              <Clock className="w-8 h-8 text-amber-600 dark:text-amber-400" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              <List className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Select value={sortBy} onValueChange={(value: 'date' | 'amount' | 'status') => setSortBy(value)}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">Date</SelectItem>
-                <SelectItem value="amount">Amount</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            >
-              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
-            </Button>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </Button>
-          
-          {totalOrders > 0 && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToCSV}
-                disabled={exporting}
-              >
-                {exporting ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                <span className="ml-2">CSV</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToExcel}
-                disabled={exporting}
-              >
-                {exporting ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                ) : (
-                  <FileSpreadsheet className="w-4 h-4" />
-                )}
-                <span className="ml-2">Excel</span>
-              </Button>
-            </>
-          )}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchOrders}
-          >
-            <RefreshCw className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters Section */}
-      {showFilters && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center">
-              <Filter className="w-5 h-5 mr-2" />
-              Filters & Search
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="Search orders by number, customer, email, phone, address, payment method, reference, or notes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Order Status</label>
-                <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All order statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Order Statuses</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="shipped">Shipped</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                    <SelectItem value="refunded">Refunded</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Payment Status</label>
-                <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All payment statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Payment Statuses</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="refunded">Refunded</SelectItem>
-                    <SelectItem value="partially_refunded">Partially Refunded</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-end">
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="w-full"
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            </div>
-            
-            {/* Active Filters Display */}
-            {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) && (
-              <div className="flex items-center space-x-2 pt-2 border-t">
-                <span className="text-sm text-muted-foreground">Active filters:</span>
-                {searchQuery.trim() && (
-                  <Badge variant="outline" className="text-xs">
-                    Search: "{searchQuery}"
-                  </Badge>
-                )}
-                {orderStatusFilter !== 'all' && (
-                  <Badge variant="outline" className="text-xs">
-                    Order: {getStatusInfo(orderStatusFilter).label}
-                  </Badge>
-                )}
-                {paymentStatusFilter !== 'all' && (
-                  <Badge variant="outline" className="text-xs">
-                    Payment: {getPaymentStatusInfo(paymentStatusFilter).label}
-                  </Badge>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Orders Display */}
-      <div className="flex-1 min-h-0">
-        {orders.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12">
-            <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No orders found</p>
-            <p className="text-sm">Try adjusting your filters or search terms</p>
-          </div>
-        ) : (
-          <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'} h-full overflow-y-auto pb-4`}>
-            {orders.map((order) => {
-              const targetItems = getTargetProductItems(order);
-              const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
-              const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-              const isExpanded = isCardExpanded(order.id);
-
-                             if (viewMode === 'grid') {
-                 return (
-                   <Card key={order.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
-                     <CardHeader className={`pb-3 transition-all duration-200 ${isExpanded ? 'bg-gradient-to-b from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-b border-blue-200 dark:border-blue-800' : ''}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="w-4 h-4 text-primary" />
-                          <span className="font-semibold">#{order.order_number}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleCardExpansion(order.id)}
-                          className="h-6 w-6 p-0"
-                        >
-                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                        </Button>
-                      </div>
-                       <div className="flex items-center space-x-2">
-                         <Badge className={getStatusInfo(order.order_status).color} variant="outline">
-                           Order Status: {getStatusInfo(order.order_status).label}
-                         </Badge>
-                         <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
-                           Payment Status: {getPaymentStatusInfo(order.payment_status).label}
-                         </Badge>
-                       </div>
-                    </CardHeader>
-                    
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium truncate">{order.customer_name}</span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Package className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{targetQuantity} × {formatPrice(targetItems[0]?.price || 0)}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <span className="text-sm text-muted-foreground">Revenue:</span>
-                        <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
-                      </div>
-                      
-                      {isExpanded && (
-                        <div className="pt-3 border-t space-y-2">
-                          <div className="text-xs text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Mail className="w-3 h-3" />
-                              <span className="truncate">{order.customer_email}</span>
-                            </div>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>{formatDate(order.created_at)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                // Generate and download file
+                const excelBuffer = XLSX.write(workbook, {
+                    bookType: 'xlsx',
+                    type: 'array',
+                });
+                const blob = new Blob([excelBuffer], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute(
+                    'download',
+                    `product-orders-${productId}-${new Date().toISOString().split('T')[0]}.xlsx`,
                 );
-              }
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-              return (
-                <Card key={order.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
-                  {/* Order Header */}
-                  <div className={`p-4 border-b transition-all duration-200 ${isExpanded ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800' : 'bg-gradient-to-r from-muted/30 to-transparent'}`}>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="w-5 h-5 text-primary" />
-                          <span className="font-semibold text-lg">#{order.order_number}</span>
+                const filterText =
+                    orderStatusFilter !== 'all' ||
+                    paymentStatusFilter !== 'all' ||
+                    searchQuery.trim()
+                        ? ' (filtered)'
+                        : '';
+                setSuccessMessage(
+                    `Successfully exported ${allOrdersData.length} orders to Excel${filterText}`,
+                );
+            } catch (importError) {
+                setError(
+                    'Excel export requires the xlsx package. Please install it: npm install xlsx',
+                );
+            }
+        } catch (err) {
+            setError('Failed to export orders to Excel');
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    // Fetch all orders
+    const fetchOrders = async () => {
+        if (!contactId) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const params = new URLSearchParams({
+                client_identifier: member.identifier || member.id.toString(),
+                contact_id: contactId.toString(),
+                per_page: '1000', // Get all orders for client-side filtering
+            });
+
+            const response = await fetch(
+                `/m/${member.identifier || member.id}/products/${productId}/orders?${params}`,
+            );
+            if (response.ok) {
+                const data = await response.json();
+                const fetchedOrders = data.data || [];
+                setAllOrders(fetchedOrders);
+                setTotalOrders(fetchedOrders.length);
+            } else {
+                setError('Failed to fetch orders');
+            }
+        } catch (err) {
+            setError('An error occurred while fetching orders');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [orderStatusFilter, paymentStatusFilter]);
+
+    // Clear all filters and search
+    const clearFilters = () => {
+        setOrderStatusFilter('all');
+        setPaymentStatusFilter('all');
+        setSearchQuery('');
+    };
+
+    // Toggle card expansion
+    const toggleCardExpansion = (orderId: number) => {
+        setExpandedCards((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(orderId)) {
+                newSet.delete(orderId);
+            } else {
+                newSet.add(orderId);
+            }
+            return newSet;
+        });
+    };
+
+    // Check if card is expanded
+    const isCardExpanded = (orderId: number) => expandedCards.has(orderId);
+
+    // Filter and paginate orders on the frontend
+    const getFilteredAndPaginatedOrders = () => {
+        let filteredOrders = [...allOrders];
+
+        // Apply search filter
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            filteredOrders = filteredOrders.filter((order) => {
+                return (
+                    order.order_number.toLowerCase().includes(query) ||
+                    order.customer_name.toLowerCase().includes(query) ||
+                    order.customer_email.toLowerCase().includes(query) ||
+                    (order.customer_phone &&
+                        order.customer_phone.toLowerCase().includes(query)) ||
+                    (order.shipping_address &&
+                        order.shipping_address.toLowerCase().includes(query)) ||
+                    (order.billing_address &&
+                        order.billing_address.toLowerCase().includes(query)) ||
+                    (order.payment_method &&
+                        order.payment_method.toLowerCase().includes(query)) ||
+                    (order.payment_reference &&
+                        order.payment_reference
+                            .toLowerCase()
+                            .includes(query)) ||
+                    (order.notes && order.notes.toLowerCase().includes(query))
+                );
+            });
+        }
+
+        // Apply order status filter
+        if (orderStatusFilter !== 'all') {
+            filteredOrders = filteredOrders.filter(
+                (order) => order.order_status === orderStatusFilter,
+            );
+        }
+
+        // Apply payment status filter
+        if (paymentStatusFilter !== 'all') {
+            filteredOrders = filteredOrders.filter(
+                (order) => order.payment_status === paymentStatusFilter,
+            );
+        }
+
+        // Sort orders
+        filteredOrders = getSortedOrders(filteredOrders);
+
+        // Update total count
+        setTotalOrders(filteredOrders.length);
+
+        // Calculate pagination
+        const itemsPerPage = viewMode === 'grid' ? 12 : 15;
+        const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+        setTotalPages(totalPages);
+
+        // Ensure current page is within bounds
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+
+        // Get paginated results
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return filteredOrders.slice(startIndex, endIndex);
+    };
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [orderStatusFilter, paymentStatusFilter]);
+
+    // Fetch orders on component mount and when dependencies change
+    useEffect(() => {
+        fetchOrders();
+    }, [contactId, member.identifier, member.id, productId]);
+
+    // Update filtered orders when filters, search, or page changes
+    useEffect(() => {
+        if (allOrders.length > 0) {
+            const filteredOrders = getFilteredAndPaginatedOrders();
+            setOrders(filteredOrders);
+        }
+    }, [
+        allOrders,
+        orderStatusFilter,
+        paymentStatusFilter,
+        searchQuery,
+        currentPage,
+        viewMode,
+        sortBy,
+        sortOrder,
+    ]);
+
+    // Auto-dismiss success message
+    useEffect(() => {
+        if (successMessage) {
+            const timer = setTimeout(() => {
+                setSuccessMessage(null);
+            }, 5000); // Auto-dismiss after 5 seconds
+
+            return () => clearTimeout(timer);
+        }
+    }, [successMessage]);
+
+    // Update order item status
+    const updateOrderItemStatus = async (
+        orderId: number,
+        productId: number,
+        newStatus: string,
+    ) => {
+        const updateKey = `${orderId}-${productId}`;
+        setUpdatingItems((prev) => new Set(prev).add(updateKey));
+
+        try {
+            const response = await fetch(
+                `/product-orders/${orderId}/items/${productId}/status`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                },
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.error || 'Failed to update item status',
+                );
+            }
+
+            const result = await response.json();
+
+            // Update the local state with the new order data
+            setAllOrders((prevOrders) =>
+                prevOrders.map((order) =>
+                    order.id === orderId ? result.order : order,
+                ),
+            );
+
+            setSuccessMessage(
+                `Item status updated to ${getOrderItemStatusInfo(newStatus).label}`,
+            );
+
+            // Clear the status update from local state
+            setItemStatusUpdates((prev) => {
+                const newUpdates = { ...prev };
+                delete newUpdates[updateKey];
+                return newUpdates;
+            });
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to update item status';
+            setError(errorMessage);
+        } finally {
+            setUpdatingItems((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(updateKey);
+                return newSet;
+            });
+        }
+    };
+
+    // Handle status change for an item
+    const handleItemStatusChange = (
+        orderId: number,
+        productId: number,
+        newStatus: string,
+    ) => {
+        const updateKey = `${orderId}-${productId}`;
+        setItemStatusUpdates((prev) => ({
+            ...prev,
+            [updateKey]: newStatus,
+        }));
+    };
+
+    // Check if an item is being updated
+    const isItemUpdating = (orderId: number, productId: number) => {
+        return updatingItems.has(`${orderId}-${productId}`);
+    };
+
+    // Get the current status for an item (either updated or original)
+    const getItemCurrentStatus = (order: ProductOrder, item: OrderItem) => {
+        const updateKey = `${order.id}-${item.product_id}`;
+        return itemStatusUpdates[updateKey] || item.status;
+    };
+
+    if (!contactId) {
+        return (
+            <div className="py-8 text-center text-muted-foreground">
+                <AlertCircle className="mx-auto mb-2 h-8 w-8" />
+                <p className="text-sm">Please log in to view orders</p>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="py-8 text-center">
+                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Loading orders...
+                </p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="py-8 text-center text-destructive">
+                <AlertCircle className="mx-auto mb-2 h-8 w-8" />
+                <p className="text-sm">{error}</p>
+                <Button onClick={fetchOrders} className="mt-2" size="sm">
+                    <RefreshCw className="mr-1 h-4 w-4" />
+                    Retry
+                </Button>
+            </div>
+        );
+    }
+
+    const stats = getSummaryStats();
+
+    return (
+        <div className="flex h-full flex-col space-y-6 overflow-y-auto">
+            {/* Success Message */}
+            {successMessage && (
+                <div className="relative rounded-lg border border-green-200 bg-green-50 p-3 text-green-600 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400">
+                    <p className="pr-8 text-sm">{successMessage}</p>
+                    <button
+                        onClick={() => setSuccessMessage(null)}
+                        className="absolute right-2 top-2 text-green-400 hover:text-green-600"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+                <div className="relative rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-destructive">
+                    <p className="pr-8 text-sm">{error}</p>
+                    <button
+                        onClick={() => setError(null)}
+                        className="absolute right-2 top-2 text-destructive hover:text-destructive/80"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
+            {/* Summary Statistics */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-900/20 dark:to-blue-800/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                    Total Orders
+                                </p>
+                                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                    {stats.totalOrders}
+                                </p>
+                            </div>
+                            <ShoppingBag className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge className={getStatusInfo(order.order_status).color} variant="outline">
-                            Order Status: {getStatusInfo(order.order_status).label}
-                          </Badge>
-                          <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
-                            Payment Status: {getPaymentStatusInfo(order.payment_status).label}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="text-sm text-muted-foreground flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {formatDate(order.created_at)}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleCardExpansion(order.id)}
-                          className="h-8 w-8 p-0"
-                        >
-                          {isExpanded ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-0">
-                    {/* Condensed View (Only Visible When Not Expanded) */}
-                    {!isExpanded && (
-                      <div className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {/* Customer Info */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <User className="w-4 h-4 text-primary" />
-                              <span className="font-medium text-sm">{order.customer_name}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                              <Mail className="w-4 h-4" />
-                              <span className="truncate">{order.customer_email}</span>
-                            </div>
-                            {order.customer_phone && (
-                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                                <Phone className="w-4 h-4" />
-                                <span>{order.customer_phone}</span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Product Summary */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <Package className="w-4 h-4 text-primary" />
-                              <span className="font-medium text-sm truncate">{targetItems[0]?.name || 'Product'}</span>
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)} | Revenue: <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
-                            </div>
-                            {targetItems[0]?.shipping_fee && targetItems[0].shipping_fee > 0 && (
-                              <div className="text-sm text-blue-600 dark:text-blue-400">
-                                Shipping: {formatPrice(targetItems[0].shipping_fee)}
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Shipping Address */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <MapPin className="w-4 h-4 text-primary" />
-                              <span className="font-medium text-sm">Shipping</span>
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {order.shipping_address ? (
-                                <span className="truncate block">{order.shipping_address}</span>
-                              ) : (
-                                <span className="text-muted-foreground/60">No address</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Expanded View (Conditional) */}
-                    {isExpanded && (
-                      <>
-                        <Separator />
-                        
-                        {/* 3-Column Grid Layout */}
-                        <div className="p-3">
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            
-                            {/* Column 1: Customer Information */}
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-2">
-                                <User className="w-4 h-4 text-primary" />
-                                <span className="font-medium text-sm">Customer</span>
-                              </div>
-                              <div className="bg-muted/20 p-3 rounded-lg space-y-2">
-                                <div className="flex items-center space-x-2">
-                                  <span className="font-medium text-sm">{order.customer_name}</span>
-                                </div>
-                                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                                  <Mail className="w-3 h-3" />
-                                  <span className="truncate">{order.customer_email}</span>
-                                </div>
-                                {order.customer_phone && (
-                                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                                    <Phone className="w-3 h-3" />
-                                    <span>{order.customer_phone}</span>
-                                  </div>
-                                )}
-                                {order.shipping_address && (
-                                  <div className="flex items-start space-x-2 text-xs">
-                                    <MapPin className="w-3 h-3 text-muted-foreground mt-0.5" />
-                                    <div>
-                                      <span className="font-medium">Shipping:</span>
-                                      <p className="text-muted-foreground truncate">{order.shipping_address}</p>
-                                    </div>
-                                  </div>
-                                )}
-                                {order.billing_address && (
-                                  <div className="flex items-start space-x-2 text-xs">
-                                    <MapPin className="w-3 h-3 text-muted-foreground mt-0.5" />
-                                    <div>
-                                      <span className="font-medium">Billing:</span>
-                                      <p className="text-muted-foreground truncate">{order.billing_address}</p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Column 2: Product & Order Details */}
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-2">
-                                <Package className="w-4 h-4 text-primary" />
-                                <span className="font-medium text-sm">Order Items</span>
-                              </div>
-                              <div className="space-y-3">
-                                {/* Order Items */}
-                                <div className="bg-muted/10 p-3 rounded-lg space-y-2">
-                                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                                    {order.order_items.map((item, index) => {
-                                      const statusInfo = getOrderItemStatusInfo(item.status);
-                                      const currentItemStatus = getItemCurrentStatus(order, item);
-                                      const isUpdating = isItemUpdating(order.id, item.product_id);
-                                      const hasStatusChange = itemStatusUpdates[`${order.id}-${item.product_id}`] && 
-                                                             itemStatusUpdates[`${order.id}-${item.product_id}`] !== item.status;
-
-                                      return (
-                                        <div 
-                                          key={index} 
-                                          className={`p-2 rounded border text-xs ${
-                                            item.is_target_product 
-                                              ? 'bg-primary/5 border-primary/20' 
-                                              : 'bg-muted/5 border-muted/20'
-                                          }`}
-                                        >
-                                          <div className="flex items-start justify-between mb-1">
-                                            <div className="flex-1 min-w-0">
-                                              <p className="font-medium truncate">
-                                                {item.name}
-                                              </p>
-                                              <p className="text-muted-foreground">
-                                                {item.quantity} × {formatPrice(item.price)}
-                                              </p>
-                                            </div>
-                                            <Badge className={`text-[10px] ${statusInfo.color} border ml-2`}>
-                                              <span className="mr-0.5">{statusInfo.icon}</span>
-                                              {getOrderItemStatusInfo(currentItemStatus).label}
-                                            </Badge>
-                                          </div>
-                                          
-                                          {/* Status Update Section */}
-                                          <div className="mt-2 pt-2 border-t border-muted/20">
-                                            <div className="flex items-center justify-between gap-2">
-                                              <div className="flex-1">
-                                                <Select
-                                                  value={currentItemStatus}
-                                                  onValueChange={(value) => handleItemStatusChange(order.id, item.product_id, value)}
-                                                  disabled={isUpdating}
-                                                >
-                                                  <SelectTrigger className="h-6 text-[10px]">
-                                                    <SelectValue placeholder="Select status" />
-                                                  </SelectTrigger>
-                                                  <SelectContent>
-                                                    <SelectItem value="pending">⏳ Pending</SelectItem>
-                                                    <SelectItem value="confirmed">✅ Confirmed</SelectItem>
-                                                    <SelectItem value="processing">⚙️ Processing</SelectItem>
-                                                    <SelectItem value="shipped">📦 Shipped</SelectItem>
-                                                    <SelectItem value="delivered">🎉 Delivered</SelectItem>
-                                                    <SelectItem value="cancelled">❌ Cancelled</SelectItem>
-                                                    <SelectItem value="out_of_stock">📦 Out of Stock</SelectItem>
-                                                  </SelectContent>
-                                                </Select>
-                                              </div>
-                                              
-                                              {hasStatusChange && !isUpdating && (
-                                                <Button
-                                                  size="sm"
-                                                  className="h-6 px-2 text-[10px]"
-                                                  onClick={() => updateOrderItemStatus(order.id, item.product_id, currentItemStatus)}
-                                                >
-                                                  <Save className="w-3 h-3 mr-1" />
-                                                  Save
-                                                </Button>
-                                              )}
-                                              
-                                              {isUpdating && (
-                                                <div className="flex items-center text-xs text-muted-foreground">
-                                                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                                                  Updating...
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                          
-                                          <div className="flex justify-between items-center mt-2">
-                                            <span className="text-muted-foreground">Total:</span>
-                                            <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
-                                          </div>
-                                          {item.shipping_fee && item.shipping_fee > 0 && (
-                                            <div className="flex justify-between items-center mt-1">
-                                              <span className="text-muted-foreground">Shipping:</span>
-                                              <span className="font-semibold text-blue-600 dark:text-blue-400">{formatPrice(item.shipping_fee)}</span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Column 3: Payment & Notes */}
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-2">
-                                <CreditCard className="w-4 h-4 text-primary" />
-                                <span className="font-medium text-sm">Payment & Notes</span>
-                              </div>
-                              <div className="space-y-3">
-                                {/* Payment Information */}
-                                {order.payment_method && (
-                                  <div className="bg-muted/10 p-3 rounded-lg space-y-2">
-                                    <div className="flex justify-between text-xs">
-                                      <span className="text-muted-foreground">Method:</span>
-                                      <span className="font-medium">{formatPaymentMethod(order.payment_method)}</span>
-                                    </div>
-                                    {order.payment_reference && (
-                                      <div className="flex justify-between text-xs">
-                                        <span className="text-muted-foreground">Reference:</span>
-                                        <span className="font-medium">{order.payment_reference}</span>
-                                      </div>
-                                    )}
-                                    {order.paid_at && (
-                                      <div className="flex justify-between text-xs">
-                                        <span className="text-muted-foreground">Paid:</span>
-                                        <span className="font-medium">{formatDate(order.paid_at)}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Notes */}
-                                {order.notes && (
-                                  <div className="bg-muted/10 p-3 rounded-lg">
-                                    <p className="text-xs text-muted-foreground">
-                                      {order.notes}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
+                    </CardContent>
                 </Card>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-4 border-t">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
+                <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100 dark:border-green-800 dark:from-green-900/20 dark:to-green-800/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                                    Total Revenue
+                                </p>
+                                <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                    {formatPrice(stats.totalRevenue)}
+                                </p>
+                            </div>
+                            <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:border-purple-800 dark:from-purple-900/20 dark:to-purple-800/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                                    Total Quantity
+                                </p>
+                                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                    {stats.totalQuantity}
+                                </p>
+                            </div>
+                            <Package className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:border-emerald-800 dark:from-emerald-900/20 dark:to-emerald-800/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                    Paid Orders
+                                </p>
+                                <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                                    {stats.paidOrders}
+                                </p>
+                            </div>
+                            <TrendingUp className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 dark:border-amber-800 dark:from-amber-900/20 dark:to-amber-800/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                                    Pending Orders
+                                </p>
+                                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                                    {stats.pendingOrders}
+                                </p>
+                            </div>
+                            <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Controls Bar */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant={
+                                viewMode === 'list' ? 'default' : 'outline'
+                            }
+                            size="sm"
+                            onClick={() => setViewMode('list')}
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant={
+                                viewMode === 'grid' ? 'default' : 'outline'
+                            }
+                            size="sm"
+                            onClick={() => setViewMode('grid')}
+                        >
+                            <Grid3X3 className="h-4 w-4" />
+                        </Button>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <Select
+                            value={sortBy}
+                            onValueChange={(
+                                value: 'date' | 'amount' | 'status',
+                            ) => setSortBy(value)}
+                        >
+                            <SelectTrigger className="w-32">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="date">Date</SelectItem>
+                                <SelectItem value="amount">Amount</SelectItem>
+                                <SelectItem value="status">Status</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                                setSortOrder(
+                                    sortOrder === 'asc' ? 'desc' : 'asc',
+                                )
+                            }
+                        >
+                            {sortOrder === 'asc' ? (
+                                <SortAsc className="h-4 w-4" />
+                            ) : (
+                                <SortDesc className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
+                        {showFilters ? (
+                            <ChevronUp className="h-4 w-4" />
+                        ) : (
+                            <ChevronDown className="h-4 w-4" />
+                        )}
+                        {showFilters ? 'Hide Filters' : 'Show Filters'}
+                    </Button>
+
+                    {totalOrders > 0 && (
+                        <>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={exportToCSV}
+                                disabled={exporting}
+                            >
+                                {exporting ? (
+                                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
+                                ) : (
+                                    <Download className="h-4 w-4" />
+                                )}
+                                <span className="ml-2">CSV</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={exportToExcel}
+                                disabled={exporting}
+                            >
+                                {exporting ? (
+                                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
+                                ) : (
+                                    <FileSpreadsheet className="h-4 w-4" />
+                                )}
+                                <span className="ml-2">Excel</span>
+                            </Button>
+                        </>
+                    )}
+
+                    <Button variant="outline" size="sm" onClick={fetchOrders}>
+                        <RefreshCw className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* Filters Section */}
+            {showFilters && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center text-lg">
+                            <Filter className="mr-2 h-5 w-5" />
+                            Filters & Search
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* Search Input */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search orders by number, customer, email, phone, address, payment method, reference, or notes..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    Order Status
+                                </label>
+                                <Select
+                                    value={orderStatusFilter}
+                                    onValueChange={setOrderStatusFilter}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All order statuses" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All Order Statuses
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            Pending
+                                        </SelectItem>
+                                        <SelectItem value="confirmed">
+                                            Confirmed
+                                        </SelectItem>
+                                        <SelectItem value="processing">
+                                            Processing
+                                        </SelectItem>
+                                        <SelectItem value="shipped">
+                                            Shipped
+                                        </SelectItem>
+                                        <SelectItem value="delivered">
+                                            Delivered
+                                        </SelectItem>
+                                        <SelectItem value="cancelled">
+                                            Cancelled
+                                        </SelectItem>
+                                        <SelectItem value="refunded">
+                                            Refunded
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    Payment Status
+                                </label>
+                                <Select
+                                    value={paymentStatusFilter}
+                                    onValueChange={setPaymentStatusFilter}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All payment statuses" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            All Payment Statuses
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            Pending
+                                        </SelectItem>
+                                        <SelectItem value="paid">
+                                            Paid
+                                        </SelectItem>
+                                        <SelectItem value="failed">
+                                            Failed
+                                        </SelectItem>
+                                        <SelectItem value="refunded">
+                                            Refunded
+                                        </SelectItem>
+                                        <SelectItem value="partially_refunded">
+                                            Partially Refunded
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex items-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={clearFilters}
+                                    className="w-full"
+                                >
+                                    Clear Filters
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Active Filters Display */}
+                        {(orderStatusFilter !== 'all' ||
+                            paymentStatusFilter !== 'all' ||
+                            searchQuery.trim()) && (
+                            <div className="flex items-center space-x-2 border-t pt-2">
+                                <span className="text-sm text-muted-foreground">
+                                    Active filters:
+                                </span>
+                                {searchQuery.trim() && (
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                    >
+                                        Search: "{searchQuery}"
+                                    </Badge>
+                                )}
+                                {orderStatusFilter !== 'all' && (
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                    >
+                                        Order:{' '}
+                                        {getStatusInfo(orderStatusFilter).label}
+                                    </Badge>
+                                )}
+                                {paymentStatusFilter !== 'all' && (
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                    >
+                                        Payment:{' '}
+                                        {
+                                            getPaymentStatusInfo(
+                                                paymentStatusFilter,
+                                            ).label
+                                        }
+                                    </Badge>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Orders Display */}
+            <div className="min-h-0 flex-1">
+                {orders.length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">
+                        <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                        <p className="mb-2 text-lg font-medium">
+                            No orders found
+                        </p>
+                        <p className="text-sm">
+                            Try adjusting your filters or search terms
+                        </p>
+                    </div>
+                ) : (
+                    <div
+                        className={`${viewMode === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'} h-full overflow-y-auto pb-4`}
+                    >
+                        {orders.map((order) => {
+                            const targetItems = getTargetProductItems(order);
+                            const targetQuantity = targetItems.reduce(
+                                (sum, item) => sum + item.quantity,
+                                0,
+                            );
+                            const targetRevenue = targetItems.reduce(
+                                (sum, item) => sum + item.quantity * item.price,
+                                0,
+                            );
+                            const isExpanded = isCardExpanded(order.id);
+
+                            if (viewMode === 'grid') {
+                                return (
+                                    <Card
+                                        key={order.id}
+                                        className="border-l-4 border-l-primary transition-all duration-200 hover:shadow-lg"
+                                    >
+                                        <CardHeader
+                                            className={`pb-3 transition-all duration-200 ${isExpanded ? 'border-b border-blue-200 bg-gradient-to-b from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-900/20 dark:to-blue-800/20' : ''}`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-2">
+                                                    <FileText className="h-4 w-4 text-primary" />
+                                                    <span className="font-semibold">
+                                                        #{order.order_number}
+                                                    </span>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        toggleCardExpansion(
+                                                            order.id,
+                                                        )
+                                                    }
+                                                    className="h-6 w-6 p-0"
+                                                >
+                                                    {isExpanded ? (
+                                                        <ChevronUp className="h-3 w-3" />
+                                                    ) : (
+                                                        <ChevronDown className="h-3 w-3" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <Badge
+                                                    className={
+                                                        getStatusInfo(
+                                                            order.order_status,
+                                                        ).color
+                                                    }
+                                                    variant="outline"
+                                                >
+                                                    Order Status:{' '}
+                                                    {
+                                                        getStatusInfo(
+                                                            order.order_status,
+                                                        ).label
+                                                    }
+                                                </Badge>
+                                                <Badge
+                                                    className={
+                                                        getPaymentStatusInfo(
+                                                            order.payment_status,
+                                                        ).color
+                                                    }
+                                                    variant="outline"
+                                                >
+                                                    Payment Status:{' '}
+                                                    {
+                                                        getPaymentStatusInfo(
+                                                            order.payment_status,
+                                                        ).label
+                                                    }
+                                                </Badge>
+                                            </div>
+                                        </CardHeader>
+
+                                        <CardContent className="space-y-3">
+                                            <div className="flex items-center space-x-2">
+                                                <User className="h-4 w-4 text-muted-foreground" />
+                                                <span className="truncate text-sm font-medium">
+                                                    {order.customer_name}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center space-x-2">
+                                                <Package className="h-4 w-4 text-muted-foreground" />
+                                                <span className="text-sm">
+                                                    {targetQuantity} ×{' '}
+                                                    {formatPrice(
+                                                        targetItems[0]?.price ||
+                                                            0,
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between border-t pt-2">
+                                                <span className="text-sm text-muted-foreground">
+                                                    Revenue:
+                                                </span>
+                                                <span className="font-semibold text-primary">
+                                                    {formatPrice(targetRevenue)}
+                                                </span>
+                                            </div>
+
+                                            {isExpanded && (
+                                                <div className="space-y-2 border-t pt-3">
+                                                    <div className="text-xs text-muted-foreground">
+                                                        <div className="flex items-center space-x-1">
+                                                            <Mail className="h-3 w-3" />
+                                                            <span className="truncate">
+                                                                {
+                                                                    order.customer_email
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        <div className="flex items-center space-x-1">
+                                                            <Calendar className="h-3 w-3" />
+                                                            <span>
+                                                                {formatDate(
+                                                                    order.created_at,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                );
+                            }
+
+                            return (
+                                <Card
+                                    key={order.id}
+                                    className="overflow-hidden border-l-4 border-l-primary transition-all duration-200 hover:shadow-lg"
+                                >
+                                    {/* Order Header */}
+                                    <div
+                                        className={`border-b p-4 transition-all duration-200 ${isExpanded ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-900/20 dark:to-blue-800/20' : 'bg-gradient-to-r from-muted/30 to-transparent'}`}
+                                    >
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex items-center space-x-2">
+                                                    <FileText className="h-5 w-5 text-primary" />
+                                                    <span className="text-lg font-semibold">
+                                                        #{order.order_number}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Badge
+                                                        className={
+                                                            getStatusInfo(
+                                                                order.order_status,
+                                                            ).color
+                                                        }
+                                                        variant="outline"
+                                                    >
+                                                        Order Status:{' '}
+                                                        {
+                                                            getStatusInfo(
+                                                                order.order_status,
+                                                            ).label
+                                                        }
+                                                    </Badge>
+                                                    <Badge
+                                                        className={
+                                                            getPaymentStatusInfo(
+                                                                order.payment_status,
+                                                            ).color
+                                                        }
+                                                        variant="outline"
+                                                    >
+                                                        Payment Status:{' '}
+                                                        {
+                                                            getPaymentStatusInfo(
+                                                                order.payment_status,
+                                                            ).label
+                                                        }
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="flex items-center text-sm text-muted-foreground">
+                                                    <Calendar className="mr-1 h-4 w-4" />
+                                                    {formatDate(
+                                                        order.created_at,
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        toggleCardExpansion(
+                                                            order.id,
+                                                        )
+                                                    }
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    {isExpanded ? (
+                                                        <ChevronUp className="h-4 w-4" />
+                                                    ) : (
+                                                        <ChevronDown className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <CardContent className="p-0">
+                                        {/* Condensed View (Only Visible When Not Expanded) */}
+                                        {!isExpanded && (
+                                            <div className="p-4">
+                                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                                    {/* Customer Info */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <User className="h-4 w-4 text-primary" />
+                                                            <span className="text-sm font-medium">
+                                                                {
+                                                                    order.customer_name
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                                            <Mail className="h-4 w-4" />
+                                                            <span className="truncate">
+                                                                {
+                                                                    order.customer_email
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        {order.customer_phone && (
+                                                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                                                <Phone className="h-4 w-4" />
+                                                                <span>
+                                                                    {
+                                                                        order.customer_phone
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Product Summary */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Package className="h-4 w-4 text-primary" />
+                                                            <span className="truncate text-sm font-medium">
+                                                                {targetItems[0]
+                                                                    ?.name ||
+                                                                    'Product'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {targetQuantity} ×{' '}
+                                                            {formatPrice(
+                                                                targetItems[0]
+                                                                    ?.price ||
+                                                                    0,
+                                                            )}{' '}
+                                                            | Revenue:{' '}
+                                                            <span className="font-semibold text-primary">
+                                                                {formatPrice(
+                                                                    targetRevenue,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                        {targetItems[0]
+                                                            ?.shipping_fee &&
+                                                            targetItems[0]
+                                                                .shipping_fee >
+                                                                0 && (
+                                                                <div className="text-sm text-blue-600 dark:text-blue-400">
+                                                                    Shipping:{' '}
+                                                                    {formatPrice(
+                                                                        targetItems[0]
+                                                                            .shipping_fee,
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                    </div>
+
+                                                    {/* Shipping Address */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center space-x-2">
+                                                            <MapPin className="h-4 w-4 text-primary" />
+                                                            <span className="text-sm font-medium">
+                                                                Shipping
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {order.shipping_address ? (
+                                                                <span className="block truncate">
+                                                                    {
+                                                                        order.shipping_address
+                                                                    }
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground/60">
+                                                                    No address
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Expanded View (Conditional) */}
+                                        {isExpanded && (
+                                            <>
+                                                <Separator />
+
+                                                {/* 3-Column Grid Layout */}
+                                                <div className="p-3">
+                                                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                                                        {/* Column 1: Customer Information */}
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center space-x-2">
+                                                                <User className="h-4 w-4 text-primary" />
+                                                                <span className="text-sm font-medium">
+                                                                    Customer
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-2 rounded-lg bg-muted/20 p-3">
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span className="text-sm font-medium">
+                                                                        {
+                                                                            order.customer_name
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                                                    <Mail className="h-3 w-3" />
+                                                                    <span className="truncate">
+                                                                        {
+                                                                            order.customer_email
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                                {order.customer_phone && (
+                                                                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                                                        <Phone className="h-3 w-3" />
+                                                                        <span>
+                                                                            {
+                                                                                order.customer_phone
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {order.shipping_address && (
+                                                                    <div className="flex items-start space-x-2 text-xs">
+                                                                        <MapPin className="mt-0.5 h-3 w-3 text-muted-foreground" />
+                                                                        <div>
+                                                                            <span className="font-medium">
+                                                                                Shipping:
+                                                                            </span>
+                                                                            <p className="truncate text-muted-foreground">
+                                                                                {
+                                                                                    order.shipping_address
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                                {order.billing_address && (
+                                                                    <div className="flex items-start space-x-2 text-xs">
+                                                                        <MapPin className="mt-0.5 h-3 w-3 text-muted-foreground" />
+                                                                        <div>
+                                                                            <span className="font-medium">
+                                                                                Billing:
+                                                                            </span>
+                                                                            <p className="truncate text-muted-foreground">
+                                                                                {
+                                                                                    order.billing_address
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Column 2: Product & Order Details */}
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center space-x-2">
+                                                                <Package className="h-4 w-4 text-primary" />
+                                                                <span className="text-sm font-medium">
+                                                                    Order Items
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-3">
+                                                                {/* Order Items */}
+                                                                <div className="space-y-2 rounded-lg bg-muted/10 p-3">
+                                                                    <div className="max-h-48 space-y-2 overflow-y-auto">
+                                                                        {order.order_items.map(
+                                                                            (
+                                                                                item,
+                                                                                index,
+                                                                            ) => {
+                                                                                const statusInfo =
+                                                                                    getOrderItemStatusInfo(
+                                                                                        item.status,
+                                                                                    );
+                                                                                const currentItemStatus =
+                                                                                    getItemCurrentStatus(
+                                                                                        order,
+                                                                                        item,
+                                                                                    );
+                                                                                const isUpdating =
+                                                                                    isItemUpdating(
+                                                                                        order.id,
+                                                                                        item.product_id,
+                                                                                    );
+                                                                                const hasStatusChange =
+                                                                                    itemStatusUpdates[
+                                                                                        `${order.id}-${item.product_id}`
+                                                                                    ] &&
+                                                                                    itemStatusUpdates[
+                                                                                        `${order.id}-${item.product_id}`
+                                                                                    ] !==
+                                                                                        item.status;
+
+                                                                                return (
+                                                                                    <div
+                                                                                        key={
+                                                                                            index
+                                                                                        }
+                                                                                        className={`rounded border p-2 text-xs ${
+                                                                                            item.is_target_product
+                                                                                                ? 'border-primary/20 bg-primary/5'
+                                                                                                : 'border-muted/20 bg-muted/5'
+                                                                                        }`}
+                                                                                    >
+                                                                                        <div className="mb-1 flex items-start justify-between">
+                                                                                            <div className="min-w-0 flex-1">
+                                                                                                <p className="truncate font-medium">
+                                                                                                    {
+                                                                                                        item.name
+                                                                                                    }
+                                                                                                </p>
+                                                                                                <p className="text-muted-foreground">
+                                                                                                    {
+                                                                                                        item.quantity
+                                                                                                    }{' '}
+                                                                                                    ×{' '}
+                                                                                                    {formatPrice(
+                                                                                                        item.price,
+                                                                                                    )}
+                                                                                                </p>
+                                                                                            </div>
+                                                                                            <Badge
+                                                                                                className={`text-[10px] ${statusInfo.color} ml-2 border`}
+                                                                                            >
+                                                                                                <span className="mr-0.5">
+                                                                                                    {
+                                                                                                        statusInfo.icon
+                                                                                                    }
+                                                                                                </span>
+                                                                                                {
+                                                                                                    getOrderItemStatusInfo(
+                                                                                                        currentItemStatus,
+                                                                                                    )
+                                                                                                        .label
+                                                                                                }
+                                                                                            </Badge>
+                                                                                        </div>
+
+                                                                                        {/* Status Update Section */}
+                                                                                        <div className="mt-2 border-t border-muted/20 pt-2">
+                                                                                            <div className="flex items-center justify-between gap-2">
+                                                                                                <div className="flex-1">
+                                                                                                    <Select
+                                                                                                        value={
+                                                                                                            currentItemStatus
+                                                                                                        }
+                                                                                                        onValueChange={(
+                                                                                                            value,
+                                                                                                        ) =>
+                                                                                                            handleItemStatusChange(
+                                                                                                                order.id,
+                                                                                                                item.product_id,
+                                                                                                                value,
+                                                                                                            )
+                                                                                                        }
+                                                                                                        disabled={
+                                                                                                            isUpdating
+                                                                                                        }
+                                                                                                    >
+                                                                                                        <SelectTrigger className="h-6 text-[10px]">
+                                                                                                            <SelectValue placeholder="Select status" />
+                                                                                                        </SelectTrigger>
+                                                                                                        <SelectContent>
+                                                                                                            <SelectItem value="pending">
+                                                                                                                ⏳
+                                                                                                                Pending
+                                                                                                            </SelectItem>
+                                                                                                            <SelectItem value="confirmed">
+                                                                                                                ✅
+                                                                                                                Confirmed
+                                                                                                            </SelectItem>
+                                                                                                            <SelectItem value="processing">
+                                                                                                                ⚙️
+                                                                                                                Processing
+                                                                                                            </SelectItem>
+                                                                                                            <SelectItem value="shipped">
+                                                                                                                📦
+                                                                                                                Shipped
+                                                                                                            </SelectItem>
+                                                                                                            <SelectItem value="delivered">
+                                                                                                                🎉
+                                                                                                                Delivered
+                                                                                                            </SelectItem>
+                                                                                                            <SelectItem value="cancelled">
+                                                                                                                ❌
+                                                                                                                Cancelled
+                                                                                                            </SelectItem>
+                                                                                                            <SelectItem value="out_of_stock">
+                                                                                                                📦
+                                                                                                                Out
+                                                                                                                of
+                                                                                                                Stock
+                                                                                                            </SelectItem>
+                                                                                                        </SelectContent>
+                                                                                                    </Select>
+                                                                                                </div>
+
+                                                                                                {hasStatusChange &&
+                                                                                                    !isUpdating && (
+                                                                                                        <Button
+                                                                                                            size="sm"
+                                                                                                            className="h-6 px-2 text-[10px]"
+                                                                                                            onClick={() =>
+                                                                                                                updateOrderItemStatus(
+                                                                                                                    order.id,
+                                                                                                                    item.product_id,
+                                                                                                                    currentItemStatus,
+                                                                                                                )
+                                                                                                            }
+                                                                                                        >
+                                                                                                            <Save className="mr-1 h-3 w-3" />
+                                                                                                            Save
+                                                                                                        </Button>
+                                                                                                    )}
+
+                                                                                                {isUpdating && (
+                                                                                                    <div className="flex items-center text-xs text-muted-foreground">
+                                                                                                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                                                                                        Updating...
+                                                                                                    </div>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        <div className="mt-2 flex items-center justify-between">
+                                                                                            <span className="text-muted-foreground">
+                                                                                                Total:
+                                                                                            </span>
+                                                                                            <span className="font-semibold">
+                                                                                                {formatPrice(
+                                                                                                    item.price *
+                                                                                                        item.quantity,
+                                                                                                )}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        {item.shipping_fee &&
+                                                                                            item.shipping_fee >
+                                                                                                0 && (
+                                                                                                <div className="mt-1 flex items-center justify-between">
+                                                                                                    <span className="text-muted-foreground">
+                                                                                                        Shipping:
+                                                                                                    </span>
+                                                                                                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                                                                                        {formatPrice(
+                                                                                                            item.shipping_fee,
+                                                                                                        )}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                    </div>
+                                                                                );
+                                                                            },
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Column 3: Payment & Notes */}
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center space-x-2">
+                                                                <CreditCard className="h-4 w-4 text-primary" />
+                                                                <span className="text-sm font-medium">
+                                                                    Payment &
+                                                                    Notes
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-3">
+                                                                {/* Payment Information */}
+                                                                {order.payment_method && (
+                                                                    <div className="space-y-2 rounded-lg bg-muted/10 p-3">
+                                                                        <div className="flex justify-between text-xs">
+                                                                            <span className="text-muted-foreground">
+                                                                                Method:
+                                                                            </span>
+                                                                            <span className="font-medium">
+                                                                                {formatPaymentMethod(
+                                                                                    order.payment_method,
+                                                                                )}
+                                                                            </span>
+                                                                        </div>
+                                                                        {order.payment_reference && (
+                                                                            <div className="flex justify-between text-xs">
+                                                                                <span className="text-muted-foreground">
+                                                                                    Reference:
+                                                                                </span>
+                                                                                <span className="font-medium">
+                                                                                    {
+                                                                                        order.payment_reference
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                        {order.paid_at && (
+                                                                            <div className="flex justify-between text-xs">
+                                                                                <span className="text-muted-foreground">
+                                                                                    Paid:
+                                                                                </span>
+                                                                                <span className="font-medium">
+                                                                                    {formatDate(
+                                                                                        order.paid_at,
+                                                                                    )}
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Notes */}
+                                                                {order.notes && (
+                                                                    <div className="rounded-lg bg-muted/10 p-3">
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            {
+                                                                                order.notes
+                                                                            }
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center space-x-2 border-t pt-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                            setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                            setCurrentPage((prev) =>
+                                Math.min(totalPages, prev + 1),
+                            )
+                        }
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
-} 
+    );
+}

@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
 import { router } from '@inertiajs/react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 export const usePosApi = () => {
@@ -12,27 +12,36 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to create menu item');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to create menu item',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
 
-    const updateMenuItem = useCallback(async (id: number, menuItemData: any) => {
-        return new Promise((resolve) => {
-            router.put(`/pos-restaurant/menu-item/${id}`, menuItemData, {
-                onSuccess: () => {
-                    toast.success('Menu item updated successfully');
-                    resolve(true);
-                },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to update menu item');
-                    resolve(false);
-                }
+    const updateMenuItem = useCallback(
+        async (id: number, menuItemData: any) => {
+            return new Promise((resolve) => {
+                router.put(`/pos-restaurant/menu-item/${id}`, menuItemData, {
+                    onSuccess: () => {
+                        toast.success('Menu item updated successfully');
+                        resolve(true);
+                    },
+                    onError: (errors) => {
+                        toast.error(
+                            (Object.values(errors)[0] as string) ||
+                                'Failed to update menu item',
+                        );
+                        resolve(false);
+                    },
+                });
             });
-        });
-    }, []);
+        },
+        [],
+    );
 
     const deleteMenuItem = useCallback(async (id: number) => {
         return new Promise((resolve) => {
@@ -42,25 +51,37 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to delete menu item');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to delete menu item',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
 
     const bulkDeleteMenuItems = useCallback(async (ids: number[]) => {
         return new Promise((resolve) => {
-            router.post('/pos-restaurant/menu-items/bulk-destroy', { ids }, {
-                onSuccess: () => {
-                    toast.success(`${ids.length} menu items deleted successfully`);
-                    resolve(true);
+            router.post(
+                '/pos-restaurant/menu-items/bulk-destroy',
+                { ids },
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            `${ids.length} menu items deleted successfully`,
+                        );
+                        resolve(true);
+                    },
+                    onError: (errors) => {
+                        toast.error(
+                            (Object.values(errors)[0] as string) ||
+                                'Failed to delete menu items',
+                        );
+                        resolve(false);
+                    },
                 },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to delete menu items');
-                    resolve(false);
-                }
-            });
+            );
         });
     }, []);
 
@@ -73,9 +94,12 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to create table');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to create table',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
@@ -88,9 +112,12 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to update table');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to update table',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
@@ -103,40 +130,57 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to delete table');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to delete table',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
 
     const joinTables = useCallback(async (tableIds: number[]) => {
         return new Promise((resolve) => {
-            router.post('/pos-restaurant/tables/join', { tableIds }, {
-                onSuccess: () => {
-                    toast.success('Tables joined successfully');
-                    resolve(true);
+            router.post(
+                '/pos-restaurant/tables/join',
+                { tableIds },
+                {
+                    onSuccess: () => {
+                        toast.success('Tables joined successfully');
+                        resolve(true);
+                    },
+                    onError: (errors) => {
+                        toast.error(
+                            (Object.values(errors)[0] as string) ||
+                                'Failed to join tables',
+                        );
+                        resolve(false);
+                    },
                 },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to join tables');
-                    resolve(false);
-                }
-            });
+            );
         });
     }, []);
 
     const unjoinTables = useCallback(async (tableIds: number[]) => {
         return new Promise((resolve) => {
-            router.post('/pos-restaurant/tables/unjoin', { tableIds }, {
-                onSuccess: () => {
-                    toast.success('Tables unjoined successfully');
-                    resolve(true);
+            router.post(
+                '/pos-restaurant/tables/unjoin',
+                { tableIds },
+                {
+                    onSuccess: () => {
+                        toast.success('Tables unjoined successfully');
+                        resolve(true);
+                    },
+                    onError: (errors) => {
+                        toast.error(
+                            (Object.values(errors)[0] as string) ||
+                                'Failed to unjoin tables',
+                        );
+                        resolve(false);
+                    },
                 },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to unjoin tables');
-                    resolve(false);
-                }
-            });
+            );
         });
     }, []);
 
@@ -148,27 +192,39 @@ export const usePosApi = () => {
                     resolve(page.props);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to add item to order');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to add item to order',
+                    );
                     resolve(null);
-                }
+                },
             });
         });
     }, []);
 
-    const removeOrderItem = useCallback(async (tableNumber: string, itemId: number) => {
-        return new Promise((resolve) => {
-            router.delete(`/pos-restaurant/current-order/${tableNumber}/item/${itemId}`, {
-                onSuccess: () => {
-                    toast.success('Item removed from order');
-                    resolve(true);
-                },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to remove item');
-                    resolve(false);
-                }
+    const removeOrderItem = useCallback(
+        async (tableNumber: string, itemId: number) => {
+            return new Promise((resolve) => {
+                router.delete(
+                    `/pos-restaurant/current-order/${tableNumber}/item/${itemId}`,
+                    {
+                        onSuccess: () => {
+                            toast.success('Item removed from order');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to remove item',
+                            );
+                            resolve(false);
+                        },
+                    },
+                );
             });
-        });
-    }, []);
+        },
+        [],
+    );
 
     const completeOrder = useCallback(async (orderData: any) => {
         return new Promise((resolve) => {
@@ -178,9 +234,12 @@ export const usePosApi = () => {
                     resolve(page.props);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to complete order');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to complete order',
+                    );
                     resolve(null);
-                }
+                },
             });
         });
     }, []);
@@ -194,27 +253,40 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to create reservation');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to create reservation',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
 
-    const updateReservation = useCallback(async (id: number, reservationData: any) => {
-        return new Promise((resolve) => {
-            router.put(`/pos-restaurant/reservations/${id}`, reservationData, {
-                onSuccess: () => {
-                    toast.success('Reservation updated successfully');
-                    resolve(true);
-                },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to update reservation');
-                    resolve(false);
-                }
+    const updateReservation = useCallback(
+        async (id: number, reservationData: any) => {
+            return new Promise((resolve) => {
+                router.put(
+                    `/pos-restaurant/reservations/${id}`,
+                    reservationData,
+                    {
+                        onSuccess: () => {
+                            toast.success('Reservation updated successfully');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update reservation',
+                            );
+                            resolve(false);
+                        },
+                    },
+                );
             });
-        });
-    }, []);
+        },
+        [],
+    );
 
     const deleteReservation = useCallback(async (id: number) => {
         return new Promise((resolve) => {
@@ -224,9 +296,12 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to delete reservation');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to delete reservation',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
@@ -240,9 +315,12 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to send kitchen order');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to send kitchen order',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
@@ -256,27 +334,40 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to block date');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to block date',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
 
-    const updateBlockedDate = useCallback(async (id: number, blockedDateData: any) => {
-        return new Promise((resolve) => {
-            router.put(`/pos-restaurant/blocked-dates/${id}`, blockedDateData, {
-                onSuccess: () => {
-                    toast.success('Blocked date updated successfully');
-                    resolve(true);
-                },
-                onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to update blocked date');
-                    resolve(false);
-                }
+    const updateBlockedDate = useCallback(
+        async (id: number, blockedDateData: any) => {
+            return new Promise((resolve) => {
+                router.put(
+                    `/pos-restaurant/blocked-dates/${id}`,
+                    blockedDateData,
+                    {
+                        onSuccess: () => {
+                            toast.success('Blocked date updated successfully');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update blocked date',
+                            );
+                            resolve(false);
+                        },
+                    },
+                );
             });
-        });
-    }, []);
+        },
+        [],
+    );
 
     const deleteBlockedDate = useCallback(async (id: number) => {
         return new Promise((resolve) => {
@@ -286,16 +377,21 @@ export const usePosApi = () => {
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error(Object.values(errors)[0] as string || 'Failed to remove blocked date');
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to remove blocked date',
+                    );
                     resolve(false);
-                }
+                },
             });
         });
     }, []);
 
     // Utility function to refresh data
     const refreshData = useCallback(() => {
-        router.reload({ only: ['menuItems', 'tables', 'reservations', 'blockedDates'] });
+        router.reload({
+            only: ['menuItems', 'tables', 'reservations', 'blockedDates'],
+        });
     }, []);
 
     return {
@@ -304,32 +400,32 @@ export const usePosApi = () => {
         updateMenuItem,
         deleteMenuItem,
         bulkDeleteMenuItems,
-        
+
         // Tables
         createTable,
         updateTable,
         deleteTable,
         joinTables,
         unjoinTables,
-        
+
         // Orders
         addItemToOrder,
         removeOrderItem,
         completeOrder,
-        
+
         // Reservations
         createReservation,
         updateReservation,
         deleteReservation,
-        
+
         // Blocked Dates
         createBlockedDate,
         updateBlockedDate,
         deleteBlockedDate,
-        
+
         // Kitchen Orders
         storeKitchenOrder,
-        
+
         // Utility
         refreshData,
     };

@@ -1,12 +1,11 @@
-import { Head } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
-import { 
-    UserGroupIcon, 
-    TruckIcon, 
-    HeartIcon
-} from '@heroicons/react/24/outline';
-import { useEffect, useState, useRef } from 'react';
 import { getHost } from '@/lib/utils';
+import {
+    HeartIcon,
+    TruckIcon,
+    UserGroupIcon,
+} from '@heroicons/react/24/outline';
+import { Head, Link } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -27,16 +26,23 @@ export default function Pricing({ auth }: PageProps) {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node)) {
+            if (
+                productsDropdownRef.current &&
+                !productsDropdownRef.current.contains(event.target as Node)
+            ) {
                 setIsProductsDropdownOpen(false);
             }
-            if (legalDropdownRef.current && !legalDropdownRef.current.contains(event.target as Node)) {
+            if (
+                legalDropdownRef.current &&
+                !legalDropdownRef.current.contains(event.target as Node)
+            ) {
                 setIsLegalDropdownOpen(false);
             }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const productsMenuItems = [
@@ -64,12 +70,13 @@ export default function Pricing({ auth }: PageProps) {
                     name: 'Basic',
                     price: 99,
                     project: 'community',
-                    description: 'Perfect for small communities and organizations',
+                    description:
+                        'Perfect for small communities and organizations',
                     features: [
                         'All Community Apps',
                         'Basic Support',
-                        'Email Support'
-                    ]
+                        'Email Support',
+                    ],
                 },
                 {
                     name: 'Pro',
@@ -80,23 +87,24 @@ export default function Pricing({ auth }: PageProps) {
                         'All Community Apps',
                         'Email Integration',
                         'SMS Integration',
-                        'Priority Support'
-                    ]
+                        'Priority Support',
+                    ],
                 },
                 {
                     name: 'Business',
                     price: 299,
                     project: 'community',
-                    description: 'Perfect for established communities with advanced needs',
+                    description:
+                        'Perfect for established communities with advanced needs',
                     features: [
                         'All Community Apps',
                         'Email Integration',
                         'SMS Integration',
                         'Priority Support',
-                        'Virtual Assistant'
-                    ]
-                }
-            ]
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
         },
         Logistika: {
             name: 'Logistika',
@@ -110,8 +118,8 @@ export default function Pricing({ auth }: PageProps) {
                     features: [
                         'All Logistics Apps',
                         'Basic Support',
-                        'Email Support'
-                    ]
+                        'Email Support',
+                    ],
                 },
                 {
                     name: 'Pro',
@@ -122,23 +130,24 @@ export default function Pricing({ auth }: PageProps) {
                         'All Logistics Apps',
                         'Email Integration',
                         'SMS Integration',
-                        'Priority Support'
-                    ]
+                        'Priority Support',
+                    ],
                 },
                 {
                     name: 'Business',
                     price: 699,
                     project: 'logistics',
-                    description: 'Perfect for established logistics companies with advanced needs',
+                    description:
+                        'Perfect for established logistics companies with advanced needs',
                     features: [
                         'All Logistics Apps',
                         'Email Integration',
                         'SMS Integration',
                         'Priority Support',
-                        'Virtual Assistant'
-                    ]
-                }
-            ]
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
         },
         Medikal: {
             name: 'Medikal',
@@ -152,8 +161,8 @@ export default function Pricing({ auth }: PageProps) {
                     features: [
                         'All Medical Apps',
                         'Basic Support',
-                        'Email Support'
-                    ]
+                        'Email Support',
+                    ],
                 },
                 {
                     name: 'Pro',
@@ -164,24 +173,25 @@ export default function Pricing({ auth }: PageProps) {
                         'All Medical Apps',
                         'Email Integration',
                         'SMS Integration',
-                        'Priority Support'
-                    ]
+                        'Priority Support',
+                    ],
                 },
                 {
                     name: 'Business',
                     price: 699,
                     project: 'medical',
-                    description: 'Perfect for established medical practices with advanced needs',
+                    description:
+                        'Perfect for established medical practices with advanced needs',
                     features: [
                         'All Medical Apps',
                         'Email Integration',
                         'SMS Integration',
                         'Priority Support',
-                        'Virtual Assistant'
-                    ]
-                }
-            ]
-        }
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
+        },
     };
 
     return (
@@ -189,20 +199,29 @@ export default function Pricing({ auth }: PageProps) {
             <Head title={`Pricing - ${hostname}`} />
             <div className="min-h-screen from-white via-indigo-50/30 to-white dark:bg-gray-900">
                 {/* Navigation */}
-                <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/90 shadow-sm">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
+                <nav className="border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex h-16 justify-between">
                             <div className="flex items-center">
                                 <Link href="/" className="flex items-center">
-                                    <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-transparent dark:text-gray-100">{hostname}</span>
+                                    <span className="bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
+                                        {hostname}
+                                    </span>
                                 </Link>
                             </div>
                             <div className="flex items-center">
                                 {/* Solutions Dropdown */}
-                                <div className="relative" ref={productsDropdownRef}>
+                                <div
+                                    className="relative"
+                                    ref={productsDropdownRef}
+                                >
                                     <button
-                                        onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
-                                        className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+                                        onClick={() =>
+                                            setIsProductsDropdownOpen(
+                                                !isProductsDropdownOpen,
+                                            )
+                                        }
+                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Solutions
                                         <svg
@@ -212,17 +231,26 @@ export default function Pricing({ auth }: PageProps) {
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
                                         >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M19 9l-7 7-7-7"
+                                            />
                                         </svg>
                                     </button>
                                     {isProductsDropdownOpen && (
-                                        <div className="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
                                                     href={item.href}
-                                                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-white transition-colors duration-200"
-                                                    onClick={() => setIsProductsDropdownOpen(false)}
+                                                    className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                    onClick={() =>
+                                                        setIsProductsDropdownOpen(
+                                                            false,
+                                                        )
+                                                    }
                                                 >
                                                     {item.name}
                                                 </Link>
@@ -232,22 +260,29 @@ export default function Pricing({ auth }: PageProps) {
                                 </div>
                                 <Link
                                     href={route('features')}
-                                    className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                 >
                                     Features
                                 </Link>
                                 <Link
                                     href={route('pricing')}
-                                    className="text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-indigo-50 dark:bg-indigo-900/30"
+                                    className="rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-600 transition-colors duration-200 dark:bg-indigo-900/30 dark:text-indigo-400"
                                 >
                                     Pricing
                                 </Link>
-                                <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                                <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
                                 {/* Legal Dropdown */}
-                                <div className="relative" ref={legalDropdownRef}>
+                                <div
+                                    className="relative"
+                                    ref={legalDropdownRef}
+                                >
                                     <button
-                                        onClick={() => setIsLegalDropdownOpen(!isLegalDropdownOpen)}
-                                        className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+                                        onClick={() =>
+                                            setIsLegalDropdownOpen(
+                                                !isLegalDropdownOpen,
+                                            )
+                                        }
+                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Legal
                                         <svg
@@ -257,17 +292,26 @@ export default function Pricing({ auth }: PageProps) {
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
                                         >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M19 9l-7 7-7-7"
+                                            />
                                         </svg>
                                     </button>
                                     {isLegalDropdownOpen && (
-                                        <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                        <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                                             {legalMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
                                                     href={item.href}
-                                                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-white transition-colors duration-200"
-                                                    onClick={() => setIsLegalDropdownOpen(false)}
+                                                    className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                    onClick={() =>
+                                                        setIsLegalDropdownOpen(
+                                                            false,
+                                                        )
+                                                    }
                                                 >
                                                     {item.name}
                                                 </Link>
@@ -281,9 +325,9 @@ export default function Pricing({ auth }: PageProps) {
                 </nav>
 
                 {/* Pricing Section */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+                <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
                     <div className="text-center">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text dark:text-white sm:text-5xl">
+                        <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
                             Project-Specific Pricing
                         </h1>
                         <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
@@ -293,72 +337,118 @@ export default function Pricing({ auth }: PageProps) {
 
                     {/* Tab Navigation */}
                     <div className="mt-12 flex justify-center">
-                        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-                            {Object.entries(projectPlans).map(([key, project]) => (
-                                <button
-                                    key={key}
-                                    onClick={() => setActiveTab(key)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                                        activeTab === key
-                                            ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                                    }`}
-                                >
-                                    <project.icon className="w-5 h-5" />
-                                    {project.name}
-                                </button>
-                            ))}
+                        <div className="flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+                            {Object.entries(projectPlans).map(
+                                ([key, project]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => setActiveTab(key)}
+                                        className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                                            activeTab === key
+                                                ? 'bg-white text-indigo-600 shadow-sm dark:bg-gray-700 dark:text-indigo-400'
+                                                : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                                        }`}
+                                    >
+                                        <project.icon className="h-5 w-5" />
+                                        {project.name}
+                                    </button>
+                                ),
+                            )}
                         </div>
                     </div>
 
                     {/* Tab Content */}
                     <div className="mt-12">
                         {Object.entries(projectPlans).map(([key, project]) => (
-                            <div key={key} className={activeTab === key ? 'block' : 'hidden'}>
-                                <div className="flex items-center gap-3 mb-6">
-                                    <project.icon className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
-                                    <h2 className="text-2xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text dark:from-indigo-400 dark:to-purple-400">
+                            <div
+                                key={key}
+                                className={
+                                    activeTab === key ? 'block' : 'hidden'
+                                }
+                            >
+                                <div className="mb-6 flex items-center gap-3">
+                                    <project.icon className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+                                    <h2 className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent dark:from-indigo-400 dark:to-purple-400">
                                         {project.name}
                                     </h2>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                                     {project.plans.map((plan) => (
-                                        <div key={plan.name} className={`relative group h-full ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'lg:-mt-4 lg:mb-4' : ''}`}>
-                                            <div className={`absolute -inset-0.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'opacity-20 dark:opacity-30' : 'opacity-0 group-hover:opacity-10 dark:group-hover:opacity-30'} transition duration-200`}></div>
-                                            <div className={`relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg hover:shadow-indigo-500/10 transition duration-200 h-full flex flex-col ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'border-2 border-indigo-500 dark:border-indigo-400' : ''}`}>
-                                                {(plan.name === 'Pro' || plan.name === 'Enterprise') && (
-                                                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200">
-                                                            {plan.name === 'Pro' ? 'Most Popular' : 'Premium'}
+                                        <div
+                                            key={plan.name}
+                                            className={`group relative h-full ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'lg:-mt-4 lg:mb-4' : ''}`}
+                                        >
+                                            <div
+                                                className={`absolute -inset-0.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'opacity-20 dark:opacity-30' : 'opacity-0 group-hover:opacity-10 dark:group-hover:opacity-30'} transition duration-200`}
+                                            ></div>
+                                            <div
+                                                className={`relative flex h-full flex-col rounded-lg bg-white p-6 shadow-sm transition duration-200 hover:shadow-lg hover:shadow-indigo-500/10 dark:bg-gray-800 ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'border-2 border-indigo-500 dark:border-indigo-400' : ''}`}
+                                            >
+                                                {(plan.name === 'Pro' ||
+                                                    plan.name ===
+                                                        'Enterprise') && (
+                                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+                                                        <span className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200">
+                                                            {plan.name === 'Pro'
+                                                                ? 'Most Popular'
+                                                                : 'Premium'}
                                                         </span>
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
-                                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{plan.description}</p>
+                                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                                                        {plan.name}
+                                                    </h3>
+                                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                                                        {plan.description}
+                                                    </p>
                                                     <p className="mt-4">
-                                                        <span className="text-3xl font-extrabold text-gray-900 dark:text-white">₱{plan.price}</span>
-                                                        <span className="text-sm text-gray-600 dark:text-gray-300">/month</span>
+                                                        <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
+                                                            ₱{plan.price}
+                                                        </span>
+                                                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                                                            /month
+                                                        </span>
                                                     </p>
                                                     {!auth.user && (
                                                         <Link
                                                             href={`/register?project=${plan.project}&plan=${plan.name.toLowerCase()}`}
-                                                            className="mt-4 block w-full py-2 px-4 border border-transparent rounded-md shadow text-center text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+                                                            className="mt-4 block w-full rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2 text-center text-sm font-medium text-white shadow transition-all duration-200 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-600 dark:hover:bg-indigo-700"
                                                         >
                                                             Get Started
                                                         </Link>
                                                     )}
                                                 </div>
-                                                <div className="flex-grow mt-4">
+                                                <div className="mt-4 flex-grow">
                                                     <ul className="space-y-2">
-                                                        {plan.features.map((feature) => (
-                                                            <li key={feature} className="flex items-center text-sm">
-                                                                <svg className="h-4 w-4 text-indigo-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                                </svg>
-                                                                <span className="ml-2 text-gray-600 dark:text-gray-300">{feature}</span>
-                                                            </li>
-                                                        ))}
+                                                        {plan.features.map(
+                                                            (feature) => (
+                                                                <li
+                                                                    key={
+                                                                        feature
+                                                                    }
+                                                                    className="flex items-center text-sm"
+                                                                >
+                                                                    <svg
+                                                                        className="h-4 w-4 flex-shrink-0 text-indigo-500"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 20 20"
+                                                                        fill="currentColor"
+                                                                    >
+                                                                        <path
+                                                                            fillRule="evenodd"
+                                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                            clipRule="evenodd"
+                                                                        />
+                                                                    </svg>
+                                                                    <span className="ml-2 text-gray-600 dark:text-gray-300">
+                                                                        {
+                                                                            feature
+                                                                        }
+                                                                    </span>
+                                                                </li>
+                                                            ),
+                                                        )}
                                                     </ul>
                                                 </div>
                                             </div>
@@ -371,17 +461,19 @@ export default function Pricing({ auth }: PageProps) {
 
                     {/* FAQ Section */}
                     <div className="mt-24">
-                        <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white">
+                        <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
                             Frequently Asked Questions
                         </h2>
-                        <div className="mt-12 max-w-3xl mx-auto">
+                        <div className="mx-auto mt-12 max-w-3xl">
                             <dl className="space-y-6">
                                 <div>
                                     <dt className="text-lg font-medium text-gray-900 dark:text-white">
                                         Can I change plans later?
                                     </dt>
                                     <dd className="mt-2 text-gray-600 dark:text-gray-300">
-                                        Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.
+                                        Yes, you can upgrade or downgrade your
+                                        plan at any time. Changes will be
+                                        reflected in your next billing cycle.
                                     </dd>
                                 </div>
                                 <div>
@@ -389,7 +481,10 @@ export default function Pricing({ auth }: PageProps) {
                                         What payment methods do you accept?
                                     </dt>
                                     <dd className="mt-2 text-gray-600 dark:text-gray-300">
-                                        We accept Visa, Mastercard, JCB, or AMEX credit or debit card. You can also use e-Wallets such as Maya, GCash, WeChat Pay, ShopeePay, and more via QR Ph.
+                                        We accept Visa, Mastercard, JCB, or AMEX
+                                        credit or debit card. You can also use
+                                        e-Wallets such as Maya, GCash, WeChat
+                                        Pay, ShopeePay, and more via QR Ph.
                                     </dd>
                                 </div>
                                 <div>
@@ -397,7 +492,8 @@ export default function Pricing({ auth }: PageProps) {
                                         Do you offer refunds?
                                     </dt>
                                     <dd className="mt-2 text-gray-600 dark:text-gray-300">
-                                        Yes, we offer a 30-day money-back guarantee for all paid plans.
+                                        Yes, we offer a 30-day money-back
+                                        guarantee for all paid plans.
                                     </dd>
                                 </div>
                                 <div>
@@ -405,7 +501,9 @@ export default function Pricing({ auth }: PageProps) {
                                         What kind of support do you provide?
                                     </dt>
                                     <dd className="mt-2 text-gray-600 dark:text-gray-300">
-                                        All plans include email support. Pro and Business plans include priority support with faster response times.
+                                        All plans include email support. Pro and
+                                        Business plans include priority support
+                                        with faster response times.
                                     </dd>
                                 </div>
                             </dl>
@@ -414,34 +512,35 @@ export default function Pricing({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer className="bg-white/80 backdrop-blur-sm dark:bg-gray-900/90 border-t border-gray-100 dark:border-gray-800">
-                    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <footer className="border-t border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
+                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-gray-500 dark:text-gray-500">
-                                © {new Date().getFullYear()} {hostname}. All rights reserved.
+                                © {new Date().getFullYear()} {hostname}. All
+                                rights reserved.
                             </p>
                             <div className="flex items-center space-x-6">
                                 <Link
                                     href={route('privacy-policy')}
-                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     Privacy Policy
                                 </Link>
                                 <Link
                                     href={route('terms-and-conditions')}
-                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     Terms
                                 </Link>
                                 <Link
                                     href={route('cookie-policy')}
-                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     Cookies
                                 </Link>
                                 <Link
                                     href={route('faq')}
-                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     FAQ
                                 </Link>
@@ -452,4 +551,4 @@ export default function Pricing({ auth }: PageProps) {
             </div>
         </>
     );
-} 
+}

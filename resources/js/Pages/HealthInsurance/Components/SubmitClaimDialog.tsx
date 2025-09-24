@@ -1,15 +1,17 @@
-import { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from '@/Components/ui/dialog';
-import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -18,11 +20,8 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/Components/ui/popover';
+import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 interface Member {
     id: string;
@@ -51,7 +50,13 @@ interface Props {
     onClaimSubmitted: (claim: Claim) => void;
 }
 
-export default function SubmitClaimDialog({ open, onOpenChange, members, appCurrency, onClaimSubmitted }: Props) {
+export default function SubmitClaimDialog({
+    open,
+    onOpenChange,
+    members,
+    appCurrency,
+    onClaimSubmitted,
+}: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         member_id: '',
         claim_type: '',
@@ -62,33 +67,43 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
     });
 
     const [searchQuery, setSearchQuery] = useState('');
-    const filteredMembers = members.filter(member => 
-        member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredMembers = members.filter((member) =>
+        member.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     const [openMemberPopover, setOpenMemberPopover] = useState(false);
-    const selectedMember = members.find((member) => member.id === data.member_id);
+    const selectedMember = members.find(
+        (member) => member.id === data.member_id,
+    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('health-insurance.claims.store', { memberId: data.member_id }), {
-            onSuccess: () => {
-                reset();
-                onOpenChange(false);
+        post(
+            route('health-insurance.claims.store', {
+                memberId: data.member_id,
+            }),
+            {
+                onSuccess: () => {
+                    reset();
+                    onOpenChange(false);
+                },
             },
-        });
+        );
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Submit Claim</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <Label htmlFor="member_id">Member</Label>
-                        <Popover open={openMemberPopover} onOpenChange={setOpenMemberPopover}>
+                        <Popover
+                            open={openMemberPopover}
+                            onOpenChange={setOpenMemberPopover}
+                        >
                             <PopoverTrigger asChild>
                                 <Button
                                     type="button"
@@ -96,13 +111,17 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                                     role="combobox"
                                     aria-expanded={openMemberPopover}
                                     className="w-full justify-between"
-                                    onClick={() => setOpenMemberPopover((open) => !open)}
+                                    onClick={() =>
+                                        setOpenMemberPopover((open) => !open)
+                                    }
                                 >
-                                    {selectedMember ? selectedMember.name : 'Select member'}
+                                    {selectedMember
+                                        ? selectedMember.name
+                                        : 'Select member'}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent 
-                                className="p-0 w-[var(--radix-popover-trigger-width)] z-50"
+                            <PopoverContent
+                                className="z-50 w-[var(--radix-popover-trigger-width)] p-0"
                                 sideOffset={4}
                             >
                                 <div className="p-2">
@@ -114,19 +133,26 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                                         }}
                                         className="mb-2"
                                     />
-                                    <div className="max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                                    <div className="scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 max-h-[200px] overflow-y-auto">
                                         {filteredMembers.length === 0 ? (
-                                            <div className="p-2 text-sm text-muted-foreground">No members found</div>
+                                            <div className="p-2 text-sm text-muted-foreground">
+                                                No members found
+                                            </div>
                                         ) : (
                                             filteredMembers.map((member) => (
                                                 <div
                                                     key={member.id}
                                                     onClick={() => {
-                                                        setData('member_id', member.id);
-                                                        setOpenMemberPopover(false);
+                                                        setData(
+                                                            'member_id',
+                                                            member.id,
+                                                        );
+                                                        setOpenMemberPopover(
+                                                            false,
+                                                        );
                                                         setSearchQuery(''); // Clear search after selection
                                                     }}
-                                                    className="p-2 hover:bg-accent cursor-pointer rounded-sm"
+                                                    className="cursor-pointer rounded-sm p-2 hover:bg-accent"
                                                 >
                                                     {member.name}
                                                 </div>
@@ -137,7 +163,9 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                             </PopoverContent>
                         </Popover>
                         {errors.member_id && (
-                            <p className="text-sm text-red-500">{errors.member_id}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.member_id}
+                            </p>
                         )}
                     </div>
 
@@ -145,21 +173,31 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                         <Label htmlFor="claim_type">Claim Type</Label>
                         <Select
                             value={data.claim_type}
-                            onValueChange={(value) => setData('claim_type', value)}
+                            onValueChange={(value) =>
+                                setData('claim_type', value)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select claim type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="hospitalization">Hospitalization</SelectItem>
-                                <SelectItem value="outpatient">Outpatient</SelectItem>
+                                <SelectItem value="hospitalization">
+                                    Hospitalization
+                                </SelectItem>
+                                <SelectItem value="outpatient">
+                                    Outpatient
+                                </SelectItem>
                                 <SelectItem value="dental">Dental</SelectItem>
                                 <SelectItem value="optical">Optical</SelectItem>
-                                <SelectItem value="prescription">Prescription</SelectItem>
+                                <SelectItem value="prescription">
+                                    Prescription
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                         {errors.claim_type && (
-                            <p className="text-sm text-red-500">{errors.claim_type}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.claim_type}
+                            </p>
                         )}
                     </div>
 
@@ -173,7 +211,9 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                             placeholder={`Enter amount`}
                         />
                         {errors.amount && (
-                            <p className="text-sm text-red-500">{errors.amount}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.amount}
+                            </p>
                         )}
                     </div>
 
@@ -183,24 +223,34 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                             id="date_of_service"
                             type="date"
                             value={data.date_of_service}
-                            onChange={(e) => setData('date_of_service', e.target.value)}
+                            onChange={(e) =>
+                                setData('date_of_service', e.target.value)
+                            }
                         />
                         {errors.date_of_service && (
-                            <p className="text-sm text-red-500">{errors.date_of_service}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.date_of_service}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="hospital_name">Hospital/Clinic Name</Label>
+                        <Label htmlFor="hospital_name">
+                            Hospital/Clinic Name
+                        </Label>
                         <Input
                             id="hospital_name"
                             type="text"
                             value={data.hospital_name}
-                            onChange={(e) => setData('hospital_name', e.target.value)}
+                            onChange={(e) =>
+                                setData('hospital_name', e.target.value)
+                            }
                             placeholder="Enter hospital or clinic name"
                         />
                         {errors.hospital_name && (
-                            <p className="text-sm text-red-500">{errors.hospital_name}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.hospital_name}
+                            </p>
                         )}
                     </div>
 
@@ -209,11 +259,15 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                         <Textarea
                             id="diagnosis"
                             value={data.diagnosis}
-                            onChange={(e) => setData('diagnosis', e.target.value)}
+                            onChange={(e) =>
+                                setData('diagnosis', e.target.value)
+                            }
                             placeholder="Enter diagnosis details"
                         />
                         {errors.diagnosis && (
-                            <p className="text-sm text-red-500">{errors.diagnosis}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.diagnosis}
+                            </p>
                         )}
                     </div>
 
@@ -233,4 +287,4 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
             </DialogContent>
         </Dialog>
     );
-} 
+}

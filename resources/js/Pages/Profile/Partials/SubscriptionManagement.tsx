@@ -1,13 +1,21 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import { Receipt } from 'lucide-react';
-import UpdateSubscriptionForm from './UpdateSubscriptionForm';
 import IndividualAppSubscriptions from './IndividualAppSubscriptions';
+import UpdateSubscriptionForm from './UpdateSubscriptionForm';
 
 interface SubscriptionManagementProps {
     userIdentifier: string;
 }
 
-export default function SubscriptionManagement({ userIdentifier }: SubscriptionManagementProps) {
+export default function SubscriptionManagement({
+    userIdentifier,
+}: SubscriptionManagementProps) {
     return (
         <div className="space-y-6">
             <Card>
@@ -20,9 +28,9 @@ export default function SubscriptionManagement({ userIdentifier }: SubscriptionM
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <UpdateSubscriptionForm 
+                    <UpdateSubscriptionForm
                         userIdentifier={userIdentifier}
-                        className="w-full" 
+                        className="w-full"
                         hideHeader={true}
                     />
                 </CardContent>
@@ -32,7 +40,7 @@ export default function SubscriptionManagement({ userIdentifier }: SubscriptionM
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Receipt className="w-5 h-5" />
+                        <Receipt className="h-5 w-5" />
                         Individual App Subscriptions
                     </CardTitle>
                     <CardDescription>

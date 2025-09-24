@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { Shipment, TrackingUpdate } from '../types';
 
 export const useShipmentTracking = () => {
     const [shipments, setShipments] = useState<Shipment[]>([]);
-    const [trackingHistory, setTrackingHistory] = useState<TrackingUpdate[]>([]);
+    const [trackingHistory, setTrackingHistory] = useState<TrackingUpdate[]>(
+        [],
+    );
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +26,7 @@ export const useShipmentTracking = () => {
     const addShipment = async (shipmentData: {
         truckId: string;
         driver: string;
-        helpers?: Array<{name: string; role: string}>;
+        helpers?: Array<{ name: string; role: string }>;
         destination: string;
         origin: string;
         departureDate: string;
@@ -47,11 +49,11 @@ export const useShipmentTracking = () => {
                 cargo: shipmentData.cargo,
                 weight: parseFloat(shipmentData.weight) || 0,
                 customer_contact: shipmentData.customerContact,
-                priority: shipmentData.priority
+                priority: shipmentData.priority,
             });
-            
+
             if (response.data) {
-                setShipments(prev => [...prev, response.data]);
+                setShipments((prev) => [...prev, response.data]);
                 return response.data;
             }
         } catch (error) {
@@ -62,27 +64,30 @@ export const useShipmentTracking = () => {
 
     const editShipment = async (shipment: Shipment) => {
         try {
-            const response = await axios.put(`/transportation/shipments/${shipment.id}`, {
-                truck_id: shipment.truck_id,
-                driver: shipment.driver,
-                helpers: shipment.helpers || [],
-                destination: shipment.destination,
-                origin: shipment.origin,
-                departure_date: shipment.departure_date,
-                arrival_date: shipment.arrival_date,
-                status: shipment.status,
-                cargo: shipment.cargo,
-                weight: shipment.weight,
-                current_location: shipment.current_location,
-                estimated_delay: shipment.estimated_delay,
-                customer_contact: shipment.customer_contact,
-                priority: shipment.priority
-            });
-            
+            const response = await axios.put(
+                `/transportation/shipments/${shipment.id}`,
+                {
+                    truck_id: shipment.truck_id,
+                    driver: shipment.driver,
+                    helpers: shipment.helpers || [],
+                    destination: shipment.destination,
+                    origin: shipment.origin,
+                    departure_date: shipment.departure_date,
+                    arrival_date: shipment.arrival_date,
+                    status: shipment.status,
+                    cargo: shipment.cargo,
+                    weight: shipment.weight,
+                    current_location: shipment.current_location,
+                    estimated_delay: shipment.estimated_delay,
+                    customer_contact: shipment.customer_contact,
+                    priority: shipment.priority,
+                },
+            );
+
             if (response.data) {
-                setShipments(prev => prev.map(s => 
-                    s.id === shipment.id ? response.data : s
-                ));
+                setShipments((prev) =>
+                    prev.map((s) => (s.id === shipment.id ? response.data : s)),
+                );
                 return response.data;
             }
         } catch (error) {
@@ -94,25 +99,31 @@ export const useShipmentTracking = () => {
     const deleteShipment = async (shipmentId: string) => {
         try {
             await axios.delete(`/transportation/shipments/${shipmentId}`);
-            setShipments(prev => prev.filter(s => s.id !== shipmentId));
+            setShipments((prev) => prev.filter((s) => s.id !== shipmentId));
         } catch (error) {
             console.error('Error deleting shipment:', error);
             throw error;
         }
     };
 
-    const updateShipmentStatus = async (shipmentId: string, updateData: {
-        status: string;
-        location: string;
-        notes?: string;
-    }) => {
+    const updateShipmentStatus = async (
+        shipmentId: string,
+        updateData: {
+            status: string;
+            location: string;
+            notes?: string;
+        },
+    ) => {
         try {
-            const response = await axios.post(`/transportation/shipments/${shipmentId}/status`, {
-                status: updateData.status,
-                location: updateData.location,
-                notes: updateData.notes
-            });
-            
+            const response = await axios.post(
+                `/transportation/shipments/${shipmentId}/status`,
+                {
+                    status: updateData.status,
+                    location: updateData.location,
+                    notes: updateData.notes,
+                },
+            );
+
             if (response.data) {
                 await fetchShipments(); // Refresh shipment data
                 return response.data;
@@ -125,7 +136,9 @@ export const useShipmentTracking = () => {
 
     const getTrackingHistory = async (shipmentId: string) => {
         try {
-            const response = await axios.get(`/transportation/shipments/${shipmentId}/tracking-history`);
+            const response = await axios.get(
+                `/transportation/shipments/${shipmentId}/tracking-history`,
+            );
             setTrackingHistory(response.data || []);
             return response.data;
         } catch (error) {
@@ -148,6 +161,6 @@ export const useShipmentTracking = () => {
         deleteShipment,
         updateShipmentStatus,
         getTrackingHistory,
-        fetchShipments
+        fetchShipments,
     };
 };

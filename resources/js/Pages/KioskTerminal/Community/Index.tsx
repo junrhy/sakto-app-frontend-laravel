@@ -1,44 +1,12 @@
-import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import { toast } from 'sonner';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Checkbox } from '@/Components/ui/checkbox';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
-import { Badge } from '@/Components/ui/badge';
-import { Progress } from '@/Components/ui/progress';
 import { format } from 'date-fns';
-import {
-    Calendar,
-    Users,
-    DollarSign,
-    Search,
-    CheckCircle,
-    XCircle,
-    RefreshCw,
-    UserCheck,
-    CreditCard,
-    FileText
-} from 'lucide-react';
-import KioskSidebar from './Components/KioskSidebar';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import ContributionSuccess from './Components/ContributionSuccess';
 import EventCheckIn from './Components/EventCheckIn';
 import HealthInsurance from './Components/HealthInsurance';
+import KioskSidebar from './Components/KioskSidebar';
 import Mortuary from './Components/Mortuary';
-import ContributionSuccess from './Components/ContributionSuccess';
 
 interface Event {
     id: string;
@@ -105,34 +73,44 @@ interface KioskData {
     };
 }
 
-export default function KioskTerminal({ 
+export default function KioskTerminal({
     auth,
-    events: initialEvents, 
-    healthInsuranceMembers: initialHealthMembers, 
-    mortuaryMembers: initialMortuaryMembers, 
-    appCurrency 
+    events: initialEvents,
+    healthInsuranceMembers: initialHealthMembers,
+    mortuaryMembers: initialMortuaryMembers,
+    appCurrency,
 }: KioskData) {
     const canEdit = React.useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin || false;
     }, [auth.selectedTeamMember, auth.user?.is_admin]);
 
     const canDelete = React.useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager')
+            );
         }
         return auth.user.is_admin || false;
     }, [auth.selectedTeamMember, auth.user?.is_admin]);
 
     const [activeTab, setActiveTab] = useState('events');
     const [events, setEvents] = useState<Event[]>(initialEvents);
-    const [healthInsuranceMembers, setHealthInsuranceMembers] = useState<Member[]>(initialHealthMembers);
-    const [mortuaryMembers, setMortuaryMembers] = useState<Member[]>(initialMortuaryMembers);
-    
+    const [healthInsuranceMembers, setHealthInsuranceMembers] =
+        useState<Member[]>(initialHealthMembers);
+    const [mortuaryMembers, setMortuaryMembers] = useState<Member[]>(
+        initialMortuaryMembers,
+    );
+
     // Event check-in state - moved to EventCheckIn component
-    
+
     // Contribution state
     const [contributionData, setContributionData] = useState({
         payment_date: format(new Date(), 'yyyy-MM-dd'),
@@ -140,36 +118,53 @@ export default function KioskTerminal({
         reference_number: '',
         bulk_amount: '',
     });
-    const [memberContributions, setMemberContributions] = useState<Contribution[]>([]);
+    const [memberContributions, setMemberContributions] = useState<
+        Contribution[]
+    >([]);
     const [memberSearchQuery, setMemberSearchQuery] = useState('');
     const [filterGroup, setFilterGroup] = useState<string>('all');
     const [selectAll, setSelectAll] = useState(false);
     const [processing, setProcessing] = useState(false);
-    const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
+    const [processingProgress, setProcessingProgress] = useState({
+        current: 0,
+        total: 0,
+    });
     const [showSuccess, setShowSuccess] = useState(false);
     const [successData, setSuccessData] = useState<any>(null);
 
     // Filtered data - moved to individual components
 
-    const currentMembers = activeTab === 'health_insurance' ? healthInsuranceMembers : mortuaryMembers;
-    const filteredMembers = currentMembers.filter(member => {
-        const matchesSearch = member.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
-                            member.contact_number.includes(memberSearchQuery);
-        const matchesGroup = filterGroup === 'all' || member.group === filterGroup;
+    const currentMembers =
+        activeTab === 'health_insurance'
+            ? healthInsuranceMembers
+            : mortuaryMembers;
+    const filteredMembers = currentMembers.filter((member) => {
+        const matchesSearch =
+            member.name
+                .toLowerCase()
+                .includes(memberSearchQuery.toLowerCase()) ||
+            member.contact_number.includes(memberSearchQuery);
+        const matchesGroup =
+            filterGroup === 'all' || member.group === filterGroup;
         return matchesSearch && matchesGroup;
     });
 
-    const groups = ['all', ...Array.from(new Set(currentMembers.map(m => m.group).filter(Boolean)))];
+    const groups = [
+        'all',
+        ...Array.from(
+            new Set(currentMembers.map((m) => m.group).filter(Boolean)),
+        ),
+    ];
 
     // Initialize member contributions when tab changes
     useEffect(() => {
-        const initialContributions = currentMembers.map(member => ({
+        const initialContributions = currentMembers.map((member) => ({
             member_id: member.id,
             amount: member.contribution_amount || 0,
-            selected: false
+            selected: false,
         }));
         setMemberContributions(initialContributions);
-        setContributionData(prev => ({
+        setContributionData((prev) => ({
             ...prev,
             bulk_amount: '',
         }));
@@ -181,93 +176,111 @@ export default function KioskTerminal({
     // Handle bulk amount change for contributions
     const handleBulkAmountChange = (amount: string) => {
         const numAmount = Number(amount) || 0;
-        setContributionData(prev => ({ ...prev, bulk_amount: amount }));
-        
-        setMemberContributions(prev => prev.map(member => {
-            if (!member.selected) return member;
-            
-            // Find the corresponding member data to get contribution_amount
-            const memberData = currentMembers.find(m => m.id === member.member_id);
-            const minAmount = memberData?.contribution_amount || 0;
-            
-            // Use the higher of the bulk amount or minimum contribution amount
-            const finalAmount = Math.max(numAmount, minAmount);
-            
-            return {
-                ...member,
-                amount: finalAmount
-            };
-        }));
+        setContributionData((prev) => ({ ...prev, bulk_amount: amount }));
+
+        setMemberContributions((prev) =>
+            prev.map((member) => {
+                if (!member.selected) return member;
+
+                // Find the corresponding member data to get contribution_amount
+                const memberData = currentMembers.find(
+                    (m) => m.id === member.member_id,
+                );
+                const minAmount = memberData?.contribution_amount || 0;
+
+                // Use the higher of the bulk amount or minimum contribution amount
+                const finalAmount = Math.max(numAmount, minAmount);
+
+                return {
+                    ...member,
+                    amount: finalAmount,
+                };
+            }),
+        );
     };
 
     // Handle member selection for contributions
     const handleMemberSelection = (memberId: string, selected: boolean) => {
-        setMemberContributions(prev => prev.map(member => {
-            if (member.member_id !== memberId) return member;
-            
-            const isSelected = selected;
-            let newAmount = member.amount;
-            
-            if (isSelected && contributionData.bulk_amount) {
-                // Find the corresponding member data to get contribution_amount
-                const memberData = currentMembers.find(m => m.id === memberId);
-                const minAmount = memberData?.contribution_amount || 0;
-                const bulkAmount = Number(contributionData.bulk_amount) || 0;
-                
-                // Use the higher of the bulk amount or minimum contribution amount
-                newAmount = Math.max(bulkAmount, minAmount);
-            }
-            
-            return {
-                ...member,
-                selected: isSelected,
-                amount: newAmount
-            };
-        }));
+        setMemberContributions((prev) =>
+            prev.map((member) => {
+                if (member.member_id !== memberId) return member;
+
+                const isSelected = selected;
+                let newAmount = member.amount;
+
+                if (isSelected && contributionData.bulk_amount) {
+                    // Find the corresponding member data to get contribution_amount
+                    const memberData = currentMembers.find(
+                        (m) => m.id === memberId,
+                    );
+                    const minAmount = memberData?.contribution_amount || 0;
+                    const bulkAmount =
+                        Number(contributionData.bulk_amount) || 0;
+
+                    // Use the higher of the bulk amount or minimum contribution amount
+                    newAmount = Math.max(bulkAmount, minAmount);
+                }
+
+                return {
+                    ...member,
+                    selected: isSelected,
+                    amount: newAmount,
+                };
+            }),
+        );
     };
 
     // Handle select all for contributions
     const handleSelectAll = (selected: boolean) => {
         setSelectAll(selected);
-        const allMemberIds = filteredMembers.map(m => m.id);
-        
-        setMemberContributions(prev => prev.map(member => {
-            if (!allMemberIds.includes(member.member_id)) return member;
-            
-            let newAmount = member.amount;
-            
-            if (selected && contributionData.bulk_amount) {
-                // Find the corresponding member data to get contribution_amount
-                const memberData = currentMembers.find(m => m.id === member.member_id);
-                const minAmount = memberData?.contribution_amount || 0;
-                const bulkAmount = Number(contributionData.bulk_amount) || 0;
-                
-                // Use the higher of the bulk amount or minimum contribution amount
-                newAmount = Math.max(bulkAmount, minAmount);
-            }
-            
-            return {
-                ...member,
-                selected: selected,
-                amount: newAmount
-            };
-        }));
+        const allMemberIds = filteredMembers.map((m) => m.id);
+
+        setMemberContributions((prev) =>
+            prev.map((member) => {
+                if (!allMemberIds.includes(member.member_id)) return member;
+
+                let newAmount = member.amount;
+
+                if (selected && contributionData.bulk_amount) {
+                    // Find the corresponding member data to get contribution_amount
+                    const memberData = currentMembers.find(
+                        (m) => m.id === member.member_id,
+                    );
+                    const minAmount = memberData?.contribution_amount || 0;
+                    const bulkAmount =
+                        Number(contributionData.bulk_amount) || 0;
+
+                    // Use the higher of the bulk amount or minimum contribution amount
+                    newAmount = Math.max(bulkAmount, minAmount);
+                }
+
+                return {
+                    ...member,
+                    selected: selected,
+                    amount: newAmount,
+                };
+            }),
+        );
     };
 
     // Handle individual member amount change
     const handleMemberAmountChange = (memberId: string, amount: string) => {
-        const member = currentMembers.find(m => m.id === memberId);
+        const member = currentMembers.find((m) => m.id === memberId);
         const numAmount = Number(amount) || 0;
-        
+
         // If amount is less than premium, set it to premium amount
-        const finalAmount = member && numAmount < member.contribution_amount 
-            ? member.contribution_amount 
-            : numAmount;
-        
-        setMemberContributions(prev => prev.map(member => ({
-            ...member,
-            amount: member.member_id === memberId ? finalAmount : member.amount
-        })));
+        const finalAmount =
+            member && numAmount < member.contribution_amount
+                ? member.contribution_amount
+                : numAmount;
+
+        setMemberContributions((prev) =>
+            prev.map((member) => ({
+                ...member,
+                amount:
+                    member.member_id === memberId ? finalAmount : member.amount,
+            })),
+        );
     };
 
     // Submit contributions
@@ -278,18 +291,27 @@ export default function KioskTerminal({
         }
 
         if (memberContributions.length === 0) {
-            toast.error('Please select at least one member to submit contributions.');
+            toast.error(
+                'Please select at least one member to submit contributions.',
+            );
             return;
         }
 
-        const selectedContributions = memberContributions.filter(contribution => contribution.selected);
+        const selectedContributions = memberContributions.filter(
+            (contribution) => contribution.selected,
+        );
         if (selectedContributions.length === 0) {
-            toast.error('Please select at least one member to submit contributions.');
+            toast.error(
+                'Please select at least one member to submit contributions.',
+            );
             return;
         }
 
         setProcessing(true);
-        setProcessingProgress({ current: 0, total: selectedContributions.length });
+        setProcessingProgress({
+            current: 0,
+            total: selectedContributions.length,
+        });
 
         try {
             const results = [];
@@ -298,35 +320,63 @@ export default function KioskTerminal({
 
             for (let i = 0; i < selectedContributions.length; i++) {
                 const contribution = selectedContributions[i];
-                setProcessingProgress({ current: i + 1, total: selectedContributions.length });
+                setProcessingProgress({
+                    current: i + 1,
+                    total: selectedContributions.length,
+                });
 
                 try {
-                    const response = await fetch(route('kiosk.community.contributions.store'), {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    const response = await fetch(
+                        route('kiosk.community.contributions.store'),
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN':
+                                    document
+                                        .querySelector(
+                                            'meta[name="csrf-token"]',
+                                        )
+                                        ?.getAttribute('content') || '',
+                            },
+                            body: JSON.stringify({
+                                member_id: contribution.member_id,
+                                amount: contribution.amount,
+                                type:
+                                    activeTab === 'health_insurance'
+                                        ? 'health_insurance'
+                                        : 'mortuary',
+                                ...contributionData,
+                            }),
                         },
-                        body: JSON.stringify({
-                            member_id: contribution.member_id,
-                            amount: contribution.amount,
-                            type: activeTab === 'health_insurance' ? 'health_insurance' : 'mortuary',
-                            ...contributionData
-                        }),
-                    });
+                    );
 
                     const result = await response.json();
 
                     if (response.ok) {
                         successCount++;
-                        results.push({ success: true, member_id: contribution.member_id, data: result });
+                        results.push({
+                            success: true,
+                            member_id: contribution.member_id,
+                            data: result,
+                        });
                     } else {
                         errorCount++;
-                        results.push({ success: false, member_id: contribution.member_id, error: result.message || 'Failed to submit contribution' });
+                        results.push({
+                            success: false,
+                            member_id: contribution.member_id,
+                            error:
+                                result.message ||
+                                'Failed to submit contribution',
+                        });
                     }
                 } catch (error) {
                     errorCount++;
-                    results.push({ success: false, member_id: contribution.member_id, error: 'Network error' });
+                    results.push({
+                        success: false,
+                        member_id: contribution.member_id,
+                        error: 'Network error',
+                    });
                 }
             }
 
@@ -334,16 +384,26 @@ export default function KioskTerminal({
             setProcessingProgress({ current: 0, total: 0 });
 
             if (successCount > 0) {
-                toast.success(`Successfully submitted ${successCount} contribution(s)`);
+                toast.success(
+                    `Successfully submitted ${successCount} contribution(s)`,
+                );
                 if (errorCount > 0) {
-                    toast.error(`${errorCount} contribution(s) failed to submit`);
+                    toast.error(
+                        `${errorCount} contribution(s) failed to submit`,
+                    );
                 }
                 setShowSuccess(true);
                 setSuccessData({
-                    type: activeTab === 'health_insurance' ? 'Health Insurance' : 'Mortuary',
-                    totalAmount: selectedContributions.reduce((sum, c) => sum + c.amount, 0),
+                    type:
+                        activeTab === 'health_insurance'
+                            ? 'Health Insurance'
+                            : 'Mortuary',
+                    totalAmount: selectedContributions.reduce(
+                        (sum, c) => sum + c.amount,
+                        0,
+                    ),
                     memberCount: successCount,
-                    currency: appCurrency
+                    currency: appCurrency,
                 });
             } else {
                 toast.error('Failed to submit any contributions');
@@ -364,11 +424,13 @@ export default function KioskTerminal({
             reference_number: '',
             bulk_amount: '',
         });
-        setMemberContributions(prev => prev.map(member => ({
-            ...member,
-            selected: false,
-            amount: member.amount
-        })));
+        setMemberContributions((prev) =>
+            prev.map((member) => ({
+                ...member,
+                selected: false,
+                amount: member.amount,
+            })),
+        );
         setSelectAll(false);
         setShowSuccess(false);
         setSuccessData(null);
@@ -394,7 +456,7 @@ export default function KioskTerminal({
                     total: successData.total,
                     successful: successData.successful,
                     failed: successData.failed,
-                    message: `Successfully recorded ${successData.successful} ${activeTab === 'health_insurance' ? 'healthcare' : 'mortuary'} contributions`
+                    message: `Successfully recorded ${successData.successful} ${activeTab === 'health_insurance' ? 'healthcare' : 'mortuary'} contributions`,
                 }}
                 onBack={handleBackToKiosk}
             />
@@ -436,16 +498,20 @@ export default function KioskTerminal({
 
                 `}</style>
             </Head>
-            
-                        {/* Force light mode for kiosk terminal */}
+
+            {/* Force light mode for kiosk terminal */}
             <div className="kiosk-light-mode light">
                 <div className="flex h-screen bg-gray-50">
                     {/* Sidebar */}
-                    <KioskSidebar activeTab={activeTab} onTabChange={setActiveTab} auth={auth} />
-                    
+                    <KioskSidebar
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                        auth={auth}
+                    />
+
                     {/* Main Content */}
-                    <div className="flex-1 flex flex-col overflow-hidden">
-                         {/* Content Area */}
+                    <div className="flex flex-1 flex-col overflow-hidden">
+                        {/* Content Area */}
                         <div className="flex-1 overflow-auto p-6">
                             {/* Event Check-in Content */}
                             {activeTab === 'events' && (
@@ -460,7 +526,9 @@ export default function KioskTerminal({
                                     contributionData={contributionData}
                                     setContributionData={setContributionData}
                                     memberContributions={memberContributions}
-                                    setMemberContributions={setMemberContributions}
+                                    setMemberContributions={
+                                        setMemberContributions
+                                    }
                                     memberSearchQuery={memberSearchQuery}
                                     setMemberSearchQuery={setMemberSearchQuery}
                                     filterGroup={filterGroup}
@@ -476,7 +544,9 @@ export default function KioskTerminal({
                                     onBulkAmountChange={handleBulkAmountChange}
                                     onMemberSelection={handleMemberSelection}
                                     onSelectAll={handleSelectAll}
-                                    onMemberAmountChange={handleMemberAmountChange}
+                                    onMemberAmountChange={
+                                        handleMemberAmountChange
+                                    }
                                 />
                             )}
 
@@ -488,7 +558,9 @@ export default function KioskTerminal({
                                     contributionData={contributionData}
                                     setContributionData={setContributionData}
                                     memberContributions={memberContributions}
-                                    setMemberContributions={setMemberContributions}
+                                    setMemberContributions={
+                                        setMemberContributions
+                                    }
                                     memberSearchQuery={memberSearchQuery}
                                     setMemberSearchQuery={setMemberSearchQuery}
                                     filterGroup={filterGroup}
@@ -504,7 +576,9 @@ export default function KioskTerminal({
                                     onBulkAmountChange={handleBulkAmountChange}
                                     onMemberSelection={handleMemberSelection}
                                     onSelectAll={handleSelectAll}
-                                    onMemberAmountChange={handleMemberAmountChange}
+                                    onMemberAmountChange={
+                                        handleMemberAmountChange
+                                    }
                                 />
                             )}
                         </div>
@@ -514,5 +588,3 @@ export default function KioskTerminal({
         </>
     );
 }
-
- 

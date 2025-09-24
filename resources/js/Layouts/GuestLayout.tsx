@@ -1,4 +1,3 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
@@ -8,19 +7,17 @@ export default function Guest({ children }: PropsWithChildren) {
         '/privacy-policy',
         '/terms-and-conditions',
         '/cookie-policy',
-        '/faq'
+        '/faq',
     ];
     const shouldShowFooter = showFooterRoutes.includes(url);
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <div className="flex-grow">
-                {children}
-            </div>
-            
+        <div className="flex min-h-screen flex-col">
+            <div className="flex-grow">{children}</div>
+
             {shouldShowFooter && (
-                <footer className="bg-white border-t border-gray-200 py-4">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <footer className="border-t border-gray-200 bg-white py-4">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-center space-x-6">
                             <Link
                                 href={route('privacy-policy')}

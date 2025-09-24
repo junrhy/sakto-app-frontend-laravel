@@ -46,4 +46,4 @@ export interface ContentFilters {
     tag?: string;
     date_from?: string;
     date_to?: string;
-} 
+}

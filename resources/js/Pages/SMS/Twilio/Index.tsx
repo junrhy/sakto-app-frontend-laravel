@@ -1,17 +1,22 @@
-import { User, Project } from '@/types/index';
-import { Head } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
-import { Textarea } from "@/Components/ui/textarea";
-import { useForm } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { Badge } from '@/Components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Project, User } from '@/types/index';
+import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface Message {
     id: string;
@@ -49,18 +54,25 @@ interface Props extends PageProps {
 
 export default function Index({ auth, messages, stats }: Props) {
     const [isLoadingBalance, setIsLoadingBalance] = useState(false);
-    const [balance, setBalance] = useState<{ balance: string; currency: string } | null>(null);
+    const [balance, setBalance] = useState<{
+        balance: string;
+        currency: string;
+    } | null>(null);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         to: '',
-        message: ''
+        message: '',
     });
 
     const getBalance = async () => {
@@ -88,11 +100,13 @@ export default function Index({ auth, messages, stats }: Props) {
             const creditResponse = await axios.post('/credits/spend', {
                 amount: 2,
                 purpose: 'Twilio SMS Sending',
-                reference_id: `sms_twilio_${Date.now()}`
+                reference_id: `sms_twilio_${Date.now()}`,
             });
 
             if (!creditResponse.data.success) {
-                toast.error('Insufficient credits to send SMS. Please purchase more credits.');
+                toast.error(
+                    'Insufficient credits to send SMS. Please purchase more credits.',
+                );
                 return;
             }
 
@@ -103,10 +117,12 @@ export default function Index({ auth, messages, stats }: Props) {
                 },
                 onError: (errors) => {
                     toast.error('Failed to send message');
-                }
+                },
             });
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to send message');
+            toast.error(
+                error.response?.data?.message || 'Failed to send message',
+            );
         }
     };
 
@@ -125,42 +141,64 @@ export default function Index({ auth, messages, stats }: Props) {
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Twilio SMS</h2>}
+            auth={{
+                user: auth.user,
+                project: auth.project,
+                modules: auth.modules,
+            }}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    Twilio SMS
+                </h2>
+            }
         >
             <Head title="Twilio SMS" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Sent
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats.sent}</div>
+                                <div className="text-2xl font-bold">
+                                    {stats.sent}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Delivered
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats.delivered}</div>
+                                <div className="text-2xl font-bold">
+                                    {stats.delivered}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Failed</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Failed
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats.failed}</div>
+                                <div className="text-2xl font-bold">
+                                    {stats.failed}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Balance</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Balance
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {balance ? (
@@ -168,13 +206,15 @@ export default function Index({ auth, messages, stats }: Props) {
                                         {balance.balance} {balance.currency}
                                     </div>
                                 ) : (
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         size="sm"
                                         onClick={getBalance}
                                         disabled={isLoadingBalance}
                                     >
-                                        {isLoadingBalance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {isLoadingBalance && (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
                                         Check Balance
                                     </Button>
                                 )}
@@ -186,51 +226,70 @@ export default function Index({ auth, messages, stats }: Props) {
                     <Card>
                         <CardHeader>
                             <CardTitle>Send Message</CardTitle>
-                            <CardDescription>Send SMS messages using Twilio</CardDescription>
+                            <CardDescription>
+                                Send SMS messages using Twilio
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={submit} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label htmlFor="to" className="text-sm font-medium">
+                                    <label
+                                        htmlFor="to"
+                                        className="text-sm font-medium"
+                                    >
                                         To
                                     </label>
                                     <Input
                                         id="to"
                                         type="text"
                                         value={data.to}
-                                        onChange={e => setData('to', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('to', e.target.value)
+                                        }
                                         placeholder="+1234567890"
                                         className="max-w-md"
                                     />
                                     {errors.to && (
-                                        <p className="text-sm text-red-500">{errors.to}</p>
+                                        <p className="text-sm text-red-500">
+                                            {errors.to}
+                                        </p>
                                     )}
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label htmlFor="message" className="text-sm font-medium">
+                                    <label
+                                        htmlFor="message"
+                                        className="text-sm font-medium"
+                                    >
                                         Message
                                     </label>
                                     <Textarea
                                         id="message"
                                         value={data.message}
-                                        onChange={e => setData('message', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('message', e.target.value)
+                                        }
                                         placeholder="Type your message here..."
                                         className="min-h-[100px]"
                                     />
                                     {errors.message && (
-                                        <p className="text-sm text-red-500">{errors.message}</p>
+                                        <p className="text-sm text-red-500">
+                                            {errors.message}
+                                        </p>
                                     )}
                                 </div>
 
                                 {canEdit && (
                                     <Button type="submit" disabled={processing}>
-                                        {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {processing && (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
                                         Send Message
                                     </Button>
                                 )}
-                                <p className="text-sm text-gray-500 mt-4 text-center">
-                                    Sending this SMS will cost 2 credits from your balance
+                                <p className="mt-4 text-center text-sm text-gray-500">
+                                    Sending this SMS will cost 2 credits from
+                                    your balance
                                 </p>
                             </form>
                         </CardContent>
@@ -240,31 +299,44 @@ export default function Index({ auth, messages, stats }: Props) {
                     <Card>
                         <CardHeader>
                             <CardTitle>Message History</CardTitle>
-                            <CardDescription>Recent messages sent through Twilio</CardDescription>
+                            <CardDescription>
+                                Recent messages sent through Twilio
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
                                 {messages.length === 0 ? (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">No messages sent yet</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        No messages sent yet
+                                    </p>
                                 ) : (
                                     messages.map((message) => (
-                                        <div 
+                                        <div
                                             key={message.id}
-                                            className="border rounded-lg p-4 space-y-2"
+                                            className="space-y-2 rounded-lg border p-4"
                                         >
-                                            <div className="flex justify-between items-start">
+                                            <div className="flex items-start justify-between">
                                                 <div>
-                                                    <p className="font-medium">{message.to}</p>
+                                                    <p className="font-medium">
+                                                        {message.to}
+                                                    </p>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                                         {message.body}
                                                     </p>
                                                 </div>
-                                                <Badge variant="secondary" className={getStatusColor(message.status)}>
+                                                <Badge
+                                                    variant="secondary"
+                                                    className={getStatusColor(
+                                                        message.status,
+                                                    )}
+                                                >
                                                     {message.status}
                                                 </Badge>
                                             </div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {new Date(message.created_at).toLocaleString()}
+                                                {new Date(
+                                                    message.created_at,
+                                                ).toLocaleString()}
                                             </p>
                                         </div>
                                     ))

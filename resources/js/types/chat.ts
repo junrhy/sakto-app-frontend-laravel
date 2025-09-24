@@ -12,4 +12,4 @@ export interface ChatThread {
     participant: string;
     lastMessage: Message;
     unreadCount: number;
-} 
+}

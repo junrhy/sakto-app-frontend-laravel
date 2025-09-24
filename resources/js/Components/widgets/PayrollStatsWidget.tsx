@@ -1,7 +1,12 @@
-import { Card, CardContent } from "@/Components/ui/card";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { Users, DollarSign, Building2, Calendar, Clock, Briefcase } from "lucide-react";
-import { Progress } from "@/Components/ui/progress";
+import { Card, CardContent } from '@/Components/ui/card';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import {
+    Briefcase,
+    Building2,
+    Calendar,
+    DollarSign,
+    Users,
+} from 'lucide-react';
 
 interface Employee {
     id: string;
@@ -32,23 +37,23 @@ export function PayrollStatsWidget() {
     // This would typically come from your API
     const employees: Employee[] = [
         {
-            id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-            position: "Software Engineer",
+            id: '1',
+            name: 'John Doe',
+            email: 'john@example.com',
+            position: 'Software Engineer',
             salary: 75000,
-            startDate: "2024-01-01",
-            status: "active"
+            startDate: '2024-01-01',
+            status: 'active',
         },
         {
-            id: "2",
-            name: "Jane Smith",
-            email: "jane@example.com",
-            position: "Product Manager",
+            id: '2',
+            name: 'Jane Smith',
+            email: 'jane@example.com',
+            position: 'Product Manager',
             salary: 95000,
-            startDate: "2024-02-01",
-            status: "active"
-        }
+            startDate: '2024-02-01',
+            status: 'active',
+        },
     ];
 
     const overview: PayrollOverview = {
@@ -57,37 +62,45 @@ export function PayrollStatsWidget() {
         total_salary: 170000,
         average_salary: 85000,
         departments: [
-            { name: "Engineering", count: 1 },
-            { name: "Product", count: 1 }
+            { name: 'Engineering', count: 1 },
+            { name: 'Product', count: 1 },
         ],
         upcoming_payroll: {
-            date: "2024-04-15",
-            amount: 85000
-        }
+            date: '2024-04-15',
+            amount: 85000,
+        },
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Payroll Overview</h3>
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                    Payroll Overview
+                </h3>
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">Next Payroll:</span>
                     <span className="text-sm font-medium">
-                        {new Date(overview.upcoming_payroll.date).toLocaleDateString()}
+                        {new Date(
+                            overview.upcoming_payroll.date,
+                        ).toLocaleDateString()}
                     </span>
                 </div>
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="mb-6 grid grid-cols-2 gap-4">
                 <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-blue-500" />
-                                <span className="text-sm">Active Employees</span>
+                                <span className="text-sm">
+                                    Active Employees
+                                </span>
                             </div>
-                            <span className="text-sm font-medium">{overview.active_employees}</span>
+                            <span className="text-sm font-medium">
+                                {overview.active_employees}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -98,7 +111,9 @@ export function PayrollStatsWidget() {
                                 <DollarSign className="h-4 w-4 text-green-500" />
                                 <span className="text-sm">Total Salary</span>
                             </div>
-                            <span className="text-sm font-medium">${overview.total_salary.toLocaleString()}</span>
+                            <span className="text-sm font-medium">
+                                ${overview.total_salary.toLocaleString()}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -109,7 +124,9 @@ export function PayrollStatsWidget() {
                                 <Building2 className="h-4 w-4 text-purple-500" />
                                 <span className="text-sm">Departments</span>
                             </div>
-                            <span className="text-sm font-medium">{overview.departments.length}</span>
+                            <span className="text-sm font-medium">
+                                {overview.departments.length}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -120,7 +137,10 @@ export function PayrollStatsWidget() {
                                 <Calendar className="h-4 w-4 text-orange-500" />
                                 <span className="text-sm">Next Payroll</span>
                             </div>
-                            <span className="text-sm font-medium">${overview.upcoming_payroll.amount.toLocaleString()}</span>
+                            <span className="text-sm font-medium">
+                                $
+                                {overview.upcoming_payroll.amount.toLocaleString()}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -128,15 +148,22 @@ export function PayrollStatsWidget() {
 
             {/* Department Distribution */}
             <div className="mb-6">
-                <h4 className="text-sm font-medium mb-2">Department Distribution</h4>
+                <h4 className="mb-2 text-sm font-medium">
+                    Department Distribution
+                </h4>
                 <div className="space-y-4">
                     {overview.departments.map((dept) => (
-                        <div key={dept.name} className="flex items-center justify-between">
+                        <div
+                            key={dept.name}
+                            className="flex items-center justify-between"
+                        >
                             <div className="flex items-center gap-2">
                                 <Briefcase className="h-4 w-4 text-gray-500" />
                                 <span className="text-sm">{dept.name}</span>
                             </div>
-                            <span className="text-sm font-medium">{dept.count} employees</span>
+                            <span className="text-sm font-medium">
+                                {dept.count} employees
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -152,16 +179,17 @@ export function PayrollStatsWidget() {
                                     <div className="flex-shrink-0">
                                         <Users className="h-4 w-4 text-blue-500" />
                                     </div>
-                                    <div className="flex-grow min-w-0">
+                                    <div className="min-w-0 flex-grow">
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium truncate">
+                                            <span className="truncate font-medium">
                                                 {employee.name}
                                             </span>
                                             <span className="text-sm text-gray-500">
-                                                ${employee.salary.toLocaleString()}
+                                                $
+                                                {employee.salary.toLocaleString()}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-500 truncate mt-2">
+                                        <p className="mt-2 truncate text-sm text-gray-500">
                                             {employee.position}
                                         </p>
                                     </div>
@@ -173,4 +201,4 @@ export function PayrollStatsWidget() {
             </ScrollArea>
         </div>
     );
-} 
+}

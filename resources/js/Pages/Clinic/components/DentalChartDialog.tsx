@@ -1,9 +1,14 @@
+import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { ScrollArea } from '@/Components/ui/scroll-area';
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { Button } from "@/Components/ui/button";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import DentalChart from './DentalChart';
 import { Patient, ToothData } from '../types';
+import DentalChart from './DentalChart';
 
 interface DentalChartDialogProps {
     isOpen: boolean;
@@ -20,11 +25,11 @@ export const DentalChartDialog: React.FC<DentalChartDialogProps> = ({
     patient,
     editingDentalChart,
     onToothClick,
-    onSave
+    onSave,
 }) => {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <DialogContent className="max-w-3xl border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                 <DialogHeader>
                     <DialogTitle className="text-gray-900 dark:text-white">
                         Dental Chart for {patient?.name}

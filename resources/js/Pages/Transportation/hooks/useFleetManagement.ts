@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Truck, FuelUpdate, MaintenanceRecord } from '../types';
+import { useEffect, useState } from 'react';
+import { FuelUpdate, MaintenanceRecord, Truck } from '../types';
 
 export const useFleetManagement = () => {
     const [trucks, setTrucks] = useState<Truck[]>([]);
     const [fuelHistory, setFuelHistory] = useState<FuelUpdate[]>([]);
-    const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+    const [maintenanceRecords, setMaintenanceRecords] = useState<
+        MaintenanceRecord[]
+    >([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +24,11 @@ export const useFleetManagement = () => {
         }
     };
 
-    const addTruck = async (truckData: { plateNumber: string; model: string; capacity: string }) => {
+    const addTruck = async (truckData: {
+        plateNumber: string;
+        model: string;
+        capacity: string;
+    }) => {
         try {
             const response = await axios.post('/transportation/fleet', {
                 plate_number: truckData.plateNumber,
@@ -30,11 +36,11 @@ export const useFleetManagement = () => {
                 capacity: parseInt(truckData.capacity),
                 status: 'Available',
                 fuel_level: 0,
-                mileage: 0
+                mileage: 0,
             });
-            
+
             if (response.data) {
-                setTrucks(prev => [...prev, response.data]);
+                setTrucks((prev) => [...prev, response.data]);
                 return response.data;
             }
         } catch (error) {
@@ -45,22 +51,27 @@ export const useFleetManagement = () => {
 
     const editTruck = async (updatedTruck: Truck) => {
         try {
-            const response = await axios.put(`/transportation/fleet/${updatedTruck.id}`, {
-                plate_number: updatedTruck.plate_number,
-                model: updatedTruck.model,
-                capacity: updatedTruck.capacity,
-                status: updatedTruck.status,
-                last_maintenance: updatedTruck.last_maintenance,
-                fuel_level: updatedTruck.fuel_level,
-                mileage: updatedTruck.mileage,
-                driver: updatedTruck.driver,
-                driver_contact: updatedTruck.driver_contact
-            });
-            
+            const response = await axios.put(
+                `/transportation/fleet/${updatedTruck.id}`,
+                {
+                    plate_number: updatedTruck.plate_number,
+                    model: updatedTruck.model,
+                    capacity: updatedTruck.capacity,
+                    status: updatedTruck.status,
+                    last_maintenance: updatedTruck.last_maintenance,
+                    fuel_level: updatedTruck.fuel_level,
+                    mileage: updatedTruck.mileage,
+                    driver: updatedTruck.driver,
+                    driver_contact: updatedTruck.driver_contact,
+                },
+            );
+
             if (response.data) {
-                setTrucks(prev => prev.map(truck => 
-                    truck.id === updatedTruck.id ? response.data : truck
-                ));
+                setTrucks((prev) =>
+                    prev.map((truck) =>
+                        truck.id === updatedTruck.id ? response.data : truck,
+                    ),
+                );
                 return response.data;
             }
         } catch (error) {
@@ -72,7 +83,7 @@ export const useFleetManagement = () => {
     const deleteTruck = async (truckId: string) => {
         try {
             await axios.delete(`/transportation/fleet/${truckId}`);
-            setTrucks(prev => prev.filter(truck => truck.id !== truckId));
+            setTrucks((prev) => prev.filter((truck) => truck.id !== truckId));
         } catch (error) {
             console.error('Error deleting truck:', error);
             throw error;
@@ -81,12 +92,15 @@ export const useFleetManagement = () => {
 
     const scheduleMaintenance = async (truckId: string) => {
         try {
-            const response = await axios.post(`/transportation/fleet/${truckId}/maintenance`, {
-                type: 'Routine',
-                description: 'Scheduled maintenance check',
-                cost: 500
-            });
-            
+            const response = await axios.post(
+                `/transportation/fleet/${truckId}/maintenance`,
+                {
+                    type: 'Routine',
+                    description: 'Scheduled maintenance check',
+                    cost: 500,
+                },
+            );
+
             if (response.data) {
                 await fetchTrucks(); // Refresh truck data
                 return response.data;
@@ -97,14 +111,20 @@ export const useFleetManagement = () => {
         }
     };
 
-    const updateFuelLevel = async (truckId: string, updateData: { litersAdded: string; cost: string; location: string }) => {
+    const updateFuelLevel = async (
+        truckId: string,
+        updateData: { litersAdded: string; cost: string; location: string },
+    ) => {
         try {
-            const response = await axios.post(`/transportation/fleet/${truckId}/fuel`, {
-                liters_added: parseFloat(updateData.litersAdded),
-                cost: parseFloat(updateData.cost),
-                location: updateData.location
-            });
-            
+            const response = await axios.post(
+                `/transportation/fleet/${truckId}/fuel`,
+                {
+                    liters_added: parseFloat(updateData.litersAdded),
+                    cost: parseFloat(updateData.cost),
+                    location: updateData.location,
+                },
+            );
+
             if (response.data) {
                 await fetchTrucks(); // Refresh truck data
                 return response.data;
@@ -117,7 +137,9 @@ export const useFleetManagement = () => {
 
     const getFuelHistory = async (truckId: string) => {
         try {
-            const response = await axios.get(`/transportation/fleet/${truckId}/fuel-history`);
+            const response = await axios.get(
+                `/transportation/fleet/${truckId}/fuel-history`,
+            );
             setFuelHistory(response.data || []);
             return response.data;
         } catch (error) {
@@ -128,7 +150,9 @@ export const useFleetManagement = () => {
 
     const getMaintenanceHistory = async (truckId: string) => {
         try {
-            const response = await axios.get(`/transportation/fleet/${truckId}/maintenance-history`);
+            const response = await axios.get(
+                `/transportation/fleet/${truckId}/maintenance-history`,
+            );
             setMaintenanceRecords(response.data || []);
             return response.data;
         } catch (error) {
@@ -154,6 +178,6 @@ export const useFleetManagement = () => {
         updateFuelLevel,
         getFuelHistory,
         getMaintenanceHistory,
-        fetchTrucks
+        fetchTrucks,
     };
 };

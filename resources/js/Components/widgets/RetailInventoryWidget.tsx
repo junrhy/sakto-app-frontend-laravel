@@ -1,6 +1,13 @@
-import { Card, CardContent } from "@/Components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { CardContent } from '@/Components/ui/card';
 import { useEffect, useState } from 'react';
+import {
+    Bar,
+    BarChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 
 interface InventoryItem {
     name: string;
@@ -35,28 +42,29 @@ export function RetailInventoryWidget() {
             try {
                 const response = await fetch('/inventory/products-overview');
                 const data: InventoryResponse = await response.json();
-                
+
                 // Organize data by categories
                 const organizedData: CategoryData = {};
-                
+
                 // Initialize categories
-                data.categories.forEach(category => {
+                data.categories.forEach((category) => {
                     organizedData[category.id] = {
                         name: category.name,
                         items: [],
-                        totalStock: 0
+                        totalStock: 0,
                     };
                 });
 
                 // Sort items into categories
-                data.items.forEach(item => {
+                data.items.forEach((item) => {
                     if (organizedData[item.category_id]) {
                         organizedData[item.category_id].items.push({
                             name: item.name,
                             quantity: item.quantity,
-                            category_id: item.category_id
+                            category_id: item.category_id,
                         });
-                        organizedData[item.category_id].totalStock += item.quantity;
+                        organizedData[item.category_id].totalStock +=
+                            item.quantity;
                     }
                 });
 
@@ -95,8 +103,8 @@ export function RetailInventoryWidget() {
                         <div className="h-32">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={category.items}>
-                                    <XAxis 
-                                        dataKey="name" 
+                                    <XAxis
+                                        dataKey="name"
                                         fontSize={12}
                                         tickLine={false}
                                         axisLine={false}
@@ -115,7 +123,7 @@ export function RetailInventoryWidget() {
                                         )}
                                         height={50}
                                     />
-                                    <YAxis 
+                                    <YAxis
                                         fontSize={12}
                                         tickLine={false}
                                         axisLine={false}
@@ -123,23 +131,29 @@ export function RetailInventoryWidget() {
                                         tick={{ fill: 'currentColor' }}
                                         className="fill-gray-900 dark:fill-gray-200"
                                     />
-                                    <Tooltip 
-                                        contentStyle={{ 
-                                            backgroundColor: 'white', 
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'white',
                                             border: '1px solid #e2e8f0',
                                             borderRadius: '8px',
-                                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                            boxShadow:
+                                                '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                                             color: '#1f2937',
-                                            padding: '8px'
+                                            padding: '8px',
                                         }}
-                                        formatter={(value) => [`${value}`, 'Items']}
-                                        cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                                        formatter={(value) => [
+                                            `${value}`,
+                                            'Items',
+                                        ]}
+                                        cursor={{
+                                            fill: 'rgba(59, 130, 246, 0.1)',
+                                        }}
                                         wrapperStyle={{
-                                            outline: 'none'
+                                            outline: 'none',
                                         }}
                                     />
-                                    <Bar 
-                                        dataKey="quantity" 
+                                    <Bar
+                                        dataKey="quantity"
                                         fill="#3b82f6"
                                         radius={[4, 4, 0, 0]}
                                         className="dark:fill-blue-400"
@@ -152,4 +166,4 @@ export function RetailInventoryWidget() {
             </div>
         </CardContent>
     );
-} 
+}

@@ -1,24 +1,51 @@
-import { User, Project } from '@/types/index';
-import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '../Layouts/AuthenticatedLayout';
-import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/Components/ui/table";
-import { Card } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { useState, useEffect, useMemo } from 'react';
-import { PageProps } from '@/types';
-import { Trash2, Search, Calendar as CalendarIcon } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
+import { Calendar } from '@/Components/ui/calendar';
+import { Card } from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/Components/ui/select";
-import { Calendar } from "@/Components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { subMonths, startOfToday, startOfWeek, startOfMonth, endOfMonth, endOfWeek } from "date-fns";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { DateRange as CalendarDateRange } from "react-day-picker";
-import { router } from '@inertiajs/react';
-import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
+import { Input } from '@/Components/ui/input';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import { cn } from '@/lib/utils';
+import { PageProps } from '@/types';
+import { Project, User } from '@/types/index';
+import { Head, router } from '@inertiajs/react';
+import {
+    endOfMonth,
+    endOfWeek,
+    format,
+    startOfMonth,
+    startOfToday,
+    startOfWeek,
+    subMonths,
+} from 'date-fns';
+import { Calendar as CalendarIcon, Search, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { DateRange as CalendarDateRange } from 'react-day-picker';
+import { toast } from 'sonner';
+import AuthenticatedLayout from '../Layouts/AuthenticatedLayout';
 
 type DateRange = {
     from: Date | undefined;
@@ -64,12 +91,13 @@ interface Props extends PageProps {
 
 export default function PosRetailSale({ sales, auth }: Props) {
     const [currentPage, setCurrentPage] = useState(1);
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
+    const [paymentMethodFilter, setPaymentMethodFilter] =
+        useState<string>('all');
     const today = new Date();
     const oneMonthAgo = subMonths(today, 1);
-    
+
     const [dateRange, setDateRange] = useState<DateRange>({
         from: oneMonthAgo,
         to: today,
@@ -79,23 +107,30 @@ export default function PosRetailSale({ sales, auth }: Props) {
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
-    
+
     const uniquePaymentMethods = Array.from(
-        new Set(data.map(sale => sale.payment_method))
+        new Set(data.map((sale) => sale.payment_method)),
     );
 
-    const filteredData = data.filter(sale => {
+    const filteredData = data.filter((sale) => {
         // Basic validation
         if (!sale.items || !Array.isArray(sale.items)) {
             return false;
@@ -103,24 +138,28 @@ export default function PosRetailSale({ sales, auth }: Props) {
 
         // Search filter
         const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-        const matchesSearch = normalizedSearchTerm === "" || sale.items.some((item: SaleItem) => {
-            const itemId = item.id.toLowerCase();
-            return itemId.includes(normalizedSearchTerm);
-        });
+        const matchesSearch =
+            normalizedSearchTerm === '' ||
+            sale.items.some((item: SaleItem) => {
+                const itemId = item.id.toLowerCase();
+                return itemId.includes(normalizedSearchTerm);
+            });
 
         // Payment method filter
-        const matchesPaymentMethod = paymentMethodFilter === "all" || sale.payment_method === paymentMethodFilter;
-        
+        const matchesPaymentMethod =
+            paymentMethodFilter === 'all' ||
+            sale.payment_method === paymentMethodFilter;
+
         // Date range filter
         let matchesDateRange = true;
         if (dateRange.from && dateRange.to) {
             const saleDate = new Date(sale.created_at);
             const fromDate = new Date(dateRange.from);
             fromDate.setHours(0, 0, 0, 0);
-            
+
             const toDate = new Date(dateRange.to);
             toDate.setHours(23, 59, 59, 999);
-            
+
             matchesDateRange = saleDate >= fromDate && saleDate <= toDate;
         }
 
@@ -129,97 +168,109 @@ export default function PosRetailSale({ sales, auth }: Props) {
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
+    const currentItems = filteredData.slice(
+        startIndex,
+        startIndex + itemsPerPage,
+    );
 
     const handleDelete = (id: number) => {
-        if (confirm("Are you sure you want to delete this sale?")) {
+        if (confirm('Are you sure you want to delete this sale?')) {
             router.delete(`/retail-sale/${id}`, {
                 onSuccess: () => {
-                    toast.success("Sale has been deleted successfully");
-                    setData(data.filter(item => item.id !== id));
+                    toast.success('Sale has been deleted successfully');
+                    setData(data.filter((item) => item.id !== id));
                 },
                 onError: () => {
-                    toast.error("Failed to delete sale");
+                    toast.error('Failed to delete sale');
                 },
             });
         }
     };
 
     const handleMultipleDelete = () => {
-        if (confirm("Are you sure you want to delete the selected sales?")) {
+        if (confirm('Are you sure you want to delete the selected sales?')) {
             router.delete('/retail-sales/bulk-delete', {
                 data: { ids: selectedIds },
                 onSuccess: () => {
-                    toast.success(`${selectedIds.length} sales have been deleted successfully`);
-                    setData(data.filter(item => !selectedIds.includes(item.id)));
+                    toast.success(
+                        `${selectedIds.length} sales have been deleted successfully`,
+                    );
+                    setData(
+                        data.filter((item) => !selectedIds.includes(item.id)),
+                    );
                     setSelectedIds([]);
                 },
                 onError: () => {
-                    toast.error("Failed to delete selected sales");
+                    toast.error('Failed to delete selected sales');
                 },
             });
         }
     };
 
     const toggleSelectAll = () => {
-        setSelectedIds(prevSelected => 
-            prevSelected.length === currentItems.length 
-                ? prevSelected.filter(selectedId => !currentItems.map(item => item.id).includes(selectedId)) 
-                : [...prevSelected, ...currentItems.map(item => item.id)]
+        setSelectedIds((prevSelected) =>
+            prevSelected.length === currentItems.length
+                ? prevSelected.filter(
+                      (selectedId) =>
+                          !currentItems
+                              .map((item) => item.id)
+                              .includes(selectedId),
+                  )
+                : [...prevSelected, ...currentItems.map((item) => item.id)],
         );
     };
 
     const toggleSelect = (id: number) => {
-        setSelectedIds(prevSelected => 
-            prevSelected.includes(id) 
-                ? prevSelected.filter(selectedId => selectedId !== id) 
-                : [...prevSelected, id]
+        setSelectedIds((prevSelected) =>
+            prevSelected.includes(id)
+                ? prevSelected.filter((selectedId) => selectedId !== id)
+                : [...prevSelected, id],
         );
     };
 
     const handleDateRangeSelect = (range: string) => {
         const today = new Date();
         let newRange: DateRange;
-        
+
         switch (range) {
             case 'today':
                 newRange = {
                     from: startOfToday(),
-                    to: today
+                    to: today,
                 };
                 break;
             case 'this-week':
                 newRange = {
                     from: startOfWeek(today, { weekStartsOn: 1 }),
-                    to: endOfWeek(today, { weekStartsOn: 1 })
+                    to: endOfWeek(today, { weekStartsOn: 1 }),
                 };
                 break;
             case 'this-month':
                 newRange = {
                     from: startOfMonth(today),
-                    to: endOfMonth(today)
+                    to: endOfMonth(today),
                 };
                 break;
             case 'last-month':
                 const lastMonth = subMonths(today, 1);
                 newRange = {
                     from: startOfMonth(lastMonth),
-                    to: endOfMonth(lastMonth)
+                    to: endOfMonth(lastMonth),
                 };
                 break;
             default:
                 return;
         }
-        
+
         setDateRange(newRange);
     };
 
     // Add this function to calculate total quantities
     const calculateTotalQuantities = (sales: Sale[]) => {
         const itemQuantities: { [key: string]: number } = {};
-        
-        sales.forEach(sale => {
-            sale.items.forEach(item => {
+
+        sales.forEach((sale) => {
+            sale.items.forEach((item) => {
                 if (itemQuantities[item.id]) {
                     itemQuantities[item.id] += item.quantity;
                 } else {
@@ -227,7 +278,7 @@ export default function PosRetailSale({ sales, auth }: Props) {
                 }
             });
         });
-        
+
         return itemQuantities;
     };
 
@@ -236,7 +287,11 @@ export default function PosRetailSale({ sales, auth }: Props) {
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
+            auth={{
+                user: auth.user,
+                project: auth.project,
+                modules: auth.modules,
+            }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Sales
@@ -244,26 +299,28 @@ export default function PosRetailSale({ sales, auth }: Props) {
             }
         >
             <Head title="Sales" />
-            
+
             <Card className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+                <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
                     <div className="lg:col-span-2">
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="h-4 w-4 text-gray-500" />
                             </span>
-                            <Input 
-                                type="text" 
-                                placeholder="Search by item name..." 
-                                value={searchTerm} 
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value)} 
-                                className="pl-10 h-10"
+                            <Input
+                                type="text"
+                                placeholder="Search by item name..."
+                                value={searchTerm}
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>,
+                                ) => setSearchTerm(event.target.value)}
+                                className="h-10 pl-10"
                             />
                         </div>
                     </div>
                     <div className="lg:col-span-2">
-                        <Select 
-                            value={paymentMethodFilter} 
+                        <Select
+                            value={paymentMethodFilter}
                             onValueChange={setPaymentMethodFilter}
                         >
                             <SelectTrigger className="h-10">
@@ -280,27 +337,40 @@ export default function PosRetailSale({ sales, auth }: Props) {
                         </Select>
                     </div>
                     <div className="lg:col-span-4">
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className="h-10"
-                                    >
+                                    <Button variant="outline" className="h-10">
                                         Quick Select
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('today')}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDateRangeSelect('today')
+                                        }
+                                    >
                                         Today
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('this-week')}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDateRangeSelect('this-week')
+                                        }
+                                    >
                                         This Week
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('this-month')}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDateRangeSelect('this-month')
+                                        }
+                                    >
                                         This Month
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('last-month')}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDateRangeSelect('last-month')
+                                        }
+                                    >
                                         Last Month
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -310,57 +380,77 @@ export default function PosRetailSale({ sales, auth }: Props) {
                                     <Button
                                         variant="outline"
                                         className={cn(
-                                            "w-full justify-start text-left font-normal h-10",
-                                            !dateRange.from && "text-muted-foreground"
+                                            'h-10 w-full justify-start text-left font-normal',
+                                            !dateRange.from &&
+                                                'text-muted-foreground',
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {dateRange.from ? (
                                             dateRange.to ? (
                                                 <>
-                                                    {format(dateRange.from, "LLL dd, y")} -{" "}
-                                                    {format(dateRange.to, "LLL dd, y")}
+                                                    {format(
+                                                        dateRange.from,
+                                                        'LLL dd, y',
+                                                    )}{' '}
+                                                    -{' '}
+                                                    {format(
+                                                        dateRange.to,
+                                                        'LLL dd, y',
+                                                    )}
                                                 </>
                                             ) : (
-                                                format(dateRange.from, "LLL dd, y")
+                                                format(
+                                                    dateRange.from,
+                                                    'LLL dd, y',
+                                                )
                                             )
                                         ) : (
                                             <span>Pick a date range</span>
                                         )}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent
+                                    className="w-auto p-0"
+                                    align="start"
+                                >
                                     <Calendar
                                         initialFocus
                                         mode="range"
                                         defaultMonth={dateRange.from}
                                         selected={{
                                             from: dateRange.from,
-                                            to: dateRange.to
+                                            to: dateRange.to,
                                         }}
-                                        onSelect={(range: CalendarDateRange | undefined) => {
+                                        onSelect={(
+                                            range:
+                                                | CalendarDateRange
+                                                | undefined,
+                                        ) => {
                                             if (range) {
                                                 setDateRange({
                                                     from: range.from,
-                                                    to: range.to ?? range.from
+                                                    to: range.to ?? range.from,
                                                 });
                                             }
                                         }}
-                                        numberOfMonths={window.innerWidth >= 768 ? 2 : 1}
+                                        numberOfMonths={
+                                            window.innerWidth >= 768 ? 2 : 1
+                                        }
                                     ></Calendar>
                                 </PopoverContent>
                             </Popover>
                         </div>
                     </div>
-                    <div className="lg:col-span-4 flex justify-end">
+                    <div className="flex justify-end lg:col-span-4">
                         {canDelete && (
-                            <Button 
-                                variant="destructive" 
-                                onClick={handleMultipleDelete} 
+                            <Button
+                                variant="destructive"
+                                onClick={handleMultipleDelete}
                                 disabled={selectedIds.length === 0}
                                 className="h-10 w-full md:w-auto"
                             >
-                                <Trash2 className="h-4 w-4 mr-2" />
+                                <Trash2 className="mr-2 h-4 w-4" />
                                 Delete ({selectedIds.length})
                             </Button>
                         )}
@@ -369,17 +459,29 @@ export default function PosRetailSale({ sales, auth }: Props) {
 
                 {/* Add this section before the table */}
                 {searchTerm && (
-                    <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <h3 className="text-sm font-medium mb-2">Item Quantities for Search Results:</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {Object.entries(totalQuantities).map(([itemId, quantity]) => (
-                                itemId.toLowerCase().includes(searchTerm.toLowerCase()) && (
-                                    <div key={itemId} className="flex justify-between items-center p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm">
-                                        <span className="font-medium">{itemId}:</span>
-                                        <span className="text-sm">{quantity} units</span>
-                                    </div>
-                                )
-                            ))}
+                    <div className="mb-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                        <h3 className="mb-2 text-sm font-medium">
+                            Item Quantities for Search Results:
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                            {Object.entries(totalQuantities).map(
+                                ([itemId, quantity]) =>
+                                    itemId
+                                        .toLowerCase()
+                                        .includes(searchTerm.toLowerCase()) && (
+                                        <div
+                                            key={itemId}
+                                            className="flex items-center justify-between rounded-md bg-white p-2 shadow-sm dark:bg-gray-700"
+                                        >
+                                            <span className="font-medium">
+                                                {itemId}:
+                                            </span>
+                                            <span className="text-sm">
+                                                {quantity} units
+                                            </span>
+                                        </div>
+                                    ),
+                            )}
                         </div>
                     </div>
                 )}
@@ -390,8 +492,12 @@ export default function PosRetailSale({ sales, auth }: Props) {
                             <TableRow>
                                 <TableCell className="w-[50px]">
                                     <Checkbox
-                                        checked={currentItems.length > 0 && 
-                                        currentItems.every(item => selectedIds.includes(item.id))}
+                                        checked={
+                                            currentItems.length > 0 &&
+                                            currentItems.every((item) =>
+                                                selectedIds.includes(item.id),
+                                            )
+                                        }
                                         onCheckedChange={toggleSelectAll}
                                         aria-label="Select all on current page"
                                     />
@@ -402,13 +508,18 @@ export default function PosRetailSale({ sales, auth }: Props) {
                                 <TableCell>Cash Received</TableCell>
                                 <TableCell>Change</TableCell>
                                 <TableCell>Payment Method</TableCell>
-                                <TableCell className="w-[100px]">Actions</TableCell>
+                                <TableCell className="w-[100px]">
+                                    Actions
+                                </TableCell>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {currentItems.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center py-4">
+                                    <TableCell
+                                        colSpan={8}
+                                        className="py-4 text-center"
+                                    >
                                         No sales data found
                                     </TableCell>
                                 </TableRow>
@@ -417,30 +528,52 @@ export default function PosRetailSale({ sales, auth }: Props) {
                                     <TableRow key={index}>
                                         <TableCell>
                                             <Checkbox
-                                                checked={selectedIds.includes(sale.id)} 
-                                                onCheckedChange={() => toggleSelect(sale.id)}
+                                                checked={selectedIds.includes(
+                                                    sale.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleSelect(sale.id)
+                                                }
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            {sale.created_at ? new Date(sale.created_at).toLocaleDateString() : 'N/A'}
+                                            {sale.created_at
+                                                ? new Date(
+                                                      sale.created_at,
+                                                  ).toLocaleDateString()
+                                                : 'N/A'}
                                         </TableCell>
                                         <TableCell>
-                                            {sale.items.map((item: SaleItem, idx: number) => (
-                                                <div key={item.id}>
-                                                    {item.id} (${item.price} x {item.quantity})
-                                                </div>
-                                            ))}
+                                            {sale.items.map(
+                                                (
+                                                    item: SaleItem,
+                                                    idx: number,
+                                                ) => (
+                                                    <div key={item.id}>
+                                                        {item.id} (${item.price}{' '}
+                                                        x {item.quantity})
+                                                    </div>
+                                                ),
+                                            )}
                                         </TableCell>
-                                        <TableCell>{sale.total_amount}</TableCell>
-                                        <TableCell>{sale.cash_received}</TableCell>
+                                        <TableCell>
+                                            {sale.total_amount}
+                                        </TableCell>
+                                        <TableCell>
+                                            {sale.cash_received}
+                                        </TableCell>
                                         <TableCell>{sale.change}</TableCell>
-                                        <TableCell>{sale.payment_method}</TableCell>
+                                        <TableCell>
+                                            {sale.payment_method}
+                                        </TableCell>
                                         <TableCell>
                                             {canDelete && (
-                                                <Button 
-                                                    variant="destructive" 
+                                                <Button
+                                                    variant="destructive"
                                                     size="sm"
-                                                    onClick={() => handleDelete(sale.id)}
+                                                    onClick={() =>
+                                                        handleDelete(sale.id)
+                                                    }
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -453,14 +586,21 @@ export default function PosRetailSale({ sales, auth }: Props) {
                     </Table>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-4">
+                <div className="mt-4 flex flex-col items-center justify-between gap-4 md:flex-row">
                     <div className="text-sm text-gray-500">
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
+                        Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                        {Math.min(
+                            currentPage * itemsPerPage,
+                            filteredData.length,
+                        )}{' '}
+                        of {filteredData.length} entries
                     </div>
                     <div className="flex gap-2">
-                        <Button 
+                        <Button
                             variant="outline"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+                            onClick={() =>
+                                setCurrentPage((prev) => Math.max(prev - 1, 1))
+                            }
                             disabled={currentPage === 1}
                         >
                             Previous
@@ -468,15 +608,23 @@ export default function PosRetailSale({ sales, auth }: Props) {
                         {Array.from({ length: totalPages }, (_, i) => (
                             <Button
                                 key={i + 1}
-                                variant={currentPage === i + 1 ? "default" : "outline"}
+                                variant={
+                                    currentPage === i + 1
+                                        ? 'default'
+                                        : 'outline'
+                                }
                                 onClick={() => setCurrentPage(i + 1)}
                             >
                                 {i + 1}
                             </Button>
                         ))}
-                        <Button 
+                        <Button
                             variant="outline"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+                            onClick={() =>
+                                setCurrentPage((prev) =>
+                                    Math.min(prev + 1, totalPages),
+                                )
+                            }
                             disabled={currentPage === totalPages}
                         >
                             Next

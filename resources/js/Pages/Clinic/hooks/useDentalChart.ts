@@ -1,11 +1,16 @@
+import axios from 'axios';
 import { useState } from 'react';
 import { Patient, ToothData } from '../types';
-import axios from 'axios';
 
 export const useDentalChart = () => {
-    const [editingDentalChart, setEditingDentalChart] = useState<ToothData[]>([]);
-    const [isDentalChartDialogOpen, setIsDentalChartDialogOpen] = useState(false);
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [editingDentalChart, setEditingDentalChart] = useState<ToothData[]>(
+        [],
+    );
+    const [isDentalChartDialogOpen, setIsDentalChartDialogOpen] =
+        useState(false);
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
+        null,
+    );
 
     const openDentalChartDialog = (patient: Patient) => {
         setSelectedPatient(patient);
@@ -18,27 +23,30 @@ export const useDentalChart = () => {
             prev.map((tooth) =>
                 tooth.id === toothId
                     ? {
-                        ...tooth,
-                        status:
-                            tooth.status === 'healthy'
-                                ? 'decayed'
-                                : tooth.status === 'decayed'
+                          ...tooth,
+                          status:
+                              tooth.status === 'healthy'
+                                  ? 'decayed'
+                                  : tooth.status === 'decayed'
                                     ? 'filled'
                                     : tooth.status === 'filled'
-                                        ? 'missing'
-                                        : 'healthy',
-                    }
-                    : tooth
-            )
+                                      ? 'missing'
+                                      : 'healthy',
+                      }
+                    : tooth,
+            ),
         );
     };
 
     const saveDentalChartChanges = async () => {
         if (selectedPatient) {
             try {
-                const response = await axios.put(`/clinic/patients/${selectedPatient.id}/dental-chart`, {
-                    dental_chart: editingDentalChart
-                });
+                const response = await axios.put(
+                    `/clinic/patients/${selectedPatient.id}/dental-chart`,
+                    {
+                        dental_chart: editingDentalChart,
+                    },
+                );
                 setIsDentalChartDialogOpen(false);
                 return { success: true, data: response.data };
             } catch (error) {
@@ -64,6 +72,6 @@ export const useDentalChart = () => {
         openDentalChartDialog,
         handleToothClick,
         saveDentalChartChanges,
-        openPatientInfoDialog
+        openPatientInfoDialog,
     };
 };

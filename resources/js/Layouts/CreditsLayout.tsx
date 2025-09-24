@@ -1,14 +1,11 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
-import { ThemeProvider } from "@/Components/ThemeProvider";
-import { ChevronUp, ChevronDown } from "lucide-react";
-import { Button } from '@/Components/ui/button';
-import { SparklesIcon, AlertCircle, Settings, ArrowLeft, CreditCard, History, Home, Wallet } from 'lucide-react';
-import { PageProps, User, Project } from '@/types/index';
+import { ThemeProvider } from '@/Components/ThemeProvider';
+import { Project, User } from '@/types/index';
+import { usePage } from '@inertiajs/react';
+import { ChevronDown, CreditCard, History, Home, Wallet } from 'lucide-react';
+import { useState } from 'react';
 
 interface Props {
     children: React.ReactNode;
@@ -35,43 +32,69 @@ const formatNumber = (num: number | undefined | null) => {
     return num?.toLocaleString() ?? '0';
 };
 
-export default function CreditsLayout({ children, header, user, auth: propAuth }: Props) {
-    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+export default function CreditsLayout({
+    children,
+    header,
+    user,
+    auth: propAuth,
+}: Props) {
+    const [showingNavigationDropdown, setShowingNavigationDropdown] =
+        useState(false);
 
     const { url } = usePage();
-    const pageProps = usePage<{ auth: { user: any; project: any; modules: string[]; selectedTeamMember?: any } }>().props;
+    const pageProps = usePage<{
+        auth: {
+            user: any;
+            project: any;
+            modules: string[];
+            selectedTeamMember?: any;
+        };
+    }>().props;
     // Merge prop auth with page auth, preferring prop auth if available
     const auth = propAuth || pageProps.auth;
     const authUser = user || auth.user;
 
     return (
         <ThemeProvider>
-            <div className="min-h-screen bg-white dark:bg-gray-800 relative">
+            <div className="relative min-h-screen bg-white dark:bg-gray-800">
                 {/* Mobile Navigation */}
                 <div
                     className={
-                        (showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full') +
-                        ' fixed inset-y-0 left-0 w-64 transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-green-900 to-green-800 shadow-lg z-[60] overflow-y-auto'
+                        (showingNavigationDropdown
+                            ? 'translate-x-0'
+                            : '-translate-x-full') +
+                        ' fixed inset-y-0 left-0 z-[60] w-64 transform overflow-y-auto bg-gradient-to-b from-green-900 to-green-800 shadow-lg transition-transform duration-300 ease-in-out sm:hidden'
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink href={route('home')} className="text-white/90 hover:text-white hover:bg-white/10">
-                            <Home className="w-4 h-4 mr-2" />
+                        <ResponsiveNavLink
+                            href={route('home')}
+                            className="text-white/90 hover:bg-white/10 hover:text-white"
+                        >
+                            <Home className="mr-2 h-4 w-4" />
                             Back to Home
                         </ResponsiveNavLink>
 
                         <div className="border-t border-white/10">
                             <div className="px-4 py-2">
-                                <div className="font-medium text-base text-white/90 flex items-center">
-                                    <CreditCard className="w-4 h-4 mr-2" />
+                                <div className="flex items-center text-base font-medium text-white/90">
+                                    <CreditCard className="mr-2 h-4 w-4" />
                                     Credits
                                 </div>
-                                <ResponsiveNavLink href={route('credits.buy')} className="text-white/80 hover:text-white hover:bg-white/10">
-                                    <Wallet className="w-4 h-4 mr-2" />
+                                <ResponsiveNavLink
+                                    href={route('credits.buy')}
+                                    className="text-white/80 hover:bg-white/10 hover:text-white"
+                                >
+                                    <Wallet className="mr-2 h-4 w-4" />
                                     Buy Credits
                                 </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('credits.history', { clientIdentifier: authUser.identifier })} className="text-white/80 hover:text-white hover:bg-white/10">
-                                    <History className="w-4 h-4 mr-2" />
+                                <ResponsiveNavLink
+                                    href={route('credits.history', {
+                                        clientIdentifier: authUser.identifier,
+                                    })}
+                                    className="text-white/80 hover:bg-white/10 hover:text-white"
+                                >
+                                    <History className="mr-2 h-4 w-4" />
                                     Credit History
                                 </ResponsiveNavLink>
                             </div>
@@ -79,8 +102,13 @@ export default function CreditsLayout({ children, header, user, auth: propAuth }
 
                         <div className="border-t border-white/10">
                             <div className="px-4 py-2">
-                                <div className="font-medium text-base text-white/90">Account</div>
-                                <ResponsiveNavLink href={route('profile.edit')} className="text-white/80 hover:text-white hover:bg-white/10">
+                                <div className="text-base font-medium text-white/90">
+                                    Account
+                                </div>
+                                <ResponsiveNavLink
+                                    href={route('profile.edit')}
+                                    className="text-white/80 hover:bg-white/10 hover:text-white"
+                                >
                                     Profile
                                 </ResponsiveNavLink>
                             </div>
@@ -89,48 +117,68 @@ export default function CreditsLayout({ children, header, user, auth: propAuth }
                 </div>
 
                 {/* Desktop Navigation */}
-                <div className="hidden sm:flex sm:items-center sm:justify-between bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 shadow-sm">
+                <div className="hidden border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 sm:flex sm:items-center sm:justify-between">
                     <div className="container mx-auto px-4 py-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <div className="shrink-0 flex items-center">
+                                <div className="flex shrink-0 items-center">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-900 dark:text-white" />
                                 </div>
                                 <div className="ml-2">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">{authUser.name}</span>
+                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                                        {authUser.name}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
-
+                            <div className="hidden space-x-4 sm:ml-6 sm:flex sm:items-center">
                                 {/* User Dropdown */}
-                                <div className="ml-3 relative">
+                                <div className="relative ml-3">
                                     <Dropdown>
                                         <Dropdown.Trigger>
-                                            <button className="flex items-center text-sm font-medium text-gray-900 dark:text-white hover:text-green-900 hover:bg-white/10 focus:outline-none transition ease-in-out duration-150 rounded-md px-3 py-2">
+                                            <button className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-900 transition duration-150 ease-in-out hover:bg-white/10 hover:text-green-900 focus:outline-none dark:text-white">
                                                 <div className="flex items-center">
-                                                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                                        <span className="text-gray-900 dark:text-white font-medium text-sm">
-                                                            {auth.selectedTeamMember?.first_name?.[0]}{auth.selectedTeamMember?.last_name?.[0]}
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {
+                                                                auth
+                                                                    .selectedTeamMember
+                                                                    ?.first_name?.[0]
+                                                            }
+                                                            {
+                                                                auth
+                                                                    .selectedTeamMember
+                                                                    ?.last_name?.[0]
+                                                            }
                                                         </span>
                                                     </div>
                                                     <div className="ml-2">
-                                                        <div className="text-gray-900 dark:text-white font-medium">
-                                                            {auth.selectedTeamMember?.full_name || authUser.name}
+                                                        <div className="font-medium text-gray-900 dark:text-white">
+                                                            {auth
+                                                                .selectedTeamMember
+                                                                ?.full_name ||
+                                                                authUser.name}
                                                         </div>
                                                     </div>
-                                                    <ChevronDown className="ml-2 w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                                    <ChevronDown className="ml-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                                                 </div>
                                             </button>
                                         </Dropdown.Trigger>
 
-                                        <Dropdown.Content align="right" width="48">
-                                            <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                            <Dropdown.Link 
-                                                href={route('logout')} 
-                                                method="post" 
+                                        <Dropdown.Content
+                                            align="right"
+                                            width="48"
+                                        >
+                                            <Dropdown.Link
+                                                href={route('profile.edit')}
+                                            >
+                                                Profile
+                                            </Dropdown.Link>
+                                            <Dropdown.Link
+                                                href={route('logout')}
+                                                method="post"
                                                 as="button"
-                                                className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                className="w-full text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                                             >
                                                 Logout
                                             </Dropdown.Link>
@@ -143,19 +191,36 @@ export default function CreditsLayout({ children, header, user, auth: propAuth }
                         {/* Mobile menu button */}
                         <div className="-mr-2 flex items-center sm:hidden">
                             <button
-                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-900 dark:text-white hover:text-green-900 hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-green-900 transition duration-150 ease-in-out"
+                                onClick={() =>
+                                    setShowingNavigationDropdown(
+                                        (previousState) => !previousState,
+                                    )
+                                }
+                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-900 transition duration-150 ease-in-out hover:bg-white/10 hover:text-green-900 focus:bg-white/10 focus:text-green-900 focus:outline-none dark:text-white"
                             >
-                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                <svg
+                                    className="h-6 w-6"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
                                     <path
-                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                        className={
+                                            !showingNavigationDropdown
+                                                ? 'inline-flex'
+                                                : 'hidden'
+                                        }
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         strokeWidth="2"
                                         d="M4 6h16M4 12h16M4 18h16"
                                     />
                                     <path
-                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                        className={
+                                            showingNavigationDropdown
+                                                ? 'inline-flex'
+                                                : 'hidden'
+                                        }
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         strokeWidth="2"
@@ -170,7 +235,7 @@ export default function CreditsLayout({ children, header, user, auth: propAuth }
                 {/* Page Heading */}
                 {header && (
                     <header className="bg-white dark:bg-gray-800">
-                        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                             {header}
                         </div>
                     </header>
@@ -189,4 +254,4 @@ export default function CreditsLayout({ children, header, user, auth: propAuth }
             </div>
         </ThemeProvider>
     );
-} 
+}

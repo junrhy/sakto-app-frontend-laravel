@@ -1,5 +1,5 @@
 import Dropdown from '@/Components/Dropdown';
-import { menuCategories, getVisibleItems } from './MenuConfig';
+import { getVisibleItems, menuCategories } from './MenuConfig';
 
 interface DesktopMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;
@@ -7,11 +7,20 @@ interface DesktopMenuProps {
     url: string;
 }
 
-export default function DesktopMenu({ hasModuleAccess, appParam, url }: DesktopMenuProps) {
+export default function DesktopMenu({
+    hasModuleAccess,
+    appParam,
+    url,
+}: DesktopMenuProps) {
     return (
         <>
             {menuCategories.map((category) => {
-                const visibleItems = getVisibleItems(category, hasModuleAccess, appParam, url);
+                const visibleItems = getVisibleItems(
+                    category,
+                    hasModuleAccess,
+                    appParam,
+                    url,
+                );
                 if (visibleItems.length === 0) return null;
 
                 return (
@@ -21,11 +30,13 @@ export default function DesktopMenu({ hasModuleAccess, appParam, url }: DesktopM
                                 <span className="inline-flex rounded-md">
                                     <button
                                         type="button"
-                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
+                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 transition-all duration-200 ease-in-out hover:text-gray-900 focus:outline-none dark:text-gray-800 dark:text-white/90 dark:hover:text-white"
                                     >
-                                        <span className="mt-[1px]">{category.title}</span>
+                                        <span className="mt-[1px]">
+                                            {category.title}
+                                        </span>
                                         <svg
-                                            className="ml-2 -mr-0.5 h-4 w-4"
+                                            className="-mr-0.5 ml-2 h-4 w-4"
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 20 20"
                                             fill="currentColor"
@@ -42,7 +53,10 @@ export default function DesktopMenu({ hasModuleAccess, appParam, url }: DesktopM
 
                             <Dropdown.Content>
                                 {visibleItems.map((item) => (
-                                    <Dropdown.Link key={item.id} href={item.href}>
+                                    <Dropdown.Link
+                                        key={item.id}
+                                        href={item.href}
+                                    >
                                         {item.title}
                                     </Dropdown.Link>
                                 ))}

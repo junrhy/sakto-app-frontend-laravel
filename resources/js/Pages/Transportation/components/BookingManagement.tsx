@@ -1,46 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Calendar as CalendarComponent } from '@/Components/ui/calendar';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/Components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import { Calendar as CalendarComponent } from '@/Components/ui/calendar';
-import PaymentDialog from './PaymentDialog';
-import BookingCalendar from './BookingCalendar';
-import { Booking, Truck as TruckType } from '../types';
-import { 
-    Calendar, 
-    Clock, 
-    MapPin, 
-    Package, 
-    User, 
-    Phone, 
-    Mail, 
-    Building,
-    Search,
-    Filter,
-    Eye,
-    Edit,
-    Trash2,
-    CheckCircle,
-    XCircle,
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import axios from 'axios';
+import {
     AlertCircle,
     AlertTriangle,
-    Truck,
+    Building,
+    Calendar,
+    CalendarDays,
+    CheckCircle,
+    Clock,
     CreditCard,
     DollarSign,
-    Plus,
+    Edit,
+    Eye,
     FileText,
-    CalendarDays,
-    List
+    List,
+    Mail,
+    MapPin,
+    Package,
+    Phone,
+    Plus,
+    Search,
+    Trash2,
+    Truck,
+    User,
+    XCircle,
 } from 'lucide-react';
-
+import { useEffect, useState } from 'react';
+import { Booking } from '../types';
+import BookingCalendar from './BookingCalendar';
+import PaymentDialog from './PaymentDialog';
 
 interface BookingStats {
     total_bookings: number;
@@ -56,20 +76,24 @@ export default function BookingManagement() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [stats, setStats] = useState<BookingStats | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(
+        null,
+    );
     const [showDetailsDialog, setShowDetailsDialog] = useState(false);
     const [showUpdateDialog, setShowUpdateDialog] = useState(false);
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     const [showAddBookingDialog, setShowAddBookingDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+    const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(
+        null,
+    );
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [dateRangeFilter, setDateRangeFilter] = useState(() => {
         const today = new Date();
         return {
             startDate: today.toISOString().split('T')[0],
-            endDate: today.toISOString().split('T')[0]
+            endDate: today.toISOString().split('T')[0],
         };
     });
     const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
@@ -80,7 +104,7 @@ export default function BookingManagement() {
     const [updateForm, setUpdateForm] = useState({
         status: '',
         notes: '',
-        estimated_cost: 0
+        estimated_cost: 0,
     });
     const [addBookingForm, setAddBookingForm] = useState({
         truck_id: '',
@@ -97,7 +121,7 @@ export default function BookingManagement() {
         cargo_description: '',
         cargo_weight: '',
         cargo_unit: 'kg',
-        special_requirements: ''
+        special_requirements: '',
     });
 
     useEffect(() => {
@@ -110,7 +134,7 @@ export default function BookingManagement() {
         try {
             setLoading(true);
             const response = await axios.get('/transportation/bookings/list');
-            
+
             // Handle different response structures
             if (Array.isArray(response.data)) {
                 setBookings(response.data);
@@ -131,12 +155,15 @@ export default function BookingManagement() {
     const fetchStats = async () => {
         try {
             const response = await axios.get('/transportation/bookings/stats');
-            
+
             // Handle different response structures
             if (response.data && typeof response.data === 'object') {
                 setStats(response.data);
             } else {
-                console.error('Unexpected stats response structure:', response.data);
+                console.error(
+                    'Unexpected stats response structure:',
+                    response.data,
+                );
                 setStats(null);
             }
         } catch (error) {
@@ -148,14 +175,17 @@ export default function BookingManagement() {
     const fetchTrucks = async () => {
         try {
             const response = await axios.get('/transportation/fleet/list');
-            
+
             // Handle different response structures
             if (Array.isArray(response.data)) {
                 setTrucks(response.data);
             } else if (response.data && Array.isArray(response.data.data)) {
                 setTrucks(response.data.data);
             } else {
-                console.error('Unexpected trucks response structure:', response.data);
+                console.error(
+                    'Unexpected trucks response structure:',
+                    response.data,
+                );
                 setTrucks([]);
             }
         } catch (error) {
@@ -168,7 +198,10 @@ export default function BookingManagement() {
         if (!selectedBooking) return;
 
         try {
-            await axios.put(`/transportation/bookings/${selectedBooking.id}`, updateForm);
+            await axios.put(
+                `/transportation/bookings/${selectedBooking.id}`,
+                updateForm,
+            );
             setShowUpdateDialog(false);
             fetchBookings();
             fetchStats();
@@ -194,7 +227,9 @@ export default function BookingManagement() {
         }
 
         try {
-            await axios.delete(`/transportation/bookings/${bookingToDelete.id}`);
+            await axios.delete(
+                `/transportation/bookings/${bookingToDelete.id}`,
+            );
             fetchBookings();
             fetchStats();
             setShowDeleteDialog(false);
@@ -207,15 +242,28 @@ export default function BookingManagement() {
     const handleAddBooking = async () => {
         // Validate required fields
         const requiredFields = [
-            'truck_id', 'customer_name', 'customer_email', 'customer_phone',
-            'pickup_location', 'delivery_location', 'pickup_date', 'pickup_time',
-            'delivery_date', 'delivery_time', 'cargo_description', 'cargo_weight'
+            'truck_id',
+            'customer_name',
+            'customer_email',
+            'customer_phone',
+            'pickup_location',
+            'delivery_location',
+            'pickup_date',
+            'pickup_time',
+            'delivery_date',
+            'delivery_time',
+            'cargo_description',
+            'cargo_weight',
         ];
 
-        const missingFields = requiredFields.filter(field => !addBookingForm[field as keyof typeof addBookingForm]);
-        
+        const missingFields = requiredFields.filter(
+            (field) => !addBookingForm[field as keyof typeof addBookingForm],
+        );
+
         if (missingFields.length > 0) {
-            alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+            alert(
+                `Please fill in all required fields: ${missingFields.join(', ')}`,
+            );
             return;
         }
 
@@ -234,7 +282,10 @@ export default function BookingManagement() {
         }
 
         // Validate delivery date is after pickup date
-        if (new Date(addBookingForm.delivery_date) < new Date(addBookingForm.pickup_date)) {
+        if (
+            new Date(addBookingForm.delivery_date) <
+            new Date(addBookingForm.pickup_date)
+        ) {
             alert('Delivery date must be after pickup date');
             return;
         }
@@ -243,7 +294,7 @@ export default function BookingManagement() {
             const formData = {
                 ...addBookingForm,
                 truck_id: parseInt(addBookingForm.truck_id),
-                cargo_weight: weight
+                cargo_weight: weight,
             };
 
             await axios.post('/transportation/bookings', formData);
@@ -263,47 +314,64 @@ export default function BookingManagement() {
                 cargo_description: '',
                 cargo_weight: '',
                 cargo_unit: 'kg',
-                special_requirements: ''
+                special_requirements: '',
             });
             fetchBookings();
             fetchStats();
         } catch (error: any) {
             console.error('Failed to create booking:', error);
-            
+
             let errorMessage = 'Failed to create booking. Please try again.';
-            
+
             if (error.response) {
                 const responseData = error.response.data;
                 if (responseData.message) {
                     errorMessage = responseData.message;
                 }
                 if (responseData.errors) {
-                    const validationErrors = Object.values(responseData.errors).flat();
+                    const validationErrors = Object.values(
+                        responseData.errors,
+                    ).flat();
                     errorMessage = `Validation errors: ${validationErrors.join(', ')}`;
                 }
             } else if (error.request) {
-                errorMessage = 'Unable to connect to the server. Please check your connection.';
+                errorMessage =
+                    'Unable to connect to the server. Please check your connection.';
             }
-            
+
             alert(errorMessage);
         }
     };
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            'Pending': { color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
-            'Confirmed': { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-            'In Progress': { color: 'bg-purple-100 text-purple-800', icon: Clock },
-            'Completed': { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            'Cancelled': { color: 'bg-red-100 text-red-800', icon: XCircle },
+            Pending: {
+                color: 'bg-yellow-100 text-yellow-800',
+                icon: AlertCircle,
+            },
+            Confirmed: {
+                color: 'bg-blue-100 text-blue-800',
+                icon: CheckCircle,
+            },
+            'In Progress': {
+                color: 'bg-purple-100 text-purple-800',
+                icon: Clock,
+            },
+            Completed: {
+                color: 'bg-green-100 text-green-800',
+                icon: CheckCircle,
+            },
+            Cancelled: { color: 'bg-red-100 text-red-800', icon: XCircle },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['Pending'];
+        const config =
+            statusConfig[status as keyof typeof statusConfig] ||
+            statusConfig['Pending'];
         const Icon = config.icon;
 
         return (
             <Badge className={config.color}>
-                <Icon className="w-3 h-3 mr-1" />
+                <Icon className="mr-1 h-3 w-3" />
                 {status}
             </Badge>
         );
@@ -311,62 +379,86 @@ export default function BookingManagement() {
 
     const getPaymentStatusBadge = (status: string) => {
         const statusConfig = {
-            'pending': { color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
-            'paid': { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            'failed': { color: 'bg-red-100 text-red-800', icon: XCircle },
-            'refunded': { color: 'bg-gray-100 text-gray-800', icon: AlertCircle },
+            pending: {
+                color: 'bg-yellow-100 text-yellow-800',
+                icon: AlertCircle,
+            },
+            paid: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+            failed: { color: 'bg-red-100 text-red-800', icon: XCircle },
+            refunded: { color: 'bg-gray-100 text-gray-800', icon: AlertCircle },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['pending'];
+        const config =
+            statusConfig[status as keyof typeof statusConfig] ||
+            statusConfig['pending'];
         const Icon = config.icon;
 
         return (
             <Badge className={config.color}>
-                <Icon className="w-3 h-3 mr-1" />
+                <Icon className="mr-1 h-3 w-3" />
                 {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
         );
     };
 
-    const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(booking => {
-        const matchesSearch = 
-            booking.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.customer_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.booking_reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.pickup_location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.delivery_location.toLowerCase().includes(searchQuery.toLowerCase());
+    const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(
+        (booking) => {
+            const matchesSearch =
+                booking.customer_name
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                booking.customer_email
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                booking.booking_reference
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                booking.pickup_location
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                booking.delivery_location
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase());
 
-        const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
+            const matchesStatus =
+                statusFilter === 'all' || booking.status === statusFilter;
 
-        const matchesDateRange = dateRangeFilter.startDate === '' || dateRangeFilter.endDate === '' || 
-            (booking.pickup_date >= dateRangeFilter.startDate && booking.pickup_date <= dateRangeFilter.endDate) ||
-            (booking.delivery_date >= dateRangeFilter.startDate && booking.delivery_date <= dateRangeFilter.endDate);
+            const matchesDateRange =
+                dateRangeFilter.startDate === '' ||
+                dateRangeFilter.endDate === '' ||
+                (booking.pickup_date >= dateRangeFilter.startDate &&
+                    booking.pickup_date <= dateRangeFilter.endDate) ||
+                (booking.delivery_date >= dateRangeFilter.startDate &&
+                    booking.delivery_date <= dateRangeFilter.endDate);
 
-        return matchesSearch && matchesStatus && matchesDateRange;
-    });
+            return matchesSearch && matchesStatus && matchesDateRange;
+        },
+    );
 
     const getBookingsForDate = (date: Date) => {
         const dateString = date.toISOString().split('T')[0];
-        return filteredBookings.filter(booking => 
-            booking.pickup_date === dateString || booking.delivery_date === dateString
+        return filteredBookings.filter(
+            (booking) =>
+                booking.pickup_date === dateString ||
+                booking.delivery_date === dateString,
         );
     };
 
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
-        
+
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
     const formatTime = (timeString: string) => {
         if (!timeString) return '';
-        
+
         // Handle different time formats
         let time;
         if (timeString.includes(':')) {
@@ -378,18 +470,18 @@ export default function BookingManagement() {
             // If it's a full datetime string
             time = new Date(timeString);
         }
-        
+
         return time.toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
         });
     };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'PHP'
+            currency: 'PHP',
         }).format(amount);
     };
 
@@ -401,7 +493,7 @@ export default function BookingManagement() {
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
@@ -413,7 +505,7 @@ export default function BookingManagement() {
         return date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
-            year: '2-digit'
+            year: '2-digit',
         });
     };
 
@@ -424,7 +516,10 @@ export default function BookingManagement() {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${month}-${day}`;
-            setAddBookingForm({...addBookingForm, pickup_date: formattedDate});
+            setAddBookingForm({
+                ...addBookingForm,
+                pickup_date: formattedDate,
+            });
             setPickupCalendarOpen(false);
         }
     };
@@ -436,263 +531,429 @@ export default function BookingManagement() {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${month}-${day}`;
-            setAddBookingForm({...addBookingForm, delivery_date: formattedDate});
+            setAddBookingForm({
+                ...addBookingForm,
+                delivery_date: formattedDate,
+            });
             setDeliveryCalendarOpen(false);
         }
     };
 
-
     return (
         <div className="bg-white dark:bg-gray-800">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                        <div className="rounded-lg bg-orange-100 p-2 dark:bg-orange-900/30">
                             <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Booking Management</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Manage transportation bookings and reservations</p>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                Booking Management
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Manage transportation bookings and reservations
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center space-x-3">
                         <div className="text-sm text-gray-600 dark:text-gray-400">
                             {filteredBookings.length} bookings
                         </div>
-                        <Button 
+                        <Button
                             onClick={() => setShowAddBookingDialog(true)}
-                            className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm"
+                            className="bg-orange-600 text-white shadow-sm hover:bg-orange-700"
                         >
-                            <Plus className="w-4 h-4 mr-2" />
+                            <Plus className="mr-2 h-4 w-4" />
                             Add Booking
                         </Button>
                     </div>
                 </div>
             </div>
             <div className="p-6">
-                    {/* Stats Cards */}
-                    {stats && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.total_bookings}</div>
-                                <div className="text-sm text-blue-600 dark:text-blue-400">Total Bookings</div>
+                {/* Stats Cards */}
+                {stats && (
+                    <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {stats.total_bookings}
                             </div>
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending_bookings}</div>
-                                <div className="text-sm text-yellow-600 dark:text-yellow-400">Pending</div>
-                            </div>
-                            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed_bookings}</div>
-                                <div className="text-sm text-green-600 dark:text-green-400">Completed</div>
-                            </div>
-                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.today_bookings}</div>
-                                <div className="text-sm text-purple-600 dark:text-purple-400">Today</div>
+                            <div className="text-sm text-blue-600 dark:text-blue-400">
+                                Total Bookings
                             </div>
                         </div>
-                    )}
+                        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                {stats.pending_bookings}
+                            </div>
+                            <div className="text-sm text-yellow-600 dark:text-yellow-400">
+                                Pending
+                            </div>
+                        </div>
+                        <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {stats.completed_bookings}
+                            </div>
+                            <div className="text-sm text-green-600 dark:text-green-400">
+                                Completed
+                            </div>
+                        </div>
+                        <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-900/20">
+                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                {stats.today_bookings}
+                            </div>
+                            <div className="text-sm text-purple-600 dark:text-purple-400">
+                                Today
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                    {/* Filters and View Toggle */}
-                    <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                        <div className="flex-1">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
-                                <Input
-                                    placeholder="Search bookings..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                />
-                            </div>
+                {/* Filters and View Toggle */}
+                <div className="mb-6 flex flex-col gap-4 lg:flex-row">
+                    <div className="flex-1">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400 dark:text-gray-500" />
+                            <Input
+                                placeholder="Search bookings..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="border-gray-200 bg-gray-50 pl-10 focus:border-transparent focus:ring-2 focus:ring-orange-500 dark:border-gray-700 dark:bg-gray-900"
+                            />
                         </div>
-                        <div className="flex gap-2">
-                            <div className="w-full md:w-48">
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Filter by status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Status</SelectItem>
-                                        <SelectItem value="Pending">Pending</SelectItem>
-                                        <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                        <SelectItem value="In Progress">In Progress</SelectItem>
-                                        <SelectItem value="Completed">Completed</SelectItem>
-                                        <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {viewMode === 'table' && (
-                                <div className="w-full md:w-80">
-                                    <Popover open={dateRangePickerOpen} onOpenChange={setDateRangePickerOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-full justify-start text-left font-normal bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 min-w-0"
-                                            >
-                                                <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
-                                                <span className="truncate">
-                                                    {dateRangeFilter.startDate && dateRangeFilter.endDate ? (
-                                                        dateRangeFilter.startDate === dateRangeFilter.endDate ? (
-                                                            formatDateForButton(dateRangeFilter.startDate)
-                                                        ) : (
-                                                            `${formatDateForButton(dateRangeFilter.startDate)} - ${formatDateForButton(dateRangeFilter.endDate)}`
-                                                        )
-                                                    ) : (
-                                                        "Select date range"
-                                                    )}
-                                                </span>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <div className="p-3">
-                                                <div className="text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-                                                    Select Date Range
-                                                </div>
-                                                <CalendarComponent
-                                                    mode="range"
-                                                    selected={{
-                                                        from: dateRangeFilter.startDate ? new Date(dateRangeFilter.startDate + 'T00:00:00') : undefined,
-                                                        to: dateRangeFilter.endDate ? new Date(dateRangeFilter.endDate + 'T00:00:00') : undefined
-                                                    }}
-                                                    onSelect={(range) => {
-                                                        if (range?.from) {
-                                                            const year = range.from.getFullYear();
-                                                            const month = String(range.from.getMonth() + 1).padStart(2, '0');
-                                                            const day = String(range.from.getDate()).padStart(2, '0');
-                                                            const startDate = `${year}-${month}-${day}`;
-                                                            
-                                                            if (range?.to) {
-                                                                const yearTo = range.to.getFullYear();
-                                                                const monthTo = String(range.to.getMonth() + 1).padStart(2, '0');
-                                                                const dayTo = String(range.to.getDate()).padStart(2, '0');
-                                                                const endDate = `${yearTo}-${monthTo}-${dayTo}`;
-                                                                setDateRangeFilter({startDate, endDate});
-                                                            } else {
-                                                                setDateRangeFilter({startDate, endDate: startDate});
-                                                            }
+                    </div>
+                    <div className="flex gap-2">
+                        <div className="w-full md:w-48">
+                            <Select
+                                value={statusFilter}
+                                onValueChange={setStatusFilter}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Filter by status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        All Status
+                                    </SelectItem>
+                                    <SelectItem value="Pending">
+                                        Pending
+                                    </SelectItem>
+                                    <SelectItem value="Confirmed">
+                                        Confirmed
+                                    </SelectItem>
+                                    <SelectItem value="In Progress">
+                                        In Progress
+                                    </SelectItem>
+                                    <SelectItem value="Completed">
+                                        Completed
+                                    </SelectItem>
+                                    <SelectItem value="Cancelled">
+                                        Cancelled
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {viewMode === 'table' && (
+                            <div className="w-full md:w-80">
+                                <Popover
+                                    open={dateRangePickerOpen}
+                                    onOpenChange={setDateRangePickerOpen}
+                                >
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full min-w-0 justify-start border-gray-200 bg-gray-50 text-left font-normal hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                                        >
+                                            <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                                            <span className="truncate">
+                                                {dateRangeFilter.startDate &&
+                                                dateRangeFilter.endDate
+                                                    ? dateRangeFilter.startDate ===
+                                                      dateRangeFilter.endDate
+                                                        ? formatDateForButton(
+                                                              dateRangeFilter.startDate,
+                                                          )
+                                                        : `${formatDateForButton(dateRangeFilter.startDate)} - ${formatDateForButton(dateRangeFilter.endDate)}`
+                                                    : 'Select date range'}
+                                            </span>
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        className="w-auto p-0"
+                                        align="start"
+                                    >
+                                        <div className="p-3">
+                                            <div className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                Select Date Range
+                                            </div>
+                                            <CalendarComponent
+                                                mode="range"
+                                                selected={{
+                                                    from: dateRangeFilter.startDate
+                                                        ? new Date(
+                                                              dateRangeFilter.startDate +
+                                                                  'T00:00:00',
+                                                          )
+                                                        : undefined,
+                                                    to: dateRangeFilter.endDate
+                                                        ? new Date(
+                                                              dateRangeFilter.endDate +
+                                                                  'T00:00:00',
+                                                          )
+                                                        : undefined,
+                                                }}
+                                                onSelect={(range) => {
+                                                    if (range?.from) {
+                                                        const year =
+                                                            range.from.getFullYear();
+                                                        const month = String(
+                                                            range.from.getMonth() +
+                                                                1,
+                                                        ).padStart(2, '0');
+                                                        const day = String(
+                                                            range.from.getDate(),
+                                                        ).padStart(2, '0');
+                                                        const startDate = `${year}-${month}-${day}`;
+
+                                                        if (range?.to) {
+                                                            const yearTo =
+                                                                range.to.getFullYear();
+                                                            const monthTo =
+                                                                String(
+                                                                    range.to.getMonth() +
+                                                                        1,
+                                                                ).padStart(
+                                                                    2,
+                                                                    '0',
+                                                                );
+                                                            const dayTo =
+                                                                String(
+                                                                    range.to.getDate(),
+                                                                ).padStart(
+                                                                    2,
+                                                                    '0',
+                                                                );
+                                                            const endDate = `${yearTo}-${monthTo}-${dayTo}`;
+                                                            setDateRangeFilter({
+                                                                startDate,
+                                                                endDate,
+                                                            });
+                                                        } else {
+                                                            setDateRangeFilter({
+                                                                startDate,
+                                                                endDate:
+                                                                    startDate,
+                                                            });
                                                         }
-                                                    }}
-                                                    initialFocus
-                                                    className="rounded-md border-0"
-                                                    numberOfMonths={1}
-                                                />
-                                                {dateRangeFilter.startDate && dateRangeFilter.endDate && (
-                                                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                                        <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                                    }
+                                                }}
+                                                initialFocus
+                                                className="rounded-md border-0"
+                                                numberOfMonths={1}
+                                            />
+                                            {dateRangeFilter.startDate &&
+                                                dateRangeFilter.endDate && (
+                                                    <div className="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700">
+                                                        <div className="mb-2 text-xs text-gray-600 dark:text-gray-400">
                                                             Selected Range:
                                                         </div>
                                                         <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {formatDateForDisplay(dateRangeFilter.startDate)} - {formatDateForDisplay(dateRangeFilter.endDate)}
+                                                            {formatDateForDisplay(
+                                                                dateRangeFilter.startDate,
+                                                            )}{' '}
+                                                            -{' '}
+                                                            {formatDateForDisplay(
+                                                                dateRangeFilter.endDate,
+                                                            )}
                                                         </div>
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
                                                             className="mt-2 w-full"
                                                             onClick={() => {
-                                                                setDateRangeFilter({startDate: '', endDate: ''});
-                                                                setDateRangePickerOpen(false);
+                                                                setDateRangeFilter(
+                                                                    {
+                                                                        startDate:
+                                                                            '',
+                                                                        endDate:
+                                                                            '',
+                                                                    },
+                                                                );
+                                                                setDateRangePickerOpen(
+                                                                    false,
+                                                                );
                                                             }}
                                                         >
                                                             Clear Range
                                                         </Button>
                                                     </div>
                                                 )}
-                                            </div>
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            )}
-                            <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                                <Button
-                                    variant={viewMode === 'table' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('table')}
-                                    className={`px-3 py-2 ${viewMode === 'table' ? 'bg-orange-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                                >
-                                    <List className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('calendar')}
-                                    className={`px-3 py-2 ${viewMode === 'calendar' ? 'bg-orange-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                                >
-                                    <CalendarDays className="w-4 h-4" />
-                                </Button>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
+                        )}
+                        <div className="flex overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                            <Button
+                                variant={
+                                    viewMode === 'table' ? 'default' : 'ghost'
+                                }
+                                size="sm"
+                                onClick={() => setViewMode('table')}
+                                className={`px-3 py-2 ${viewMode === 'table' ? 'bg-orange-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
+                            >
+                                <List className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant={
+                                    viewMode === 'calendar'
+                                        ? 'default'
+                                        : 'ghost'
+                                }
+                                size="sm"
+                                onClick={() => setViewMode('calendar')}
+                                className={`px-3 py-2 ${viewMode === 'calendar' ? 'bg-orange-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
+                            >
+                                <CalendarDays className="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
+                </div>
 
-                    {/* Bookings View */}
-                    {viewMode === 'table' ? (
-                        /* Table View */
-                        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                {/* Bookings View */}
+                {viewMode === 'table' ? (
+                    /* Table View */
+                    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                         <Table>
                             <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
                                 <TableRow className="border-gray-200 dark:border-gray-700">
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Reference</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Customer</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Truck</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Pickup</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Delivery</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Cargo</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Payment</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Cost</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Reference
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Customer
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Truck
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Pickup
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Delivery
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Cargo
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Payment
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Cost
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={10} className="text-center py-8">
+                                        <TableCell
+                                            colSpan={10}
+                                            className="py-8 text-center"
+                                        >
                                             Loading bookings...
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredBookings.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={10} className="text-center py-8">
+                                        <TableCell
+                                            colSpan={10}
+                                            className="py-8 text-center"
+                                        >
                                             No bookings found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredBookings.map((booking) => (
-                                        <TableRow key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                        <TableRow
+                                            key={booking.id}
+                                            className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                                        >
                                             <TableCell className="font-mono text-sm text-gray-900 dark:text-gray-100">
                                                 {booking.booking_reference}
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium text-gray-900 dark:text-gray-100">{booking.customer_name}</div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{booking.customer_email}</div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {booking.customer_name}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {booking.customer_email}
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
-                                                    <Truck className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                                    <Truck className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                                                     <div>
-                                                        <div className="font-medium text-gray-900 dark:text-gray-100">{booking.truck.model}</div>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{booking.truck.plate_number}</div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                            {
+                                                                booking.truck
+                                                                    .model
+                                                            }
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {
+                                                                booking.truck
+                                                                    .plate_number
+                                                            }
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">{formatDate(booking.pickup_date)}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatTime(booking.pickup_time)}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">{formatDate(booking.delivery_date)}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatTime(booking.delivery_time)}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">{booking.cargo_description}</div>
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                        {formatDate(
+                                                            booking.pickup_date,
+                                                        )}
+                                                    </div>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {booking.cargo_weight} {booking.cargo_unit}
+                                                        {formatTime(
+                                                            booking.pickup_time,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                        {formatDate(
+                                                            booking.delivery_date,
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {formatTime(
+                                                            booking.delivery_time,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                        {
+                                                            booking.cargo_description
+                                                        }
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {booking.cargo_weight}{' '}
+                                                        {booking.cargo_unit}
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -701,10 +962,17 @@ export default function BookingManagement() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="space-y-1">
-                                                    {getPaymentStatusBadge(booking.payment_status)}
+                                                    {getPaymentStatusBadge(
+                                                        booking.payment_status,
+                                                    )}
                                                     {booking.payment_method && (
                                                         <div className="text-xs text-gray-500">
-                                                            {booking.payment_method.replace('_', ' ').toUpperCase()}
+                                                            {booking.payment_method
+                                                                .replace(
+                                                                    '_',
+                                                                    ' ',
+                                                                )
+                                                                .toUpperCase()}
                                                         </div>
                                                     )}
                                                 </div>
@@ -712,11 +980,18 @@ export default function BookingManagement() {
                                             <TableCell>
                                                 <div className="space-y-1">
                                                     <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                        {booking.estimated_cost ? formatCurrency(booking.estimated_cost) : 'TBD'}
+                                                        {booking.estimated_cost
+                                                            ? formatCurrency(
+                                                                  booking.estimated_cost,
+                                                              )
+                                                            : 'TBD'}
                                                     </div>
                                                     {booking.paid_amount && (
                                                         <div className="text-sm text-green-600 dark:text-green-400">
-                                                            Paid: {formatCurrency(booking.paid_amount)}
+                                                            Paid:{' '}
+                                                            {formatCurrency(
+                                                                booking.paid_amount,
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -727,50 +1002,72 @@ export default function BookingManagement() {
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => {
-                                                            setSelectedBooking(booking);
-                                                            setShowDetailsDialog(true);
+                                                            setSelectedBooking(
+                                                                booking,
+                                                            );
+                                                            setShowDetailsDialog(
+                                                                true,
+                                                            );
                                                         }}
                                                         className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                                     >
-                                                        <Eye className="w-4 h-4" />
+                                                        <Eye className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => {
-                                                            setSelectedBooking(booking);
+                                                            setSelectedBooking(
+                                                                booking,
+                                                            );
                                                             setUpdateForm({
                                                                 status: booking.status,
-                                                                notes: booking.notes || '',
-                                                                estimated_cost: booking.estimated_cost || 0
+                                                                notes:
+                                                                    booking.notes ||
+                                                                    '',
+                                                                estimated_cost:
+                                                                    booking.estimated_cost ||
+                                                                    0,
                                                             });
-                                                            setShowUpdateDialog(true);
+                                                            setShowUpdateDialog(
+                                                                true,
+                                                            );
                                                         }}
                                                         className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                                                     >
-                                                        <Edit className="w-4 h-4" />
+                                                        <Edit className="h-4 w-4" />
                                                     </Button>
-                                                    {booking.payment_status !== 'paid' && (
+                                                    {booking.payment_status !==
+                                                        'paid' && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => {
-                                                                setSelectedBooking(booking);
-                                                                setShowPaymentDialog(true);
+                                                                setSelectedBooking(
+                                                                    booking,
+                                                                );
+                                                                setShowPaymentDialog(
+                                                                    true,
+                                                                );
                                                             }}
                                                             className="h-8 w-8 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                                                         >
-                                                            <CreditCard className="w-4 h-4" />
+                                                            <CreditCard className="h-4 w-4" />
                                                         </Button>
                                                     )}
-                                                    {booking.status === 'Pending' && (
+                                                    {booking.status ===
+                                                        'Pending' && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() => handleDeleteBooking(booking)}
+                                                            onClick={() =>
+                                                                handleDeleteBooking(
+                                                                    booking,
+                                                                )
+                                                            }
                                                             className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
+                                                            <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     )}
                                                 </div>
@@ -780,82 +1077,117 @@ export default function BookingManagement() {
                                 )}
                             </TableBody>
                         </Table>
-                        </div>
-                    ) : (
-                        /* Calendar View */
-                        <div className="space-y-6">
-                            <BookingCalendar 
-                                bookings={filteredBookings}
-                                onDateClick={(date, bookings) => {
-                                    // Handle date click - could show a popup or navigate to details
-                                    console.log('Date clicked:', date, bookings);
-                                }}
-                            />
-                            
-                            {/* Booking Summary */}
-                            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                                    <CalendarDays className="w-5 h-5 text-orange-600" />
-                                    Booking Summary
-                                </h4>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
-                                            {filteredBookings.filter(b => b.status === 'Pending').length}
-                                        </div>
-                                        <div className="text-gray-600 dark:text-gray-400 font-medium">Pending</div>
+                    </div>
+                ) : (
+                    /* Calendar View */
+                    <div className="space-y-6">
+                        <BookingCalendar
+                            bookings={filteredBookings}
+                            onDateClick={(date, bookings) => {
+                                // Handle date click - could show a popup or navigate to details
+                                console.log('Date clicked:', date, bookings);
+                            }}
+                        />
+
+                        {/* Booking Summary */}
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900/50">
+                            <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                <CalendarDays className="h-5 w-5 text-orange-600" />
+                                Booking Summary
+                            </h4>
+                            <div className="grid grid-cols-2 gap-6 text-sm md:grid-cols-4">
+                                <div className="rounded-lg border border-gray-200 bg-white p-4 text-center dark:border-gray-700 dark:bg-gray-800">
+                                    <div className="mb-1 text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                                        {
+                                            filteredBookings.filter(
+                                                (b) => b.status === 'Pending',
+                                            ).length
+                                        }
                                     </div>
-                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                                            {filteredBookings.filter(b => b.status === 'Confirmed').length}
-                                        </div>
-                                        <div className="text-gray-600 dark:text-gray-400 font-medium">Confirmed</div>
+                                    <div className="font-medium text-gray-600 dark:text-gray-400">
+                                        Pending
                                     </div>
-                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
-                                            {filteredBookings.filter(b => b.status === 'In Progress').length}
-                                        </div>
-                                        <div className="text-gray-600 dark:text-gray-400 font-medium">In Progress</div>
+                                </div>
+                                <div className="rounded-lg border border-gray-200 bg-white p-4 text-center dark:border-gray-700 dark:bg-gray-800">
+                                    <div className="mb-1 text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                        {
+                                            filteredBookings.filter(
+                                                (b) => b.status === 'Confirmed',
+                                            ).length
+                                        }
                                     </div>
-                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
-                                            {filteredBookings.filter(b => b.status === 'Completed').length}
-                                        </div>
-                                        <div className="text-gray-600 dark:text-gray-400 font-medium">Completed</div>
+                                    <div className="font-medium text-gray-600 dark:text-gray-400">
+                                        Confirmed
+                                    </div>
+                                </div>
+                                <div className="rounded-lg border border-gray-200 bg-white p-4 text-center dark:border-gray-700 dark:bg-gray-800">
+                                    <div className="mb-1 text-3xl font-bold text-green-600 dark:text-green-400">
+                                        {
+                                            filteredBookings.filter(
+                                                (b) =>
+                                                    b.status === 'In Progress',
+                                            ).length
+                                        }
+                                    </div>
+                                    <div className="font-medium text-gray-600 dark:text-gray-400">
+                                        In Progress
+                                    </div>
+                                </div>
+                                <div className="rounded-lg border border-gray-200 bg-white p-4 text-center dark:border-gray-700 dark:bg-gray-800">
+                                    <div className="mb-1 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                                        {
+                                            filteredBookings.filter(
+                                                (b) => b.status === 'Completed',
+                                            ).length
+                                        }
+                                    </div>
+                                    <div className="font-medium text-gray-600 dark:text-gray-400">
+                                        Completed
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
             </div>
 
             {/* Booking Details Dialog */}
-            <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-                <DialogContent className="max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex flex-col">
+            <Dialog
+                open={showDetailsDialog}
+                onOpenChange={setShowDetailsDialog}
+            >
+                <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader className="flex-shrink-0">
-                        <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-orange-600" />
+                        <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                            <Calendar className="h-5 w-5 text-orange-600" />
                             Booking Details
                         </DialogTitle>
                         <DialogDescription className="text-gray-600 dark:text-gray-400">
-                            Complete information for booking {selectedBooking?.booking_reference}
+                            Complete information for booking{' '}
+                            {selectedBooking?.booking_reference}
                         </DialogDescription>
                     </DialogHeader>
                     {selectedBooking && (
-                        <div className="flex-1 overflow-y-auto space-y-8 pr-2">
+                        <div className="flex-1 space-y-8 overflow-y-auto pr-2">
                             {/* Header Section */}
-                            <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900/50">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Booking Reference</Label>
-                                        <div className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-600">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Booking Reference
+                                        </Label>
+                                        <div className="rounded border border-gray-200 bg-white px-3 py-2 font-mono text-xl font-bold text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
                                             {selectedBooking.booking_reference}
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</Label>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Status
+                                        </Label>
                                         <div className="flex items-center">
-                                            {getStatusBadge(selectedBooking.status)}
+                                            {getStatusBadge(
+                                                selectedBooking.status,
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -863,37 +1195,54 @@ export default function BookingManagement() {
 
                             {/* Customer Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    <User className="w-5 h-5 text-blue-600" />
+                                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    <User className="h-5 w-5 text-blue-600" />
                                     Customer Information
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Full Name</Label>
-                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_name}</span>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Full Name
+                                        </Label>
+                                        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {selectedBooking.customer_name}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email Address</Label>
-                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_email}</span>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Email Address
+                                        </Label>
+                                        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <Mail className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {selectedBooking.customer_email}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Phone Number</Label>
-                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_phone}</span>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Phone Number
+                                        </Label>
+                                        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <Phone className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {selectedBooking.customer_phone}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Company</Label>
-                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <Building className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_company || 'N/A'}</span>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Company
+                                        </Label>
+                                        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <Building className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {selectedBooking.customer_company ||
+                                                    'N/A'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -901,23 +1250,35 @@ export default function BookingManagement() {
 
                             {/* Location Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    <MapPin className="w-5 h-5 text-green-600" />
+                                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    <MapPin className="h-5 w-5 text-green-600" />
                                     Location Details
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Pickup Location</Label>
-                                        <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.pickup_location}</span>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Pickup Location
+                                        </Label>
+                                        <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <MapPin className="mt-1 h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {
+                                                    selectedBooking.pickup_location
+                                                }
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Delivery Location</Label>
-                                        <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.delivery_location}</span>
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Delivery Location
+                                        </Label>
+                                        <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <MapPin className="mt-1 h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {
+                                                    selectedBooking.delivery_location
+                                                }
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -925,26 +1286,42 @@ export default function BookingManagement() {
 
                             {/* Schedule Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    <Calendar className="w-5 h-5 text-purple-600" />
+                                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    <Calendar className="h-5 w-5 text-purple-600" />
                                     Schedule Information
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Pickup Date & Time</Label>
-                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Pickup Date & Time
+                                        </Label>
+                                        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                             <span className="text-gray-900 dark:text-gray-100">
-                                                {formatDate(selectedBooking.pickup_date)} at {formatTime(selectedBooking.pickup_time)}
+                                                {formatDate(
+                                                    selectedBooking.pickup_date,
+                                                )}{' '}
+                                                at{' '}
+                                                {formatTime(
+                                                    selectedBooking.pickup_time,
+                                                )}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Delivery Date & Time</Label>
-                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                            <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Delivery Date & Time
+                                        </Label>
+                                        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+                                            <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                             <span className="text-gray-900 dark:text-gray-100">
-                                                {formatDate(selectedBooking.delivery_date)} at {formatTime(selectedBooking.delivery_time)}
+                                                {formatDate(
+                                                    selectedBooking.delivery_date,
+                                                )}{' '}
+                                                at{' '}
+                                                {formatTime(
+                                                    selectedBooking.delivery_time,
+                                                )}
                                             </span>
                                         </div>
                                     </div>
@@ -953,19 +1330,27 @@ export default function BookingManagement() {
 
                             {/* Cargo Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    <Package className="w-5 h-5 text-indigo-600" />
+                                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    <Package className="h-5 w-5 text-indigo-600" />
                                     Cargo Details
                                 </h3>
-                                <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
                                     <div className="flex items-start gap-3">
-                                        <Package className="w-5 h-5 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                        <Package className="mt-1 h-5 w-5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                                         <div className="space-y-2">
-                                            <div className="text-gray-900 dark:text-gray-100 font-medium">
-                                                {selectedBooking.cargo_description}
+                                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                {
+                                                    selectedBooking.cargo_description
+                                                }
                                             </div>
                                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                Weight: <span className="font-semibold">{selectedBooking.cargo_weight} {selectedBooking.cargo_unit}</span>
+                                                Weight:{' '}
+                                                <span className="font-semibold">
+                                                    {
+                                                        selectedBooking.cargo_weight
+                                                    }{' '}
+                                                    {selectedBooking.cargo_unit}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -975,14 +1360,18 @@ export default function BookingManagement() {
                             {/* Special Requirements */}
                             {selectedBooking.special_requirements && (
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                        <AlertCircle className="w-5 h-5 text-yellow-600" />
+                                    <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <AlertCircle className="h-5 w-5 text-yellow-600" />
                                         Special Requirements
                                     </h3>
-                                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                                    <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
                                         <div className="flex items-start gap-3">
-                                            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-1 flex-shrink-0" />
-                                            <span className="text-yellow-800 dark:text-yellow-200">{selectedBooking.special_requirements}</span>
+                                            <AlertCircle className="mt-1 h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
+                                            <span className="text-yellow-800 dark:text-yellow-200">
+                                                {
+                                                    selectedBooking.special_requirements
+                                                }
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -990,36 +1379,56 @@ export default function BookingManagement() {
 
                             {/* Cost and Vehicle Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    <DollarSign className="h-5 w-5 text-emerald-600" />
                                     Cost & Vehicle Information
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Estimated Cost</Label>
-                                        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Estimated Cost
+                                        </Label>
+                                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
                                             <div className="flex items-center gap-3">
-                                                <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                                <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                                                 <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-                                                    {selectedBooking.estimated_cost ? formatCurrency(selectedBooking.estimated_cost) : 'TBD'}
+                                                    {selectedBooking.estimated_cost
+                                                        ? formatCurrency(
+                                                              selectedBooking.estimated_cost,
+                                                          )
+                                                        : 'TBD'}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Assigned Vehicle</Label>
-                                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Assigned Vehicle
+                                        </Label>
+                                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
                                             <div className="flex items-start gap-3">
-                                                <Truck className="w-5 h-5 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                                <Truck className="mt-1 h-5 w-5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                                                 <div className="space-y-1">
-                                                    <div className="text-gray-900 dark:text-gray-100 font-medium">
-                                                        {selectedBooking.truck.model}
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {
+                                                            selectedBooking
+                                                                .truck.model
+                                                        }
                                                     </div>
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                        Plate: {selectedBooking.truck.plate_number}
+                                                        Plate:{' '}
+                                                        {
+                                                            selectedBooking
+                                                                .truck
+                                                                .plate_number
+                                                        }
                                                     </div>
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                        Driver: {selectedBooking.truck.driver}
+                                                        Driver:{' '}
+                                                        {
+                                                            selectedBooking
+                                                                .truck.driver
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
@@ -1031,14 +1440,16 @@ export default function BookingManagement() {
                             {/* Notes */}
                             {selectedBooking.notes && (
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                        <FileText className="w-5 h-5 text-gray-600" />
+                                    <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <FileText className="h-5 w-5 text-gray-600" />
                                         Additional Notes
                                     </h3>
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
                                         <div className="flex items-start gap-3">
-                                            <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
-                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.notes}</span>
+                                            <FileText className="mt-1 h-5 w-5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {selectedBooking.notes}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -1050,66 +1461,122 @@ export default function BookingManagement() {
 
             {/* Update Booking Dialog */}
             <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
-                        <DialogTitle className="text-gray-900 dark:text-gray-100">Update Booking</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">
+                            Update Booking
+                        </DialogTitle>
                         <DialogDescription className="text-gray-600 dark:text-gray-400">
-                            Update the status and details for booking {selectedBooking?.booking_reference}
+                            Update the status and details for booking{' '}
+                            {selectedBooking?.booking_reference}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="status" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Label
+                                htmlFor="status"
+                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Status
                             </Label>
-                            <Select value={updateForm.status} onValueChange={(value) => setUpdateForm({...updateForm, status: value})}>
-                                <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                            <Select
+                                value={updateForm.status}
+                                onValueChange={(value) =>
+                                    setUpdateForm({
+                                        ...updateForm,
+                                        status: value,
+                                    })
+                                }
+                            >
+                                <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <SelectItem value="Pending" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Pending</SelectItem>
-                                    <SelectItem value="Confirmed" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Confirmed</SelectItem>
-                                    <SelectItem value="In Progress" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">In Progress</SelectItem>
-                                    <SelectItem value="Completed" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Completed</SelectItem>
-                                    <SelectItem value="Cancelled" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Cancelled</SelectItem>
+                                <SelectContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <SelectItem
+                                        value="Pending"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        Pending
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="Confirmed"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        Confirmed
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="In Progress"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        In Progress
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="Completed"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        Completed
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="Cancelled"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                        Cancelled
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="estimated_cost" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Label
+                                htmlFor="estimated_cost"
+                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Estimated Cost
                             </Label>
                             <Input
                                 type="number"
                                 value={updateForm.estimated_cost}
-                                onChange={(e) => setUpdateForm({...updateForm, estimated_cost: parseFloat(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setUpdateForm({
+                                        ...updateForm,
+                                        estimated_cost:
+                                            parseFloat(e.target.value) || 0,
+                                    })
+                                }
                                 placeholder="Enter estimated cost"
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-orange-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="notes" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Label
+                                htmlFor="notes"
+                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Notes
                             </Label>
                             <textarea
                                 value={updateForm.notes}
-                                onChange={(e) => setUpdateForm({...updateForm, notes: e.target.value})}
-                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                onChange={(e) =>
+                                    setUpdateForm({
+                                        ...updateForm,
+                                        notes: e.target.value,
+                                    })
+                                }
+                                className="w-full resize-none rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-orange-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                 rows={3}
                                 placeholder="Add notes..."
                             />
                         </div>
                         <DialogFooter className="gap-2">
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => setShowUpdateDialog(false)}
-                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                             >
                                 Cancel
                             </Button>
-                            <Button 
+                            <Button
                                 onClick={handleUpdateBooking}
-                                className="bg-orange-600 hover:bg-orange-700 text-white"
+                                className="bg-orange-600 text-white hover:bg-orange-700"
                             >
                                 Update Booking
                             </Button>
@@ -1130,50 +1597,84 @@ export default function BookingManagement() {
             />
 
             {/* Add Booking Dialog */}
-            <Dialog open={showAddBookingDialog} onOpenChange={setShowAddBookingDialog}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <Dialog
+                open={showAddBookingDialog}
+                onOpenChange={setShowAddBookingDialog}
+            >
+                <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Add New Booking</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6">
                         {/* Customer Information */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Customer Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <h3 className="text-lg font-semibold">
+                                Customer Information
+                            </h3>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="customer_name">Customer Name *</Label>
+                                    <Label htmlFor="customer_name">
+                                        Customer Name *
+                                    </Label>
                                     <Input
                                         id="customer_name"
                                         value={addBookingForm.customer_name}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_name: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                customer_name: e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter customer name"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="customer_email">Email *</Label>
+                                    <Label htmlFor="customer_email">
+                                        Email *
+                                    </Label>
                                     <Input
                                         id="customer_email"
                                         type="email"
                                         value={addBookingForm.customer_email}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_email: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                customer_email: e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter email address"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="customer_phone">Phone *</Label>
+                                    <Label htmlFor="customer_phone">
+                                        Phone *
+                                    </Label>
                                     <Input
                                         id="customer_phone"
                                         value={addBookingForm.customer_phone}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_phone: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                customer_phone: e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter phone number"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="customer_company">Company</Label>
+                                    <Label htmlFor="customer_company">
+                                        Company
+                                    </Label>
                                     <Input
                                         id="customer_company"
                                         value={addBookingForm.customer_company}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_company: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                customer_company:
+                                                    e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter company name"
                                     />
                                 </div>
@@ -1182,23 +1683,40 @@ export default function BookingManagement() {
 
                         {/* Location Information */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Location Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <h3 className="text-lg font-semibold">
+                                Location Information
+                            </h3>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="pickup_location">Pickup Location *</Label>
+                                    <Label htmlFor="pickup_location">
+                                        Pickup Location *
+                                    </Label>
                                     <Input
                                         id="pickup_location"
                                         value={addBookingForm.pickup_location}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, pickup_location: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                pickup_location: e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter pickup address"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="delivery_location">Delivery Location *</Label>
+                                    <Label htmlFor="delivery_location">
+                                        Delivery Location *
+                                    </Label>
                                     <Input
                                         id="delivery_location"
                                         value={addBookingForm.delivery_location}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, delivery_location: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                delivery_location:
+                                                    e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter delivery address"
                                     />
                                 </div>
@@ -1207,60 +1725,134 @@ export default function BookingManagement() {
 
                         {/* Schedule Information */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Schedule Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <h3 className="text-lg font-semibold">
+                                Schedule Information
+                            </h3>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="pickup_date">Pickup Date *</Label>
-                                    <Popover open={pickupCalendarOpen} onOpenChange={setPickupCalendarOpen}>
+                                    <Label htmlFor="pickup_date">
+                                        Pickup Date *
+                                    </Label>
+                                    <Popover
+                                        open={pickupCalendarOpen}
+                                        onOpenChange={setPickupCalendarOpen}
+                                    >
                                         <PopoverTrigger asChild>
                                             <Button
                                                 variant="outline"
                                                 className="w-full justify-start text-left font-normal"
                                             >
                                                 <Calendar className="mr-2 h-4 w-4" />
-                                                {addBookingForm.pickup_date ? formatDateForDisplay(addBookingForm.pickup_date) : "Select pickup date"}
+                                                {addBookingForm.pickup_date
+                                                    ? formatDateForDisplay(
+                                                          addBookingForm.pickup_date,
+                                                      )
+                                                    : 'Select pickup date'}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <PopoverContent
+                                            className="w-auto p-0"
+                                            align="start"
+                                        >
                                             <CalendarComponent
                                                 mode="single"
-                                                selected={addBookingForm.pickup_date ? new Date(addBookingForm.pickup_date + 'T00:00:00') : undefined}
-                                                onSelect={handlePickupDateSelect}
-                                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                                selected={
+                                                    addBookingForm.pickup_date
+                                                        ? new Date(
+                                                              addBookingForm.pickup_date +
+                                                                  'T00:00:00',
+                                                          )
+                                                        : undefined
+                                                }
+                                                onSelect={
+                                                    handlePickupDateSelect
+                                                }
+                                                disabled={(date) =>
+                                                    date <
+                                                    new Date(
+                                                        new Date().setHours(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                        ),
+                                                    )
+                                                }
                                                 initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
                                 <div>
-                                    <Label htmlFor="pickup_time">Pickup Time *</Label>
+                                    <Label htmlFor="pickup_time">
+                                        Pickup Time *
+                                    </Label>
                                     <Input
                                         id="pickup_time"
                                         type="time"
                                         value={addBookingForm.pickup_time}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, pickup_time: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                pickup_time: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="delivery_date">Delivery Date *</Label>
-                                    <Popover open={deliveryCalendarOpen} onOpenChange={setDeliveryCalendarOpen}>
+                                    <Label htmlFor="delivery_date">
+                                        Delivery Date *
+                                    </Label>
+                                    <Popover
+                                        open={deliveryCalendarOpen}
+                                        onOpenChange={setDeliveryCalendarOpen}
+                                    >
                                         <PopoverTrigger asChild>
                                             <Button
                                                 variant="outline"
                                                 className="w-full justify-start text-left font-normal"
                                             >
                                                 <Calendar className="mr-2 h-4 w-4" />
-                                                {addBookingForm.delivery_date ? formatDateForDisplay(addBookingForm.delivery_date) : "Select delivery date"}
+                                                {addBookingForm.delivery_date
+                                                    ? formatDateForDisplay(
+                                                          addBookingForm.delivery_date,
+                                                      )
+                                                    : 'Select delivery date'}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <PopoverContent
+                                            className="w-auto p-0"
+                                            align="start"
+                                        >
                                             <CalendarComponent
                                                 mode="single"
-                                                selected={addBookingForm.delivery_date ? new Date(addBookingForm.delivery_date + 'T00:00:00') : undefined}
-                                                onSelect={handleDeliveryDateSelect}
+                                                selected={
+                                                    addBookingForm.delivery_date
+                                                        ? new Date(
+                                                              addBookingForm.delivery_date +
+                                                                  'T00:00:00',
+                                                          )
+                                                        : undefined
+                                                }
+                                                onSelect={
+                                                    handleDeliveryDateSelect
+                                                }
                                                 disabled={(date) => {
-                                                    const today = new Date(new Date().setHours(0, 0, 0, 0));
-                                                    const pickupDate = addBookingForm.pickup_date ? new Date(addBookingForm.pickup_date + 'T00:00:00') : today;
+                                                    const today = new Date(
+                                                        new Date().setHours(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                        ),
+                                                    );
+                                                    const pickupDate =
+                                                        addBookingForm.pickup_date
+                                                            ? new Date(
+                                                                  addBookingForm.pickup_date +
+                                                                      'T00:00:00',
+                                                              )
+                                                            : today;
                                                     return date < pickupDate;
                                                 }}
                                                 initialFocus
@@ -1269,12 +1861,19 @@ export default function BookingManagement() {
                                     </Popover>
                                 </div>
                                 <div>
-                                    <Label htmlFor="delivery_time">Delivery Time *</Label>
+                                    <Label htmlFor="delivery_time">
+                                        Delivery Time *
+                                    </Label>
                                     <Input
                                         id="delivery_time"
                                         type="time"
                                         value={addBookingForm.delivery_time}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, delivery_time: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                delivery_time: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                             </div>
@@ -1282,67 +1881,126 @@ export default function BookingManagement() {
 
                         {/* Cargo Information */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Cargo Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <h3 className="text-lg font-semibold">
+                                Cargo Information
+                            </h3>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="cargo_description">Cargo Description *</Label>
+                                    <Label htmlFor="cargo_description">
+                                        Cargo Description *
+                                    </Label>
                                     <Input
                                         id="cargo_description"
                                         value={addBookingForm.cargo_description}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, cargo_description: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                cargo_description:
+                                                    e.target.value,
+                                            })
+                                        }
                                         placeholder="Describe the cargo"
                                     />
                                 </div>
                                 <div>
                                     <Label htmlFor="truck_id">Truck *</Label>
-                                    <Select value={addBookingForm.truck_id} onValueChange={(value) => setAddBookingForm({...addBookingForm, truck_id: value})}>
+                                    <Select
+                                        value={addBookingForm.truck_id}
+                                        onValueChange={(value) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                truck_id: value,
+                                            })
+                                        }
+                                    >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a truck" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {trucks.map((truck) => (
-                                                <SelectItem key={truck.id} value={truck.id.toString()}>
-                                                    {truck.model} - {truck.plate_number} (Capacity: {truck.capacity}kg)
+                                                <SelectItem
+                                                    key={truck.id}
+                                                    value={truck.id.toString()}
+                                                >
+                                                    {truck.model} -{' '}
+                                                    {truck.plate_number}{' '}
+                                                    (Capacity: {truck.capacity}
+                                                    kg)
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label htmlFor="cargo_weight">Weight *</Label>
+                                    <Label htmlFor="cargo_weight">
+                                        Weight *
+                                    </Label>
                                     <Input
                                         id="cargo_weight"
                                         type="number"
                                         step="0.01"
                                         value={addBookingForm.cargo_weight}
-                                        onChange={(e) => setAddBookingForm({...addBookingForm, cargo_weight: e.target.value})}
+                                        onChange={(e) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                cargo_weight: e.target.value,
+                                            })
+                                        }
                                         placeholder="Enter weight"
                                     />
                                 </div>
                                 <div>
                                     <Label htmlFor="cargo_unit">Unit *</Label>
-                                    <Select value={addBookingForm.cargo_unit} onValueChange={(value) => setAddBookingForm({...addBookingForm, cargo_unit: value})}>
+                                    <Select
+                                        value={addBookingForm.cargo_unit}
+                                        onValueChange={(value) =>
+                                            setAddBookingForm({
+                                                ...addBookingForm,
+                                                cargo_unit: value,
+                                            })
+                                        }
+                                    >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select unit" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                                            <SelectItem value="tons">Tons</SelectItem>
-                                            <SelectItem value="pieces">Pieces</SelectItem>
-                                            <SelectItem value="pallets">Pallets</SelectItem>
-                                            <SelectItem value="boxes">Boxes</SelectItem>
-                                            <SelectItem value="liters">Liters</SelectItem>
+                                            <SelectItem value="kg">
+                                                Kilograms (kg)
+                                            </SelectItem>
+                                            <SelectItem value="tons">
+                                                Tons
+                                            </SelectItem>
+                                            <SelectItem value="pieces">
+                                                Pieces
+                                            </SelectItem>
+                                            <SelectItem value="pallets">
+                                                Pallets
+                                            </SelectItem>
+                                            <SelectItem value="boxes">
+                                                Boxes
+                                            </SelectItem>
+                                            <SelectItem value="liters">
+                                                Liters
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </div>
                             <div>
-                                <Label htmlFor="special_requirements">Special Requirements</Label>
+                                <Label htmlFor="special_requirements">
+                                    Special Requirements
+                                </Label>
                                 <textarea
                                     id="special_requirements"
                                     value={addBookingForm.special_requirements}
-                                    onChange={(e) => setAddBookingForm({...addBookingForm, special_requirements: e.target.value})}
-                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    onChange={(e) =>
+                                        setAddBookingForm({
+                                            ...addBookingForm,
+                                            special_requirements:
+                                                e.target.value,
+                                        })
+                                    }
+                                    className="w-full rounded-md border border-gray-300 p-2"
                                     rows={3}
                                     placeholder="Any special handling requirements..."
                                 />
@@ -1350,7 +2008,10 @@ export default function BookingManagement() {
                         </div>
 
                         <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setShowAddBookingDialog(false)}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowAddBookingDialog(false)}
+                            >
                                 Cancel
                             </Button>
                             <Button onClick={handleAddBooking}>
@@ -1366,56 +2027,88 @@ export default function BookingManagement() {
                 <DialogContent className="max-w-md">
                     <DialogHeader>
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                            <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
                                 <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
                             </div>
                             <div>
-                                <DialogTitle className="text-gray-900 dark:text-gray-100">Delete Booking</DialogTitle>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">
+                                    Delete Booking
+                                </DialogTitle>
                                 <DialogDescription className="text-gray-600 dark:text-gray-400">
                                     This action cannot be undone.
                                 </DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
-                    
+
                     <div className="py-4">
-                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Reference:</span>
-                                    <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{bookingToDelete?.booking_reference}</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Reference:
+                                    </span>
+                                    <span className="font-mono text-sm text-gray-900 dark:text-gray-100">
+                                        {bookingToDelete?.booking_reference}
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Customer:</span>
-                                    <span className="text-sm text-gray-900 dark:text-gray-100">{bookingToDelete?.customer_name}</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Customer:
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                        {bookingToDelete?.customer_name}
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
-                                    <span className="text-sm text-gray-900 dark:text-gray-100">{bookingToDelete?.status}</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Status:
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                        {bookingToDelete?.status}
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Pickup Date:</span>
-                                    <span className="text-sm text-gray-900 dark:text-gray-100">{bookingToDelete?.pickup_date}</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Pickup Date:
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                        {bookingToDelete?.pickup_date}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         {bookingToDelete?.status === 'Pending' ? (
-                            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
                                 <div className="flex items-start space-x-2">
-                                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                                    <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-400" />
                                     <div className="text-sm text-red-800 dark:text-red-200">
-                                        <p className="font-medium">Warning: This will permanently delete the booking and all associated data.</p>
-                                        <p className="mt-1">This action cannot be undone.</p>
+                                        <p className="font-medium">
+                                            Warning: This will permanently
+                                            delete the booking and all
+                                            associated data.
+                                        </p>
+                                        <p className="mt-1">
+                                            This action cannot be undone.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                            <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
                                 <div className="flex items-start space-x-2">
-                                    <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                                    <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
                                     <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                                        <p className="font-medium">Cannot Delete: Only pending bookings can be deleted.</p>
-                                        <p className="mt-1">This booking has status: <span className="font-semibold">{bookingToDelete?.status}</span></p>
+                                        <p className="font-medium">
+                                            Cannot Delete: Only pending bookings
+                                            can be deleted.
+                                        </p>
+                                        <p className="mt-1">
+                                            This booking has status:{' '}
+                                            <span className="font-semibold">
+                                                {bookingToDelete?.status}
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -1423,8 +2116,8 @@ export default function BookingManagement() {
                     </div>
 
                     <DialogFooter className="gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => {
                                 setShowDeleteDialog(false);
                                 setBookingToDelete(null);
@@ -1432,13 +2125,13 @@ export default function BookingManagement() {
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={confirmDeleteBooking}
                             disabled={bookingToDelete?.status !== 'Pending'}
-                            className="bg-red-600 hover:bg-red-700 text-white disabled:bg-gray-400 disabled:hover:bg-gray-400"
+                            className="bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400 disabled:hover:bg-gray-400"
                         >
-                            <Trash2 className="w-4 h-4 mr-2" />
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Delete Booking
                         </Button>
                     </DialogFooter>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { CargoItem } from '../types';
 
 export const useCargoMonitoring = () => {
@@ -29,15 +29,18 @@ export const useCargoMonitoring = () => {
         }
     };
 
-    const addCargoItem = async (shipmentId: string, data: {
-        name: string;
-        quantity: string;
-        unit: string;
-        description?: string;
-        specialHandling?: string;
-        temperature?: string;
-        humidity?: string;
-    }) => {
+    const addCargoItem = async (
+        shipmentId: string,
+        data: {
+            name: string;
+            quantity: string;
+            unit: string;
+            description?: string;
+            specialHandling?: string;
+            temperature?: string;
+            humidity?: string;
+        },
+    ) => {
         try {
             const response = await axios.post('/transportation/cargo', {
                 shipment_id: shipmentId,
@@ -47,12 +50,14 @@ export const useCargoMonitoring = () => {
                 description: data.description,
                 special_handling: data.specialHandling,
                 status: 'Loaded',
-                temperature: data.temperature ? parseFloat(data.temperature) : undefined,
-                humidity: data.humidity ? parseFloat(data.humidity) : undefined
+                temperature: data.temperature
+                    ? parseFloat(data.temperature)
+                    : undefined,
+                humidity: data.humidity ? parseFloat(data.humidity) : undefined,
             });
-            
+
             if (response.data) {
-                setCargoItems(prev => [...prev, response.data]);
+                setCargoItems((prev) => [...prev, response.data]);
                 return response.data;
             }
         } catch (error) {
@@ -61,16 +66,24 @@ export const useCargoMonitoring = () => {
         }
     };
 
-    const updateCargoStatus = async (cargoId: string, status: CargoItem['status']) => {
+    const updateCargoStatus = async (
+        cargoId: string,
+        status: CargoItem['status'],
+    ) => {
         try {
-            const response = await axios.post(`/transportation/cargo/${cargoId}/status`, {
-                status: status
-            });
-            
+            const response = await axios.post(
+                `/transportation/cargo/${cargoId}/status`,
+                {
+                    status: status,
+                },
+            );
+
             if (response.data) {
-                setCargoItems(prev => prev.map(item => 
-                    item.id === cargoId ? { ...item, status } : item
-                ));
+                setCargoItems((prev) =>
+                    prev.map((item) =>
+                        item.id === cargoId ? { ...item, status } : item,
+                    ),
+                );
                 return response.data;
             }
         } catch (error) {
@@ -79,34 +92,46 @@ export const useCargoMonitoring = () => {
         }
     };
 
-    const updateCargoItem = async (cargoId: string, data: {
-        shipmentId: string;
-        name: string;
-        quantity: string;
-        unit: string;
-        description?: string;
-        specialHandling?: string;
-        status: string;
-        temperature?: string;
-        humidity?: string;
-    }) => {
+    const updateCargoItem = async (
+        cargoId: string,
+        data: {
+            shipmentId: string;
+            name: string;
+            quantity: string;
+            unit: string;
+            description?: string;
+            specialHandling?: string;
+            status: string;
+            temperature?: string;
+            humidity?: string;
+        },
+    ) => {
         try {
-            const response = await axios.put(`/transportation/cargo/${cargoId}`, {
-                shipment_id: data.shipmentId,
-                name: data.name,
-                quantity: parseInt(data.quantity),
-                unit: data.unit,
-                description: data.description,
-                special_handling: data.specialHandling,
-                status: data.status,
-                temperature: data.temperature ? parseFloat(data.temperature) : undefined,
-                humidity: data.humidity ? parseFloat(data.humidity) : undefined
-            });
-            
+            const response = await axios.put(
+                `/transportation/cargo/${cargoId}`,
+                {
+                    shipment_id: data.shipmentId,
+                    name: data.name,
+                    quantity: parseInt(data.quantity),
+                    unit: data.unit,
+                    description: data.description,
+                    special_handling: data.specialHandling,
+                    status: data.status,
+                    temperature: data.temperature
+                        ? parseFloat(data.temperature)
+                        : undefined,
+                    humidity: data.humidity
+                        ? parseFloat(data.humidity)
+                        : undefined,
+                },
+            );
+
             if (response.data) {
-                setCargoItems(prev => prev.map(item =>
-                    item.id === cargoId ? response.data : item
-                ));
+                setCargoItems((prev) =>
+                    prev.map((item) =>
+                        item.id === cargoId ? response.data : item,
+                    ),
+                );
                 return response.data;
             }
         } catch (error) {
@@ -118,7 +143,7 @@ export const useCargoMonitoring = () => {
     const deleteCargoItem = async (cargoId: string) => {
         try {
             await axios.delete(`/transportation/cargo/${cargoId}`);
-            setCargoItems(prev => prev.filter(item => item.id !== cargoId));
+            setCargoItems((prev) => prev.filter((item) => item.id !== cargoId));
         } catch (error) {
             console.error('Error deleting cargo item:', error);
             throw error;
@@ -127,7 +152,9 @@ export const useCargoMonitoring = () => {
 
     const getCargoByShipment = async (shipmentId: string) => {
         try {
-            const response = await axios.get(`/transportation/cargo/shipment/${shipmentId}`);
+            const response = await axios.get(
+                `/transportation/cargo/shipment/${shipmentId}`,
+            );
             // Handle both direct array response and wrapped response
             const data = response.data;
             if (Array.isArray(data)) {
@@ -160,6 +187,6 @@ export const useCargoMonitoring = () => {
         updateCargoItem,
         deleteCargoItem,
         getCargoByShipment,
-        fetchCargoItems
+        fetchCargoItems,
     };
 };

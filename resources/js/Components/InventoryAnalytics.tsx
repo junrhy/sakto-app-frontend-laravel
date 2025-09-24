@@ -1,17 +1,17 @@
 import { Product } from '@/types';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Line, Bar } from 'react-chartjs-2';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
     BarElement,
+    CategoryScale,
+    Chart as ChartJS,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
     Title,
     Tooltip,
-    Legend
 } from 'chart.js';
+import { Bar, Line } from 'react-chartjs-2';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 ChartJS.register(
     CategoryScale,
@@ -21,7 +21,7 @@ ChartJS.register(
     BarElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
 );
 
 interface AnalyticsProps {
@@ -29,29 +29,35 @@ interface AnalyticsProps {
     appCurrency: any;
 }
 
-export default function InventoryAnalytics({ products, appCurrency }: AnalyticsProps) {
-    const totalValue = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
-    const lowStockItems = products.filter(p => p.quantity <= 10).length;
-    const outOfStockItems = products.filter(p => p.quantity === 0).length;
+export default function InventoryAnalytics({
+    products,
+    appCurrency,
+}: AnalyticsProps) {
+    const totalValue = products.reduce(
+        (sum, product) => sum + product.price * product.quantity,
+        0,
+    );
+    const lowStockItems = products.filter((p) => p.quantity <= 10).length;
+    const outOfStockItems = products.filter((p) => p.quantity === 0).length;
     const averagePrice = totalValue / products.length;
 
     const stockDistributionData = {
-        labels: products.map(p => p.name),
+        labels: products.map((p) => p.name),
         datasets: [
             {
                 label: 'Stock Quantity',
-                data: products.map(p => p.quantity),
+                data: products.map((p) => p.quantity),
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
             },
         ],
     };
 
     const valueDistributionData = {
-        labels: products.map(p => p.name),
+        labels: products.map((p) => p.name),
         datasets: [
             {
                 label: 'Product Value',
-                data: products.map(p => p.price * p.quantity),
+                data: products.map((p) => p.price * p.quantity),
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1,
             },
@@ -60,13 +66,16 @@ export default function InventoryAnalytics({ products, appCurrency }: AnalyticsP
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>Total Value</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{appCurrency.symbol}{totalValue.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">
+                            {appCurrency.symbol}
+                            {totalValue.toFixed(2)}
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -75,7 +84,9 @@ export default function InventoryAnalytics({ products, appCurrency }: AnalyticsP
                         <CardTitle>Low Stock Items</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{lowStockItems}</div>
+                        <div className="text-2xl font-bold">
+                            {lowStockItems}
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -84,7 +95,9 @@ export default function InventoryAnalytics({ products, appCurrency }: AnalyticsP
                         <CardTitle>Out of Stock</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{outOfStockItems}</div>
+                        <div className="text-2xl font-bold">
+                            {outOfStockItems}
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -93,12 +106,15 @@ export default function InventoryAnalytics({ products, appCurrency }: AnalyticsP
                         <CardTitle>Average Price</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{appCurrency.symbol}{averagePrice.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">
+                            {appCurrency.symbol}
+                            {averagePrice.toFixed(2)}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Stock Distribution</CardTitle>
@@ -119,4 +135,4 @@ export default function InventoryAnalytics({ products, appCurrency }: AnalyticsP
             </div>
         </div>
     );
-} 
+}

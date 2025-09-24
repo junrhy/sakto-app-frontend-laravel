@@ -1,10 +1,21 @@
-import { useState, useEffect } from 'react';
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { StatusUpdateFormData, Shipment } from "../types";
-import { useShipmentTracking } from "../hooks";
+import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { useEffect, useState } from 'react';
+import { useShipmentTracking } from '../hooks';
+import { Shipment, StatusUpdateFormData } from '../types';
 
 interface StatusUpdateDialogProps {
     isOpen: boolean;
@@ -15,13 +26,13 @@ interface StatusUpdateDialogProps {
 export default function StatusUpdateDialog({
     isOpen,
     onClose,
-    shipmentId
+    shipmentId,
 }: StatusUpdateDialogProps) {
     const { updateShipmentStatus } = useShipmentTracking();
     const [formData, setFormData] = useState<StatusUpdateFormData>({
         status: 'In Transit',
         location: '',
-        notes: ''
+        notes: '',
     });
 
     // Reset form when dialog opens
@@ -30,7 +41,7 @@ export default function StatusUpdateDialog({
             setFormData({
                 status: 'In Transit',
                 location: '',
-                notes: ''
+                notes: '',
             });
         }
     }, [isOpen]);
@@ -49,51 +60,71 @@ export default function StatusUpdateDialog({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="text-gray-900 dark:text-gray-100">Update Shipment Status</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-gray-100">
+                        Update Shipment Status
+                    </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Status
+                        </label>
                         <Select
                             value={formData.status}
-                            onValueChange={(value) => setFormData({
-                                ...formData,
-                                status: value as Shipment['status']
-                            })}
+                            onValueChange={(value) =>
+                                setFormData({
+                                    ...formData,
+                                    status: value as Shipment['status'],
+                                })
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Scheduled">Scheduled</SelectItem>
-                                <SelectItem value="In Transit">In Transit</SelectItem>
-                                <SelectItem value="Delivered">Delivered</SelectItem>
+                                <SelectItem value="Scheduled">
+                                    Scheduled
+                                </SelectItem>
+                                <SelectItem value="In Transit">
+                                    In Transit
+                                </SelectItem>
+                                <SelectItem value="Delivered">
+                                    Delivered
+                                </SelectItem>
                                 <SelectItem value="Delayed">Delayed</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Location</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Current Location
+                        </label>
                         <Input
                             value={formData.location}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                location: e.target.value
-                            })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    location: e.target.value,
+                                })
+                            }
                             placeholder="Enter current location"
                             required
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Notes
+                        </label>
                         <Input
                             value={formData.notes}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                notes: e.target.value
-                            })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    notes: e.target.value,
+                                })
+                            }
                             placeholder="Add any additional notes"
                         />
                     </div>
@@ -106,9 +137,7 @@ export default function StatusUpdateDialog({
                         >
                             Cancel
                         </Button>
-                        <Button type="submit">
-                            Update Status
-                        </Button>
+                        <Button type="submit">Update Status</Button>
                     </div>
                 </form>
             </DialogContent>

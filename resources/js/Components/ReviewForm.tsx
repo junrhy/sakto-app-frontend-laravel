@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Star, Upload, X, Plus } from 'lucide-react';
+import { Star, Upload, X } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface ReviewFormData {
     reviewer_name: string;
@@ -52,18 +52,21 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     const [errors, setErrors] = useState<ReviewFormErrors>({});
     const [hoveredRating, setHoveredRating] = useState(0);
 
-    const handleInputChange = (field: keyof ReviewFormData, value: string | number | string[]) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+    const handleInputChange = (
+        field: keyof ReviewFormData,
+        value: string | number | string[],
+    ) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
         // Clear error when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({ ...prev, [field]: undefined }));
+            setErrors((prev) => ({ ...prev, [field]: undefined }));
         }
     };
 
     const handleRatingChange = (rating: number) => {
-        setFormData(prev => ({ ...prev, rating }));
+        setFormData((prev) => ({ ...prev, rating }));
         if (errors.rating) {
-            setErrors(prev => ({ ...prev, rating: undefined }));
+            setErrors((prev) => ({ ...prev, rating: undefined }));
         }
     };
 
@@ -76,7 +79,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
         if (!formData.reviewer_email.trim()) {
             newErrors.reviewer_email = 'Your email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.reviewer_email)) {
+        } else if (
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.reviewer_email)
+        ) {
             newErrors.reviewer_email = 'Please enter a valid email address';
         }
 
@@ -96,7 +101,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
@@ -121,8 +126,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         const files = e.target.files;
         if (!files) return;
 
-        Array.from(files).forEach(file => {
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        Array.from(files).forEach((file) => {
+            if (file.size > 5 * 1024 * 1024) {
+                // 5MB limit
                 alert('Image size must be less than 5MB');
                 return;
             }
@@ -130,9 +136,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             const reader = new FileReader();
             reader.onload = (e) => {
                 const result = e.target?.result as string;
-                setFormData(prev => ({
+                setFormData((prev) => ({
                     ...prev,
-                    images: [...prev.images, result]
+                    images: [...prev.images, result],
                 }));
             };
             reader.readAsDataURL(file);
@@ -140,14 +146,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     };
 
     const removeImage = (index: number) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            images: prev.images.filter((_, i) => i !== index)
+            images: prev.images.filter((_, i) => i !== index),
         }));
     };
 
     return (
-        <Card className="border border-gray-200 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className="border border-gray-200 bg-white/50 backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/50">
             <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Write a Review for {productName}
@@ -156,40 +162,60 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Reviewer Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="reviewer_name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Label
+                                htmlFor="reviewer_name"
+                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Your Name *
                             </Label>
                             <Input
                                 id="reviewer_name"
                                 type="text"
                                 value={formData.reviewer_name}
-                                onChange={(e) => handleInputChange('reviewer_name', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'reviewer_name',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="Enter your name"
-                                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
+                                className="border-gray-200 bg-white focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                 maxLength={255}
                             />
                             {errors.reviewer_name && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.reviewer_name}</p>
+                                <p className="text-sm text-red-600 dark:text-red-400">
+                                    {errors.reviewer_name}
+                                </p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="reviewer_email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <Label
+                                htmlFor="reviewer_email"
+                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Your Email *
                             </Label>
                             <Input
                                 id="reviewer_email"
                                 type="email"
                                 value={formData.reviewer_email}
-                                onChange={(e) => handleInputChange('reviewer_email', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'reviewer_email',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="Enter your email"
-                                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
+                                className="border-gray-200 bg-white focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                 maxLength={255}
                             />
                             {errors.reviewer_email && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.reviewer_email}</p>
+                                <p className="text-sm text-red-600 dark:text-red-400">
+                                    {errors.reviewer_email}
+                                </p>
                             )}
                         </div>
                     </div>
@@ -210,50 +236,65 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                     className="focus:outline-none"
                                 >
                                     <Star
-                                        className={`w-8 h-8 transition-colors ${
-                                            star <= (hoveredRating || formData.rating)
-                                                ? 'text-yellow-400 fill-current'
-                                                : 'text-gray-300 dark:text-gray-600 hover:text-yellow-300'
+                                        className={`h-8 w-8 transition-colors ${
+                                            star <=
+                                            (hoveredRating || formData.rating)
+                                                ? 'fill-current text-yellow-400'
+                                                : 'text-gray-300 hover:text-yellow-300 dark:text-gray-600'
                                         }`}
                                     />
                                 </button>
                             ))}
                             <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                                {formData.rating > 0 ? `${formData.rating} out of 5` : 'Select rating'}
+                                {formData.rating > 0
+                                    ? `${formData.rating} out of 5`
+                                    : 'Select rating'}
                             </span>
                         </div>
                         {errors.rating && (
-                            <p className="text-sm text-red-600 dark:text-red-400">{errors.rating}</p>
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                                {errors.rating}
+                            </p>
                         )}
                     </div>
 
                     {/* Review Title */}
                     <div className="space-y-2">
-                        <Label htmlFor="title" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Label
+                            htmlFor="title"
+                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
                             Review Title (Optional)
                         </Label>
                         <Input
                             id="title"
                             type="text"
                             value={formData.title}
-                            onChange={(e) => handleInputChange('title', e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange('title', e.target.value)
+                            }
                             placeholder="Summarize your experience"
-                            className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
+                            className="border-gray-200 bg-white focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             maxLength={255}
                         />
                     </div>
 
                     {/* Review Content */}
                     <div className="space-y-2">
-                        <Label htmlFor="content" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Label
+                            htmlFor="content"
+                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
                             Review Content *
                         </Label>
                         <Textarea
                             id="content"
                             value={formData.content}
-                            onChange={(e) => handleInputChange('content', e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange('content', e.target.value)
+                            }
                             placeholder="Share your experience with this product..."
-                            className="min-h-[120px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
+                            className="min-h-[120px] border-gray-200 bg-white focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             maxLength={2000}
                         />
                         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -261,7 +302,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                             <span>{formData.content.length}/2000</span>
                         </div>
                         {errors.content && (
-                            <p className="text-sm text-red-600 dark:text-red-400">{errors.content}</p>
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                                {errors.content}
+                            </p>
                         )}
                     </div>
 
@@ -273,7 +316,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         <div className="space-y-3">
                             {/* Upload Button */}
                             {formData.images.length < 5 && (
-                                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                                <div className="rounded-lg border-2 border-dashed border-gray-300 p-4 text-center transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500">
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -282,10 +325,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                         className="hidden"
                                         id="image-upload"
                                     />
-                                    <label htmlFor="image-upload" className="cursor-pointer">
-                                        <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                                    <label
+                                        htmlFor="image-upload"
+                                        className="cursor-pointer"
+                                    >
+                                        <Upload className="mx-auto mb-2 h-8 w-8 text-gray-400 dark:text-gray-500" />
                                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            Click to upload images (max 5, 5MB each)
+                                            Click to upload images (max 5, 5MB
+                                            each)
                                         </p>
                                     </label>
                                 </div>
@@ -293,20 +340,25 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                             {/* Image Preview */}
                             {formData.images.length > 0 && (
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
                                     {formData.images.map((image, index) => (
-                                        <div key={index} className="relative group">
+                                        <div
+                                            key={index}
+                                            className="group relative"
+                                        >
                                             <img
                                                 src={image}
                                                 alt={`Review image ${index + 1}`}
-                                                className="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-600/50"
+                                                className="h-24 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-600/50"
                                             />
                                             <button
                                                 type="button"
-                                                onClick={() => removeImage(index)}
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() =>
+                                                    removeImage(index)
+                                                }
+                                                className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                                             >
-                                                <X className="w-3 h-3" />
+                                                <X className="h-3 w-3" />
                                             </button>
                                         </div>
                                     ))}
@@ -322,7 +374,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 type="button"
                                 variant="outline"
                                 onClick={onCancel}
-                                className="border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                className="border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700"
                             >
                                 Cancel
                             </Button>
@@ -330,7 +382,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-600 text-white hover:bg-blue-700"
                         >
                             {isSubmitting ? 'Submitting...' : 'Submit Review'}
                         </Button>
@@ -341,4 +393,4 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     );
 };
 
-export default ReviewForm; 
+export default ReviewForm;

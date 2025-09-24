@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Plus, Ticket } from 'lucide-react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 interface QueueType {
@@ -20,20 +31,23 @@ interface Props {
     onQueueNumberCreated: () => void;
 }
 
-export default function CreateQueueNumberModal({ queueTypes, onQueueNumberCreated }: Props) {
+export default function CreateQueueNumberModal({
+    queueTypes,
+    onQueueNumberCreated,
+}: Props) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         queue_type_id: '',
         customer_name: '',
-        customer_contact: ''
+        customer_contact: '',
     });
 
-    const activeQueueTypes = queueTypes.filter(qt => qt.is_active);
+    const activeQueueTypes = queueTypes.filter((qt) => qt.is_active);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!formData.queue_type_id) {
             toast.error('Please select a queue type');
             return;
@@ -45,16 +59,25 @@ export default function CreateQueueNumberModal({ queueTypes, onQueueNumberCreate
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
             });
 
             const data = await response.json();
             if (data.status === 'success') {
-                toast.success(`Queue number ${data.data.queue_number} created successfully!`);
+                toast.success(
+                    `Queue number ${data.data.queue_number} created successfully!`,
+                );
                 setOpen(false);
-                setFormData({ queue_type_id: '', customer_name: '', customer_contact: '' });
+                setFormData({
+                    queue_type_id: '',
+                    customer_name: '',
+                    customer_contact: '',
+                });
                 onQueueNumberCreated();
             } else {
                 toast.error(data.message || 'Failed to create queue number');
@@ -70,30 +93,38 @@ export default function CreateQueueNumberModal({ queueTypes, onQueueNumberCreate
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Get Queue Number
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Ticket className="w-5 h-5" />
+                        <Ticket className="h-5 w-5" />
                         Get Queue Number
                     </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="queue_type_id">Service Type *</Label>
-                        <Select 
-                            value={formData.queue_type_id} 
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, queue_type_id: value }))}
+                        <Select
+                            value={formData.queue_type_id}
+                            onValueChange={(value) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    queue_type_id: value,
+                                }))
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select service type" />
                             </SelectTrigger>
                             <SelectContent>
                                 {activeQueueTypes.map((queueType) => (
-                                    <SelectItem key={queueType.id} value={queueType.id.toString()}>
+                                    <SelectItem
+                                        key={queueType.id}
+                                        value={queueType.id.toString()}
+                                    >
                                         {queueType.name}
                                     </SelectItem>
                                 ))}
@@ -107,29 +138,45 @@ export default function CreateQueueNumberModal({ queueTypes, onQueueNumberCreate
                             id="customer_name"
                             type="text"
                             value={formData.customer_name}
-                            onChange={(e) => setFormData(prev => ({ ...prev, customer_name: e.target.value }))}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    customer_name: e.target.value,
+                                }))
+                            }
                             placeholder="Enter your name"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="customer_contact">Contact Number (Optional)</Label>
+                        <Label htmlFor="customer_contact">
+                            Contact Number (Optional)
+                        </Label>
                         <Input
                             id="customer_contact"
                             type="text"
                             value={formData.customer_contact}
-                            onChange={(e) => setFormData(prev => ({ ...prev, customer_contact: e.target.value }))}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    customer_contact: e.target.value,
+                                }))
+                            }
                             placeholder="Enter your contact number"
                         />
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                        <Button type="submit" disabled={loading} className="flex-1">
+                        <Button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1"
+                        >
                             {loading ? 'Creating...' : 'Get Queue Number'}
                         </Button>
-                        <Button 
-                            type="button" 
-                            variant="outline" 
+                        <Button
+                            type="button"
+                            variant="outline"
                             onClick={() => setOpen(false)}
                         >
                             Cancel

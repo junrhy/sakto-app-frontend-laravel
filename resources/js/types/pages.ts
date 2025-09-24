@@ -33,4 +33,4 @@ export interface PageSettings {
     allow_custom_js: boolean;
     max_image_size: number;
     allowed_image_types: string[];
-} 
+}

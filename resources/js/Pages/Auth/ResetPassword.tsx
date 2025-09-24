@@ -1,5 +1,4 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -34,20 +33,24 @@ export default function ResetPassword({
 
             <div className="flex h-screen">
                 {/* Left Side */}
-                <div className="flex flex-1 flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+                <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
                     <div className="mx-auto w-full max-w-sm lg:w-96">
                         <div>
                             <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
                                 Reset Password
                             </h2>
                             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                Please set your new password below to regain access to your account
+                                Please set your new password below to regain
+                                access to your account
                             </p>
                         </div>
 
                         <form onSubmit={submit} className="mt-8 space-y-6">
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="email"
+                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Email address
                                 </label>
                                 <TextInput
@@ -57,14 +60,22 @@ export default function ResetPassword({
                                     value={data.email}
                                     className="mt-1 block w-full"
                                     autoComplete="username"
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
                                     disabled
                                 />
-                                <InputError message={errors.email} className="mt-2" />
+                                <InputError
+                                    message={errors.email}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     New Password
                                 </label>
                                 <TextInput
@@ -75,14 +86,22 @@ export default function ResetPassword({
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
                                     isFocused={true}
-                                    onChange={(e) => setData('password', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
                                     placeholder="Enter new password"
                                 />
-                                <InputError message={errors.password} className="mt-2" />
+                                <InputError
+                                    message={errors.password}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label
+                                    htmlFor="password_confirmation"
+                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                                >
                                     Confirm Password
                                 </label>
                                 <TextInput
@@ -93,7 +112,10 @@ export default function ResetPassword({
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
                                     onChange={(e) =>
-                                        setData('password_confirmation', e.target.value)
+                                        setData(
+                                            'password_confirmation',
+                                            e.target.value,
+                                        )
                                     }
                                     placeholder="Confirm new password"
                                 />
@@ -108,7 +130,9 @@ export default function ResetPassword({
                                     className="w-full justify-center"
                                     disabled={processing}
                                 >
-                                    {processing ? 'Resetting...' : 'Reset Password'}
+                                    {processing
+                                        ? 'Resetting...'
+                                        : 'Reset Password'}
                                 </PrimaryButton>
                             </div>
 

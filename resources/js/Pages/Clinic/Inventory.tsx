@@ -1,35 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import { Button } from "../../Components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../Components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "../../Components/ui/dialog";
-import { Input } from "../../Components/ui/input";
-import { Label } from "../../Components/ui/label";
-import { Textarea } from "../../Components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../Components/ui/select";
-import { Badge } from "../../Components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../Components/ui/card";
-import { Alert, AlertDescription } from "../../Components/ui/alert";
-import { 
-    Package, 
-    Plus, 
-    Search, 
-    Filter, 
-    AlertTriangle, 
-    Clock, 
-    XCircle, 
-    TrendingUp,
-    TrendingDown,
+import {
+    AlertTriangle,
+    Clock,
     Edit,
-    Trash2,
-    Eye,
+    Package,
     Package2,
     Pill,
+    Plus,
+    Search,
     Stethoscope,
-    Wrench
+    Trash2,
+    TrendingDown,
+    TrendingUp,
+    XCircle,
 } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { Badge } from '../../Components/ui/badge';
+import { Button } from '../../Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '../../Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../../Components/ui/dialog';
+import { Input } from '../../Components/ui/input';
+import { Label } from '../../Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '../../Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '../../Components/ui/table';
+import { Textarea } from '../../Components/ui/textarea';
 import { formatCurrency } from './utils';
 
 interface InventoryItem {
@@ -75,7 +92,7 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
         low_stock_items: 0,
         expiring_soon_items: 0,
         expired_items: 0,
-        total_value: 0
+        total_value: 0,
     });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -84,14 +101,18 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [categories, setCategories] = useState<string[]>([]);
-    
+
     // Dialog states
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [stockDialogOpen, setStockDialogOpen] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-    const [stockAction, setStockAction] = useState<'add' | 'remove' | 'adjust'>('add');
-    
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(
+        null,
+    );
+    const [stockAction, setStockAction] = useState<'add' | 'remove' | 'adjust'>(
+        'add',
+    );
+
     // Form states
     const [formData, setFormData] = useState({
         name: '',
@@ -108,15 +129,15 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
         expiry_date: '',
         supplier: '',
         location: '',
-        is_active: true
+        is_active: true,
     });
-    
+
     const [stockFormData, setStockFormData] = useState({
         quantity: 0,
         unit_price: 0,
         notes: '',
         reference_number: '',
-        new_quantity: 0
+        new_quantity: 0,
     });
 
     useEffect(() => {
@@ -129,17 +150,23 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             setLoading(true);
             const params = new URLSearchParams();
             if (searchTerm) params.append('search', searchTerm);
-            if (typeFilter && typeFilter !== 'all') params.append('type', typeFilter);
-            if (statusFilter && statusFilter !== 'all') params.append('stock_status', statusFilter);
-            if (categoryFilter && categoryFilter !== 'all') params.append('category', categoryFilter);
+            if (typeFilter && typeFilter !== 'all')
+                params.append('type', typeFilter);
+            if (statusFilter && statusFilter !== 'all')
+                params.append('stock_status', statusFilter);
+            if (categoryFilter && categoryFilter !== 'all')
+                params.append('category', categoryFilter);
 
             const response = await fetch(`/clinic/inventory/api?${params}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setItems(data.items.data || []);
@@ -157,10 +184,13 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             const response = await fetch('/clinic/inventory/api/categories', {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setCategories(data);
@@ -191,8 +221,13 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             alert('Minimum stock cannot be negative');
             return false;
         }
-        if (formData.maximum_stock && formData.maximum_stock < formData.minimum_stock) {
-            alert('Maximum stock must be greater than or equal to minimum stock');
+        if (
+            formData.maximum_stock &&
+            formData.maximum_stock < formData.minimum_stock
+        ) {
+            alert(
+                'Maximum stock must be greater than or equal to minimum stock',
+            );
             return false;
         }
         return true;
@@ -200,16 +235,19 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
 
     const handleAddItem = async () => {
         if (!validateForm()) return;
-        
+
         setSubmitting(true);
         try {
             const response = await fetch('/clinic/inventory/api', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
             });
 
             if (response.ok) {
@@ -232,14 +270,20 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
         if (!selectedItem) return;
 
         try {
-            const response = await fetch(`/clinic/inventory/api/${selectedItem.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            const response = await fetch(
+                `/clinic/inventory/api/${selectedItem.id}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify(formData),
                 },
-                body: JSON.stringify(formData)
-            });
+            );
 
             if (response.ok) {
                 alert('Inventory item updated successfully');
@@ -267,9 +311,10 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                     endpoint = `/clinic/inventory/api/${selectedItem.id}/add-stock`;
                     payload = {
                         quantity: stockFormData.quantity,
-                        unit_price: stockFormData.unit_price || selectedItem.unit_price,
+                        unit_price:
+                            stockFormData.unit_price || selectedItem.unit_price,
                         notes: stockFormData.notes,
-                        reference_number: stockFormData.reference_number
+                        reference_number: stockFormData.reference_number,
                     };
                     break;
                 case 'remove':
@@ -277,14 +322,14 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                     payload = {
                         quantity: stockFormData.quantity,
                         notes: stockFormData.notes,
-                        reference_number: stockFormData.reference_number
+                        reference_number: stockFormData.reference_number,
                     };
                     break;
                 case 'adjust':
                     endpoint = `/clinic/inventory/api/${selectedItem.id}/adjust-stock`;
                     payload = {
                         new_quantity: stockFormData.new_quantity,
-                        notes: stockFormData.notes
+                        notes: stockFormData.notes,
                     };
                     break;
             }
@@ -293,9 +338,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {
@@ -320,8 +368,11 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
             });
 
             if (response.ok) {
@@ -351,7 +402,7 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             expiry_date: '',
             supplier: '',
             location: '',
-            is_active: true
+            is_active: true,
         });
     };
 
@@ -361,7 +412,7 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             unit_price: 0,
             notes: '',
             reference_number: '',
-            new_quantity: 0
+            new_quantity: 0,
         });
     };
 
@@ -382,12 +433,15 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             expiry_date: item.expiry_date || '',
             supplier: item.supplier || '',
             location: item.location || '',
-            is_active: item.is_active
+            is_active: item.is_active,
         });
         setEditDialogOpen(true);
     };
 
-    const openStockDialog = (item: InventoryItem, action: 'add' | 'remove' | 'adjust') => {
+    const openStockDialog = (
+        item: InventoryItem,
+        action: 'add' | 'remove' | 'adjust',
+    ) => {
         setSelectedItem(item);
         setStockAction(action);
         setStockFormData({
@@ -395,33 +449,60 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
             unit_price: item.unit_price,
             notes: '',
             reference_number: '',
-            new_quantity: item.current_stock
+            new_quantity: item.current_stock,
         });
         setStockDialogOpen(true);
     };
 
     const getTypeIcon = (type: string) => {
         switch (type) {
-            case 'medicine': return <Pill className="h-4 w-4" />;
-            case 'equipment': return <Stethoscope className="h-4 w-4" />;
-            case 'supply': return <Package2 className="h-4 w-4" />;
-            default: return <Package className="h-4 w-4" />;
+            case 'medicine':
+                return <Pill className="h-4 w-4" />;
+            case 'equipment':
+                return <Stethoscope className="h-4 w-4" />;
+            case 'supply':
+                return <Package2 className="h-4 w-4" />;
+            default:
+                return <Package className="h-4 w-4" />;
         }
     };
 
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'low_stock':
-                return <Badge variant="destructive" className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Low Stock</Badge>;
+                return (
+                    <Badge
+                        variant="destructive"
+                        className="flex items-center gap-1"
+                    >
+                        <AlertTriangle className="h-3 w-3" />
+                        Low Stock
+                    </Badge>
+                );
             case 'expiring_soon':
-                return <Badge variant="secondary" className="flex items-center gap-1"><Clock className="h-3 w-3" />Expiring Soon</Badge>;
+                return (
+                    <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                    >
+                        <Clock className="h-3 w-3" />
+                        Expiring Soon
+                    </Badge>
+                );
             case 'expired':
-                return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="h-3 w-3" />Expired</Badge>;
+                return (
+                    <Badge
+                        variant="destructive"
+                        className="flex items-center gap-1"
+                    >
+                        <XCircle className="h-3 w-3" />
+                        Expired
+                    </Badge>
+                );
             default:
                 return <Badge variant="default">Normal</Badge>;
         }
     };
-
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -432,232 +513,311 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
     }, [searchTerm, typeFilter, statusFilter, categoryFilter]);
 
     return (
-        <AuthenticatedLayout user={auth.user}>
-            <Head title="Clinic Inventory" />
-            
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Clinic Inventory</h2>
-                                    <p className="text-gray-600 dark:text-gray-400">Manage medicines, equipment, and supplies</p>
-                                </div>
-                                <Button onClick={() => setAddDialogOpen(true)} className="flex items-center gap-2">
-                                    <Plus className="h-4 w-4" />
-                                    Add Item
-                                </Button>
-                            </div>
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Inventory Management
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Manage medicines, equipment, and supplies
+                    </p>
+                </div>
+                <Button
+                    onClick={() => setAddDialogOpen(true)}
+                    className="flex items-center gap-2"
+                >
+                    <Plus className="h-4 w-4" />
+                    Add Item
+                </Button>
+            </div>
 
-                            {/* Summary Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-                                        <Package className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">{summary.total_items}</div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
-                                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-red-600">{summary.low_stock_items}</div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-                                        <Clock className="h-4 w-4 text-yellow-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-yellow-600">{summary.expiring_soon_items}</div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Expired</CardTitle>
-                                        <XCircle className="h-4 w-4 text-red-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-red-600">{summary.expired_items}</div>
-                                    </CardContent>
-                                </Card>
-                                
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-                                        <TrendingUp className="h-4 w-4 text-green-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold text-green-600">{formatCurrency(summary.total_value, currency)}</div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* Filters */}
-                            <div className="flex flex-wrap gap-4 mb-6">
-                                <div className="flex-1 min-w-64">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                                        <Input
-                                            placeholder="Search items..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                                    <SelectTrigger className="w-40">
-                                        <SelectValue placeholder="Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Types</SelectItem>
-                                        <SelectItem value="medicine">Medicine</SelectItem>
-                                        <SelectItem value="equipment">Equipment</SelectItem>
-                                        <SelectItem value="supply">Supply</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                    <SelectTrigger className="w-40">
-                                        <SelectValue placeholder="Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Status</SelectItem>
-                                        <SelectItem value="low_stock">Low Stock</SelectItem>
-                                        <SelectItem value="expiring_soon">Expiring Soon</SelectItem>
-                                        <SelectItem value="expired">Expired</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                
-                                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                    <SelectTrigger className="w-40">
-                                        <SelectValue placeholder="Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Categories</SelectItem>
-                                        {categories.map((category) => (
-                                            <SelectItem key={category} value={category}>{category}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Items Table */}
-                            <div className="bg-white dark:bg-gray-800 rounded-lg border">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead className="bg-gray-50 dark:bg-gray-700">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Item</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stock</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Expiry</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                            {loading ? (
-                                                <tr>
-                                                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500">Loading...</td>
-                                                </tr>
-                                            ) : items.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500">No items found</td>
-                                                </tr>
-                                            ) : (
-                                                items.map((item) => (
-                                                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div>
-                                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</div>
-                                                                <div className="text-sm text-gray-500 dark:text-gray-400">SKU: {item.sku}</div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="flex items-center gap-2">
-                                                                {getTypeIcon(item.type)}
-                                                                <span className="text-sm text-gray-900 dark:text-white capitalize">{item.type}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="text-sm text-gray-900 dark:text-white">
-                                                                {item.current_stock} {item.unit_of_measure}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                Min: {item.minimum_stock}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                            {formatCurrency(item.unit_price, currency)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {getStatusBadge(item.stock_status)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                            {item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : 'N/A'}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                            <div className="flex items-center gap-2">
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => openStockDialog(item, 'add')}
-                                                                    className="text-green-600 hover:text-green-700"
-                                                                >
-                                                                    <TrendingUp className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => openStockDialog(item, 'remove')}
-                                                                    className="text-red-600 hover:text-red-700"
-                                                                >
-                                                                    <TrendingDown className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => openEditDialog(item)}
-                                                                    className="text-blue-600 hover:text-blue-700"
-                                                                >
-                                                                    <Edit className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => handleDeleteItem(item)}
-                                                                    className="text-red-600 hover:text-red-700"
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Total Items
+                        </CardTitle>
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {summary.total_items}
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Low Stock
+                        </CardTitle>
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-600">
+                            {summary.low_stock_items}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Expiring Soon
+                        </CardTitle>
+                        <Clock className="h-4 w-4 text-yellow-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-yellow-600">
+                            {summary.expiring_soon_items}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Expired
+                        </CardTitle>
+                        <XCircle className="h-4 w-4 text-red-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-600">
+                            {summary.expired_items}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Total Value
+                        </CardTitle>
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-600">
+                            {formatCurrency(summary.total_value, currency)}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-4">
+                <div className="min-w-64 flex-1">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                        <Input
+                            placeholder="Search items..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                        />
                     </div>
                 </div>
+
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="medicine">Medicine</SelectItem>
+                        <SelectItem value="equipment">Equipment</SelectItem>
+                        <SelectItem value="supply">Supply</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="low_stock">Low Stock</SelectItem>
+                        <SelectItem value="expiring_soon">
+                            Expiring Soon
+                        </SelectItem>
+                        <SelectItem value="expired">Expired</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                >
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                                {category}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
+
+            {/* Items Table */}
+            <Card>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Item
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Type
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Stock
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Price
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Expiry
+                                </TableHead>
+                                <TableHead className="text-right text-gray-900 dark:text-white">
+                                    Actions
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={7}
+                                        className="text-center text-gray-500 dark:text-gray-400"
+                                    >
+                                        Loading...
+                                    </TableCell>
+                                </TableRow>
+                            ) : items.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={7}
+                                        className="text-center text-gray-500 dark:text-gray-400"
+                                    >
+                                        No items found
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                items.map((item) => (
+                                    <TableRow
+                                        key={item.id}
+                                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div>
+                                                <div className="text-sm font-medium">
+                                                    {item.name}
+                                                </div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                    SKU: {item.sku}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex items-center gap-2">
+                                                {getTypeIcon(item.type)}
+                                                <span className="capitalize">
+                                                    {item.type}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div>
+                                                {item.current_stock}{' '}
+                                                {item.unit_of_measure}
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                Min: {item.minimum_stock}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {formatCurrency(
+                                                item.unit_price,
+                                                currency,
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {getStatusBadge(item.stock_status)}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {item.expiry_date
+                                                ? new Date(
+                                                      item.expiry_date,
+                                                  ).toLocaleDateString()
+                                                : 'N/A'}
+                                        </TableCell>
+                                        <TableCell className="text-right text-gray-900 dark:text-white">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        openStockDialog(
+                                                            item,
+                                                            'add',
+                                                        )
+                                                    }
+                                                    className="text-green-600 hover:text-green-700"
+                                                >
+                                                    <TrendingUp className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        openStockDialog(
+                                                            item,
+                                                            'remove',
+                                                        )
+                                                    }
+                                                    className="text-red-600 hover:text-red-700"
+                                                >
+                                                    <TrendingDown className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        openEditDialog(item)
+                                                    }
+                                                    className="text-blue-600 hover:text-blue-700"
+                                                >
+                                                    <Edit className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleDeleteItem(item)
+                                                    }
+                                                    className="text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
             {/* Add Item Dialog */}
             <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
@@ -671,19 +831,35 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        name: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
                             <Label htmlFor="type">Type *</Label>
-                            <Select value={formData.type} onValueChange={(value: any) => setFormData({...formData, type: value})}>
+                            <Select
+                                value={formData.type}
+                                onValueChange={(value: any) =>
+                                    setFormData({ ...formData, type: value })
+                                }
+                            >
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="medicine">Medicine</SelectItem>
-                                    <SelectItem value="equipment">Equipment</SelectItem>
-                                    <SelectItem value="supply">Supply</SelectItem>
+                                    <SelectItem value="medicine">
+                                        Medicine
+                                    </SelectItem>
+                                    <SelectItem value="equipment">
+                                        Equipment
+                                    </SelectItem>
+                                    <SelectItem value="supply">
+                                        Supply
+                                    </SelectItem>
                                     <SelectItem value="other">Other</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -693,7 +869,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="sku"
                                 value={formData.sku}
-                                onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        sku: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -701,7 +882,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="category"
                                 value={formData.category}
-                                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        category: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -709,7 +895,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="barcode"
                                 value={formData.barcode}
-                                onChange={(e) => setFormData({...formData, barcode: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        barcode: e.target.value,
+                                    })
+                                }
                                 placeholder="Optional barcode"
                             />
                         </div>
@@ -719,7 +910,13 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                                 id="maximum_stock"
                                 type="number"
                                 value={formData.maximum_stock}
-                                onChange={(e) => setFormData({...formData, maximum_stock: parseInt(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        maximum_stock:
+                                            parseInt(e.target.value) || 0,
+                                    })
+                                }
                                 placeholder="Optional maximum stock"
                             />
                         </div>
@@ -730,34 +927,63 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                                 type="number"
                                 step="0.01"
                                 value={formData.unit_price}
-                                onChange={(e) => setFormData({...formData, unit_price: parseFloat(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        unit_price:
+                                            parseFloat(e.target.value) || 0,
+                                    })
+                                }
                                 placeholder={`0.00 ${currency}`}
                             />
                         </div>
                         <div>
-                            <Label htmlFor="current_stock">Current Stock *</Label>
+                            <Label htmlFor="current_stock">
+                                Current Stock *
+                            </Label>
                             <Input
                                 id="current_stock"
                                 type="number"
                                 value={formData.current_stock}
-                                onChange={(e) => setFormData({...formData, current_stock: parseInt(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        current_stock:
+                                            parseInt(e.target.value) || 0,
+                                    })
+                                }
                             />
                         </div>
                         <div>
-                            <Label htmlFor="minimum_stock">Minimum Stock *</Label>
+                            <Label htmlFor="minimum_stock">
+                                Minimum Stock *
+                            </Label>
                             <Input
                                 id="minimum_stock"
                                 type="number"
                                 value={formData.minimum_stock}
-                                onChange={(e) => setFormData({...formData, minimum_stock: parseInt(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        minimum_stock:
+                                            parseInt(e.target.value) || 0,
+                                    })
+                                }
                             />
                         </div>
                         <div>
-                            <Label htmlFor="unit_of_measure">Unit of Measure *</Label>
+                            <Label htmlFor="unit_of_measure">
+                                Unit of Measure *
+                            </Label>
                             <Input
                                 id="unit_of_measure"
                                 value={formData.unit_of_measure}
-                                onChange={(e) => setFormData({...formData, unit_of_measure: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        unit_of_measure: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -766,7 +992,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                                 id="expiry_date"
                                 type="date"
                                 value={formData.expiry_date}
-                                onChange={(e) => setFormData({...formData, expiry_date: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        expiry_date: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -774,7 +1005,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="supplier"
                                 value={formData.supplier}
-                                onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        supplier: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -782,7 +1018,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="location"
                                 value={formData.location}
-                                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        location: e.target.value,
+                                    })
+                                }
                                 placeholder="Storage location"
                             />
                         </div>
@@ -791,13 +1032,18 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Textarea
                                 id="description"
                                 value={formData.description}
-                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        description: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => {
                                 setAddDialogOpen(false);
                                 resetForm();
@@ -806,10 +1052,7 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            onClick={handleAddItem}
-                            disabled={submitting}
-                        >
+                        <Button onClick={handleAddItem} disabled={submitting}>
                             {submitting ? 'Adding...' : 'Add Item'}
                         </Button>
                     </DialogFooter>
@@ -828,19 +1071,35 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="edit-name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        name: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
                             <Label htmlFor="edit-type">Type *</Label>
-                            <Select value={formData.type} onValueChange={(value: any) => setFormData({...formData, type: value})}>
+                            <Select
+                                value={formData.type}
+                                onValueChange={(value: any) =>
+                                    setFormData({ ...formData, type: value })
+                                }
+                            >
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="medicine">Medicine</SelectItem>
-                                    <SelectItem value="equipment">Equipment</SelectItem>
-                                    <SelectItem value="supply">Supply</SelectItem>
+                                    <SelectItem value="medicine">
+                                        Medicine
+                                    </SelectItem>
+                                    <SelectItem value="equipment">
+                                        Equipment
+                                    </SelectItem>
+                                    <SelectItem value="supply">
+                                        Supply
+                                    </SelectItem>
                                     <SelectItem value="other">Other</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -850,7 +1109,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="edit-sku"
                                 value={formData.sku}
-                                onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        sku: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -858,44 +1122,79 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="edit-category"
                                 value={formData.category}
-                                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        category: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
-                            <Label htmlFor="edit-unit_price">Unit Price *</Label>
+                            <Label htmlFor="edit-unit_price">
+                                Unit Price *
+                            </Label>
                             <Input
                                 id="edit-unit_price"
                                 type="number"
                                 step="0.01"
                                 value={formData.unit_price}
-                                onChange={(e) => setFormData({...formData, unit_price: parseFloat(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        unit_price:
+                                            parseFloat(e.target.value) || 0,
+                                    })
+                                }
                                 placeholder={`0.00 ${currency}`}
                             />
                         </div>
                         <div>
-                            <Label htmlFor="edit-minimum_stock">Minimum Stock *</Label>
+                            <Label htmlFor="edit-minimum_stock">
+                                Minimum Stock *
+                            </Label>
                             <Input
                                 id="edit-minimum_stock"
                                 type="number"
                                 value={formData.minimum_stock}
-                                onChange={(e) => setFormData({...formData, minimum_stock: parseInt(e.target.value) || 0})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        minimum_stock:
+                                            parseInt(e.target.value) || 0,
+                                    })
+                                }
                             />
                         </div>
                         <div>
-                            <Label htmlFor="edit-unit_of_measure">Unit of Measure *</Label>
+                            <Label htmlFor="edit-unit_of_measure">
+                                Unit of Measure *
+                            </Label>
                             <Input
                                 id="edit-unit_of_measure"
                                 value={formData.unit_of_measure}
-                                onChange={(e) => setFormData({...formData, unit_of_measure: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        unit_of_measure: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
-                            <Label htmlFor="edit-expiry_date">Expiry Date</Label>
+                            <Label htmlFor="edit-expiry_date">
+                                Expiry Date
+                            </Label>
                             <Input
                                 id="edit-expiry_date"
                                 type="date"
                                 value={formData.expiry_date}
-                                onChange={(e) => setFormData({...formData, expiry_date: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        expiry_date: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -903,7 +1202,12 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="edit-supplier"
                                 value={formData.supplier}
-                                onChange={(e) => setFormData({...formData, supplier: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        supplier: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div>
@@ -911,20 +1215,37 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                             <Input
                                 id="edit-location"
                                 value={formData.location}
-                                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        location: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                         <div className="col-span-2">
-                            <Label htmlFor="edit-description">Description</Label>
+                            <Label htmlFor="edit-description">
+                                Description
+                            </Label>
                             <Textarea
                                 id="edit-description"
                                 value={formData.description}
-                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        description: e.target.value,
+                                    })
+                                }
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => setEditDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
                         <Button onClick={handleUpdateItem}>Update Item</Button>
                     </DialogFooter>
                 </DialogContent>
@@ -942,21 +1263,33 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                     </DialogHeader>
                     {selectedItem && (
                         <div className="space-y-4">
-                            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                <h4 className="font-medium">{selectedItem.name}</h4>
+                            <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+                                <h4 className="font-medium">
+                                    {selectedItem.name}
+                                </h4>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Current Stock: {selectedItem.current_stock} {selectedItem.unit_of_measure}
+                                    Current Stock: {selectedItem.current_stock}{' '}
+                                    {selectedItem.unit_of_measure}
                                 </p>
                             </div>
-                            
+
                             {stockAction === 'adjust' ? (
                                 <div>
-                                    <Label htmlFor="new_quantity">New Quantity *</Label>
+                                    <Label htmlFor="new_quantity">
+                                        New Quantity *
+                                    </Label>
                                     <Input
                                         id="new_quantity"
                                         type="number"
                                         value={stockFormData.new_quantity}
-                                        onChange={(e) => setStockFormData({...stockFormData, new_quantity: parseInt(e.target.value) || 0})}
+                                        onChange={(e) =>
+                                            setStockFormData({
+                                                ...stockFormData,
+                                                new_quantity:
+                                                    parseInt(e.target.value) ||
+                                                    0,
+                                            })
+                                        }
                                     />
                                 </div>
                             ) : (
@@ -966,46 +1299,80 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                                         id="quantity"
                                         type="number"
                                         value={stockFormData.quantity}
-                                        onChange={(e) => setStockFormData({...stockFormData, quantity: parseInt(e.target.value) || 0})}
+                                        onChange={(e) =>
+                                            setStockFormData({
+                                                ...stockFormData,
+                                                quantity:
+                                                    parseInt(e.target.value) ||
+                                                    0,
+                                            })
+                                        }
                                     />
                                 </div>
                             )}
-                            
+
                             {stockAction === 'add' && (
                                 <div>
-                                    <Label htmlFor="unit_price">Unit Price</Label>
+                                    <Label htmlFor="unit_price">
+                                        Unit Price
+                                    </Label>
                                     <Input
                                         id="unit_price"
                                         type="number"
                                         step="0.01"
                                         value={stockFormData.unit_price}
-                                        onChange={(e) => setStockFormData({...stockFormData, unit_price: parseFloat(e.target.value) || 0})}
+                                        onChange={(e) =>
+                                            setStockFormData({
+                                                ...stockFormData,
+                                                unit_price:
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
+                                            })
+                                        }
                                         placeholder={`0.00 ${currency}`}
                                     />
                                 </div>
                             )}
-                            
+
                             <div>
                                 <Label htmlFor="notes">Notes</Label>
                                 <Textarea
                                     id="notes"
                                     value={stockFormData.notes}
-                                    onChange={(e) => setStockFormData({...stockFormData, notes: e.target.value})}
+                                    onChange={(e) =>
+                                        setStockFormData({
+                                            ...stockFormData,
+                                            notes: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
-                            
+
                             <div>
-                                <Label htmlFor="reference_number">Reference Number</Label>
+                                <Label htmlFor="reference_number">
+                                    Reference Number
+                                </Label>
                                 <Input
                                     id="reference_number"
                                     value={stockFormData.reference_number}
-                                    onChange={(e) => setStockFormData({...stockFormData, reference_number: e.target.value})}
+                                    onChange={(e) =>
+                                        setStockFormData({
+                                            ...stockFormData,
+                                            reference_number: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
                     )}
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setStockDialogOpen(false)}>Cancel</Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => setStockDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
                         <Button onClick={handleStockAction}>
                             {stockAction === 'add' && 'Add Stock'}
                             {stockAction === 'remove' && 'Remove Stock'}
@@ -1014,6 +1381,6 @@ export default function Inventory({ auth, appCurrency }: InventoryProps) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AuthenticatedLayout>
+        </div>
     );
 }

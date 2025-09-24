@@ -1,4 +1,4 @@
-export type WidgetType = 
+export type WidgetType =
     | 'retail_sales'
     | 'retail_inventory'
     | 'retail_orders'
@@ -33,4 +33,4 @@ export interface PageProps {
     auth: {
         user: User;
     };
-} 
+}

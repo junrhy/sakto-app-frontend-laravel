@@ -1,6 +1,3 @@
-import React, { useMemo } from 'react';
-import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SettingsForm from '@/Components/Settings/SettingsForm';
 import {
     Card,
@@ -8,25 +5,13 @@ import {
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/Components/ui/card";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/Components/ui/tabs";
-import { Switch } from "@/Components/ui/switch";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
-import { Label } from "@/Components/ui/label";
-import { Input } from "@/Components/ui/input";
-import { Textarea } from "@/Components/ui/textarea";
+} from '@/Components/ui/card';
+import { Label } from '@/Components/ui/label';
+import { Switch } from '@/Components/ui/switch';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import { useMemo } from 'react';
 
 interface Settings {
     notifications: {
@@ -63,7 +48,11 @@ interface Props {
 export default function Settings({ settings = defaultSettings, auth }: Props) {
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
@@ -75,7 +64,7 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Notification Settings
                 </h2>
             }
@@ -83,7 +72,7 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
             <Head title="Notification Settings" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <Card>
                         <CardHeader>
                             <CardTitle>Notification Settings</CardTitle>
@@ -93,28 +82,45 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                         </CardHeader>
                         <CardContent>
                             {canEdit ? (
-                                <SettingsForm settings={settings} onSubmit={handleSubmit}>
+                                <SettingsForm
+                                    settings={settings}
+                                    onSubmit={handleSubmit}
+                                >
                                     {({ data, setData }) => (
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-0.5">
-                                                    <Label>Email Notifications</Label>
+                                                    <Label>
+                                                        Email Notifications
+                                                    </Label>
                                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                        Receive notifications via email
+                                                        Receive notifications
+                                                        via email
                                                     </div>
                                                 </div>
                                                 <Switch
-                                                    checked={data.notifications.email_notifications}
-                                                    onCheckedChange={(checked) => setData('notifications.email_notifications', checked)}
+                                                    checked={
+                                                        data.notifications
+                                                            .email_notifications
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        setData(
+                                                            'notifications.email_notifications',
+                                                            checked,
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                         </div>
                                     )}
                                 </SettingsForm>
                             ) : (
-                                <div className="text-center py-8">
+                                <div className="py-8 text-center">
                                     <p className="text-gray-500 dark:text-gray-400">
-                                        You don't have permission to edit notification settings.
+                                        You don't have permission to edit
+                                        notification settings.
                                     </p>
                                 </div>
                             )}
@@ -124,4 +130,4 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

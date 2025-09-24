@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
-import type { FamilyMember, FamilyTreeProps } from '@/types/genealogy';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
-import { FaMoon, FaSun, FaTimes } from 'react-icons/fa';
+import type { FamilyMember, FamilyTreeProps } from '@/types/genealogy';
+import { Head } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 export default function FullView({ familyMembers }: FamilyTreeProps) {
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -29,7 +28,7 @@ export default function FullView({ familyMembers }: FamilyTreeProps) {
             gridSections.push(
                 <div
                     key={i}
-                    className={`absolute w-1/3 h-1/3 border border-dashed ${
+                    className={`absolute h-1/3 w-1/3 border border-dashed ${
                         isDarkMode ? 'border-gray-600' : 'border-gray-400'
                     } flex items-center justify-center`}
                     style={{
@@ -44,7 +43,7 @@ export default function FullView({ familyMembers }: FamilyTreeProps) {
                     >
                         {i}
                     </span>
-                </div>
+                </div>,
             );
         }
         return gridSections;
@@ -54,20 +53,20 @@ export default function FullView({ familyMembers }: FamilyTreeProps) {
         <>
             <Head title="Family Tree - Full View" />
 
-            <div className="relative w-screen h-screen">
-                <FamilyTreeVisualization 
+            <div className="relative h-screen w-screen">
+                <FamilyTreeVisualization
                     familyMembers={familyMembers}
                     onNodeClick={handleNodeClick}
                     isDarkMode={isDarkMode}
                     isFullPage={true}
                 />
-                
+
                 {showScreenGrid && (
-                    <div className="absolute inset-0 z-10 pointer-events-none">
+                    <div className="pointer-events-none absolute inset-0 z-10">
                         {renderScreenGrid()}
                     </div>
                 )}
             </div>
         </>
     );
-} 
+}

@@ -67,19 +67,20 @@ export interface PageProps {
     [key: string]: any;
 }
 
-export type WidgetType = "retail_sales" 
-    | "retail_inventory" 
-    | "retail_orders" 
-    | "fnb_tables" 
-    | "fnb_kitchen" 
-    | "fnb_reservations" 
-    | "family_tree_stats"
-    | "contacts"
-    | "emails_sent"
-    | "loan_stats"
-    | "payroll_stats"
-    | "rental_item_stats"
-    | "sms_stats";
+export type WidgetType =
+    | 'retail_sales'
+    | 'retail_inventory'
+    | 'retail_orders'
+    | 'fnb_tables'
+    | 'fnb_kitchen'
+    | 'fnb_reservations'
+    | 'family_tree_stats'
+    | 'contacts'
+    | 'emails_sent'
+    | 'loan_stats'
+    | 'payroll_stats'
+    | 'rental_item_stats'
+    | 'sms_stats';
 
 export interface Widget {
     id: number;
@@ -117,4 +118,4 @@ export interface Category {
     id: number;
     name: string;
     description?: string;
-} 
+}

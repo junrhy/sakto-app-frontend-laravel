@@ -1,6 +1,6 @@
-import { format } from "date-fns";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from 'axios';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
 
 interface FuelHistoryProps {
     truckId: string;
@@ -26,7 +26,9 @@ export default function FuelHistory({ truckId }: FuelHistoryProps) {
         const fetchFuelHistory = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`/transportation/fleet/${truckId}/fuel-history`);
+                const response = await axios.get(
+                    `/transportation/fleet/${truckId}/fuel-history`,
+                );
                 setFuelHistory(response.data || []);
             } catch (error) {
                 console.error('Error fetching fuel history:', error);
@@ -41,38 +43,56 @@ export default function FuelHistory({ truckId }: FuelHistoryProps) {
         }
     }, [truckId]);
 
-    const truckFuelHistory = fuelHistory
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const truckFuelHistory = fuelHistory.sort(
+        (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
 
-            if (loading) {
-            return (
-                <div className="space-y-4">
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">Fuel History</h3>
-                    <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading fuel history...</div>
+    if (loading) {
+        return (
+            <div className="space-y-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    Fuel History
+                </h3>
+                <div className="py-4 text-center text-gray-600 dark:text-gray-400">
+                    Loading fuel history...
                 </div>
-            );
-        }
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
-            <h3 className="font-medium text-gray-900 dark:text-gray-100">Fuel History</h3>
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                Fuel History
+            </h3>
             <div className="space-y-3">
                 {truckFuelHistory.map((update) => (
-                    <div key={update.id} className="flex items-start space-x-4 border-l-2 border-green-500 pl-4">
+                    <div
+                        key={update.id}
+                        className="flex items-start space-x-4 border-l-2 border-green-500 pl-4"
+                    >
                         <div className="flex-1">
                             <div className="flex items-center justify-between">
                                 <span className="font-medium">
-                                    {parseFloat(update.liters_added).toFixed(2)} L added
+                                    {parseFloat(update.liters_added).toFixed(2)}{' '}
+                                    L added
                                 </span>
                                 <span className="text-sm text-muted-foreground dark:text-gray-400">
-                                    {format(new Date(update.timestamp), 'MMM dd, yyyy HH:mm')}
+                                    {format(
+                                        new Date(update.timestamp),
+                                        'MMM dd, yyyy HH:mm',
+                                    )}
                                 </span>
                             </div>
                             <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                                Level: {parseFloat(update.previous_level).toFixed(1)}% → {parseFloat(update.new_level).toFixed(1)}%
+                                Level:{' '}
+                                {parseFloat(update.previous_level).toFixed(1)}%
+                                → {parseFloat(update.new_level).toFixed(1)}%
                             </p>
                             <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                                Cost: ${parseFloat(update.cost).toFixed(2)} | Location: {update.location}
+                                Cost: ${parseFloat(update.cost).toFixed(2)} |
+                                Location: {update.location}
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground dark:text-gray-400">
                                 Updated by: {update.updated_by}
@@ -81,7 +101,9 @@ export default function FuelHistory({ truckId }: FuelHistoryProps) {
                     </div>
                 ))}
                 {truckFuelHistory.length === 0 && (
-                    <p className="text-sm text-muted-foreground dark:text-gray-400">No fuel history available.</p>
+                    <p className="text-sm text-muted-foreground dark:text-gray-400">
+                        No fuel history available.
+                    </p>
                 )}
             </div>
         </div>

@@ -1,24 +1,36 @@
-import { useState } from 'react';
-import { Patient } from '../types';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useState } from 'react';
+import { Patient } from '../types';
 
 export const useBills = () => {
     const [additionalBillAmount, setAdditionalBillAmount] = useState('');
     const [additionalBillDetails, setAdditionalBillDetails] = useState('');
-    const [additionalBillDate, setAdditionalBillDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-    const [additionalBillPatientId, setAdditionalBillPatientId] = useState<string | null>(null);
+    const [additionalBillDate, setAdditionalBillDate] = useState(
+        format(new Date(), 'yyyy-MM-dd'),
+    );
+    const [additionalBillPatientId, setAdditionalBillPatientId] = useState<
+        string | null
+    >(null);
     const [isAddBillDialogOpen, setIsAddBillDialogOpen] = useState(false);
 
-    const addBill = async (patientId: string, amount: number, details: string, billDate?: string) => {
+    const addBill = async (
+        patientId: string,
+        amount: number,
+        details: string,
+        billDate?: string,
+    ) => {
         try {
-            const response = await axios.post(`/clinic/patients/${patientId}/bills`, {
-                patient_id: patientId,
-                bill_number: `BILL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                bill_date: billDate || new Date().toISOString(),
-                bill_amount: amount,
-                bill_details: details
-            });
+            const response = await axios.post(
+                `/clinic/patients/${patientId}/bills`,
+                {
+                    patient_id: patientId,
+                    bill_number: `BILL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    bill_date: billDate || new Date().toISOString(),
+                    bill_amount: amount,
+                    bill_details: details,
+                },
+            );
             return { success: true, data: response.data };
         } catch (error) {
             console.error('Failed to add bill:', error);
@@ -38,13 +50,15 @@ export const useBills = () => {
 
     const fetchBillHistory = async (patient: Patient) => {
         try {
-            const response = await axios.get(`/clinic/patients/${patient.id}/bills`);
+            const response = await axios.get(
+                `/clinic/patients/${patient.id}/bills`,
+            );
             return {
                 success: true,
                 data: {
                     ...patient,
-                    bills: response.data.bills
-                }
+                    bills: response.data.bills,
+                },
             };
         } catch (error) {
             console.error('Failed to fetch bill history:', error);
@@ -74,6 +88,6 @@ export const useBills = () => {
         addBill,
         deleteBill,
         fetchBillHistory,
-        resetBillForm
+        resetBillForm,
     };
 };

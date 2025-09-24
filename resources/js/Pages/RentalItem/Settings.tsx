@@ -1,14 +1,20 @@
-import { User, Project } from '@/types/index';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
 import SettingsForm from '@/Components/Settings/SettingsForm';
-import { PageProps } from '@/types';
-import React, { useMemo } from 'react';
-import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Project, User } from '@/types/index';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import { useMemo } from 'react';
 
 interface Props extends PageProps {
     auth: {
@@ -53,7 +59,11 @@ export default function RentalItemSettings({ auth, settings }: Props) {
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
@@ -73,254 +83,508 @@ export default function RentalItemSettings({ auth, settings }: Props) {
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Rental Item Settings</h2>}
+            auth={{
+                user: auth.user,
+                project: auth.project,
+                modules: auth.modules,
+            }}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    Rental Item Settings
+                </h2>
+            }
         >
             <Head title="Rental Item Settings" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <div className="mb-6">
-                                <h3 className="text-lg font-medium">Configure your rental item settings, fees, and policies.</h3>
+                                <h3 className="text-lg font-medium">
+                                    Configure your rental item settings, fees,
+                                    and policies.
+                                </h3>
                             </div>
 
-                                                        {canEdit ? (
-                                <SettingsForm settings={settings} onSubmit={handleSubmit}>
+                            {canEdit ? (
+                                <SettingsForm
+                                    settings={settings}
+                                    onSubmit={handleSubmit}
+                                >
                                     {({ data, setData }) => (
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="default_rental_period">Default Rental Period</Label>
-                                                <div className="flex gap-4">
-                                                    <Input
-                                                        id="default_rental_period"
-                                                        type="number"
-                                                        min="1"
-                                                        value={data.default_rental_period}
-                                                        onChange={e => setData('default_rental_period', parseInt(e.target.value))}
-                                                        className="flex-1"
-                                                    />
-                                                    <Select
-                                                        value={data.rental_period_unit}
-                                                        onValueChange={value => setData('rental_period_unit', value)}
-                                                    >
-                                                        <SelectTrigger className="w-32">
-                                                            <SelectValue placeholder="Unit" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {periodUnits.map(unit => (
-                                                                <SelectItem key={unit.value} value={unit.value}>
-                                                                    {unit.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="default_rental_period">
+                                                        Default Rental Period
+                                                    </Label>
+                                                    <div className="flex gap-4">
+                                                        <Input
+                                                            id="default_rental_period"
+                                                            type="number"
+                                                            min="1"
+                                                            value={
+                                                                data.default_rental_period
+                                                            }
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    'default_rental_period',
+                                                                    parseInt(
+                                                                        e.target
+                                                                            .value,
+                                                                    ),
+                                                                )
+                                                            }
+                                                            className="flex-1"
+                                                        />
+                                                        <Select
+                                                            value={
+                                                                data.rental_period_unit
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) =>
+                                                                setData(
+                                                                    'rental_period_unit',
+                                                                    value,
+                                                                )
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-32">
+                                                                <SelectValue placeholder="Unit" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {periodUnits.map(
+                                                                    (unit) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                unit.value
+                                                                            }
+                                                                            value={
+                                                                                unit.value
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                unit.label
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="space-y-4">
-                                            <h3 className="text-lg font-medium">Fees and Policies</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="enable_late_fees">Enable Late Fees</Label>
-                                                        <Switch
-                                                            id="enable_late_fees"
-                                                            checked={data.enable_late_fees}
-                                                            onCheckedChange={(checked: boolean) => setData('enable_late_fees', checked)}
-                                                        />
+                                            <div className="space-y-4">
+                                                <h3 className="text-lg font-medium">
+                                                    Fees and Policies
+                                                </h3>
+                                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label htmlFor="enable_late_fees">
+                                                                Enable Late Fees
+                                                            </Label>
+                                                            <Switch
+                                                                id="enable_late_fees"
+                                                                checked={
+                                                                    data.enable_late_fees
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked: boolean,
+                                                                ) =>
+                                                                    setData(
+                                                                        'enable_late_fees',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {data.enable_late_fees && (
+                                                            <>
+                                                                <div className="space-y-2">
+                                                                    <Label htmlFor="late_fee_rate">
+                                                                        Late Fee
+                                                                        Rate (%)
+                                                                    </Label>
+                                                                    <Input
+                                                                        id="late_fee_rate"
+                                                                        type="number"
+                                                                        min="0"
+                                                                        step="0.01"
+                                                                        value={
+                                                                            data.late_fee_rate
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setData(
+                                                                                'late_fee_rate',
+                                                                                parseFloat(
+                                                                                    e
+                                                                                        .target
+                                                                                        .value,
+                                                                                ),
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
+
+                                                                <div className="space-y-2">
+                                                                    <Label htmlFor="late_fee_period">
+                                                                        Late Fee
+                                                                        Period
+                                                                    </Label>
+                                                                    <div className="flex gap-4">
+                                                                        <Input
+                                                                            id="late_fee_period"
+                                                                            type="number"
+                                                                            min="1"
+                                                                            value={
+                                                                                data.late_fee_period
+                                                                            }
+                                                                            onChange={(
+                                                                                e,
+                                                                            ) =>
+                                                                                setData(
+                                                                                    'late_fee_period',
+                                                                                    parseInt(
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                    ),
+                                                                                )
+                                                                            }
+                                                                            className="flex-1"
+                                                                        />
+                                                                        <Select
+                                                                            value={
+                                                                                data.late_fee_period_unit
+                                                                            }
+                                                                            onValueChange={(
+                                                                                value,
+                                                                            ) =>
+                                                                                setData(
+                                                                                    'late_fee_period_unit',
+                                                                                    value,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <SelectTrigger className="w-32">
+                                                                                <SelectValue placeholder="Unit" />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                {lateFeeUnits.map(
+                                                                                    (
+                                                                                        unit,
+                                                                                    ) => (
+                                                                                        <SelectItem
+                                                                                            key={
+                                                                                                unit.value
+                                                                                            }
+                                                                                            value={
+                                                                                                unit.value
+                                                                                            }
+                                                                                        >
+                                                                                            {
+                                                                                                unit.label
+                                                                                            }
+                                                                                        </SelectItem>
+                                                                                    ),
+                                                                                )}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
 
-                                                    {data.enable_late_fees && (
-                                                        <>
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label htmlFor="require_deposit">
+                                                                Require Deposit
+                                                            </Label>
+                                                            <Switch
+                                                                id="require_deposit"
+                                                                checked={
+                                                                    data.require_deposit
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked: boolean,
+                                                                ) =>
+                                                                    setData(
+                                                                        'require_deposit',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {data.require_deposit && (
                                                             <div className="space-y-2">
-                                                                <Label htmlFor="late_fee_rate">Late Fee Rate (%)</Label>
+                                                                <Label htmlFor="deposit_rate">
+                                                                    Deposit Rate
+                                                                    (% of item
+                                                                    value)
+                                                                </Label>
                                                                 <Input
-                                                                    id="late_fee_rate"
+                                                                    id="deposit_rate"
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max="100"
+                                                                    step="0.01"
+                                                                    value={
+                                                                        data.deposit_rate
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'deposit_rate',
+                                                                            parseFloat(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label htmlFor="enable_insurance">
+                                                                Enable Insurance
+                                                            </Label>
+                                                            <Switch
+                                                                id="enable_insurance"
+                                                                checked={
+                                                                    data.enable_insurance
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked: boolean,
+                                                                ) =>
+                                                                    setData(
+                                                                        'enable_insurance',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {data.enable_insurance && (
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="insurance_rate">
+                                                                    Insurance
+                                                                    Rate (% of
+                                                                    item value)
+                                                                </Label>
+                                                                <Input
+                                                                    id="insurance_rate"
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max="100"
+                                                                    step="0.01"
+                                                                    value={
+                                                                        data.insurance_rate
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'insurance_rate',
+                                                                            parseFloat(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <h3 className="text-lg font-medium">
+                                                    Delivery and Pickup
+                                                </h3>
+                                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label htmlFor="enable_delivery">
+                                                                Enable Delivery
+                                                            </Label>
+                                                            <Switch
+                                                                id="enable_delivery"
+                                                                checked={
+                                                                    data.enable_delivery
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked: boolean,
+                                                                ) =>
+                                                                    setData(
+                                                                        'enable_delivery',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {data.enable_delivery && (
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="delivery_fee">
+                                                                    Delivery Fee
+                                                                </Label>
+                                                                <Input
+                                                                    id="delivery_fee"
                                                                     type="number"
                                                                     min="0"
                                                                     step="0.01"
-                                                                    value={data.late_fee_rate}
-                                                                    onChange={e => setData('late_fee_rate', parseFloat(e.target.value))}
+                                                                    value={
+                                                                        data.delivery_fee
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'delivery_fee',
+                                                                            parseFloat(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            ),
+                                                                        )
+                                                                    }
                                                                 />
                                                             </div>
+                                                        )}
+                                                    </div>
 
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label htmlFor="enable_pickup">
+                                                                Enable Pickup
+                                                            </Label>
+                                                            <Switch
+                                                                id="enable_pickup"
+                                                                checked={
+                                                                    data.enable_pickup
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked: boolean,
+                                                                ) =>
+                                                                    setData(
+                                                                        'enable_pickup',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {data.enable_pickup && (
                                                             <div className="space-y-2">
-                                                                <Label htmlFor="late_fee_period">Late Fee Period</Label>
-                                                                <div className="flex gap-4">
-                                                                    <Input
-                                                                        id="late_fee_period"
-                                                                        type="number"
-                                                                        min="1"
-                                                                        value={data.late_fee_period}
-                                                                        onChange={e => setData('late_fee_period', parseInt(e.target.value))}
-                                                                        className="flex-1"
-                                                                    />
-                                                                    <Select
-                                                                        value={data.late_fee_period_unit}
-                                                                        onValueChange={value => setData('late_fee_period_unit', value)}
-                                                                    >
-                                                                        <SelectTrigger className="w-32">
-                                                                            <SelectValue placeholder="Unit" />
-                                                                        </SelectTrigger>
-                                                                        <SelectContent>
-                                                                            {lateFeeUnits.map(unit => (
-                                                                                <SelectItem key={unit.value} value={unit.value}>
-                                                                                    {unit.label}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                </div>
+                                                                <Label htmlFor="pickup_fee">
+                                                                    Pickup Fee
+                                                                </Label>
+                                                                <Input
+                                                                    id="pickup_fee"
+                                                                    type="number"
+                                                                    min="0"
+                                                                    step="0.01"
+                                                                    value={
+                                                                        data.pickup_fee
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'pickup_fee',
+                                                                            parseFloat(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                />
                                                             </div>
-                                                        </>
-                                                    )}
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="require_deposit">Require Deposit</Label>
-                                                        <Switch
-                                                            id="require_deposit"
-                                                            checked={data.require_deposit}
-                                                            onCheckedChange={(checked: boolean) => setData('require_deposit', checked)}
-                                                        />
+                                                        )}
                                                     </div>
-
-                                                    {data.require_deposit && (
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="deposit_rate">Deposit Rate (% of item value)</Label>
-                                                            <Input
-                                                                id="deposit_rate"
-                                                                type="number"
-                                                                min="0"
-                                                                max="100"
-                                                                step="0.01"
-                                                                value={data.deposit_rate}
-                                                                onChange={e => setData('deposit_rate', parseFloat(e.target.value))}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="enable_insurance">Enable Insurance</Label>
-                                                        <Switch
-                                                            id="enable_insurance"
-                                                            checked={data.enable_insurance}
-                                                            onCheckedChange={(checked: boolean) => setData('enable_insurance', checked)}
-                                                        />
-                                                    </div>
-
-                                                    {data.enable_insurance && (
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="insurance_rate">Insurance Rate (% of item value)</Label>
-                                                            <Input
-                                                                id="insurance_rate"
-                                                                type="number"
-                                                                min="0"
-                                                                max="100"
-                                                                step="0.01"
-                                                                value={data.insurance_rate}
-                                                                onChange={e => setData('insurance_rate', parseFloat(e.target.value))}
-                                                            />
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="space-y-4">
-                                            <h3 className="text-lg font-medium">Delivery and Pickup</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="enable_delivery">Enable Delivery</Label>
-                                                        <Switch
-                                                            id="enable_delivery"
-                                                            checked={data.enable_delivery}
-                                                            onCheckedChange={(checked: boolean) => setData('enable_delivery', checked)}
-                                                        />
-                                                    </div>
-
-                                                    {data.enable_delivery && (
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="delivery_fee">Delivery Fee</Label>
-                                                            <Input
-                                                                id="delivery_fee"
-                                                                type="number"
-                                                                min="0"
-                                                                step="0.01"
-                                                                value={data.delivery_fee}
-                                                                onChange={e => setData('delivery_fee', parseFloat(e.target.value))}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="enable_pickup">Enable Pickup</Label>
-                                                        <Switch
-                                                            id="enable_pickup"
-                                                            checked={data.enable_pickup}
-                                                            onCheckedChange={(checked: boolean) => setData('enable_pickup', checked)}
-                                                        />
-                                                    </div>
-
-                                                    {data.enable_pickup && (
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="pickup_fee">Pickup Fee</Label>
-                                                            <Input
-                                                                id="pickup_fee"
-                                                                type="number"
-                                                                min="0"
-                                                                step="0.01"
-                                                                value={data.pickup_fee}
-                                                                onChange={e => setData('pickup_fee', parseFloat(e.target.value))}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <h3 className="text-lg font-medium">Maintenance</h3>
                                             <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <Label htmlFor="enable_maintenance_tracking">Enable Maintenance Tracking</Label>
-                                                    <Switch
-                                                        id="enable_maintenance_tracking"
-                                                        checked={data.enable_maintenance_tracking}
-                                                        onCheckedChange={(checked: boolean) => setData('enable_maintenance_tracking', checked)}
-                                                    />
-                                                </div>
-
-                                                {data.enable_maintenance_tracking && (
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="maintenance_reminder_days">Maintenance Reminder (days)</Label>
-                                                        <Input
-                                                            id="maintenance_reminder_days"
-                                                            type="number"
-                                                            min="1"
-                                                            value={data.maintenance_reminder_days}
-                                                            onChange={e => setData('maintenance_reminder_days', parseInt(e.target.value))}
+                                                <h3 className="text-lg font-medium">
+                                                    Maintenance
+                                                </h3>
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label htmlFor="enable_maintenance_tracking">
+                                                            Enable Maintenance
+                                                            Tracking
+                                                        </Label>
+                                                        <Switch
+                                                            id="enable_maintenance_tracking"
+                                                            checked={
+                                                                data.enable_maintenance_tracking
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked: boolean,
+                                                            ) =>
+                                                                setData(
+                                                                    'enable_maintenance_tracking',
+                                                                    checked,
+                                                                )
+                                                            }
                                                         />
                                                     </div>
-                                                )}
+
+                                                    {data.enable_maintenance_tracking && (
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="maintenance_reminder_days">
+                                                                Maintenance
+                                                                Reminder (days)
+                                                            </Label>
+                                                            <Input
+                                                                id="maintenance_reminder_days"
+                                                                type="number"
+                                                                min="1"
+                                                                value={
+                                                                    data.maintenance_reminder_days
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'maintenance_reminder_days',
+                                                                        parseInt(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
                                 </SettingsForm>
                             ) : (
-                                <div className="text-center py-12">
-                                    <p className="text-gray-500">You don't have permission to edit rental item settings.</p>
+                                <div className="py-12 text-center">
+                                    <p className="text-gray-500">
+                                        You don't have permission to edit rental
+                                        item settings.
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -329,4 +593,4 @@ export default function RentalItemSettings({ auth, settings }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

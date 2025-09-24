@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Patient, HistoryType } from '../types';
+import { HistoryType, Patient } from '../types';
 
 export const useHistory = () => {
-    const [showingHistoryForPatient, setShowingHistoryForPatient] = useState<Patient | null>(null);
-    const [activeHistoryType, setActiveHistoryType] = useState<HistoryType>(null);
+    const [showingHistoryForPatient, setShowingHistoryForPatient] =
+        useState<Patient | null>(null);
+    const [activeHistoryType, setActiveHistoryType] =
+        useState<HistoryType>(null);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
     const openHistoryDialog = (patient: Patient, type: HistoryType) => {
@@ -28,6 +30,6 @@ export const useHistory = () => {
         isLoadingHistory,
         openHistoryDialog,
         closeHistoryDialog,
-        setLoading
+        setLoading,
     };
 };

@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Switch } from '@/Components/ui/switch';
-import { Receipt, Users, Calculator, Loader2 } from 'lucide-react';
-import { ClinicPaymentAccount, Patient, AppCurrency } from '../types';
-import { format } from 'date-fns';
+import { Textarea } from '@/Components/ui/textarea';
 import axios from 'axios';
+import { format } from 'date-fns';
+import { Calculator, Loader2, Receipt, Users } from 'lucide-react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { AppCurrency, ClinicPaymentAccount, Patient } from '../types';
 
 interface AccountBillingModalProps {
     account: ClinicPaymentAccount;
@@ -22,42 +34,42 @@ interface AccountBillingModalProps {
     onBillCreated: () => void;
 }
 
-export function AccountBillingModal({ 
-    account, 
-    patients, 
-    isOpen, 
-    onClose, 
-    appCurrency, 
-    onBillCreated 
+export function AccountBillingModal({
+    account,
+    patients,
+    isOpen,
+    onClose,
+    appCurrency,
+    onBillCreated,
 }: AccountBillingModalProps) {
     const [selectedPatients, setSelectedPatients] = useState<string[]>([]);
     const [billData, setBillData] = useState({
         bill_date: format(new Date(), 'yyyy-MM-dd'),
         bill_amount: '',
         bill_details: '',
-        distribute_amount: false
+        distribute_amount: false,
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const formatCurrency = (amount: number) => {
         if (!appCurrency) return `$${amount.toFixed(2)}`;
-        return `${appCurrency.symbol}${amount.toLocaleString('en-US', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
+        return `${appCurrency.symbol}${amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
         })}`;
     };
 
     const handlePatientToggle = (patientId: string) => {
-        setSelectedPatients(prev => 
-            prev.includes(patientId) 
-                ? prev.filter(id => id !== patientId)
-                : [...prev, patientId]
+        setSelectedPatients((prev) =>
+            prev.includes(patientId)
+                ? prev.filter((id) => id !== patientId)
+                : [...prev, patientId],
         );
     };
 
     const handleSelectAll = () => {
-        setSelectedPatients(patients.map(p => p.id));
+        setSelectedPatients(patients.map((p) => p.id));
     };
 
     const handleDeselectAll = () => {
@@ -65,16 +77,16 @@ export function AccountBillingModal({
     };
 
     const handleInputChange = (field: string, value: any) => {
-        setBillData(prev => ({
+        setBillData((prev) => ({
             ...prev,
-            [field]: value
+            [field]: value,
         }));
-        
+
         // Clear error when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({
+            setErrors((prev) => ({
                 ...prev,
-                [field]: ''
+                [field]: '',
             }));
         }
     };
@@ -100,7 +112,7 @@ export function AccountBillingModal({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
@@ -109,41 +121,48 @@ export function AccountBillingModal({
         try {
             const payload = {
                 clinic_payment_account_id: account.id,
-                patient_ids: selectedPatients.map(id => parseInt(id)),
+                patient_ids: selectedPatients.map((id) => parseInt(id)),
                 bill_date: billData.bill_date,
                 bill_amount: parseFloat(billData.bill_amount),
                 bill_details: billData.bill_details,
-                distribute_amount: billData.distribute_amount
+                distribute_amount: billData.distribute_amount,
             };
 
-            const response = await axios.post('/clinic/patient-bills/account-bill', payload);
+            const response = await axios.post(
+                '/clinic/patient-bills/account-bill',
+                payload,
+            );
 
             if (response.data.success) {
                 const billsCreated = response.data.data.length;
                 const totalAmount = response.data.total_amount;
                 const amountPerPatient = response.data.amount_per_patient;
-                
+
                 toast.success(
                     `${billsCreated} bill(s) created successfully. ` +
-                    `Total: ${formatCurrency(totalAmount)}` +
-                    (billData.distribute_amount ? ` (${formatCurrency(amountPerPatient)} per patient)` : '')
+                        `Total: ${formatCurrency(totalAmount)}` +
+                        (billData.distribute_amount
+                            ? ` (${formatCurrency(amountPerPatient)} per patient)`
+                            : ''),
                 );
-                
+
                 // Reset form
                 setSelectedPatients([]);
                 setBillData({
                     bill_date: format(new Date(), 'yyyy-MM-dd'),
                     bill_amount: '',
                     bill_details: '',
-                    distribute_amount: false
+                    distribute_amount: false,
                 });
-                
+
                 onBillCreated();
                 onClose();
             }
         } catch (error: any) {
             console.error('Failed to create account bill:', error);
-            toast.error(error.response?.data?.message || 'Failed to create bill');
+            toast.error(
+                error.response?.data?.message || 'Failed to create bill',
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -161,7 +180,9 @@ export function AccountBillingModal({
     const calculateAmountPerPatient = () => {
         const amount = parseFloat(billData.bill_amount) || 0;
         if (billData.distribute_amount) {
-            return selectedPatients.length > 0 ? amount / selectedPatients.length : 0;
+            return selectedPatients.length > 0
+                ? amount / selectedPatients.length
+                : 0;
         } else {
             return amount;
         }
@@ -169,14 +190,15 @@ export function AccountBillingModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center">
                         <Receipt className="mr-2 h-5 w-5" />
                         Create Account Bill
                     </DialogTitle>
                     <DialogDescription>
-                        Create a bill for multiple patients under {account.account_name}
+                        Create a bill for multiple patients under{' '}
+                        {account.account_name}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -184,7 +206,7 @@ export function AccountBillingModal({
                     {/* Patient Selection */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center">
+                            <CardTitle className="flex items-center text-lg">
                                 <Users className="mr-2 h-5 w-5" />
                                 Select Patients
                             </CardTitle>
@@ -193,17 +215,17 @@ export function AccountBillingModal({
                             </CardDescription>
                             {patients.length > 0 && (
                                 <div className="flex space-x-2">
-                                    <Button 
+                                    <Button
                                         type="button"
-                                        variant="outline" 
+                                        variant="outline"
                                         size="sm"
                                         onClick={handleSelectAll}
                                     >
                                         Select All
                                     </Button>
-                                    <Button 
+                                    <Button
                                         type="button"
-                                        variant="outline" 
+                                        variant="outline"
                                         size="sm"
                                         onClick={handleDeselectAll}
                                     >
@@ -214,28 +236,40 @@ export function AccountBillingModal({
                         </CardHeader>
                         <CardContent>
                             {patients.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold mb-2">No patients assigned</h3>
+                                <div className="py-8 text-center">
+                                    <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                                    <h3 className="mb-2 text-lg font-semibold">
+                                        No patients assigned
+                                    </h3>
                                     <p className="text-muted-foreground">
-                                        Assign patients to this account first before creating bills
+                                        Assign patients to this account first
+                                        before creating bills
                                     </p>
                                 </div>
                             ) : (
-                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                <div className="max-h-60 space-y-2 overflow-y-auto">
                                     {patients.map((patient) => (
-                                        <div 
+                                        <div
                                             key={patient.id}
-                                            className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50"
+                                            className="flex items-center space-x-3 rounded-lg border p-3 hover:bg-gray-50"
                                         >
                                             <Checkbox
-                                                checked={selectedPatients.includes(patient.id)}
-                                                onCheckedChange={() => handlePatientToggle(patient.id)}
+                                                checked={selectedPatients.includes(
+                                                    patient.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    handlePatientToggle(
+                                                        patient.id,
+                                                    )
+                                                }
                                             />
                                             <div className="flex-1">
-                                                <p className="font-medium">{patient.name}</p>
+                                                <p className="font-medium">
+                                                    {patient.name}
+                                                </p>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {patient.arn} • {patient.email}
+                                                    {patient.arn} •{' '}
+                                                    {patient.email}
                                                 </p>
                                             </div>
                                         </div>
@@ -243,7 +277,9 @@ export function AccountBillingModal({
                                 </div>
                             )}
                             {errors.patients && (
-                                <p className="text-sm text-red-600 mt-2">{errors.patients}</p>
+                                <p className="mt-2 text-sm text-red-600">
+                                    {errors.patients}
+                                </p>
                             )}
                         </CardContent>
                     </Card>
@@ -251,37 +287,55 @@ export function AccountBillingModal({
                     {/* Bill Details */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Bill Details</CardTitle>
+                            <CardTitle className="text-lg">
+                                Bill Details
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 {/* Bill Date */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="bill_date">Bill Date *</Label>
+                                    <Label htmlFor="bill_date">
+                                        Bill Date *
+                                    </Label>
                                     <Input
                                         id="bill_date"
                                         type="date"
                                         value={billData.bill_date}
-                                        onChange={(e) => handleInputChange('bill_date', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'bill_date',
+                                                e.target.value,
+                                            )
+                                        }
                                         required
                                     />
                                 </div>
 
                                 {/* Bill Amount */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="bill_amount">Bill Amount *</Label>
+                                    <Label htmlFor="bill_amount">
+                                        Bill Amount *
+                                    </Label>
                                     <Input
                                         id="bill_amount"
                                         type="number"
                                         step="0.01"
                                         min="0"
                                         value={billData.bill_amount}
-                                        onChange={(e) => handleInputChange('bill_amount', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                'bill_amount',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="0.00"
                                         required
                                     />
                                     {errors.bill_amount && (
-                                        <p className="text-sm text-red-600">{errors.bill_amount}</p>
+                                        <p className="text-sm text-red-600">
+                                            {errors.bill_amount}
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -291,32 +345,48 @@ export function AccountBillingModal({
                                 <Switch
                                     id="distribute_amount"
                                     checked={billData.distribute_amount}
-                                    onCheckedChange={(checked) => handleInputChange('distribute_amount', checked)}
+                                    onCheckedChange={(checked) =>
+                                        handleInputChange(
+                                            'distribute_amount',
+                                            checked,
+                                        )
+                                    }
                                 />
-                                <Label htmlFor="distribute_amount" className="text-sm">
+                                <Label
+                                    htmlFor="distribute_amount"
+                                    className="text-sm"
+                                >
                                     Distribute amount among selected patients
                                 </Label>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                {billData.distribute_amount 
-                                    ? "The total amount will be divided equally among selected patients"
-                                    : "Each selected patient will be billed the full amount"
-                                }
+                                {billData.distribute_amount
+                                    ? 'The total amount will be divided equally among selected patients'
+                                    : 'Each selected patient will be billed the full amount'}
                             </p>
 
                             {/* Bill Details */}
                             <div className="space-y-2">
-                                <Label htmlFor="bill_details">Bill Details *</Label>
+                                <Label htmlFor="bill_details">
+                                    Bill Details *
+                                </Label>
                                 <Textarea
                                     id="bill_details"
                                     value={billData.bill_details}
-                                    onChange={(e) => handleInputChange('bill_details', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'bill_details',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="Enter bill description or details..."
                                     rows={3}
                                     required
                                 />
                                 {errors.bill_details && (
-                                    <p className="text-sm text-red-600">{errors.bill_details}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.bill_details}
+                                    </p>
                                 )}
                             </div>
                         </CardContent>
@@ -326,30 +396,40 @@ export function AccountBillingModal({
                     {selectedPatients.length > 0 && billData.bill_amount && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg flex items-center">
+                                <CardTitle className="flex items-center text-lg">
                                     <Calculator className="mr-2 h-5 w-5" />
                                     Bill Summary
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                                    <div className="p-4 border rounded-lg">
+                                <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+                                    <div className="rounded-lg border p-4">
                                         <p className="text-2xl font-bold text-blue-600">
                                             {selectedPatients.length}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">Selected Patients</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Selected Patients
+                                        </p>
                                     </div>
-                                    <div className="p-4 border rounded-lg">
+                                    <div className="rounded-lg border p-4">
                                         <p className="text-2xl font-bold text-green-600">
-                                            {formatCurrency(calculateAmountPerPatient())}
+                                            {formatCurrency(
+                                                calculateAmountPerPatient(),
+                                            )}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">Amount per Patient</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Amount per Patient
+                                        </p>
                                     </div>
-                                    <div className="p-4 border rounded-lg">
+                                    <div className="rounded-lg border p-4">
                                         <p className="text-2xl font-bold text-purple-600">
-                                            {formatCurrency(calculateTotalAmount())}
+                                            {formatCurrency(
+                                                calculateTotalAmount(),
+                                            )}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">Total Bill Amount</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Total Bill Amount
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -357,11 +437,20 @@ export function AccountBillingModal({
                     )}
 
                     <div className="flex justify-end space-x-4">
-                        <Button type="button" variant="outline" onClick={onClose}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onClose}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmitting || patients.length === 0}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting || patients.length === 0}
+                        >
+                            {isSubmitting && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
                             Create Bill
                         </Button>
                     </div>

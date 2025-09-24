@@ -1,7 +1,13 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { UserIcon, MapPin } from 'lucide-react';
-import UpdateProfileInformationForm from './UpdateProfileInformationForm';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import { MapPin, UserIcon } from 'lucide-react';
 import UpdateAddressesForm from './UpdateAddressesForm';
+import UpdateProfileInformationForm from './UpdateProfileInformationForm';
 
 interface AccountSettingsProps {
     mustVerifyEmail: boolean;
@@ -9,21 +15,22 @@ interface AccountSettingsProps {
     addresses: Array<any>;
 }
 
-export default function AccountSettings({ 
-    mustVerifyEmail, 
-    status, 
-    addresses 
+export default function AccountSettings({
+    mustVerifyEmail,
+    status,
+    addresses,
 }: AccountSettingsProps) {
     return (
         <div className="space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <UserIcon className="w-5 h-5" />
+                        <UserIcon className="h-5 w-5" />
                         Profile Information
                     </CardTitle>
                     <CardDescription>
-                        Update your account's profile information and email address.
+                        Update your account's profile information and email
+                        address.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -39,7 +46,7 @@ export default function AccountSettings({
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <MapPin className="w-5 h-5" />
+                        <MapPin className="h-5 w-5" />
                         Addresses
                     </CardTitle>
                     <CardDescription>
@@ -47,9 +54,9 @@ export default function AccountSettings({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <UpdateAddressesForm 
+                    <UpdateAddressesForm
                         addresses={addresses}
-                        className="w-full" 
+                        className="w-full"
                         hideHeader={true}
                     />
                 </CardContent>

@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import TeamsLayout from '@/Layouts/TeamsLayout';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { ArrowLeft, Shield, Eye, EyeOff } from 'lucide-react';
+import TeamsLayout from '@/Layouts/TeamsLayout';
+import { Head, useForm } from '@inertiajs/react';
+import { Eye, EyeOff, Shield } from 'lucide-react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 interface TeamMember {
@@ -40,14 +46,16 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         post(route('team-member.password.update'), {
             onSuccess: () => {
                 toast.success('Password updated successfully!');
                 reset();
             },
             onError: () => {
-                toast.error('Failed to update password. Please check your input.');
+                toast.error(
+                    'Failed to update password. Please check your input.',
+                );
             },
         });
     };
@@ -56,13 +64,15 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
         <TeamsLayout>
             <Head title="Update Team Member Password" />
 
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+            <div className="min-h-screen bg-gray-50 py-12 dark:bg-gray-900">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-md mx-auto">
+                    <div className="mx-auto max-w-md">
                         {/* Header */}
                         <div className="mb-8">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Update Password</h1>
-                            <p className="text-gray-600 dark:text-gray-400 mt-2">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                Update Password
+                            </h1>
+                            <p className="mt-2 text-gray-600 dark:text-gray-400">
                                 Update your team member password
                             </p>
                         </div>
@@ -71,20 +81,24 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                         <Card className="mb-6">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Shield className="w-5 h-5" />
+                                    <Shield className="h-5 w-5" />
                                     Team Member Information
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-400">Name:</span>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Name:
+                                        </span>
                                         <span className="font-medium text-gray-900 dark:text-white">
                                             {teamMember.full_name}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-400">Email:</span>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Email:
+                                        </span>
                                         <span className="font-medium text-gray-900 dark:text-white">
                                             {teamMember.email}
                                         </span>
@@ -97,11 +111,12 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Shield className="w-5 h-5" />
+                                    <Shield className="h-5 w-5" />
                                     Update Password
                                 </CardTitle>
                                 <CardDescription>
-                                    Enter your current password and choose a new password for your team member account.
+                                    Enter your current password and choose a new
+                                    password for your team member account.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -116,13 +131,24 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                                 <form onSubmit={submit} className="space-y-6">
                                     {/* Current Password */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="current_password">Current Password</Label>
+                                        <Label htmlFor="current_password">
+                                            Current Password
+                                        </Label>
                                         <div className="relative">
                                             <Input
                                                 id="current_password"
-                                                type={showCurrentPassword ? 'text' : 'password'}
+                                                type={
+                                                    showCurrentPassword
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
                                                 value={data.current_password}
-                                                onChange={(e) => setData('current_password', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'current_password',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 className={`pr-10 ${errors?.current_password ? 'border-red-500' : ''}`}
                                                 placeholder="Enter your current password"
                                                 required
@@ -132,7 +158,11 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                onClick={() =>
+                                                    setShowCurrentPassword(
+                                                        !showCurrentPassword,
+                                                    )
+                                                }
                                             >
                                                 {showCurrentPassword ? (
                                                     <EyeOff className="h-4 w-4" />
@@ -150,13 +180,24 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
 
                                     {/* New Password */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="password">New Password</Label>
+                                        <Label htmlFor="password">
+                                            New Password
+                                        </Label>
                                         <div className="relative">
                                             <Input
                                                 id="password"
-                                                type={showNewPassword ? 'text' : 'password'}
+                                                type={
+                                                    showNewPassword
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
                                                 value={data.password}
-                                                onChange={(e) => setData('password', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'password',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 className={`pr-10 ${errors?.password ? 'border-red-500' : ''}`}
                                                 placeholder="Enter your new password"
                                                 required
@@ -166,7 +207,11 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                onClick={() =>
+                                                    setShowNewPassword(
+                                                        !showNewPassword,
+                                                    )
+                                                }
                                             >
                                                 {showNewPassword ? (
                                                     <EyeOff className="h-4 w-4" />
@@ -181,19 +226,33 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                                             </p>
                                         )}
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            Password must be at least 8 characters long.
+                                            Password must be at least 8
+                                            characters long.
                                         </p>
                                     </div>
 
                                     {/* Confirm New Password */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="password_confirmation">Confirm New Password</Label>
+                                        <Label htmlFor="password_confirmation">
+                                            Confirm New Password
+                                        </Label>
                                         <div className="relative">
                                             <Input
                                                 id="password_confirmation"
-                                                type={showConfirmPassword ? 'text' : 'password'}
-                                                value={data.password_confirmation}
-                                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                                type={
+                                                    showConfirmPassword
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
+                                                value={
+                                                    data.password_confirmation
+                                                }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'password_confirmation',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 className={`pr-10 ${errors?.password_confirmation ? 'border-red-500' : ''}`}
                                                 placeholder="Confirm your new password"
                                                 required
@@ -203,7 +262,11 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                onClick={() =>
+                                                    setShowConfirmPassword(
+                                                        !showConfirmPassword,
+                                                    )
+                                                }
                                             >
                                                 {showConfirmPassword ? (
                                                     <EyeOff className="h-4 w-4" />
@@ -224,14 +287,18 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                                         <Button
                                             type="submit"
                                             disabled={processing}
-                                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                                            className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
                                         >
-                                            {processing ? 'Updating...' : 'Update Password'}
+                                            {processing
+                                                ? 'Updating...'
+                                                : 'Update Password'}
                                         </Button>
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={() => window.history.back()}
+                                            onClick={() =>
+                                                window.history.back()
+                                            }
                                             disabled={processing}
                                         >
                                             Cancel
@@ -245,13 +312,17 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
                         <Card className="mt-6 border-yellow-200 dark:border-yellow-800">
                             <CardContent className="pt-6">
                                 <div className="flex items-start gap-3">
-                                    <Shield className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+                                    <Shield className="mt-0.5 h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                                     <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                                        <p className="font-medium mb-1">Security Notice</p>
+                                        <p className="mb-1 font-medium">
+                                            Security Notice
+                                        </p>
                                         <p>
-                                            This will only update your team member account password. 
-                                            The main account password remains unchanged and can only be 
-                                            updated by administrators in the Security tab.
+                                            This will only update your team
+                                            member account password. The main
+                                            account password remains unchanged
+                                            and can only be updated by
+                                            administrators in the Security tab.
                                         </p>
                                     </div>
                                 </div>
@@ -262,4 +333,4 @@ export default function UpdatePassword({ teamMember, errors }: Props) {
             </div>
         </TeamsLayout>
     );
-} 
+}

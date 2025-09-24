@@ -1,6 +1,6 @@
-import { useForm } from '@inertiajs/react';
-import { FormEventHandler, ReactNode, useEffect } from 'react';
 import { Button } from '@/Components/ui/button';
+import { useForm } from '@inertiajs/react';
+import { FormEventHandler, ReactNode } from 'react';
 import { toast } from 'sonner';
 
 interface FormChildrenProps {
@@ -15,11 +15,17 @@ interface Props {
     submitLabel?: string;
 }
 
-export default function SettingsForm({ settings, onSubmit, children, submitLabel = 'Save Changes' }: Props) {
+export default function SettingsForm({
+    settings,
+    onSubmit,
+    children,
+    submitLabel = 'Save Changes',
+}: Props) {
     const form = useForm({
         notifications: {
-            email_notifications: settings.notifications?.email_notifications ?? true
-        }
+            email_notifications:
+                settings.notifications?.email_notifications ?? true,
+        },
     });
 
     const handleSubmit: FormEventHandler = async (e) => {
@@ -35,8 +41,10 @@ export default function SettingsForm({ settings, onSubmit, children, submitLabel
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {typeof children === 'function' ? children({ data: form.data, setData: form.setData }) : children}
-            
+            {typeof children === 'function'
+                ? children({ data: form.data, setData: form.setData })
+                : children}
+
             <div className="flex items-center justify-end gap-4">
                 <Button
                     type="button"
@@ -46,13 +54,10 @@ export default function SettingsForm({ settings, onSubmit, children, submitLabel
                 >
                     Reset
                 </Button>
-                <Button
-                    type="submit"
-                    disabled={form.processing}
-                >
+                <Button type="submit" disabled={form.processing}>
                     {submitLabel}
                 </Button>
             </div>
         </form>
     );
-} 
+}

@@ -1,8 +1,8 @@
-export { usePatients } from './usePatients';
+export { useAppointments } from './useAppointments';
 export { useBills } from './useBills';
-export { usePayments } from './usePayments';
 export { useCheckups } from './useCheckups';
 export { useDentalChart } from './useDentalChart';
-export { useNextVisit } from './useNextVisit';
 export { useHistory } from './useHistory';
-export { useAppointments } from './useAppointments';
+export { useNextVisit } from './useNextVisit';
+export { usePatients } from './usePatients';
+export { usePayments } from './usePayments';

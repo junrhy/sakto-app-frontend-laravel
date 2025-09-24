@@ -1,7 +1,12 @@
-import { Card, CardContent } from "@/Components/ui/card";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { Package, DollarSign, Calendar, Clock, AlertCircle, TrendingUp } from "lucide-react";
-import { Progress } from "@/Components/ui/progress";
+import { Card, CardContent } from '@/Components/ui/card';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import {
+    AlertCircle,
+    Calendar,
+    DollarSign,
+    Package,
+    TrendingUp,
+} from 'lucide-react';
 
 interface RentalItem {
     id: string;
@@ -34,25 +39,25 @@ export function RentalItemStatsWidget() {
     // This would typically come from your API
     const items: RentalItem[] = [
         {
-            id: "1",
-            name: "Professional Camera",
-            category: "Electronics",
+            id: '1',
+            name: 'Professional Camera',
+            category: 'Electronics',
             daily_rate: 50,
             total_rented: 15,
             total_revenue: 750,
-            status: "rented",
-            last_rented: "2024-03-15"
+            status: 'rented',
+            last_rented: '2024-03-15',
         },
         {
-            id: "2",
-            name: "Power Drill Set",
-            category: "Tools",
+            id: '2',
+            name: 'Power Drill Set',
+            category: 'Tools',
             daily_rate: 25,
             total_rented: 8,
             total_revenue: 200,
-            status: "available",
-            last_rented: "2024-03-10"
-        }
+            status: 'available',
+            last_rented: '2024-03-10',
+        },
     ];
 
     const overview: RentalOverview = {
@@ -61,30 +66,36 @@ export function RentalItemStatsWidget() {
         rented_items: 1,
         total_revenue: 950,
         categories: [
-            { name: "Electronics", count: 1 },
-            { name: "Tools", count: 1 }
+            { name: 'Electronics', count: 1 },
+            { name: 'Tools', count: 1 },
         ],
         upcoming_returns: [
             {
-                item_name: "Professional Camera",
-                return_date: "2024-03-22",
-                customer: "John Smith"
-            }
-        ]
+                item_name: 'Professional Camera',
+                return_date: '2024-03-22',
+                customer: 'John Smith',
+            },
+        ],
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Rental Overview</h3>
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                    Rental Overview
+                </h3>
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Total Revenue:</span>
-                    <span className="text-sm font-medium">${overview.total_revenue.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500">
+                        Total Revenue:
+                    </span>
+                    <span className="text-sm font-medium">
+                        ${overview.total_revenue.toLocaleString()}
+                    </span>
                 </div>
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="mb-6 grid grid-cols-2 gap-4">
                 <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -92,7 +103,9 @@ export function RentalItemStatsWidget() {
                                 <Package className="h-4 w-4 text-blue-500" />
                                 <span className="text-sm">Available Items</span>
                             </div>
-                            <span className="text-sm font-medium">{overview.available_items}</span>
+                            <span className="text-sm font-medium">
+                                {overview.available_items}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -103,7 +116,9 @@ export function RentalItemStatsWidget() {
                                 <DollarSign className="h-4 w-4 text-green-500" />
                                 <span className="text-sm">Daily Revenue</span>
                             </div>
-                            <span className="text-sm font-medium">${(overview.total_revenue / 30).toFixed(2)}</span>
+                            <span className="text-sm font-medium">
+                                ${(overview.total_revenue / 30).toFixed(2)}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -114,7 +129,9 @@ export function RentalItemStatsWidget() {
                                 <Calendar className="h-4 w-4 text-purple-500" />
                                 <span className="text-sm">Rented Items</span>
                             </div>
-                            <span className="text-sm font-medium">{overview.rented_items}</span>
+                            <span className="text-sm font-medium">
+                                {overview.rented_items}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -123,10 +140,17 @@ export function RentalItemStatsWidget() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4 text-orange-500" />
-                                <span className="text-sm">Utilization Rate</span>
+                                <span className="text-sm">
+                                    Utilization Rate
+                                </span>
                             </div>
                             <span className="text-sm font-medium">
-                                {((overview.rented_items / overview.total_items) * 100).toFixed(1)}%
+                                {(
+                                    (overview.rented_items /
+                                        overview.total_items) *
+                                    100
+                                ).toFixed(1)}
+                                %
                             </span>
                         </div>
                     </CardContent>
@@ -135,15 +159,22 @@ export function RentalItemStatsWidget() {
 
             {/* Category Distribution */}
             <div className="mb-6">
-                <h4 className="text-sm font-medium mb-2">Category Distribution</h4>
+                <h4 className="mb-2 text-sm font-medium">
+                    Category Distribution
+                </h4>
                 <div className="space-y-4">
                     {overview.categories.map((category) => (
-                        <div key={category.name} className="flex items-center justify-between">
+                        <div
+                            key={category.name}
+                            className="flex items-center justify-between"
+                        >
                             <div className="flex items-center gap-2">
                                 <Package className="h-4 w-4 text-gray-500" />
                                 <span className="text-sm">{category.name}</span>
                             </div>
-                            <span className="text-sm font-medium">{category.count} items</span>
+                            <span className="text-sm font-medium">
+                                {category.count} items
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -151,7 +182,7 @@ export function RentalItemStatsWidget() {
 
             {/* Upcoming Returns */}
             <div className="mb-6">
-                <h4 className="text-sm font-medium mb-2">Upcoming Returns</h4>
+                <h4 className="mb-2 text-sm font-medium">Upcoming Returns</h4>
                 <ScrollArea className="h-[120px]">
                     <div className="space-y-4">
                         {overview.upcoming_returns.map((return_item) => (
@@ -161,16 +192,18 @@ export function RentalItemStatsWidget() {
                                         <div className="flex-shrink-0">
                                             <AlertCircle className="h-4 w-4 text-yellow-500" />
                                         </div>
-                                        <div className="flex-grow min-w-0">
+                                        <div className="min-w-0 flex-grow">
                                             <div className="flex items-center justify-between">
-                                                <span className="font-medium truncate">
+                                                <span className="truncate font-medium">
                                                     {return_item.item_name}
                                                 </span>
                                                 <span className="text-sm text-gray-500">
-                                                    {new Date(return_item.return_date).toLocaleDateString()}
+                                                    {new Date(
+                                                        return_item.return_date,
+                                                    ).toLocaleDateString()}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-500 truncate mt-2">
+                                            <p className="mt-2 truncate text-sm text-gray-500">
                                                 {return_item.customer}
                                             </p>
                                         </div>
@@ -192,20 +225,28 @@ export function RentalItemStatsWidget() {
                                     <div className="flex-shrink-0">
                                         <Package className="h-4 w-4 text-blue-500" />
                                     </div>
-                                    <div className="flex-grow min-w-0">
+                                    <div className="min-w-0 flex-grow">
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium truncate">
+                                            <span className="truncate font-medium">
                                                 {item.name}
                                             </span>
-                                            <span className={`text-sm px-2 py-1 rounded-full ${
-                                                item.status === 'available' ? 'bg-green-100 text-green-800' :
-                                                item.status === 'rented' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                            <span
+                                                className={`rounded-full px-2 py-1 text-sm ${
+                                                    item.status === 'available'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : item.status ===
+                                                            'rented'
+                                                          ? 'bg-blue-100 text-blue-800'
+                                                          : 'bg-yellow-100 text-yellow-800'
+                                                }`}
+                                            >
+                                                {item.status
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    item.status.slice(1)}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-4 mt-2">
+                                        <div className="mt-2 flex items-center gap-4">
                                             <span className="text-sm text-gray-500">
                                                 ${item.daily_rate}/day
                                             </span>
@@ -222,4 +263,4 @@ export function RentalItemStatsWidget() {
             </ScrollArea>
         </div>
     );
-} 
+}

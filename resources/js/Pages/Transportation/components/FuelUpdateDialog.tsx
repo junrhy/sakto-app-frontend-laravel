@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { FuelUpdateFormData } from "../types";
-import { useFleetManagement } from "../hooks";
+import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { useEffect, useState } from 'react';
+import { useFleetManagement } from '../hooks';
+import { FuelUpdateFormData } from '../types';
 
 interface FuelUpdateDialogProps {
     isOpen: boolean;
@@ -14,13 +19,13 @@ interface FuelUpdateDialogProps {
 export default function FuelUpdateDialog({
     isOpen,
     onClose,
-    truckId
+    truckId,
 }: FuelUpdateDialogProps) {
     const { updateFuelLevel } = useFleetManagement();
     const [formData, setFormData] = useState<FuelUpdateFormData>({
         litersAdded: '',
         cost: '',
-        location: ''
+        location: '',
     });
 
     // Reset form when dialog opens with new truck
@@ -29,7 +34,7 @@ export default function FuelUpdateDialog({
             setFormData({
                 litersAdded: '',
                 cost: '',
-                location: ''
+                location: '',
             });
         }
     }, [isOpen, truckId]);
@@ -48,45 +53,59 @@ export default function FuelUpdateDialog({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="text-gray-900 dark:text-gray-100">Update Fuel Level</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-gray-100">
+                        Update Fuel Level
+                    </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Liters Added</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Liters Added
+                        </label>
                         <Input
                             type="number"
                             value={formData.litersAdded}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                litersAdded: e.target.value
-                            })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    litersAdded: e.target.value,
+                                })
+                            }
                             placeholder="Enter liters added"
                             required
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cost</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Cost
+                        </label>
                         <Input
                             type="number"
                             value={formData.cost}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                cost: e.target.value
-                            })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    cost: e.target.value,
+                                })
+                            }
                             placeholder="Enter fuel cost"
                             required
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Location
+                        </label>
                         <Input
                             value={formData.location}
-                            onChange={(e) => setFormData({
-                                ...formData,
-                                location: e.target.value
-                            })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    location: e.target.value,
+                                })
+                            }
                             placeholder="Enter fueling location"
                             required
                         />
@@ -100,9 +119,7 @@ export default function FuelUpdateDialog({
                         >
                             Cancel
                         </Button>
-                        <Button type="submit">
-                            Update Fuel
-                        </Button>
+                        <Button type="submit">Update Fuel</Button>
                     </div>
                 </form>
             </DialogContent>

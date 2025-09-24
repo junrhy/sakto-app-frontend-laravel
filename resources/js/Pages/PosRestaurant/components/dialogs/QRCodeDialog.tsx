@@ -1,10 +1,16 @@
-import React, { useState, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Printer } from "lucide-react";
+import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import React, { useRef, useState } from 'react';
 import { Table } from '../../types';
 
 interface QRCodeDialogProps {
@@ -18,13 +24,17 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
     onClose,
     selectedTable,
 }) => {
-    const [customerName, setCustomerName] = useState("");
+    const [customerName, setCustomerName] = useState('');
     const qrCodeRef = useRef<HTMLDivElement>(null);
 
     const printQRCode = () => {
         const printContent = qrCodeRef.current;
         if (printContent) {
-            const winPrint = window.open('', '', 'left=0,top=0,width=800,height=600,toolbar=0,scrollbars=0,status=0');
+            const winPrint = window.open(
+                '',
+                '',
+                'left=0,top=0,width=800,height=600,toolbar=0,scrollbars=0,status=0',
+            );
             if (winPrint) {
                 winPrint.document.write(`
                 <html>
@@ -53,7 +63,7 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
     };
 
     const handleClose = () => {
-        setCustomerName("");
+        setCustomerName('');
         onClose();
     };
 
@@ -63,15 +73,17 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
                 <DialogHeader>
                     <DialogTitle>QR Code for {selectedTable?.name}</DialogTitle>
                 </DialogHeader>
-                <div className="py-4 space-y-4">
+                <div className="space-y-4 py-4">
                     <div>
-                        <Label htmlFor="customerName">Customer Name (Optional)</Label>
+                        <Label htmlFor="customerName">
+                            Customer Name (Optional)
+                        </Label>
                         <Input
                             id="customerName"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             placeholder="Enter customer name"
-                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400"
+                            className="border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
                         />
                     </div>
                     <div className="flex flex-col items-center" ref={qrCodeRef}>
@@ -87,11 +99,19 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button onClick={printQRCode} className="mr-2 bg-gray-700 hover:bg-gray-600 text-white">
+                    <Button
+                        onClick={printQRCode}
+                        className="mr-2 bg-gray-700 text-white hover:bg-gray-600"
+                    >
                         <Printer className="mr-2 h-4 w-4" />
                         Print QR Code
                     </Button>
-                    <Button onClick={handleClose} className="bg-gray-700 hover:bg-gray-600 text-white">Close</Button>
+                    <Button
+                        onClick={handleClose}
+                        className="bg-gray-700 text-white hover:bg-gray-600"
+                    >
+                        Close
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

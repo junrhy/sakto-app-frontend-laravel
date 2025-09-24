@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
-import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
+import { useMemo } from 'react';
 import Form from './Form';
 
 interface Props {
@@ -25,14 +25,22 @@ interface Props {
 export default function Create({ auth }: Props) {
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Create Email Template</h2>}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    Create Email Template
+                </h2>
+            }
         >
             <Head title="Create Email Template" />
 
@@ -40,7 +48,7 @@ export default function Create({ auth }: Props) {
                 {canEdit ? (
                     <Form mode="create" />
                 ) : (
-                    <div className="text-center py-8">
+                    <div className="py-8 text-center">
                         <p className="text-gray-500 dark:text-gray-400">
                             You don't have permission to create email templates.
                         </p>
@@ -49,4 +57,4 @@ export default function Create({ auth }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

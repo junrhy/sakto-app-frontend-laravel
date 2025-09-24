@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useTheme } from '@/Components/ThemeProvider';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { FaSun, FaMoon } from 'react-icons/fa';
-import { useTheme } from '@/Components/ThemeProvider';
+import { useEffect, useMemo, useState } from 'react';
 
 interface FamilyMember {
     id: number;
@@ -57,16 +60,22 @@ export default function EditRequests({ auth }: Props) {
     const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedRequest, setSelectedRequest] = useState<EditRequest | null>(null);
+    const [selectedRequest, setSelectedRequest] = useState<EditRequest | null>(
+        null,
+    );
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin;
     }, [auth.selectedTeamMember, auth.user.is_admin]);
-    
+
     // Use global theme instead of local state
     const { theme, setTheme } = useTheme();
     const isDarkMode = theme === 'dark';
@@ -92,7 +101,9 @@ export default function EditRequests({ auth }: Props) {
     const handleAccept = async (id: number) => {
         try {
             await axios.post(`/genealogy/edit-requests/${id}/accept`);
-            setEditRequests(prev => prev.filter(request => request.id !== id));
+            setEditRequests((prev) =>
+                prev.filter((request) => request.id !== id),
+            );
         } catch (error) {
             console.error('Error accepting edit request:', error);
             alert('Failed to accept edit request');
@@ -102,7 +113,9 @@ export default function EditRequests({ auth }: Props) {
     const handleReject = async (id: number) => {
         try {
             await axios.post(`/genealogy/edit-requests/${id}/reject`);
-            setEditRequests(prev => prev.filter(request => request.id !== id));
+            setEditRequests((prev) =>
+                prev.filter((request) => request.id !== id),
+            );
         } catch (error) {
             console.error('Error rejecting edit request:', error);
             alert('Failed to reject edit request');
@@ -125,10 +138,14 @@ export default function EditRequests({ auth }: Props) {
     if (loading) {
         return (
             <AuthenticatedLayout
-                header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Edit Requests</h2>}
+                header={
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                        Edit Requests
+                    </h2>
+                }
             >
-                <div className="flex items-center justify-center min-h-screen">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <div className="flex min-h-screen items-center justify-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
                 </div>
             </AuthenticatedLayout>
         );
@@ -136,40 +153,59 @@ export default function EditRequests({ auth }: Props) {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Edit Requests</h2>}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    Edit Requests
+                </h2>
+            }
         >
             <Head title="Edit Requests" />
 
-            <div className="py-12 bg-gray-100 dark:bg-gray-900">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
+            <div className="bg-gray-100 py-12 dark:bg-gray-900">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {error && (
-                        <div className="mb-4 p-4 rounded-lg bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                        <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-800 dark:bg-red-900 dark:text-red-200">
                             {error}
                         </div>
                     )}
 
                     {editRequests.length === 0 ? (
-                        <div className="text-center py-8 text-gray-600 dark:text-gray-300">
+                        <div className="py-8 text-center text-gray-600 dark:text-gray-300">
                             No pending edit requests
                         </div>
                     ) : (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {editRequests.map((request) => (
-                                <Card key={request.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <Card
+                                    key={request.id}
+                                    className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+                                >
                                     <CardHeader>
                                         <CardTitle className="text-gray-900 dark:text-white">
-                                            Edit Request for {request.member.first_name} {request.member.last_name}
+                                            Edit Request for{' '}
+                                            {request.member.first_name}{' '}
+                                            {request.member.last_name}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-4">
-                                            <div className="flex justify-between items-center">
+                                            <div className="flex items-center justify-between">
                                                 <span className="text-gray-600 dark:text-gray-300">
-                                                    Requested on {format(new Date(request.requested_at), 'MMM d, yyyy')}
+                                                    Requested on{' '}
+                                                    {format(
+                                                        new Date(
+                                                            request.requested_at,
+                                                        ),
+                                                        'MMM d, yyyy',
+                                                    )}
                                                 </span>
-                                                <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(request.status)}`}>
-                                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                                <span
+                                                    className={`rounded-full px-2 py-1 text-sm ${getStatusColor(request.status)}`}
+                                                >
+                                                    {request.status
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        request.status.slice(1)}
                                                 </span>
                                             </div>
 
@@ -178,11 +214,31 @@ export default function EditRequests({ auth }: Props) {
                                                     Current Information
                                                 </h3>
                                                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                    <p>Birth Date: {format(new Date(request.member.birth_date), 'MMM d, yyyy')}</p>
-                                                    {request.member.death_date && (
-                                                        <p>Death Date: {format(new Date(request.member.death_date), 'MMM d, yyyy')}</p>
+                                                    <p>
+                                                        Birth Date:{' '}
+                                                        {format(
+                                                            new Date(
+                                                                request.member.birth_date,
+                                                            ),
+                                                            'MMM d, yyyy',
+                                                        )}
+                                                    </p>
+                                                    {request.member
+                                                        .death_date && (
+                                                        <p>
+                                                            Death Date:{' '}
+                                                            {format(
+                                                                new Date(
+                                                                    request.member.death_date,
+                                                                ),
+                                                                'MMM d, yyyy',
+                                                            )}
+                                                        </p>
                                                     )}
-                                                    <p>Gender: {request.member.gender}</p>
+                                                    <p>
+                                                        Gender:{' '}
+                                                        {request.member.gender}
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -191,12 +247,46 @@ export default function EditRequests({ auth }: Props) {
                                                     Proposed Changes
                                                 </h3>
                                                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                    <p>Name: {request.changes.first_name} {request.changes.last_name}</p>
-                                                    <p>Birth Date: {format(new Date(request.changes.birth_date || request.member.birth_date), 'MMM d, yyyy')}</p>
-                                                    {request.changes.death_date && (
-                                                        <p>Death Date: {format(new Date(request.changes.death_date), 'MMM d, yyyy')}</p>
+                                                    <p>
+                                                        Name:{' '}
+                                                        {
+                                                            request.changes
+                                                                .first_name
+                                                        }{' '}
+                                                        {
+                                                            request.changes
+                                                                .last_name
+                                                        }
+                                                    </p>
+                                                    <p>
+                                                        Birth Date:{' '}
+                                                        {format(
+                                                            new Date(
+                                                                request.changes
+                                                                    .birth_date ||
+                                                                    request
+                                                                        .member
+                                                                        .birth_date,
+                                                            ),
+                                                            'MMM d, yyyy',
+                                                        )}
+                                                    </p>
+                                                    {request.changes
+                                                        .death_date && (
+                                                        <p>
+                                                            Death Date:{' '}
+                                                            {format(
+                                                                new Date(
+                                                                    request.changes.death_date,
+                                                                ),
+                                                                'MMM d, yyyy',
+                                                            )}
+                                                        </p>
                                                     )}
-                                                    <p>Gender: {request.changes.gender}</p>
+                                                    <p>
+                                                        Gender:{' '}
+                                                        {request.changes.gender}
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -204,13 +294,21 @@ export default function EditRequests({ auth }: Props) {
                                                 {canEdit && (
                                                     <>
                                                         <Button
-                                                            onClick={() => handleReject(request.id)}
+                                                            onClick={() =>
+                                                                handleReject(
+                                                                    request.id,
+                                                                )
+                                                            }
                                                             variant="destructive"
                                                         >
                                                             Reject
                                                         </Button>
                                                         <Button
-                                                            onClick={() => handleAccept(request.id)}
+                                                            onClick={() =>
+                                                                handleAccept(
+                                                                    request.id,
+                                                                )
+                                                            }
                                                             className="bg-green-600 hover:bg-green-700"
                                                         >
                                                             Accept
@@ -227,8 +325,11 @@ export default function EditRequests({ auth }: Props) {
                 </div>
             </div>
 
-            <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-                <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+            <Dialog
+                open={!!selectedRequest}
+                onOpenChange={() => setSelectedRequest(null)}
+            >
+                <DialogContent className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
                     <DialogHeader>
                         <DialogTitle>Edit Request Details</DialogTitle>
                     </DialogHeader>
@@ -241,4 +342,4 @@ export default function EditRequests({ auth }: Props) {
             </Dialog>
         </AuthenticatedLayout>
     );
-} 
+}

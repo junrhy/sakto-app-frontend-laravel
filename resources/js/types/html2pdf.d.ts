@@ -30,4 +30,4 @@ declare module 'html2pdf.js' {
     }
 
     export default function html2pdf(): Html2PdfInstance;
-} 
+}

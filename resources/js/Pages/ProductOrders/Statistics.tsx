@@ -1,28 +1,23 @@
-import React, { useState, useMemo } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatCurrency } from '@/lib/utils';
+import { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { 
+import {
     ArrowLeft,
-    TrendingUp,
-    TrendingDown,
-    DollarSign,
-    Package,
-    Users,
-    ShoppingCart,
     BarChart3,
     Calendar,
-    Clock,
-    CheckCircle,
-    XCircle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    DollarSign,
+    Package,
+    ShoppingCart,
+    TrendingUp,
 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface Statistics {
     total_orders: number;
@@ -81,7 +76,12 @@ interface Props extends PageProps {
     };
 }
 
-export default function Statistics({ auth, statistics, currency, errors }: Props) {
+export default function Statistics({
+    auth,
+    statistics,
+    currency,
+    errors,
+}: Props) {
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 12;
     const maxRecords = 60;
@@ -101,24 +101,34 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
 
     const getStatusColor = (status: string) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
-            confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-700/50',
-            processing: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-700/50',
-            shipped: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700/50',
-            delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50',
-            cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50',
-            refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50',
+            pending:
+                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
+            confirmed:
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-700/50',
+            processing:
+                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-700/50',
+            shipped:
+                'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700/50',
+            delivered:
+                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50',
+            cancelled:
+                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50',
+            refunded:
+                'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50',
         };
         return colors[status as keyof typeof colors] || colors.pending;
     };
 
     const getPaymentStatusColor = (status: string) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
+            pending:
+                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
             paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50',
             failed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50',
-            refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50',
-            partially_refunded: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
+            refunded:
+                'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50',
+            partially_refunded:
+                'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
         };
         return colors[status as keyof typeof colors] || colors.pending;
     };
@@ -126,17 +136,24 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Order Statistics</h2>}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    Order Statistics
+                </h2>
+            }
         >
             <Head title="Order Statistics" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Error Messages */}
                     {errors && Object.keys(errors).length > 0 && (
                         <div className="mb-6">
                             {Object.entries(errors).map(([key, message]) => (
-                                <div key={key} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-2">
+                                <div
+                                    key={key}
+                                    className="mb-2 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+                                >
                                     {message}
                                 </div>
                             ))}
@@ -144,28 +161,36 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                     )}
 
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="mb-6 flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Order Statistics</h1>
-                            <p className="text-gray-600 dark:text-gray-400">Comprehensive overview of your order performance</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                Order Statistics
+                            </h1>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                Comprehensive overview of your order performance
+                            </p>
                         </div>
                         <Link href={route('product-orders.index')}>
                             <Button variant="outline">
-                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to Orders
                             </Button>
                         </Link>
                     </div>
 
                     {/* Key Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Orders
+                                </CardTitle>
                                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{statistics.total_orders}</div>
+                                <div className="text-2xl font-bold">
+                                    {statistics.total_orders}
+                                </div>
                                 <p className="text-xs text-muted-foreground">
                                     All time orders
                                 </p>
@@ -174,12 +199,17 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Revenue
+                                </CardTitle>
                                 <DollarSign className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {formatCurrency(statistics.total_revenue, currency.symbol)}
+                                    {formatCurrency(
+                                        statistics.total_revenue,
+                                        currency.symbol,
+                                    )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     All time revenue
@@ -189,12 +219,17 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Average Order Value
+                                </CardTitle>
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {formatCurrency(statistics.average_order_value, currency.symbol)}
+                                    {formatCurrency(
+                                        statistics.average_order_value,
+                                        currency.symbol,
+                                    )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Per order average
@@ -204,13 +239,22 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Conversion Rate
+                                </CardTitle>
                                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {statistics.total_orders > 0 ? 
-                                        Math.round((statistics.orders_by_status.delivered / statistics.total_orders) * 100) : 0}%
+                                    {statistics.total_orders > 0
+                                        ? Math.round(
+                                              (statistics.orders_by_status
+                                                  .delivered /
+                                                  statistics.total_orders) *
+                                                  100,
+                                          )
+                                        : 0}
+                                    %
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Orders delivered
@@ -220,21 +264,35 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                     </div>
 
                     {/* Order Status Breakdown */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Orders by Status</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {Object.entries(statistics.orders_by_status).map(([status, count]) => (
-                                        <div key={status} className="flex items-center justify-between">
+                                    {Object.entries(
+                                        statistics.orders_by_status,
+                                    ).map(([status, count]) => (
+                                        <div
+                                            key={status}
+                                            className="flex items-center justify-between"
+                                        >
                                             <div className="flex items-center space-x-2">
-                                                <Badge className={getStatusColor(status)}>
-                                                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                <Badge
+                                                    className={getStatusColor(
+                                                        status,
+                                                    )}
+                                                >
+                                                    {status
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        status.slice(1)}
                                                 </Badge>
                                             </div>
-                                            <div className="text-sm font-medium">{count}</div>
+                                            <div className="text-sm font-medium">
+                                                {count}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -247,14 +305,31 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {Object.entries(statistics.orders_by_payment_status).map(([status, count]) => (
-                                        <div key={status} className="flex items-center justify-between">
+                                    {Object.entries(
+                                        statistics.orders_by_payment_status,
+                                    ).map(([status, count]) => (
+                                        <div
+                                            key={status}
+                                            className="flex items-center justify-between"
+                                        >
                                             <div className="flex items-center space-x-2">
-                                                <Badge className={getPaymentStatusColor(status)}>
-                                                    {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
+                                                <Badge
+                                                    className={getPaymentStatusColor(
+                                                        status,
+                                                    )}
+                                                >
+                                                    {status
+                                                        .replace('_', ' ')
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        status
+                                                            .replace('_', ' ')
+                                                            .slice(1)}
                                                 </Badge>
                                             </div>
-                                            <div className="text-sm font-medium">{count}</div>
+                                            <div className="text-sm font-medium">
+                                                {count}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -271,95 +346,228 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Month</th>
-                                            <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Orders</th>
-                                            <th className="text-right py-3 px-4 font-medium text-blue-600 dark:text-blue-400">Subtotal</th>
-                                            <th className="text-right py-3 px-4 font-medium text-purple-600 dark:text-purple-400">Service Fee</th>
-                                            <th className="text-right py-3 px-4 font-medium text-orange-600 dark:text-orange-400">Tax</th>
-                                            <th className="text-right py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">Shipping</th>
-                                            <th className="text-right py-3 px-4 font-medium text-red-600 dark:text-red-400">Discount</th>
-                                            <th className="text-right py-3 px-4 font-medium text-green-600 dark:text-green-400">Total Revenue</th>
-                                            <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Avg Order</th>
+                                        <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                                            <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-100">
+                                                Month
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
+                                                Orders
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-blue-600 dark:text-blue-400">
+                                                Subtotal
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-purple-600 dark:text-purple-400">
+                                                Service Fee
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-orange-600 dark:text-orange-400">
+                                                Tax
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-indigo-600 dark:text-indigo-400">
+                                                Shipping
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-red-600 dark:text-red-400">
+                                                Discount
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-green-600 dark:text-green-400">
+                                                Total Revenue
+                                            </th>
+                                            <th className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
+                                                Avg Order
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {paginatedRevenueData.map((monthData, index) => (
-                                            <tr key={index} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                                <td className="py-3 px-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                                                        <span className={`font-medium ${monthData.month.includes(new Date().getFullYear().toString()) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
-                                                            {monthData.month}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="text-right py-3 px-4 text-gray-900 dark:text-gray-100 font-medium">{monthData.orders > 0 ? monthData.orders : '-'}</td>
-                                                <td className="text-right py-3 px-4 text-blue-600 dark:text-blue-400 font-medium">{monthData.subtotal > 0 ? formatCurrency(monthData.subtotal, currency.symbol) : '-'}</td>
-                                                <td className="text-right py-3 px-4 text-purple-600 dark:text-purple-400 font-medium">{monthData.service_fee > 0 ? formatCurrency(monthData.service_fee, currency.symbol) : '-'}</td>
-                                                <td className="text-right py-3 px-4 text-orange-600 dark:text-orange-400 font-medium">{monthData.tax_amount > 0 ? formatCurrency(monthData.tax_amount, currency.symbol) : '-'}</td>
-                                                <td className="text-right py-3 px-4 text-indigo-600 dark:text-indigo-400 font-medium">{monthData.shipping_fee > 0 ? formatCurrency(monthData.shipping_fee, currency.symbol) : '-'}</td>
-                                                <td className="text-right py-3 px-4 text-red-600 dark:text-red-400 font-medium">{monthData.discount_amount > 0 ? formatCurrency(monthData.discount_amount, currency.symbol) : '-'}</td>
-                                                <td className="text-right py-3 px-4 font-bold text-green-600 dark:text-green-400">{monthData.revenue > 0 ? formatCurrency(monthData.revenue, currency.symbol) : '-'}</td>
-                                                <td className="text-right py-3 px-4 text-sm text-gray-500 dark:text-gray-400">
-                                                    {monthData.revenue > 0 ? 
-                                                        formatCurrency(monthData.revenue / monthData.orders, currency.symbol) : 
-                                                        '-'
-                                                    }
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {paginatedRevenueData.map(
+                                            (monthData, index) => (
+                                                <tr
+                                                    key={index}
+                                                    className="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/50"
+                                                >
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                            <span
+                                                                className={`font-medium ${monthData.month.includes(new Date().getFullYear().toString()) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}
+                                                            >
+                                                                {
+                                                                    monthData.month
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
+                                                        {monthData.orders > 0
+                                                            ? monthData.orders
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-medium text-blue-600 dark:text-blue-400">
+                                                        {monthData.subtotal > 0
+                                                            ? formatCurrency(
+                                                                  monthData.subtotal,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-medium text-purple-600 dark:text-purple-400">
+                                                        {monthData.service_fee >
+                                                        0
+                                                            ? formatCurrency(
+                                                                  monthData.service_fee,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-medium text-orange-600 dark:text-orange-400">
+                                                        {monthData.tax_amount >
+                                                        0
+                                                            ? formatCurrency(
+                                                                  monthData.tax_amount,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-medium text-indigo-600 dark:text-indigo-400">
+                                                        {monthData.shipping_fee >
+                                                        0
+                                                            ? formatCurrency(
+                                                                  monthData.shipping_fee,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-medium text-red-600 dark:text-red-400">
+                                                        {monthData.discount_amount >
+                                                        0
+                                                            ? formatCurrency(
+                                                                  monthData.discount_amount,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right font-bold text-green-600 dark:text-green-400">
+                                                        {monthData.revenue > 0
+                                                            ? formatCurrency(
+                                                                  monthData.revenue,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right text-sm text-gray-500 dark:text-gray-400">
+                                                        {monthData.revenue > 0
+                                                            ? formatCurrency(
+                                                                  monthData.revenue /
+                                                                      monthData.orders,
+                                                                  currency.symbol,
+                                                              )
+                                                            : '-'}
+                                                    </td>
+                                                </tr>
+                                            ),
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             {/* Pagination Controls */}
                             {totalPages > 1 && (
-                                <div className="flex items-center justify-between mt-6">
+                                <div className="mt-6 flex items-center justify-between">
                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                        Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, Math.min(statistics.revenue_by_month.length, maxRecords))} of {Math.min(statistics.revenue_by_month.length, maxRecords)} months
+                                        Showing{' '}
+                                        {(currentPage - 1) * recordsPerPage + 1}{' '}
+                                        to{' '}
+                                        {Math.min(
+                                            currentPage * recordsPerPage,
+                                            Math.min(
+                                                statistics.revenue_by_month
+                                                    .length,
+                                                maxRecords,
+                                            ),
+                                        )}{' '}
+                                        of{' '}
+                                        {Math.min(
+                                            statistics.revenue_by_month.length,
+                                            maxRecords,
+                                        )}{' '}
+                                        months
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            onClick={() =>
+                                                setCurrentPage((prev) =>
+                                                    Math.max(1, prev - 1),
+                                                )
+                                            }
                                             disabled={currentPage === 1}
                                         >
                                             <ChevronLeft className="h-4 w-4" />
                                             Previous
                                         </Button>
                                         <div className="flex items-center space-x-1">
-                                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                                let pageNum;
-                                                if (totalPages <= 5) {
-                                                    pageNum = i + 1;
-                                                } else if (currentPage <= 3) {
-                                                    pageNum = i + 1;
-                                                } else if (currentPage >= totalPages - 2) {
-                                                    pageNum = totalPages - 4 + i;
-                                                } else {
-                                                    pageNum = currentPage - 2 + i;
-                                                }
-                                                
-                                                return (
-                                                    <Button
-                                                        key={pageNum}
-                                                        variant={currentPage === pageNum ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => setCurrentPage(pageNum)}
-                                                        className="w-8 h-8 p-0"
-                                                    >
-                                                        {pageNum}
-                                                    </Button>
-                                                );
-                                            })}
+                                            {Array.from(
+                                                {
+                                                    length: Math.min(
+                                                        5,
+                                                        totalPages,
+                                                    ),
+                                                },
+                                                (_, i) => {
+                                                    let pageNum;
+                                                    if (totalPages <= 5) {
+                                                        pageNum = i + 1;
+                                                    } else if (
+                                                        currentPage <= 3
+                                                    ) {
+                                                        pageNum = i + 1;
+                                                    } else if (
+                                                        currentPage >=
+                                                        totalPages - 2
+                                                    ) {
+                                                        pageNum =
+                                                            totalPages - 4 + i;
+                                                    } else {
+                                                        pageNum =
+                                                            currentPage - 2 + i;
+                                                    }
+
+                                                    return (
+                                                        <Button
+                                                            key={pageNum}
+                                                            variant={
+                                                                currentPage ===
+                                                                pageNum
+                                                                    ? 'default'
+                                                                    : 'outline'
+                                                            }
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                setCurrentPage(
+                                                                    pageNum,
+                                                                )
+                                                            }
+                                                            className="h-8 w-8 p-0"
+                                                        >
+                                                            {pageNum}
+                                                        </Button>
+                                                    );
+                                                },
+                                            )}
                                         </div>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                            disabled={currentPage === totalPages}
+                                            onClick={() =>
+                                                setCurrentPage((prev) =>
+                                                    Math.min(
+                                                        totalPages,
+                                                        prev + 1,
+                                                    ),
+                                                )
+                                            }
+                                            disabled={
+                                                currentPage === totalPages
+                                            }
                                         >
                                             Next
                                             <ChevronRight className="h-4 w-4" />
@@ -377,30 +585,49 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {statistics.top_products.map((product, index) => (
-                                    <div key={product.product_id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                                                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">#{index + 1}</span>
+                                {statistics.top_products.map(
+                                    (product, index) => (
+                                        <div
+                                            key={product.product_id}
+                                            className="flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center space-x-4">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                                                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                                        #{index + 1}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {product.name}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {product.quantity_sold}{' '}
+                                                        units sold
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">{product.quantity_sold} units sold</div>
+                                            <div className="text-right">
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {formatCurrency(
+                                                        product.revenue,
+                                                        currency.symbol,
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {product.revenue > 0 &&
+                                                    product.quantity_sold > 0
+                                                        ? formatCurrency(
+                                                              product.revenue /
+                                                                  product.quantity_sold,
+                                                              currency.symbol,
+                                                          ) + ' avg'
+                                                        : 'N/A'}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                {formatCurrency(product.revenue, currency.symbol)}
-                                            </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                {product.revenue > 0 && product.quantity_sold > 0 ? 
-                                                    formatCurrency(product.revenue / product.quantity_sold, currency.symbol) + ' avg' : 
-                                                    'N/A'
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ),
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -413,26 +640,46 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                         <CardContent>
                             <div className="space-y-4">
                                 {statistics.recent_orders.map((order) => (
-                                    <div key={order.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    <div
+                                        key={order.id}
+                                        className="flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+                                    >
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
                                                 <Package className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                             </div>
                                             <div>
-                                                <div className="font-medium text-gray-900 dark:text-gray-100">{order.order_number}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer_name}</div>
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {order.order_number}
+                                                </div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {order.customer_name}
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-4">
-                                            <Badge className={`${getStatusColor(order.order_status)} border`}>
-                                                {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
+                                            <Badge
+                                                className={`${getStatusColor(order.order_status)} border`}
+                                            >
+                                                {order.order_status
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    order.order_status.slice(1)}
                                             </Badge>
                                             <div className="text-right">
                                                 <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatCurrency(order.total_amount, currency.symbol)}
+                                                    {formatCurrency(
+                                                        order.total_amount,
+                                                        currency.symbol,
+                                                    )}
                                                 </div>
                                                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {format(new Date(order.created_at), 'MMM dd, yyyy')}
+                                                    {format(
+                                                        new Date(
+                                                            order.created_at,
+                                                        ),
+                                                        'MMM dd, yyyy',
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -445,4 +692,4 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

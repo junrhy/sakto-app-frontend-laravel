@@ -1,10 +1,21 @@
-import React from 'react';
-import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { useForm } from '@inertiajs/react';
+import React from 'react';
 import { toast } from 'sonner';
 
 interface Contribution {
@@ -28,7 +39,13 @@ interface Props {
     onContributionUpdated: (contribution: Contribution) => void;
 }
 
-export default function EditContributionDialog({ open, onOpenChange, contribution, appCurrency, onContributionUpdated }: Props) {
+export default function EditContributionDialog({
+    open,
+    onOpenChange,
+    contribution,
+    appCurrency,
+    onContributionUpdated,
+}: Props) {
     const { data, setData, put, processing, errors, reset } = useForm({
         amount: '',
         payment_date: '',
@@ -50,19 +67,22 @@ export default function EditContributionDialog({ open, onOpenChange, contributio
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('mortuary.contributions.update', { 
-            memberId: contribution?.member_id, 
-            contributionId: contribution?.id 
-        }), {
-            onSuccess: () => {
-                toast.success('Contribution updated successfully');
-                onOpenChange(false);
-                reset();
+        put(
+            route('mortuary.contributions.update', {
+                memberId: contribution?.member_id,
+                contributionId: contribution?.id,
+            }),
+            {
+                onSuccess: () => {
+                    toast.success('Contribution updated successfully');
+                    onOpenChange(false);
+                    reset();
+                },
+                onError: () => {
+                    toast.error('Failed to update contribution');
+                },
             },
-            onError: () => {
-                toast.error('Failed to update contribution');
-            }
-        });
+        );
     };
 
     return (
@@ -82,7 +102,9 @@ export default function EditContributionDialog({ open, onOpenChange, contributio
                             placeholder={`Enter amount in ${appCurrency.code}`}
                         />
                         {errors.amount && (
-                            <p className="text-sm text-red-500">{errors.amount}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.amount}
+                            </p>
                         )}
                     </div>
 
@@ -92,10 +114,14 @@ export default function EditContributionDialog({ open, onOpenChange, contributio
                             id="payment_date"
                             type="date"
                             value={data.payment_date}
-                            onChange={(e) => setData('payment_date', e.target.value)}
+                            onChange={(e) =>
+                                setData('payment_date', e.target.value)
+                            }
                         />
                         {errors.payment_date && (
-                            <p className="text-sm text-red-500">{errors.payment_date}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.payment_date}
+                            </p>
                         )}
                     </div>
 
@@ -103,34 +129,52 @@ export default function EditContributionDialog({ open, onOpenChange, contributio
                         <Label htmlFor="payment_method">Payment Method</Label>
                         <Select
                             value={data.payment_method}
-                            onValueChange={(value) => setData('payment_method', value)}
+                            onValueChange={(value) =>
+                                setData('payment_method', value)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select payment method" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="cash">Cash</SelectItem>
-                                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                <SelectItem value="credit_card">Credit Card</SelectItem>
-                                <SelectItem value="debit_card">Debit Card</SelectItem>
-                                <SelectItem value="mobile_payment">Mobile Payment</SelectItem>
+                                <SelectItem value="bank_transfer">
+                                    Bank Transfer
+                                </SelectItem>
+                                <SelectItem value="credit_card">
+                                    Credit Card
+                                </SelectItem>
+                                <SelectItem value="debit_card">
+                                    Debit Card
+                                </SelectItem>
+                                <SelectItem value="mobile_payment">
+                                    Mobile Payment
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                         {errors.payment_method && (
-                            <p className="text-sm text-red-500">{errors.payment_method}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.payment_method}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="reference_number">Reference Number</Label>
+                        <Label htmlFor="reference_number">
+                            Reference Number
+                        </Label>
                         <Input
                             id="reference_number"
                             value={data.reference_number}
-                            onChange={(e) => setData('reference_number', e.target.value)}
+                            onChange={(e) =>
+                                setData('reference_number', e.target.value)
+                            }
                             placeholder="Enter reference number"
                         />
                         {errors.reference_number && (
-                            <p className="text-sm text-red-500">{errors.reference_number}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.reference_number}
+                            </p>
                         )}
                     </div>
 
@@ -150,4 +194,4 @@ export default function EditContributionDialog({ open, onOpenChange, contributio
             </DialogContent>
         </Dialog>
     );
-} 
+}

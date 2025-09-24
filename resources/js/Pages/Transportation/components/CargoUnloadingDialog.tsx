@@ -1,14 +1,33 @@
-import { useState, useEffect } from 'react';
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/Components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { Badge } from "@/Components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { PackageIcon } from "lucide-react";
-import { CargoItem, CargoUnloading, CargoUnloadingFormData, CargoUnloadingSummary } from "../types";
-import { useCargoUnloading } from "../hooks";
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import { Pencil2Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { PackageIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useCargoUnloading } from '../hooks';
+import {
+    CargoItem,
+    CargoUnloading,
+    CargoUnloadingFormData,
+    CargoUnloadingSummary,
+} from '../types';
 
 interface CargoUnloadingDialogProps {
     isOpen: boolean;
@@ -17,32 +36,48 @@ interface CargoUnloadingDialogProps {
     onUnloadingUpdate: () => void;
 }
 
-export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnloadingUpdate }: CargoUnloadingDialogProps) {
-    const { loading, error, getUnloadings, createUnloading, updateUnloading, deleteUnloading, getUnloadingSummary } = useCargoUnloading();
-    
+export default function CargoUnloadingDialog({
+    isOpen,
+    onClose,
+    cargoItem,
+    onUnloadingUpdate,
+}: CargoUnloadingDialogProps) {
+    const {
+        loading,
+        error,
+        getUnloadings,
+        createUnloading,
+        updateUnloading,
+        deleteUnloading,
+        getUnloadingSummary,
+    } = useCargoUnloading();
+
     const [unloadings, setUnloadings] = useState<CargoUnloading[]>([]);
     const [summary, setSummary] = useState<CargoUnloadingSummary | null>(null);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [editingUnloading, setEditingUnloading] = useState<CargoUnloading | null>(null);
+    const [editingUnloading, setEditingUnloading] =
+        useState<CargoUnloading | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [unloadingToDelete, setUnloadingToDelete] = useState<CargoUnloading | null>(null);
-    
+    const [unloadingToDelete, setUnloadingToDelete] =
+        useState<CargoUnloading | null>(null);
+
     const [newUnloading, setNewUnloading] = useState<CargoUnloadingFormData>({
         quantity_unloaded: '',
         unload_location: '',
         notes: '',
         unloaded_at: new Date().toISOString().slice(0, 16),
-        unloaded_by: ''
+        unloaded_by: '',
     });
 
-    const [editingUnloadingData, setEditingUnloadingData] = useState<CargoUnloadingFormData>({
-        quantity_unloaded: '',
-        unload_location: '',
-        notes: '',
-        unloaded_at: '',
-        unloaded_by: ''
-    });
+    const [editingUnloadingData, setEditingUnloadingData] =
+        useState<CargoUnloadingFormData>({
+            quantity_unloaded: '',
+            unload_location: '',
+            notes: '',
+            unloaded_at: '',
+            unloaded_by: '',
+        });
 
     useEffect(() => {
         if (isOpen && cargoItem.id) {
@@ -54,7 +89,7 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
         try {
             const [unloadingsData, summaryData] = await Promise.all([
                 getUnloadings(cargoItem.id),
-                getUnloadingSummary(cargoItem.id)
+                getUnloadingSummary(cargoItem.id),
             ]);
             setUnloadings(unloadingsData);
             setSummary(summaryData);
@@ -72,7 +107,7 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                 unload_location: '',
                 notes: '',
                 unloaded_at: new Date().toISOString().slice(0, 16),
-                unloaded_by: ''
+                unloaded_by: '',
             });
             setIsAddDialogOpen(false);
             await loadUnloadingData();
@@ -88,8 +123,10 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
             quantity_unloaded: unloading.quantity_unloaded.toString(),
             unload_location: unloading.unload_location,
             notes: unloading.notes || '',
-            unloaded_at: new Date(unloading.unloaded_at).toISOString().slice(0, 16),
-            unloaded_by: unloading.unloaded_by || ''
+            unloaded_at: new Date(unloading.unloaded_at)
+                .toISOString()
+                .slice(0, 16),
+            unloaded_by: unloading.unloaded_by || '',
         });
         setIsEditDialogOpen(true);
     };
@@ -97,9 +134,13 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
     const handleUpdateUnloading = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingUnloading) return;
-        
+
         try {
-            await updateUnloading(cargoItem.id, editingUnloading.id, editingUnloadingData);
+            await updateUnloading(
+                cargoItem.id,
+                editingUnloading.id,
+                editingUnloadingData,
+            );
             setIsEditDialogOpen(false);
             setEditingUnloading(null);
             await loadUnloadingData();
@@ -116,7 +157,7 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
 
     const confirmDeleteUnloading = async () => {
         if (!unloadingToDelete) return;
-        
+
         try {
             await deleteUnloading(cargoItem.id, unloadingToDelete.id);
             setShowDeleteDialog(false);
@@ -130,63 +171,98 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
 
     const getStatusBadge = () => {
         if (!summary) return null;
-        
+
         if (summary.is_fully_unloaded) {
-            return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Fully Delivered</Badge>;
+            return (
+                <Badge
+                    variant="default"
+                    className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                >
+                    Fully Delivered
+                </Badge>
+            );
         } else if (summary.is_partially_unloaded) {
-            return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Partially Delivered</Badge>;
+            return (
+                <Badge
+                    variant="secondary"
+                    className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                >
+                    Partially Delivered
+                </Badge>
+            );
         } else {
-            return <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Not Delivered</Badge>;
+            return (
+                <Badge
+                    variant="outline"
+                    className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                >
+                    Not Delivered
+                </Badge>
+            );
         }
     };
 
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="max-w-4xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="max-w-4xl border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                            <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
                                 <PackageIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div>
-                                <DialogTitle className="text-gray-900 dark:text-gray-100">Cargo Unloading Management</DialogTitle>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">
+                                    Cargo Unloading Management
+                                </DialogTitle>
                                 <DialogDescription className="text-gray-600 dark:text-gray-400">
-                                    Manage unloading records for {cargoItem.name}
+                                    Manage unloading records for{' '}
+                                    {cargoItem.name}
                                 </DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
 
                     {summary && (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <Card className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700">
+                        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+                            <Card className="border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
                                 <CardContent className="p-4">
-                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Quantity</div>
+                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Total Quantity
+                                    </div>
                                     <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                        {summary.total_quantity.toLocaleString()} {cargoItem.unit}
+                                        {summary.total_quantity.toLocaleString()}{' '}
+                                        {cargoItem.unit}
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700">
+                            <Card className="border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
                                 <CardContent className="p-4">
-                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Unloaded</div>
+                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Unloaded
+                                    </div>
                                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                        {summary.total_unloaded.toLocaleString()} {cargoItem.unit}
+                                        {summary.total_unloaded.toLocaleString()}{' '}
+                                        {cargoItem.unit}
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700">
+                            <Card className="border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
                                 <CardContent className="p-4">
-                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Remaining</div>
+                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Remaining
+                                    </div>
                                     <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                                        {summary.remaining_quantity.toLocaleString()} {cargoItem.unit}
+                                        {summary.remaining_quantity.toLocaleString()}{' '}
+                                        {cargoItem.unit}
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700">
+                            <Card className="border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
                                 <CardContent className="p-4">
-                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</div>
+                                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Status
+                                    </div>
                                     <div className="mt-2">
                                         {getStatusBadge()}
                                     </div>
@@ -195,11 +271,13 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                         </div>
                     )}
 
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Unloading Records</h3>
-                        <Button 
+                    <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Unloading Records
+                        </h3>
+                        <Button
                             onClick={() => setIsAddDialogOpen(true)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                            className="bg-purple-600 text-white hover:bg-purple-700"
                             disabled={summary?.is_fully_unloaded}
                         >
                             <PlusIcon className="mr-2 h-4 w-4" />
@@ -208,8 +286,10 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                     </div>
 
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                            <div className="text-sm text-red-800 dark:text-red-200">{error}</div>
+                        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                            <div className="text-sm text-red-800 dark:text-red-200">
+                                {error}
+                            </div>
                         </div>
                     )}
 
@@ -217,31 +297,49 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                         <Table>
                             <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
                                 <TableRow className="border-gray-200 dark:border-gray-700">
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Date & Time</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Location</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Quantity</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Unloaded By</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Notes</TableHead>
-                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Date & Time
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Location
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Quantity
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Unloaded By
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Notes
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {unloadings.map((unloading) => (
-                                    <TableRow key={unloading.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                    <TableRow
+                                        key={unloading.id}
+                                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                                    >
                                         <TableCell className="text-gray-900 dark:text-gray-100">
-                                            {new Date(unloading.unloaded_at).toLocaleString('en-US', {
+                                            {new Date(
+                                                unloading.unloaded_at,
+                                            ).toLocaleString('en-US', {
                                                 year: 'numeric',
                                                 month: 'short',
                                                 day: 'numeric',
                                                 hour: '2-digit',
-                                                minute: '2-digit'
+                                                minute: '2-digit',
                                             })}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-gray-100">
                                             {unloading.unload_location}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-gray-100">
-                                            {unloading.quantity_unloaded.toLocaleString()} {cargoItem.unit}
+                                            {unloading.quantity_unloaded.toLocaleString()}{' '}
+                                            {cargoItem.unit}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-gray-100">
                                             {unloading.unloaded_by || 'N/A'}
@@ -254,7 +352,11 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleEditUnloading(unloading)}
+                                                    onClick={() =>
+                                                        handleEditUnloading(
+                                                            unloading,
+                                                        )
+                                                    }
                                                     className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                                     title="Edit unloading record"
                                                 >
@@ -263,7 +365,11 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleDeleteUnloading(unloading)}
+                                                    onClick={() =>
+                                                        handleDeleteUnloading(
+                                                            unloading,
+                                                        )
+                                                    }
                                                     className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                     title="Delete unloading record"
                                                 >
@@ -278,8 +384,9 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                     </div>
 
                     {unloadings.length === 0 && (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            No unloading records found. Add the first unloading record to get started.
+                        <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                            No unloading records found. Add the first unloading
+                            record to get started.
                         </div>
                     )}
 
@@ -293,49 +400,80 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
 
             {/* Add Unloading Dialog */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
-                        <DialogTitle className="text-gray-900 dark:text-gray-100">Add Unloading Record</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">
+                            Add Unloading Record
+                        </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleAddUnloading}>
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-2 items-center gap-4">
-                                <Input 
-                                    placeholder="Quantity Unloaded" 
-                                    type="number" 
-                                    value={newUnloading.quantity_unloaded} 
-                                    onChange={(e) => setNewUnloading({ ...newUnloading, quantity_unloaded: e.target.value })}
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                <Input
+                                    placeholder="Quantity Unloaded"
+                                    type="number"
+                                    value={newUnloading.quantity_unloaded}
+                                    onChange={(e) =>
+                                        setNewUnloading({
+                                            ...newUnloading,
+                                            quantity_unloaded: e.target.value,
+                                        })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                     required
                                 />
-                                <Input 
-                                    placeholder="Unload Location" 
-                                    value={newUnloading.unload_location} 
-                                    onChange={(e) => setNewUnloading({ ...newUnloading, unload_location: e.target.value })}
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                <Input
+                                    placeholder="Unload Location"
+                                    value={newUnloading.unload_location}
+                                    onChange={(e) =>
+                                        setNewUnloading({
+                                            ...newUnloading,
+                                            unload_location: e.target.value,
+                                        })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                     required
                                 />
                             </div>
-                            <Input 
-                                placeholder="Unloaded By" 
-                                value={newUnloading.unloaded_by} 
-                                onChange={(e) => setNewUnloading({ ...newUnloading, unloaded_by: e.target.value })}
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            <Input
+                                placeholder="Unloaded By"
+                                value={newUnloading.unloaded_by}
+                                onChange={(e) =>
+                                    setNewUnloading({
+                                        ...newUnloading,
+                                        unloaded_by: e.target.value,
+                                    })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
-                            <Input 
-                                placeholder="Notes" 
-                                value={newUnloading.notes} 
-                                onChange={(e) => setNewUnloading({ ...newUnloading, notes: e.target.value })}
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            <Input
+                                placeholder="Notes"
+                                value={newUnloading.notes}
+                                onChange={(e) =>
+                                    setNewUnloading({
+                                        ...newUnloading,
+                                        notes: e.target.value,
+                                    })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
-                            <Input 
+                            <Input
                                 type="datetime-local"
-                                value={newUnloading.unloaded_at} 
-                                onChange={(e) => setNewUnloading({ ...newUnloading, unloaded_at: e.target.value })}
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                value={newUnloading.unloaded_at}
+                                onChange={(e) =>
+                                    setNewUnloading({
+                                        ...newUnloading,
+                                        unloaded_at: e.target.value,
+                                    })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                                 required
                             />
-                            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white" disabled={loading}>
+                            <Button
+                                type="submit"
+                                className="bg-purple-600 text-white hover:bg-purple-700"
+                                disabled={loading}
+                            >
                                 {loading ? 'Adding...' : 'Add Unloading'}
                             </Button>
                         </div>
@@ -345,49 +483,82 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
 
             {/* Edit Unloading Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
-                        <DialogTitle className="text-gray-900 dark:text-gray-100">Edit Unloading Record</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">
+                            Edit Unloading Record
+                        </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleUpdateUnloading}>
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-2 items-center gap-4">
-                                <Input 
-                                    placeholder="Quantity Unloaded" 
-                                    type="number" 
-                                    value={editingUnloadingData.quantity_unloaded} 
-                                    onChange={(e) => setEditingUnloadingData({ ...editingUnloadingData, quantity_unloaded: e.target.value })}
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                <Input
+                                    placeholder="Quantity Unloaded"
+                                    type="number"
+                                    value={
+                                        editingUnloadingData.quantity_unloaded
+                                    }
+                                    onChange={(e) =>
+                                        setEditingUnloadingData({
+                                            ...editingUnloadingData,
+                                            quantity_unloaded: e.target.value,
+                                        })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                     required
                                 />
-                                <Input 
-                                    placeholder="Unload Location" 
-                                    value={editingUnloadingData.unload_location} 
-                                    onChange={(e) => setEditingUnloadingData({ ...editingUnloadingData, unload_location: e.target.value })}
-                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                <Input
+                                    placeholder="Unload Location"
+                                    value={editingUnloadingData.unload_location}
+                                    onChange={(e) =>
+                                        setEditingUnloadingData({
+                                            ...editingUnloadingData,
+                                            unload_location: e.target.value,
+                                        })
+                                    }
+                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                                     required
                                 />
                             </div>
-                            <Input 
-                                placeholder="Unloaded By" 
-                                value={editingUnloadingData.unloaded_by} 
-                                onChange={(e) => setEditingUnloadingData({ ...editingUnloadingData, unloaded_by: e.target.value })}
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            <Input
+                                placeholder="Unloaded By"
+                                value={editingUnloadingData.unloaded_by}
+                                onChange={(e) =>
+                                    setEditingUnloadingData({
+                                        ...editingUnloadingData,
+                                        unloaded_by: e.target.value,
+                                    })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
-                            <Input 
-                                placeholder="Notes" 
-                                value={editingUnloadingData.notes} 
-                                onChange={(e) => setEditingUnloadingData({ ...editingUnloadingData, notes: e.target.value })}
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            <Input
+                                placeholder="Notes"
+                                value={editingUnloadingData.notes}
+                                onChange={(e) =>
+                                    setEditingUnloadingData({
+                                        ...editingUnloadingData,
+                                        notes: e.target.value,
+                                    })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-400"
                             />
-                            <Input 
+                            <Input
                                 type="datetime-local"
-                                value={editingUnloadingData.unloaded_at} 
-                                onChange={(e) => setEditingUnloadingData({ ...editingUnloadingData, unloaded_at: e.target.value })}
-                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                value={editingUnloadingData.unloaded_at}
+                                onChange={(e) =>
+                                    setEditingUnloadingData({
+                                        ...editingUnloadingData,
+                                        unloaded_at: e.target.value,
+                                    })
+                                }
+                                className="border-gray-300 bg-white text-gray-900 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                                 required
                             />
-                            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white" disabled={loading}>
+                            <Button
+                                type="submit"
+                                className="bg-purple-600 text-white hover:bg-purple-700"
+                                disabled={loading}
+                            >
                                 {loading ? 'Updating...' : 'Update Unloading'}
                             </Button>
                         </div>
@@ -397,38 +568,53 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent className="max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="max-w-md border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <DialogHeader>
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                            <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
                                 <TrashIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
                             </div>
                             <div>
-                                <DialogTitle className="text-gray-900 dark:text-gray-100">Delete Unloading Record</DialogTitle>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">
+                                    Delete Unloading Record
+                                </DialogTitle>
                                 <DialogDescription className="text-gray-600 dark:text-gray-400">
                                     This action cannot be undone.
                                 </DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
-                    
+
                     <div className="py-4">
-                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Location:</span>
-                                    <span className="text-sm text-gray-900 dark:text-gray-100">{unloadingToDelete?.unload_location}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Quantity:</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Location:
+                                    </span>
                                     <span className="text-sm text-gray-900 dark:text-gray-100">
-                                        {unloadingToDelete?.quantity_unloaded} {cargoItem.unit}
+                                        {unloadingToDelete?.unload_location}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Date:</span>
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Quantity:
+                                    </span>
                                     <span className="text-sm text-gray-900 dark:text-gray-100">
-                                        {unloadingToDelete ? new Date(unloadingToDelete.unloaded_at).toLocaleDateString() : ''}
+                                        {unloadingToDelete?.quantity_unloaded}{' '}
+                                        {cargoItem.unit}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Date:
+                                    </span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                        {unloadingToDelete
+                                            ? new Date(
+                                                  unloadingToDelete.unloaded_at,
+                                              ).toLocaleDateString()
+                                            : ''}
                                     </span>
                                 </div>
                             </div>
@@ -436,23 +622,23 @@ export default function CargoUnloadingDialog({ isOpen, onClose, cargoItem, onUnl
                     </div>
 
                     <DialogFooter className="gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => {
                                 setShowDeleteDialog(false);
                                 setUnloadingToDelete(null);
                             }}
-                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={confirmDeleteUnloading}
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            className="bg-red-600 text-white hover:bg-red-700"
                             disabled={loading}
                         >
-                            <TrashIcon className="w-4 h-4 mr-2" />
+                            <TrashIcon className="mr-2 h-4 w-4" />
                             {loading ? 'Deleting...' : 'Delete Record'}
                         </Button>
                     </DialogFooter>

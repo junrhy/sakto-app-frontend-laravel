@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Wrapper, Status } from '@googlemaps/react-wrapper';
-import { TruckIcon, MapPinIcon, ClockIcon, Gauge, RefreshCwIcon } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
+import { Status, Wrapper } from '@googlemaps/react-wrapper';
 import axios from 'axios';
+import { MapPinIcon, RefreshCwIcon, TruckIcon } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 // Types
 interface TruckLocation {
@@ -49,9 +48,9 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
                 {
                     featureType: 'poi',
                     elementType: 'labels',
-                    stylers: [{ visibility: 'off' }]
-                }
-            ]
+                    stylers: [{ visibility: 'off' }],
+                },
+            ],
         });
 
         setMap(mapInstance);
@@ -61,11 +60,11 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
         if (!map) return;
 
         // Clear existing markers
-        markers.forEach(marker => marker.setMap(null));
+        markers.forEach((marker) => marker.setMap(null));
 
         const newMarkers: google.maps.Marker[] = [];
 
-        trucks.forEach(truck => {
+        trucks.forEach((truck) => {
             const lat = parseFloat(truck.location.latitude);
             const lng = parseFloat(truck.location.longitude);
 
@@ -83,14 +82,14 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
                     </svg>
                 `)}`,
                 scaledSize: new google.maps.Size(32, 32),
-                anchor: new google.maps.Point(16, 16)
+                anchor: new google.maps.Point(16, 16),
             };
 
             const marker = new google.maps.Marker({
                 position: { lat, lng },
                 map: map,
                 icon: truckIcon,
-                title: truck.plate_number
+                title: truck.plate_number,
             });
 
             // Create info window content
@@ -108,40 +107,60 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
                         <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                             <span style="color: #6b7280; font-size: 12px;">Status:</span>
                             <span style="padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; background-color: ${
-                                truck.status === 'Available' ? '#dcfce7' : 
-                                truck.status === 'In Transit' ? '#dbeafe' : 
-                                truck.status === 'Maintenance' ? '#fef3c7' : '#f3f4f6'
+                                truck.status === 'Available'
+                                    ? '#dcfce7'
+                                    : truck.status === 'In Transit'
+                                      ? '#dbeafe'
+                                      : truck.status === 'Maintenance'
+                                        ? '#fef3c7'
+                                        : '#f3f4f6'
                             }; color: ${
-                                truck.status === 'Available' ? '#166534' : 
-                                truck.status === 'In Transit' ? '#1e40af' : 
-                                truck.status === 'Maintenance' ? '#92400e' : '#374151'
+                                truck.status === 'Available'
+                                    ? '#166534'
+                                    : truck.status === 'In Transit'
+                                      ? '#1e40af'
+                                      : truck.status === 'Maintenance'
+                                        ? '#92400e'
+                                        : '#374151'
                             };">${truck.status}</span>
                         </div>
                         
-                        ${truck.driver ? `
+                        ${
+                            truck.driver
+                                ? `
                             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                                 <span style="color: #6b7280; font-size: 12px;">Driver:</span>
                                 <span style="color: #111827; font-size: 12px; font-weight: 500;">${truck.driver}</span>
                             </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         
-                        ${truck.movement.speed ? `
+                        ${
+                            truck.movement.speed
+                                ? `
                             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                                 <span style="color: #6b7280; font-size: 12px;">Speed:</span>
                                 <span style="color: #111827; font-size: 12px; font-weight: 500;">${truck.movement.speed} km/h</span>
                             </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                             <span style="color: #6b7280; font-size: 12px;">Last Update:</span>
                             <span style="color: #111827; font-size: 12px; font-weight: 500;">${formatLastUpdate(truck.location.last_update)}</span>
                         </div>
                         
-                        ${truck.location.address ? `
+                        ${
+                            truck.location.address
+                                ? `
                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
                                 <p style="margin: 0; color: #6b7280; font-size: 11px;">${truck.location.address}</p>
                             </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         
                         <div style="display: flex; align-items: center; margin-top: 8px;">
                             <div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${truck.is_online ? '#10B981' : '#6B7280'}; margin-right: 6px;"></div>
@@ -152,7 +171,7 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
             `;
 
             const infoWindow = new google.maps.InfoWindow({
-                content: infoWindowContent
+                content: infoWindowContent,
             });
 
             marker.addListener('click', () => {
@@ -167,7 +186,7 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
         // Fit bounds to show all trucks
         if (trucks.length > 0) {
             const bounds = new google.maps.LatLngBounds();
-            trucks.forEach(truck => {
+            trucks.forEach((truck) => {
                 const lat = parseFloat(truck.location.latitude);
                 const lng = parseFloat(truck.location.longitude);
                 if (!isNaN(lat) && !isNaN(lng)) {
@@ -185,8 +204,10 @@ const MapComponent: React.FC<{ trucks: TruckLocation[] }> = ({ trucks }) => {
 const formatLastUpdate = (timestamp: string): string => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+    const diffInMinutes = Math.floor(
+        (now.getTime() - date.getTime()) / (1000 * 60),
+    );
+
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
@@ -195,9 +216,9 @@ const formatLastUpdate = (timestamp: string): string => {
 
 // Loading component
 const LoadingComponent = () => (
-    <div className="flex items-center justify-center h-96 bg-gray-100 dark:bg-gray-700 rounded-lg">
+    <div className="flex h-96 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
         <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
             <p className="text-gray-500 dark:text-gray-400">Loading map...</p>
         </div>
     </div>
@@ -205,11 +226,15 @@ const LoadingComponent = () => (
 
 // Error component
 const ErrorComponent = ({ error }: { error: Error }) => (
-    <div className="flex items-center justify-center h-96 bg-red-50 dark:bg-red-900/20 rounded-lg">
+    <div className="flex h-96 items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20">
         <div className="text-center">
-            <div className="text-red-500 text-4xl mb-2">⚠️</div>
-            <p className="text-red-600 dark:text-red-400 font-medium">Failed to load map</p>
-            <p className="text-red-500 dark:text-red-400 text-sm mt-1">{error.message}</p>
+            <div className="mb-2 text-4xl text-red-500">⚠️</div>
+            <p className="font-medium text-red-600 dark:text-red-400">
+                Failed to load map
+            </p>
+            <p className="mt-1 text-sm text-red-500 dark:text-red-400">
+                {error.message}
+            </p>
         </div>
     </div>
 );
@@ -220,7 +245,11 @@ const renderWrapper = (status: Status) => {
         case Status.LOADING:
             return <LoadingComponent />;
         case Status.FAILURE:
-            return <ErrorComponent error={new Error('Failed to load Google Maps')} />;
+            return (
+                <ErrorComponent
+                    error={new Error('Failed to load Google Maps')}
+                />
+            );
         case Status.SUCCESS:
             return <div />; // This will be replaced by MapComponent
         default:
@@ -228,7 +257,9 @@ const renderWrapper = (status: Status) => {
     }
 };
 
-export default function GoogleMapsTruckLocation({ className = '' }: GoogleMapsTruckLocationProps) {
+export default function GoogleMapsTruckLocation({
+    className = '',
+}: GoogleMapsTruckLocationProps) {
     const [trucks, setTrucks] = useState<TruckLocation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -237,7 +268,9 @@ export default function GoogleMapsTruckLocation({ className = '' }: GoogleMapsTr
     const fetchTruckLocations = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/transportation/fleet/real-time-locations');
+            const response = await axios.get(
+                '/transportation/fleet/real-time-locations',
+            );
             if (response.data && Array.isArray(response.data)) {
                 setTrucks(response.data);
                 setError(null);
@@ -267,11 +300,15 @@ export default function GoogleMapsTruckLocation({ className = '' }: GoogleMapsTr
 
     if (loading && trucks.length === 0) {
         return (
-            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
-                <div className="flex items-center justify-center h-64">
+            <div
+                className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 ${className}`}
+            >
+                <div className="flex h-64 items-center justify-center">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                        <p className="text-gray-500 dark:text-gray-400">Loading truck locations...</p>
+                        <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                        <p className="text-gray-500 dark:text-gray-400">
+                            Loading truck locations...
+                        </p>
                     </div>
                 </div>
             </div>
@@ -280,19 +317,25 @@ export default function GoogleMapsTruckLocation({ className = '' }: GoogleMapsTr
 
     if (error && trucks.length === 0) {
         return (
-            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
-                <div className="flex items-center justify-center h-64">
+            <div
+                className={`rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 ${className}`}
+            >
+                <div className="flex h-64 items-center justify-center">
                     <div className="text-center">
-                        <div className="text-red-500 text-4xl mb-2">⚠️</div>
-                        <p className="text-red-600 dark:text-red-400 font-medium">Failed to load truck locations</p>
-                        <p className="text-red-500 dark:text-red-400 text-sm mt-1">{error}</p>
-                        <Button 
-                            onClick={fetchTruckLocations} 
-                            variant="outline" 
-                            size="sm" 
+                        <div className="mb-2 text-4xl text-red-500">⚠️</div>
+                        <p className="font-medium text-red-600 dark:text-red-400">
+                            Failed to load truck locations
+                        </p>
+                        <p className="mt-1 text-sm text-red-500 dark:text-red-400">
+                            {error}
+                        </p>
+                        <Button
+                            onClick={fetchTruckLocations}
+                            variant="outline"
+                            size="sm"
                             className="mt-3"
                         >
-                            <RefreshCwIcon className="h-4 w-4 mr-2" />
+                            <RefreshCwIcon className="mr-2 h-4 w-4" />
                             Retry
                         </Button>
                     </div>
@@ -302,58 +345,68 @@ export default function GoogleMapsTruckLocation({ className = '' }: GoogleMapsTr
     }
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 ${className}`}>
+        <div
+            className={`rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 ${className}`}
+        >
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 p-6 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                        <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/50">
                             <MapPinIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Live Truck Tracking</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                Live Truck Tracking
+                            </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Real-time location of your fleet vehicles
                             </p>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Auto-refresh:</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                Auto-refresh:
+                            </span>
                             <Button
-                                variant={autoRefresh ? "default" : "outline"}
+                                variant={autoRefresh ? 'default' : 'outline'}
                                 size="sm"
                                 onClick={() => setAutoRefresh(!autoRefresh)}
                             >
                                 {autoRefresh ? 'ON' : 'OFF'}
                             </Button>
                         </div>
-                        
+
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={fetchTruckLocations}
                             disabled={loading}
                         >
-                            <RefreshCwIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                            <RefreshCwIcon
+                                className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                            />
                             Refresh
                         </Button>
                     </div>
                 </div>
-                
+
                 {/* Stats */}
                 <div className="mt-4 flex items-center space-x-6">
                     <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Online: {trucks.filter(truck => truck.is_online).length}
+                            Online:{' '}
+                            {trucks.filter((truck) => truck.is_online).length}
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                        <div className="h-3 w-3 rounded-full bg-gray-400"></div>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Offline: {trucks.filter(truck => !truck.is_online).length}
+                            Offline:{' '}
+                            {trucks.filter((truck) => !truck.is_online).length}
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -368,14 +421,19 @@ export default function GoogleMapsTruckLocation({ className = '' }: GoogleMapsTr
             {/* Map */}
             <div className="h-96">
                 {trucks.length > 0 ? (
-                    <Wrapper apiKey={GOOGLE_MAPS_API_KEY} render={renderWrapper}>
+                    <Wrapper
+                        apiKey={GOOGLE_MAPS_API_KEY}
+                        render={renderWrapper}
+                    >
                         <MapComponent trucks={trucks} />
                     </Wrapper>
                 ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <div className="flex h-full items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
                         <div className="text-center">
-                            <MapPinIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                            <p className="text-gray-500 dark:text-gray-400">No truck locations available</p>
+                            <MapPinIcon className="mx-auto mb-2 h-12 w-12 text-gray-400" />
+                            <p className="text-gray-500 dark:text-gray-400">
+                                No truck locations available
+                            </p>
                         </div>
                     </div>
                 )}

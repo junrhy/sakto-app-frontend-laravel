@@ -1,17 +1,23 @@
-import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Textarea } from '@/Components/ui/textarea';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import { useForm } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
+import { toast } from 'sonner';
 
 interface Member {
     id: string;
@@ -39,8 +45,15 @@ interface Props {
     onClose: () => void;
 }
 
-export default function EditClaimDialog({ claim, members, appCurrency, onClose }: Props) {
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+export default function EditClaimDialog({
+    claim,
+    members,
+    appCurrency,
+    onClose,
+}: Props) {
+    const [validationErrors, setValidationErrors] = useState<
+        Record<string, string>
+    >({});
 
     const { data, setData, put, processing, errors } = useForm({
         member_id: claim.member_id,
@@ -85,7 +98,7 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
 
     const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
@@ -97,7 +110,7 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
             date_of_service: data.date_of_service.split('T')[0],
             hospital_name: data.hospital_name,
             diagnosis: data.diagnosis,
-            status: data.status
+            status: data.status,
         };
 
         console.log('Submitting form data:', formData);
@@ -117,7 +130,7 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
 
     return (
         <Dialog open={true} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Edit Claim</DialogTitle>
                 </DialogHeader>
@@ -126,7 +139,10 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                         <Label htmlFor="member_id">Member</Label>
                         <Input
                             id="member_id"
-                            value={members.find(m => m.id === claim.member_id)?.name || ''}
+                            value={
+                                members.find((m) => m.id === claim.member_id)
+                                    ?.name || ''
+                            }
                             readOnly
                         />
                     </div>
@@ -137,26 +153,38 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             value={data.claim_type}
                             onValueChange={(value) => {
                                 setData('claim_type', value);
-                                setValidationErrors(prev => ({ ...prev, claim_type: '' }));
+                                setValidationErrors((prev) => ({
+                                    ...prev,
+                                    claim_type: '',
+                                }));
                             }}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select claim type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="hospitalization">Hospitalization</SelectItem>
-                                <SelectItem value="outpatient">Outpatient</SelectItem>
+                                <SelectItem value="hospitalization">
+                                    Hospitalization
+                                </SelectItem>
+                                <SelectItem value="outpatient">
+                                    Outpatient
+                                </SelectItem>
                                 <SelectItem value="dental">Dental</SelectItem>
                                 <SelectItem value="optical">Optical</SelectItem>
                             </SelectContent>
                         </Select>
                         {(errors.claim_type || validationErrors.claim_type) && (
-                            <p className="text-sm text-red-500">{errors.claim_type || validationErrors.claim_type}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.claim_type ||
+                                    validationErrors.claim_type}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="amount">Amount {appCurrency.code}</Label>
+                        <Label htmlFor="amount">
+                            Amount {appCurrency.code}
+                        </Label>
                         <Input
                             id="amount"
                             type="number"
@@ -164,11 +192,16 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             value={data.amount}
                             onChange={(e) => {
                                 setData('amount', e.target.value);
-                                setValidationErrors(prev => ({ ...prev, amount: '' }));
+                                setValidationErrors((prev) => ({
+                                    ...prev,
+                                    amount: '',
+                                }));
                             }}
                         />
                         {(errors.amount || validationErrors.amount) && (
-                            <p className="text-sm text-red-500">{errors.amount || validationErrors.amount}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.amount || validationErrors.amount}
+                            </p>
                         )}
                     </div>
 
@@ -180,11 +213,18 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             value={data.date_of_service}
                             onChange={(e) => {
                                 setData('date_of_service', e.target.value);
-                                setValidationErrors(prev => ({ ...prev, date_of_service: '' }));
+                                setValidationErrors((prev) => ({
+                                    ...prev,
+                                    date_of_service: '',
+                                }));
                             }}
                         />
-                        {(errors.date_of_service || validationErrors.date_of_service) && (
-                            <p className="text-sm text-red-500">{errors.date_of_service || validationErrors.date_of_service}</p>
+                        {(errors.date_of_service ||
+                            validationErrors.date_of_service) && (
+                            <p className="text-sm text-red-500">
+                                {errors.date_of_service ||
+                                    validationErrors.date_of_service}
+                            </p>
                         )}
                     </div>
 
@@ -195,11 +235,18 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             value={data.hospital_name}
                             onChange={(e) => {
                                 setData('hospital_name', e.target.value);
-                                setValidationErrors(prev => ({ ...prev, hospital_name: '' }));
+                                setValidationErrors((prev) => ({
+                                    ...prev,
+                                    hospital_name: '',
+                                }));
                             }}
                         />
-                        {(errors.hospital_name || validationErrors.hospital_name) && (
-                            <p className="text-sm text-red-500">{errors.hospital_name || validationErrors.hospital_name}</p>
+                        {(errors.hospital_name ||
+                            validationErrors.hospital_name) && (
+                            <p className="text-sm text-red-500">
+                                {errors.hospital_name ||
+                                    validationErrors.hospital_name}
+                            </p>
                         )}
                     </div>
 
@@ -210,11 +257,16 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             value={data.diagnosis}
                             onChange={(e) => {
                                 setData('diagnosis', e.target.value);
-                                setValidationErrors(prev => ({ ...prev, diagnosis: '' }));
+                                setValidationErrors((prev) => ({
+                                    ...prev,
+                                    diagnosis: '',
+                                }));
                             }}
                         />
                         {(errors.diagnosis || validationErrors.diagnosis) && (
-                            <p className="text-sm text-red-500">{errors.diagnosis || validationErrors.diagnosis}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.diagnosis || validationErrors.diagnosis}
+                            </p>
                         )}
                     </div>
 
@@ -224,7 +276,10 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             value={data.status}
                             onValueChange={(value) => {
                                 setData('status', value);
-                                setValidationErrors(prev => ({ ...prev, status: '' }));
+                                setValidationErrors((prev) => ({
+                                    ...prev,
+                                    status: '',
+                                }));
                             }}
                         >
                             <SelectTrigger>
@@ -232,12 +287,18 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="approved">Approved</SelectItem>
-                                <SelectItem value="rejected">Rejected</SelectItem>
+                                <SelectItem value="approved">
+                                    Approved
+                                </SelectItem>
+                                <SelectItem value="rejected">
+                                    Rejected
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                         {(errors.status || validationErrors.status) && (
-                            <p className="text-sm text-red-500">{errors.status || validationErrors.status}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.status || validationErrors.status}
+                            </p>
                         )}
                     </div>
 
@@ -257,4 +318,4 @@ export default function EditClaimDialog({ claim, members, appCurrency, onClose }
             </DialogContent>
         </Dialog>
     );
-} 
+}

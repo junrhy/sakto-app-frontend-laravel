@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Card, CardContent } from '@/Components/ui/card';
 import { Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface CreateAccountFormProps {
     onSubmit: (data: any) => Promise<void>;
     onCancel: () => void;
 }
 
-export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps) {
+export function CreateAccountForm({
+    onSubmit,
+    onCancel,
+}: CreateAccountFormProps) {
     const [formData, setFormData] = useState({
         account_type: '',
         account_name: '',
@@ -27,16 +36,16 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleInputChange = (field: string, value: string | number) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
+            [field]: value,
         }));
-        
+
         // Clear error when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({
+            setErrors((prev) => ({
                 ...prev,
-                [field]: ''
+                [field]: '',
             }));
         }
     };
@@ -52,7 +61,10 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
             newErrors.account_name = 'Account name is required';
         }
 
-        if (formData.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact_email)) {
+        if (
+            formData.contact_email &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact_email)
+        ) {
             newErrors.contact_email = 'Please enter a valid email address';
         }
 
@@ -67,7 +79,7 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Form submitted with data:', formData);
-        
+
         if (!validateForm()) {
             console.log('Form validation failed');
             return;
@@ -87,24 +99,32 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* Account Type */}
                 <div className="space-y-2">
                     <Label htmlFor="account_type">Account Type *</Label>
-                    <Select 
-                        value={formData.account_type} 
-                        onValueChange={(value) => handleInputChange('account_type', value)}
+                    <Select
+                        value={formData.account_type}
+                        onValueChange={(value) =>
+                            handleInputChange('account_type', value)
+                        }
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Select account type" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="group">Group (Family/Personal)</SelectItem>
-                            <SelectItem value="company">Company/Corporate</SelectItem>
+                            <SelectItem value="group">
+                                Group (Family/Personal)
+                            </SelectItem>
+                            <SelectItem value="company">
+                                Company/Corporate
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                     {errors.account_type && (
-                        <p className="text-sm text-red-600">{errors.account_type}</p>
+                        <p className="text-sm text-red-600">
+                            {errors.account_type}
+                        </p>
                     )}
                 </div>
 
@@ -115,11 +135,19 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
                         id="account_name"
                         type="text"
                         value={formData.account_name}
-                        onChange={(e) => handleInputChange('account_name', e.target.value)}
-                        placeholder={formData.account_type === 'company' ? 'Company Name' : 'Family/Group Name'}
+                        onChange={(e) =>
+                            handleInputChange('account_name', e.target.value)
+                        }
+                        placeholder={
+                            formData.account_type === 'company'
+                                ? 'Company Name'
+                                : 'Family/Group Name'
+                        }
                     />
                     {errors.account_name && (
-                        <p className="text-sm text-red-600">{errors.account_name}</p>
+                        <p className="text-sm text-red-600">
+                            {errors.account_name}
+                        </p>
                     )}
                 </div>
             </div>
@@ -130,7 +158,9 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
                 <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) =>
+                        handleInputChange('description', e.target.value)
+                    }
                     placeholder="Optional description or notes about this account"
                     rows={3}
                 />
@@ -138,16 +168,25 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
 
             <Card>
                 <CardContent className="pt-6">
-                    <h4 className="text-sm font-medium mb-4">Contact Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h4 className="mb-4 text-sm font-medium">
+                        Contact Information
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {/* Contact Person */}
                         <div className="space-y-2">
-                            <Label htmlFor="contact_person">Contact Person</Label>
+                            <Label htmlFor="contact_person">
+                                Contact Person
+                            </Label>
                             <Input
                                 id="contact_person"
                                 type="text"
                                 value={formData.contact_person}
-                                onChange={(e) => handleInputChange('contact_person', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'contact_person',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="Primary contact name"
                             />
                         </div>
@@ -159,7 +198,12 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
                                 id="contact_phone"
                                 type="tel"
                                 value={formData.contact_phone}
-                                onChange={(e) => handleInputChange('contact_phone', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'contact_phone',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="+1 (555) 123-4567"
                             />
                         </div>
@@ -171,11 +215,18 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
                                 id="contact_email"
                                 type="email"
                                 value={formData.contact_email}
-                                onChange={(e) => handleInputChange('contact_email', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'contact_email',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="contact@example.com"
                             />
                             {errors.contact_email && (
-                                <p className="text-sm text-red-600">{errors.contact_email}</p>
+                                <p className="text-sm text-red-600">
+                                    {errors.contact_email}
+                                </p>
                             )}
                         </div>
 
@@ -188,22 +239,31 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
                                 min="0"
                                 step="0.01"
                                 value={formData.credit_limit}
-                                onChange={(e) => handleInputChange('credit_limit', parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'credit_limit',
+                                        parseFloat(e.target.value) || 0,
+                                    )
+                                }
                                 placeholder="0.00"
                             />
                             {errors.credit_limit && (
-                                <p className="text-sm text-red-600">{errors.credit_limit}</p>
+                                <p className="text-sm text-red-600">
+                                    {errors.credit_limit}
+                                </p>
                             )}
                         </div>
                     </div>
 
                     {/* Address */}
-                    <div className="space-y-2 mt-4">
+                    <div className="mt-4 space-y-2">
                         <Label htmlFor="address">Address</Label>
                         <Textarea
                             id="address"
                             value={formData.address}
-                            onChange={(e) => handleInputChange('address', e.target.value)}
+                            onChange={(e) =>
+                                handleInputChange('address', e.target.value)
+                            }
                             placeholder="Full address"
                             rows={2}
                         />
@@ -216,7 +276,9 @@ export function CreateAccountForm({ onSubmit, onCancel }: CreateAccountFormProps
                     Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create Account
                 </Button>
             </div>

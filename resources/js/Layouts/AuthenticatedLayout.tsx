@@ -1,19 +1,30 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
+import DesktopMenu from '@/Components/Navigation/DesktopMenu';
+import MobileMenu from '@/Components/Navigation/MobileMenu';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
-import { ThemeProvider } from "@/Components/ThemeProvider";
-import { Menu, X, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { ThemeProvider } from '@/Components/ThemeProvider';
 import { Button } from '@/Components/ui/button';
-import { CreditCardIcon, SparklesIcon, AlertCircle } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import { PageProps, User, Project } from '@/types/index';
-import { parseEnabledModules } from '@/lib/utils';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
-import MobileMenu from '@/Components/Navigation/MobileMenu';
-import DesktopMenu from '@/Components/Navigation/DesktopMenu';
+import { parseEnabledModules } from '@/lib/utils';
+import { Project, User } from '@/types/index';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    CreditCardIcon,
+    Lock,
+    SparklesIcon,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 // App interface and utility functions
 interface App {
     icon: JSX.Element;
@@ -39,7 +50,9 @@ interface App {
 
 // Utility function to get icon for any app
 const getIconForApp = (app: any): JSX.Element => {
-    const IconComponent = getIconByName(app.icon || getSmartIconSuggestion(app.title));
+    const IconComponent = getIconByName(
+        app.icon || getSmartIconSuggestion(app.title),
+    );
     return <IconComponent />;
 };
 
@@ -53,7 +66,7 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
             icon: getIconForApp(app),
             isInSubscription: app.isInSubscription || false,
             isUserAdded: app.isUserAdded || false,
-            isAvailable: app.isAvailable || false
+            isAvailable: app.isAvailable || false,
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -95,7 +108,10 @@ const formatNumber = (num: number | undefined | null) => {
     return num?.toLocaleString() ?? '0';
 };
 
-const getHeaderColorClass = (url: string, projectIdentifier?: string): string => {
+const getHeaderColorClass = (
+    url: string,
+    projectIdentifier?: string,
+): string => {
     // First check URL-based colors for specific pages
     if (url.includes('subscriptions')) {
         return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700';
@@ -108,14 +124,19 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
     return 'from-white to-gray-100 border-gray-200 dark:from-gray-800 dark:to-gray-700 dark:border-gray-600';
 };
 
-const showAccessDialog = (appParam: string | null, auth: any, url: string, isLoadingApps: boolean): boolean => {
+const showAccessDialog = (
+    appParam: string | null,
+    auth: any,
+    url: string,
+    isLoadingApps: boolean,
+): boolean => {
     // Don't show dialog while apps are still loading
     if (isLoadingApps) return false;
-    
+
     // Parse enabled modules from project and get user apps
     const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
     const userApps = auth?.userApps || [];
-    
+
     // Helper function to check if user has access to a module (either in subscription or user-added)
     // This now uses database relationships instead of URL-based checking
     const hasModuleAccess = (moduleIdentifier: string) => {
@@ -123,21 +144,21 @@ const showAccessDialog = (appParam: string | null, auth: any, url: string, isLoa
         const isUserAdded = userApps.includes(moduleIdentifier);
         return isInSubscription || isUserAdded;
     };
-    
+
     // Get the app identifier from URL path first (more comprehensive)
     let appIdentifier = getAppIdentifierFromUrl(url);
-    
+
     // If no app identifier from URL path, try the app parameter
     if (!appIdentifier && appParam) {
         appIdentifier = appParam;
     }
-    
+
     // If still no app identifier, no dialog needed
     if (!appIdentifier) return false;
-    
+
     // Check if user has access to the current app
     const hasAccess = hasModuleAccess(appIdentifier);
-    
+
     // Return true if user doesn't have access (show dialog to inform user)
     return !hasAccess;
 };
@@ -146,14 +167,39 @@ const showAccessDialog = (appParam: string | null, auth: any, url: string, isLoa
 const getAppIdentifierFromUrl = (url: string): string | null => {
     // List of all app route prefixes
     const appRoutes = [
-        'clinic', 'clinical', 'pos-retail', 'retail', 'pos-restaurant', 'fnb',
-        'warehousing', 'transportation', 'rental-item', 'rental-items', 
-        'rental-property', 'rental-properties', 'loan', 'lending', 'payroll', 
-        'travel', 'sms', 'email', 'contacts', 'family-tree', 'genealogy', 
-        'events', 'challenges', 'content-creator', 'products', 'pages', 
-        'healthcare', 'mortuary', 'billers', 'bill-payments', 'courses'
+        'clinic',
+        'clinical',
+        'pos-retail',
+        'retail',
+        'pos-restaurant',
+        'fnb',
+        'warehousing',
+        'transportation',
+        'rental-item',
+        'rental-items',
+        'rental-property',
+        'rental-properties',
+        'loan',
+        'lending',
+        'payroll',
+        'travel',
+        'sms',
+        'email',
+        'contacts',
+        'family-tree',
+        'genealogy',
+        'events',
+        'challenges',
+        'content-creator',
+        'products',
+        'pages',
+        'healthcare',
+        'mortuary',
+        'billers',
+        'bill-payments',
+        'courses',
     ];
-    
+
     // Extract pathname from URL, properly handling hostname exclusion
     let pathname: string;
     try {
@@ -169,7 +215,7 @@ const getAppIdentifierFromUrl = (url: string): string | null => {
         // Fallback to simple string splitting if URL parsing fails
         pathname = url.split('?')[0].split('#')[0];
     }
-    
+
     // Map some route names to their module identifiers
     const routeToModuleMap: { [key: string]: string } = {
         'pos-retail': 'retail',
@@ -177,9 +223,9 @@ const getAppIdentifierFromUrl = (url: string): string | null => {
         'rental-item': 'rental-items',
         'rental-property': 'rental-properties',
         'family-tree': 'genealogy',
-        'loan': 'lending'
+        loan: 'lending',
     };
-    
+
     // Check if URL contains any app route
     for (const route of appRoutes) {
         // Check for exact route match at the beginning of path segments
@@ -188,19 +234,33 @@ const getAppIdentifierFromUrl = (url: string): string | null => {
             return routeToModuleMap[route] || route;
         }
     }
-    
+
     return null;
 };
 
-export default function Authenticated({ children, header, user, auth: propAuth }: Props) {
-    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+export default function Authenticated({
+    children,
+    header,
+    user,
+    auth: propAuth,
+}: Props) {
+    const [showingNavigationDropdown, setShowingNavigationDropdown] =
+        useState(false);
     const [credits, setCredits] = useState<number>(0);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
     const { url } = usePage();
-    const pageProps = usePage<{ auth: { user: any; project: any; modules: string[]; userApps: string[]; selectedTeamMember?: any } }>().props;
+    const pageProps = usePage<{
+        auth: {
+            user: any;
+            project: any;
+            modules: string[];
+            userApps: string[];
+            selectedTeamMember?: any;
+        };
+    }>().props;
     // Merge prop auth with page auth, preferring prop auth if available
     const auth = propAuth || pageProps.auth;
     const authUser = user || auth.user;
@@ -214,7 +274,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
         const fetchCredits = async () => {
             try {
                 if (authUser.identifier) {
-                    const response = await fetch(`/credits/${authUser.identifier}/balance`);
+                    const response = await fetch(
+                        `/credits/${authUser.identifier}/balance`,
+                    );
                     if (response.ok) {
                         const data = await response.json();
                         setCredits(data.available_credit);
@@ -243,7 +305,11 @@ export default function Authenticated({ children, header, user, auth: propAuth }
         fetchApps();
     }, [authUser.identifier]);
 
-    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
+    const hasDashboardAccess =
+        !url.includes('help') &&
+        !url.includes('profile') &&
+        !url.includes('credits') &&
+        !url.includes('subscriptions');
 
     // Helper function to check if user has access to a module (either in subscription or user-added)
     // This now uses database relationships instead of URL-based checking
@@ -261,32 +327,47 @@ export default function Authenticated({ children, header, user, auth: propAuth }
 
     return (
         <ThemeProvider>
-            <div className="min-h-screen bg-white dark:bg-gray-800 relative">
+            <div className="relative min-h-screen bg-white dark:bg-gray-800">
                 {/* Access Control Dialog */}
-                <Dialog open={showAccessDialog(appParam, auth, url, isLoadingApps)} onOpenChange={() => {}}>
-                    <DialogContent className="sm:max-w-md [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
+                <Dialog
+                    open={showAccessDialog(appParam, auth, url, isLoadingApps)}
+                    onOpenChange={() => {}}
+                >
+                    <DialogContent
+                        className="sm:max-w-md [&>button]:hidden"
+                        onPointerDownOutside={(e) => e.preventDefault()}
+                    >
                         <DialogHeader>
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                            <div className="mb-2 flex items-center gap-3">
+                                <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
                                     <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                                 </div>
-                                <DialogTitle className="text-lg font-semibold">Access Required</DialogTitle>
+                                <DialogTitle className="text-lg font-semibold">
+                                    Access Required
+                                </DialogTitle>
                             </div>
                             <DialogDescription className="text-base">
-                                You don't have access to this feature yet. Choose how you'd like to gain access:
+                                You don't have access to this feature yet.
+                                Choose how you'd like to gain access:
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="flex flex-col gap-3 mt-4">
-                            <Button 
-                                onClick={() => window.location.href = route('subscriptions.index')}
+                        <div className="mt-4 flex flex-col gap-3">
+                            <Button
+                                onClick={() =>
+                                    (window.location.href = route(
+                                        'subscriptions.index',
+                                    ))
+                                }
                                 className="w-full justify-start gap-2"
                                 variant="default"
                             >
                                 <CreditCardIcon className="h-4 w-4" />
                                 Upgrade Subscription Plan
                             </Button>
-                            <Button 
-                                onClick={() => window.location.href = route('apps')}
+                            <Button
+                                onClick={() =>
+                                    (window.location.href = route('apps'))
+                                }
                                 className="w-full justify-start gap-2"
                                 variant="outline"
                             >
@@ -300,15 +381,17 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                 {/* Mobile Navigation */}
                 <div
                     className={
-                        (showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full') +
-                        ' fixed inset-y-0 left-0 w-full transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg z-[70] overflow-y-auto'
+                        (showingNavigationDropdown
+                            ? 'translate-x-0'
+                            : '-translate-x-full') +
+                        ' fixed inset-y-0 left-0 z-[70] w-full transform overflow-y-auto bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg transition-transform duration-300 ease-in-out sm:hidden'
                     }
                 >
                     {/* Close Button */}
                     <div className="flex justify-end p-4">
                         <button
                             onClick={() => setShowingNavigationDropdown(false)}
-                            className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 focus:outline-none"
+                            className="text-gray-700 transition-colors duration-200 hover:text-gray-900 focus:outline-none dark:text-white/80 dark:hover:text-white"
                         >
                             <svg
                                 className="h-6 w-6"
@@ -325,20 +408,32 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                             </svg>
                         </button>
                     </div>
-                    
-                    <div className="space-y-1 pb-3 px-4">
-                        <ResponsiveNavLink href={route('home')} active={route().current('home')} className="text-gray-800 dark:text-white/90 hover:text-white hover:bg-white/10">
+
+                    <div className="space-y-1 px-4 pb-3">
+                        <ResponsiveNavLink
+                            href={route('home')}
+                            active={route().current('home')}
+                            className="text-gray-800 hover:bg-white/10 hover:text-white dark:text-white/90"
+                        >
                             Home
                         </ResponsiveNavLink>
 
                         {hasDashboardAccess && (
                             <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Dashboard</div>
-                                    <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                                    <div className="text-base font-medium text-gray-800 dark:text-white/90">
+                                        Dashboard
+                                    </div>
+                                    <ResponsiveNavLink
+                                        href={`/dashboard?app=${appParam}`}
+                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
                                         My Dashboard
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/dashboards?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                                    <ResponsiveNavLink
+                                        href={`/dashboards?app=${appParam}`}
+                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
                                         Dashboard Gallery
                                     </ResponsiveNavLink>
                                 </div>
@@ -346,36 +441,46 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {/* Dynamic Menu Categories */}
-                        <MobileMenu 
+                        <MobileMenu
                             hasModuleAccess={hasModuleAccess}
                             appParam={appParam}
                             url={url}
                         />
 
                         {/* Mobile User Section */}
-                        <div className="border-t border-gray-200 dark:border-white/10 mt-auto">
+                        <div className="mt-auto border-t border-gray-200 dark:border-white/10">
                             <div className="px-4 py-3">
-                                <div className="flex items-center space-x-3 mb-3">
+                                <div className="mb-3 flex items-center space-x-3">
                                     <div className="flex-1">
-                                        <div className="text-gray-800 dark:text-white/90 font-medium text-base">
-                                            {auth.selectedTeamMember?.full_name || authUser.name}
+                                        <div className="text-base font-medium text-gray-800 dark:text-white/90">
+                                            {auth.selectedTeamMember
+                                                ?.full_name || authUser.name}
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-1">
-                                    <ResponsiveNavLink href={route('profile.edit')} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                                    <ResponsiveNavLink
+                                        href={route('profile.edit')}
+                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
                                         Profile
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href="/help" className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                                    <ResponsiveNavLink
+                                        href="/help"
+                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
                                         Help
                                     </ResponsiveNavLink>
                                     <div className="border-t border-white/20 pt-1">
-                                        <ResponsiveNavLink 
-                                            href={route('logout', { project: auth.project?.identifier })} 
-                                            method="post" 
+                                        <ResponsiveNavLink
+                                            href={route('logout', {
+                                                project:
+                                                    auth.project?.identifier,
+                                            })}
+                                            method="post"
                                             as="button"
-                                            className="w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                                            className="w-full text-left text-red-400 hover:bg-red-500/20 hover:text-red-300"
                                         >
                                             Logout
                                         </ResponsiveNavLink>
@@ -387,23 +492,30 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                 </div>
 
                 {showingNavigationDropdown && (
-                    <div 
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[65] sm:hidden"
+                    <div
+                        className="fixed inset-0 z-[65] bg-black/50 backdrop-blur-sm sm:hidden"
                         onClick={() => setShowingNavigationDropdown(false)}
                     />
                 )}
 
-                <nav className={`border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} fixed top-0 left-0 right-0 z-20 transition-all duration-300 ${
-                    sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-                }`}>
+                <nav
+                    className={`border-b border-gray-200 bg-gradient-to-r dark:border-gray-600 ${getHeaderColorClass(url, authUser.project_identifier)} fixed left-0 right-0 top-0 z-20 transition-all duration-300 ${
+                        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+                    }`}
+                >
                     <div className="px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
                                 {/* Mobile Menu Button */}
-                                <div className="flex items-center sm:hidden mr-2">
+                                <div className="mr-2 flex items-center sm:hidden">
                                     <button
-                                        onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                        className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 dark:text-white/80 transition duration-150 ease-in-out hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white focus:outline-none"
+                                        onClick={() =>
+                                            setShowingNavigationDropdown(
+                                                (previousState) =>
+                                                    !previousState,
+                                            )
+                                        }
+                                        className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white dark:focus:bg-white/10 dark:focus:text-white"
                                     >
                                         <svg
                                             className="h-6 w-6"
@@ -437,13 +549,11 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     </button>
                                 </div>
 
-
-
                                 <div className="hidden space-x-8 sm:-my-px sm:flex">
                                     <NavLink
                                         href={route('home')}
                                         active={route().current('home')}
-                                        className="transition-all duration-200 text-gray-700 dark:text-gray-800 dark:text-white/90 hover:text-gray-900 dark:hover:text-white"
+                                        className="text-gray-700 transition-all duration-200 hover:text-gray-900 dark:text-gray-800 dark:text-white/90 dark:hover:text-white"
                                     >
                                         Home
                                     </NavLink>
@@ -455,11 +565,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 transition-all duration-200 ease-in-out hover:text-gray-900 focus:outline-none dark:text-gray-800 dark:text-white/90 dark:hover:text-white"
                                                         >
-                                                            <span className="mt-[1px]">Dashboards</span>
+                                                            <span className="mt-[1px]">
+                                                                Dashboards
+                                                            </span>
                                                             <svg
-                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                className="-mr-0.5 ml-2 h-4 w-4"
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 viewBox="0 0 20 20"
                                                                 fill="currentColor"
@@ -475,15 +587,15 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 </Dropdown.Trigger>
 
                                                 <Dropdown.Content>
-                                                    <Dropdown.Link 
+                                                    <Dropdown.Link
                                                         href={`/dashboard?app=${appParam}`}
                                                         as="button"
                                                         className="w-full text-left"
                                                     >
                                                         My Dashboard
                                                     </Dropdown.Link>
-                                                    
-                                                    <Dropdown.Link 
+
+                                                    <Dropdown.Link
                                                         href={`/dashboards?app=${appParam}`}
                                                         as="button"
                                                         className="w-full text-left"
@@ -502,19 +614,20 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     />
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </nav>
 
                 {/* Sidebar */}
-                <div className={`fixed left-0 top-0 h-screen z-30 transition-all duration-300 ease-in-out ${
-                    sidebarCollapsed ? 'w-16' : 'w-64'
-                } bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 shadow-lg hidden lg:block flex flex-col`}>
+                <div
+                    className={`fixed left-0 top-0 z-30 h-screen transition-all duration-300 ease-in-out ${
+                        sidebarCollapsed ? 'w-16' : 'w-64'
+                    } flex hidden flex-col border-r border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 lg:block`}
+                >
                     {/* Sidebar Toggle Button - Positioned on the border */}
                     <button
                         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                        className={`absolute top-4 z-[70] w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center text-gray-700 dark:text-white/80 transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-1 right-[-12px]`}
+                        className={`absolute right-[-12px] top-4 z-[70] flex h-6 w-6 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-700 shadow-lg transition-all duration-300 ease-in-out hover:bg-gray-50 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 dark:border-gray-600 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700 dark:focus:ring-gray-600`}
                     >
                         {sidebarCollapsed ? (
                             <ChevronRight className="h-3 w-3" />
@@ -524,177 +637,288 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     </button>
 
                     {/* Sidebar Navbar */}
-                    <div className="h-16 border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-700 flex items-center px-3 flex-shrink-0">
+                    <div className="flex h-16 flex-shrink-0 items-center border-b border-gray-200 bg-gradient-to-r from-white to-gray-100 px-3 dark:border-gray-600 dark:from-gray-800 dark:to-gray-700">
                         {sidebarCollapsed ? (
-                            <div className="flex items-center justify-center w-full">
+                            <div className="flex w-full items-center justify-center">
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-gray-800 dark:text-white" />
                             </div>
                         ) : (
-                            <div className="flex items-center justify-center w-full min-w-0">
-                                <span className="text-lg font-bold text-gray-800 dark:text-white truncate block">
+                            <div className="flex w-full min-w-0 items-center justify-center">
+                                <span className="block truncate text-lg font-bold text-gray-800 dark:text-white">
                                     {authUser.name}
                                 </span>
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Sidebar Content - Flex layout to push user menu to bottom */}
-                    <div className="flex flex-col flex-1 min-h-0">
+                    <div className="flex min-h-0 flex-1 flex-col">
                         {/* Apps Section - Scrollable */}
                         <div className="flex-1 overflow-y-auto">
                             <div className="p-4 pb-8">
                                 {!sidebarCollapsed && (
-                                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                         Apps
                                     </h3>
                                 )}
-                                <div className="space-y-1 max-h-96 overflow-y-auto hide-scrollbar">
+                                <div className="hide-scrollbar max-h-96 space-y-1 overflow-y-auto">
                                     {isLoadingApps ? (
                                         <div className="flex items-center justify-center py-8">
-                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600 dark:border-gray-300"></div>
+                                            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-gray-600 dark:border-gray-300"></div>
                                         </div>
                                     ) : (
                                         (() => {
-                                            const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
-                                            const filteredApps = apps.filter(app => {
-                                                // Convert app title to match module name format (lowercase and hyphenated)
-                                                const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
-                                                
-                                                // Show apps that are either in subscription or user-added
-                                                const isInSubscription = enabledModules.includes(normalizedAppTitle);
-                                                const isUserAdded = app.isUserAdded || false;
-                                                
-                                                // Show app if it's in subscription or user-added
-                                                if (isInSubscription || isUserAdded) {
-                                                    return true;
-                                                }
-                                                
-                                                return false;
-                                            });
-                                            
+                                            const enabledModules =
+                                                parseEnabledModules(
+                                                    auth?.project
+                                                        ?.enabledModules,
+                                                );
+                                            const filteredApps = apps.filter(
+                                                (app) => {
+                                                    // Convert app title to match module name format (lowercase and hyphenated)
+                                                    const normalizedAppTitle =
+                                                        app.title
+                                                            .toLowerCase()
+                                                            .replace(
+                                                                /\s+/g,
+                                                                '-',
+                                                            );
+
+                                                    // Show apps that are either in subscription or user-added
+                                                    const isInSubscription =
+                                                        enabledModules.includes(
+                                                            normalizedAppTitle,
+                                                        );
+                                                    const isUserAdded =
+                                                        app.isUserAdded ||
+                                                        false;
+
+                                                    // Show app if it's in subscription or user-added
+                                                    if (
+                                                        isInSubscription ||
+                                                        isUserAdded
+                                                    ) {
+                                                        return true;
+                                                    }
+
+                                                    return false;
+                                                },
+                                            );
+
                                             // If no apps are shown due to filtering, show all visible apps as fallback
-                                            const appsToShow = filteredApps.length > 0 ? filteredApps : apps.filter(app => app.visible);
-                                            
+                                            const appsToShow =
+                                                filteredApps.length > 0
+                                                    ? filteredApps
+                                                    : apps.filter(
+                                                          (app) => app.visible,
+                                                      );
+
                                             // If still no apps, show all apps for debugging
-                                            const finalAppsToShow = appsToShow.length > 0 ? appsToShow : apps;
-                                            
+                                            const finalAppsToShow =
+                                                appsToShow.length > 0
+                                                    ? appsToShow
+                                                    : apps;
+
                                             if (finalAppsToShow.length === 0) {
                                                 return (
-                                                    <div className="text-center py-4">
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">No apps available</p>
+                                                    <div className="py-4 text-center">
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                            No apps available
+                                                        </p>
                                                     </div>
                                                 );
                                             }
-                                            
-                                            return finalAppsToShow.sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
-                                                <Link
-                                                    key={app.title}
-                                                    href={app.route}
-                                                    className={`flex items-center transition-colors duration-200 ${
-                                                        sidebarCollapsed ? 'justify-center px-2 py-1.5' : 'px-2 py-1.5'
-                                                    }`}
-                                                    title={app.title}
-                                                >
-                                                    <div className={`flex-shrink-0 flex items-center justify-center ${
-                                                        sidebarCollapsed ? 'w-10 h-10' : 'w-8 h-8 mr-3'
-                                                    }`}>
-                                                        <div className={`text-gray-600 dark:text-gray-300 ${
-                                                            sidebarCollapsed ? 'text-xl' : 'text-lg'
-                                                        }`}>
-                                                            {app.icon}
+
+                                            return finalAppsToShow
+                                                .sort((a, b) =>
+                                                    a.title.localeCompare(
+                                                        b.title,
+                                                    ),
+                                                )
+                                                .map((app) => (
+                                                    <Link
+                                                        key={app.title}
+                                                        href={app.route}
+                                                        className={`flex items-center transition-colors duration-200 ${
+                                                            sidebarCollapsed
+                                                                ? 'justify-center px-2 py-1.5'
+                                                                : 'px-2 py-1.5'
+                                                        }`}
+                                                        title={app.title}
+                                                    >
+                                                        <div
+                                                            className={`flex flex-shrink-0 items-center justify-center ${
+                                                                sidebarCollapsed
+                                                                    ? 'h-10 w-10'
+                                                                    : 'mr-3 h-8 w-8'
+                                                            }`}
+                                                        >
+                                                            <div
+                                                                className={`text-gray-600 dark:text-gray-300 ${
+                                                                    sidebarCollapsed
+                                                                        ? 'text-xl'
+                                                                        : 'text-lg'
+                                                                }`}
+                                                            >
+                                                                {app.icon}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    {!sidebarCollapsed && (
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                                                                {app.title}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </Link>
-                                            ));
+                                                        {!sidebarCollapsed && (
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="truncate text-sm text-gray-700 dark:text-gray-300">
+                                                                    {app.title}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </Link>
+                                                ));
                                         })()
                                     )}
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* User Menu at Bottom - Always stays at bottom */}
-                        <div className="border-t border-gray-200 dark:border-gray-600 px-4 pt-2 pb-1 flex-shrink-0">
+                        <div className="flex-shrink-0 border-t border-gray-200 px-4 pb-1 pt-2 dark:border-gray-600">
                             {!sidebarCollapsed && (
                                 <div className="space-y-1">
                                     {/* User Name */}
-                                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                                        {auth.selectedTeamMember?.full_name || authUser.name}
+                                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                        {auth.selectedTeamMember?.full_name ||
+                                            authUser.name}
                                     </h3>
                                     <Link
                                         href={route('profile.edit')}
-                                        className="flex items-center px-2 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                        className="flex items-center rounded-md px-2 py-1.5 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white"
                                         title="Edit Profile"
                                     >
-                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        <svg
+                                            className="mr-3 h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            />
                                         </svg>
                                         Profile
                                     </Link>
-                                    
+
                                     <Link
                                         href="/help"
-                                        className="flex items-center px-2 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                        className="flex items-center rounded-md px-2 py-1.5 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white"
                                         title="Help & Support"
                                     >
-                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            className="mr-3 h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         Help
                                     </Link>
-                                    
+
                                     <Link
-                                        href={route('logout', { project: auth.project?.identifier })} 
+                                        href={route('logout', {
+                                            project: auth.project?.identifier,
+                                        })}
                                         method="post"
                                         as="button"
-                                        className="flex items-center w-full px-2 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors duration-200 rounded-md"
+                                        className="flex w-full items-center rounded-md px-2 py-1.5 text-sm text-red-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-300"
                                         title="Sign Out"
                                     >
-                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        <svg
+                                            className="mr-3 h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                            />
                                         </svg>
                                         Logout
                                     </Link>
                                 </div>
                             )}
-                            
+
                             {sidebarCollapsed && (
                                 <div className="flex flex-col items-center space-y-1">
                                     <Link
                                         href={route('profile.edit')}
-                                        className="p-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                        className="rounded-md p-1.5 text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white"
                                         title="Edit Profile"
                                     >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        <svg
+                                            className="h-6 w-6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            />
                                         </svg>
                                     </Link>
-                                    
+
                                     <Link
                                         href="/help"
-                                        className="p-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                        className="rounded-md p-1.5 text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white"
                                         title="Help & Support"
                                     >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            className="h-6 w-6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                     </Link>
-                                    
+
                                     <Link
-                                        href={route('logout', { project: auth.project?.identifier })} 
+                                        href={route('logout', {
+                                            project: auth.project?.identifier,
+                                        })}
                                         method="post"
                                         as="button"
-                                        className="p-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors duration-200 rounded-md"
+                                        className="rounded-md p-1.5 text-red-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-300"
                                         title="Sign Out"
                                     >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        <svg
+                                            className="h-6 w-6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                            />
                                         </svg>
                                     </Link>
                                 </div>
@@ -704,9 +928,11 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                 </div>
 
                 {/* Main content with sidebar offset */}
-                <div className={`relative bg-white dark:bg-gray-800 min-h-screen transition-all duration-300 ease-in-out pt-16 ${
-                    sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-                }`}>
+                <div
+                    className={`relative min-h-screen bg-white pt-16 transition-all duration-300 ease-in-out dark:bg-gray-800 ${
+                        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+                    }`}
+                >
                     {header && (
                         <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
                             <div className="px-4 py-6 sm:px-6 lg:px-8">
@@ -716,12 +942,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     )}
 
                     <main className="py-6">
-                        <div className="px-4 sm:px-6 lg:px-8">
-                            {children}
-                        </div>
+                        <div className="px-4 sm:px-6 lg:px-8">{children}</div>
                     </main>
                 </div>
-
             </div>
         </ThemeProvider>
     );

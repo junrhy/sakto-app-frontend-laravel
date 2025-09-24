@@ -1,16 +1,20 @@
-import { Head, useForm, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
-import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { useState } from 'react';
-import { PlusIcon, XIcon, ArrowUpRightSquare, UserPlus } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
-import { Badge } from '@/Components/ui/badge';
+import { Textarea } from '@/Components/ui/textarea';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { ArrowUpRightSquare, PlusIcon, UserPlus, XIcon } from 'lucide-react';
+import { useState } from 'react';
 
 interface Props {
     auth: { user: any };
@@ -88,19 +92,26 @@ export default function Create({ auth, client_identifier }: Props) {
     const addIdNumber = () => {
         setData('id_numbers', [
             ...data.id_numbers,
-            { type: '', number: '', notes: '' }
+            { type: '', number: '', notes: '' },
         ]);
     };
 
     const removeIdNumber = (index: number) => {
-        setData('id_numbers', data.id_numbers.filter((_, i) => i !== index));
+        setData(
+            'id_numbers',
+            data.id_numbers.filter((_, i) => i !== index),
+        );
     };
 
-    const updateIdNumber = (index: number, field: keyof IdNumber, value: string) => {
+    const updateIdNumber = (
+        index: number,
+        field: keyof IdNumber,
+        value: string,
+    ) => {
         const updatedIdNumbers = [...data.id_numbers];
         updatedIdNumbers[index] = {
             ...updatedIdNumbers[index],
-            [field]: value
+            [field]: value,
         };
         setData('id_numbers', updatedIdNumbers);
     };
@@ -110,7 +121,10 @@ export default function Create({ auth, client_identifier }: Props) {
     };
 
     const removeGroup = (index: number) => {
-        setData('group', data.group.filter((_, i) => i !== index));
+        setData(
+            'group',
+            data.group.filter((_, i) => i !== index),
+        );
     };
 
     const updateGroup = (index: number, value: string) => {
@@ -125,9 +139,11 @@ export default function Create({ auth, client_identifier }: Props) {
             forceFormData: true,
             onError: (errors: Record<string, string>) => {
                 if (errors.id_picture?.includes('413')) {
-                    setFileError('The image file is too large. Please choose a smaller file (max 2MB).');
+                    setFileError(
+                        'The image file is too large. Please choose a smaller file (max 2MB).',
+                    );
                 }
-            }
+            },
         });
     }
 
@@ -136,29 +152,34 @@ export default function Create({ auth, client_identifier }: Props) {
             header={
                 <div className="relative overflow-hidden p-6">
                     {/* Background gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 dark:from-blue-900 dark:via-purple-900 dark:to-indigo-900 opacity-10 dark:opacity-20"></div>
-                    
-                    <div className="relative flex justify-between items-center">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 opacity-10 dark:from-blue-900 dark:via-purple-900 dark:to-indigo-900 dark:opacity-20"></div>
+
+                    <div className="relative flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 rounded-xl shadow-lg">
+                            <div className="rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 p-3 shadow-lg dark:from-blue-600 dark:to-purple-700">
                                 <UserPlus className="h-8 w-8 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                                <h2 className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent dark:from-white dark:to-gray-200">
                                     Add Contact
                                 </h2>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                <p className="mt-1 text-gray-600 dark:text-gray-400">
                                     Create a new contact in your database
                                 </p>
                             </div>
                         </div>
-                        <Link 
-                            href={route('contacts.self-registration') + `?client_identifier=${client_identifier}`} 
-                            className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 px-4 py-2 rounded-lg flex items-center"
+                        <Link
+                            href={
+                                route('contacts.self-registration') +
+                                `?client_identifier=${client_identifier}`
+                            }
+                            className="group relative flex transform items-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
                         >
-                            <div className="absolute inset-0 bg-white/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <ArrowUpRightSquare className="w-4 h-4 mr-2 relative z-10 flex-shrink-0" />
-                            <span className="relative z-10 font-semibold">Public Registration Form</span>
+                            <div className="absolute inset-0 rounded-lg bg-white/20 opacity-0 blur transition-opacity group-hover:opacity-100"></div>
+                            <ArrowUpRightSquare className="relative z-10 mr-2 h-4 w-4 flex-shrink-0" />
+                            <span className="relative z-10 font-semibold">
+                                Public Registration Form
+                            </span>
                         </Link>
                     </div>
                 </div>
@@ -167,10 +188,10 @@ export default function Create({ auth, client_identifier }: Props) {
             <Head title="Add Contact" />
 
             <div className="py-8">
-                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl">
+                <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
+                    <Card className="border border-gray-200 bg-white/80 shadow-xl backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
                         <CardHeader className="pb-6">
-                            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                            <CardTitle className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-2xl font-bold text-transparent dark:from-white dark:to-gray-200">
                                 Contact Information
                             </CardTitle>
                         </CardHeader>
@@ -178,37 +199,44 @@ export default function Create({ auth, client_identifier }: Props) {
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 {/* ID Picture Section */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <div className="mr-3 h-2 w-2 rounded-full bg-blue-500"></div>
                                         Profile Picture
                                     </h3>
                                     <Separator className="my-4" />
                                     <div className="flex items-center gap-6">
                                         {previewUrl ? (
-                                            <div className="relative group">
-                                                <img 
-                                                    src={previewUrl} 
-                                                    alt="ID Preview" 
-                                                    className="w-32 h-32 object-cover rounded-lg ring-2 ring-gray-200 dark:ring-gray-700 shadow-lg group-hover:ring-blue-500 dark:group-hover:ring-blue-400 transition-all duration-200"
+                                            <div className="group relative">
+                                                <img
+                                                    src={previewUrl}
+                                                    alt="ID Preview"
+                                                    className="h-32 w-32 rounded-lg object-cover shadow-lg ring-2 ring-gray-200 transition-all duration-200 group-hover:ring-blue-500 dark:ring-gray-700 dark:group-hover:ring-blue-400"
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
                                             </div>
                                         ) : (
-                                            <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-lg ring-2 ring-gray-200 dark:ring-gray-700 shadow-lg flex items-center justify-center">
-                                                <span className="text-gray-500 dark:text-gray-400 font-medium">No Image</span>
+                                            <div className="flex h-32 w-32 items-center justify-center rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg ring-2 ring-gray-200 dark:from-gray-800 dark:to-gray-700 dark:ring-gray-700">
+                                                <span className="font-medium text-gray-500 dark:text-gray-400">
+                                                    No Image
+                                                </span>
                                             </div>
                                         )}
                                         <div className="flex-1 space-y-2">
-                                            <Label htmlFor="id_picture" className="text-gray-700 dark:text-gray-300 font-medium">Upload Photo</Label>
+                                            <Label
+                                                htmlFor="id_picture"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Upload Photo
+                                            </Label>
                                             <Input
                                                 id="id_picture"
                                                 type="file"
                                                 accept="image/*"
                                                 onChange={handleImageChange}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-blue-400"
                                             />
                                             {fileError && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                                                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {fileError}
                                                 </p>
                                             )}
@@ -218,52 +246,82 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                 {/* Personal Information Section */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <div className="mr-3 h-2 w-2 rounded-full bg-green-500"></div>
                                         Personal Information
                                     </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300 font-medium">First Name</Label>
+                                            <Label
+                                                htmlFor="first_name"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                First Name
+                                            </Label>
                                             <Input
                                                 id="first_name"
                                                 value={data.first_name}
-                                                onChange={e => setData('first_name', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'first_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-green-400"
                                             />
                                             {errors.first_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.first_name}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="middle_name" className="text-gray-700 dark:text-gray-300 font-medium">Middle Name</Label>
+                                            <Label
+                                                htmlFor="middle_name"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Middle Name
+                                            </Label>
                                             <Input
                                                 id="middle_name"
                                                 value={data.middle_name}
-                                                onChange={e => setData('middle_name', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'middle_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-green-400"
                                             />
                                             {errors.middle_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.middle_name}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300 font-medium">Last Name</Label>
+                                            <Label
+                                                htmlFor="last_name"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Last Name
+                                            </Label>
                                             <Input
                                                 id="last_name"
                                                 value={data.last_name}
-                                                onChange={e => setData('last_name', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'last_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-green-400"
                                             />
                                             {errors.last_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.last_name}
                                                 </p>
                                             )}
@@ -272,54 +330,93 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300 font-medium">Gender</Label>
+                                            <Label
+                                                htmlFor="gender"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Gender
+                                            </Label>
                                             <Select
                                                 value={data.gender}
-                                                onValueChange={(value: 'male' | 'female' | 'other') => setData('gender', value)}
+                                                onValueChange={(
+                                                    value:
+                                                        | 'male'
+                                                        | 'female'
+                                                        | 'other',
+                                                ) => setData('gender', value)}
                                             >
-                                                <SelectTrigger id="gender" className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200">
+                                                <SelectTrigger
+                                                    id="gender"
+                                                    className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-green-400"
+                                                >
                                                     <SelectValue placeholder="Select gender" />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-                                                    <SelectItem value="male">Male</SelectItem>
-                                                    <SelectItem value="female">Female</SelectItem>
-                                                    <SelectItem value="other">Other</SelectItem>
+                                                <SelectContent className="border-gray-200 bg-white/95 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
+                                                    <SelectItem value="male">
+                                                        Male
+                                                    </SelectItem>
+                                                    <SelectItem value="female">
+                                                        Female
+                                                    </SelectItem>
+                                                    <SelectItem value="other">
+                                                        Other
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             {errors.gender && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.gender}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="date_of_birth" className="text-gray-700 dark:text-gray-300 font-medium">Date of Birth</Label>
+                                            <Label
+                                                htmlFor="date_of_birth"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Date of Birth
+                                            </Label>
                                             <Input
                                                 id="date_of_birth"
                                                 type="date"
                                                 value={data.date_of_birth}
-                                                onChange={e => setData('date_of_birth', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'date_of_birth',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-green-400"
                                             />
                                             {errors.date_of_birth && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.date_of_birth}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium">Email</Label>
+                                            <Label
+                                                htmlFor="email"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Email
+                                            </Label>
                                             <Input
                                                 id="email"
                                                 type="email"
                                                 value={data.email}
-                                                onChange={e => setData('email', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'email',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-green-400"
                                             />
                                             {errors.email && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.email}
                                                 </p>
                                             )}
@@ -329,39 +426,59 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                 {/* Family Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <div className="mr-3 h-2 w-2 rounded-full bg-purple-500"></div>
                                         Family Information
                                     </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="fathers_name" className="text-gray-700 dark:text-gray-300 font-medium">Father's Name</Label>
+                                            <Label
+                                                htmlFor="fathers_name"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Father's Name
+                                            </Label>
                                             <Input
                                                 id="fathers_name"
                                                 value={data.fathers_name}
-                                                onChange={e => setData('fathers_name', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'fathers_name',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Full name of father"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-purple-400"
                                             />
                                             {errors.fathers_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.fathers_name}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="mothers_maiden_name" className="text-gray-700 dark:text-gray-300 font-medium">Mother's Maiden Name</Label>
+                                            <Label
+                                                htmlFor="mothers_maiden_name"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Mother's Maiden Name
+                                            </Label>
                                             <Input
                                                 id="mothers_maiden_name"
                                                 value={data.mothers_maiden_name}
-                                                onChange={e => setData('mothers_maiden_name', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'mothers_maiden_name',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Mother's full name before marriage"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-purple-400"
                                             />
                                             {errors.mothers_maiden_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.mothers_maiden_name}
                                                 </p>
                                             )}
@@ -371,55 +488,85 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                 {/* Contact Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                        <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></div>
+                                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <div className="mr-3 h-2 w-2 rounded-full bg-indigo-500"></div>
                                         Contact Information
                                     </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="call_number" className="text-gray-700 dark:text-gray-300 font-medium">Call Number</Label>
+                                            <Label
+                                                htmlFor="call_number"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Call Number
+                                            </Label>
                                             <Input
                                                 id="call_number"
                                                 value={data.call_number}
-                                                onChange={e => setData('call_number', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'call_number',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. +1234567890"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-indigo-400"
                                             />
                                             {errors.call_number && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.call_number}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="sms_number" className="text-gray-700 dark:text-gray-300 font-medium">SMS Number</Label>
+                                            <Label
+                                                htmlFor="sms_number"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                SMS Number
+                                            </Label>
                                             <Input
                                                 id="sms_number"
                                                 value={data.sms_number}
-                                                onChange={e => setData('sms_number', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'sms_number',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. +1234567890"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-indigo-400"
                                             />
                                             {errors.sms_number && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.sms_number}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="whatsapp" className="text-gray-700 dark:text-gray-300 font-medium">WhatsApp</Label>
+                                            <Label
+                                                htmlFor="whatsapp"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                WhatsApp
+                                            </Label>
                                             <Input
                                                 id="whatsapp"
                                                 value={data.whatsapp}
-                                                onChange={e => setData('whatsapp', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'whatsapp',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. +1234567890"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-indigo-400"
                                             />
                                             {errors.whatsapp && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.whatsapp}
                                                 </p>
                                             )}
@@ -429,71 +576,111 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                 {/* Social Media */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                        <div className="w-2 h-2 bg-pink-500 rounded-full mr-3"></div>
+                                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <div className="mr-3 h-2 w-2 rounded-full bg-pink-500"></div>
                                         Social Media
                                     </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="facebook" className="text-gray-700 dark:text-gray-300 font-medium">Facebook URL</Label>
+                                            <Label
+                                                htmlFor="facebook"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Facebook URL
+                                            </Label>
                                             <Input
                                                 id="facebook"
                                                 value={data.facebook}
-                                                onChange={e => setData('facebook', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'facebook',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. https://facebook.com/username"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-pink-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-pink-400"
                                             />
                                             {errors.facebook && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.facebook}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="instagram" className="text-gray-700 dark:text-gray-300 font-medium">Instagram URL</Label>
+                                            <Label
+                                                htmlFor="instagram"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Instagram URL
+                                            </Label>
                                             <Input
                                                 id="instagram"
                                                 value={data.instagram}
-                                                onChange={e => setData('instagram', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'instagram',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. https://instagram.com/username"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-pink-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-pink-400"
                                             />
                                             {errors.instagram && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.instagram}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="twitter" className="text-gray-700 dark:text-gray-300 font-medium">Twitter/X URL</Label>
+                                            <Label
+                                                htmlFor="twitter"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Twitter/X URL
+                                            </Label>
                                             <Input
                                                 id="twitter"
                                                 value={data.twitter}
-                                                onChange={e => setData('twitter', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'twitter',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. https://twitter.com/username"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-pink-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-pink-400"
                                             />
                                             {errors.twitter && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.twitter}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="linkedin" className="text-gray-700 dark:text-gray-300 font-medium">LinkedIn URL</Label>
+                                            <Label
+                                                htmlFor="linkedin"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                LinkedIn URL
+                                            </Label>
                                             <Input
                                                 id="linkedin"
                                                 value={data.linkedin}
-                                                onChange={e => setData('linkedin', e.target.value)}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'linkedin',
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="e.g. https://linkedin.com/in/username"
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-pink-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-pink-400"
                                             />
                                             {errors.linkedin && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.linkedin}
                                                 </p>
                                             )}
@@ -503,37 +690,57 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                 {/* Additional Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                        <div className="w-2 h-2 bg-amber-500 rounded-full mr-3"></div>
+                                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <div className="mr-3 h-2 w-2 rounded-full bg-amber-500"></div>
                                         Additional Information
                                     </h3>
                                     <Separator className="my-4" />
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="address" className="text-gray-700 dark:text-gray-300 font-medium">Address</Label>
+                                            <Label
+                                                htmlFor="address"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Address
+                                            </Label>
                                             <Textarea
                                                 id="address"
                                                 value={data.address}
-                                                onChange={e => setData('address', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent transition-all duration-200 min-h-[100px]"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'address',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="min-h-[100px] border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-amber-400"
                                             />
                                             {errors.address && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.address}
                                                 </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300 font-medium">Notes</Label>
+                                            <Label
+                                                htmlFor="notes"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Notes
+                                            </Label>
                                             <Textarea
                                                 id="notes"
                                                 value={data.notes}
-                                                onChange={e => setData('notes', e.target.value)}
-                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent transition-all duration-200 min-h-[100px]"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'notes',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="min-h-[100px] border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-amber-400"
                                             />
                                             {errors.notes && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.notes}
                                                 </p>
                                             )}
@@ -543,9 +750,9 @@ export default function Create({ auth, client_identifier }: Props) {
 
                                 {/* ID Numbers Section */}
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                            <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            <div className="mr-3 h-2 w-2 rounded-full bg-emerald-500"></div>
                                             ID Numbers
                                         </h3>
                                         <Button
@@ -553,46 +760,92 @@ export default function Create({ auth, client_identifier }: Props) {
                                             variant="outline"
                                             size="sm"
                                             onClick={addIdNumber}
-                                            className="relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-600 transition-all duration-200"
+                                            className="group relative border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-gray-600 dark:bg-gray-900/80 dark:hover:border-emerald-600 dark:hover:bg-emerald-900/20"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                                            <PlusIcon className="w-4 h-4 mr-2 relative z-10" />
-                                            <span className="relative z-10">Add ID Number</span>
+                                            <div className="absolute inset-0 rounded-md bg-gradient-to-r from-emerald-500 to-green-600 opacity-0 blur transition-opacity group-hover:opacity-10"></div>
+                                            <PlusIcon className="relative z-10 mr-2 h-4 w-4" />
+                                            <span className="relative z-10">
+                                                Add ID Number
+                                            </span>
                                         </Button>
                                     </div>
                                     <Separator className="my-4" />
-                                    
+
                                     {data.id_numbers.map((idNumber, index) => (
-                                        <div key={index} className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-6 rounded-lg space-y-4 border border-emerald-200 dark:border-emerald-700">
-                                            <div className="flex justify-between items-start">
-                                                <div className="grid grid-cols-2 gap-6 flex-1">
+                                        <div
+                                            key={index}
+                                            className="space-y-4 rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-6 dark:border-emerald-700 dark:from-emerald-900/20 dark:to-green-900/20"
+                                        >
+                                            <div className="flex items-start justify-between">
+                                                <div className="grid flex-1 grid-cols-2 gap-6">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor={`id_type_${index}`} className="text-gray-700 dark:text-gray-300 font-medium">ID Type</Label>
-                                                        <Select
-                                                            value={idNumber.type}
-                                                            onValueChange={(value) => updateIdNumber(index, 'type', value)}
+                                                        <Label
+                                                            htmlFor={`id_type_${index}`}
+                                                            className="font-medium text-gray-700 dark:text-gray-300"
                                                         >
-                                                            <SelectTrigger className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent transition-all duration-200">
+                                                            ID Type
+                                                        </Label>
+                                                        <Select
+                                                            value={
+                                                                idNumber.type
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) =>
+                                                                updateIdNumber(
+                                                                    index,
+                                                                    'type',
+                                                                    value,
+                                                                )
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-emerald-400">
                                                                 <SelectValue placeholder="Select ID type" />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-                                                                <SelectItem value="SSS">SSS</SelectItem>
-                                                                <SelectItem value="TIN">TIN</SelectItem>
-                                                                <SelectItem value="GSIS">GSIS</SelectItem>
-                                                                <SelectItem value="PhilHealth">PhilHealth</SelectItem>
-                                                                <SelectItem value="Pag-IBIG">Pag-IBIG</SelectItem>
-                                                                <SelectItem value="Other">Other</SelectItem>
+                                                            <SelectContent className="border-gray-200 bg-white/95 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
+                                                                <SelectItem value="SSS">
+                                                                    SSS
+                                                                </SelectItem>
+                                                                <SelectItem value="TIN">
+                                                                    TIN
+                                                                </SelectItem>
+                                                                <SelectItem value="GSIS">
+                                                                    GSIS
+                                                                </SelectItem>
+                                                                <SelectItem value="PhilHealth">
+                                                                    PhilHealth
+                                                                </SelectItem>
+                                                                <SelectItem value="Pag-IBIG">
+                                                                    Pag-IBIG
+                                                                </SelectItem>
+                                                                <SelectItem value="Other">
+                                                                    Other
+                                                                </SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor={`id_number_${index}`} className="text-gray-700 dark:text-gray-300 font-medium">ID Number</Label>
+                                                        <Label
+                                                            htmlFor={`id_number_${index}`}
+                                                            className="font-medium text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            ID Number
+                                                        </Label>
                                                         <Input
                                                             id={`id_number_${index}`}
-                                                            value={idNumber.number}
-                                                            onChange={(e) => updateIdNumber(index, 'number', e.target.value)}
+                                                            value={
+                                                                idNumber.number
+                                                            }
+                                                            onChange={(e) =>
+                                                                updateIdNumber(
+                                                                    index,
+                                                                    'number',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
                                                             placeholder="Enter ID number"
-                                                            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent transition-all duration-200"
+                                                            className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-emerald-400"
                                                         />
                                                     </div>
                                                 </div>
@@ -600,26 +853,39 @@ export default function Create({ auth, client_identifier }: Props) {
                                                     type="button"
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => removeIdNumber(index)}
-                                                    className="ml-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+                                                    onClick={() =>
+                                                        removeIdNumber(index)
+                                                    }
+                                                    className="ml-2 text-gray-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                                                 >
-                                                    <XIcon className="w-4 h-4" />
+                                                    <XIcon className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor={`id_notes_${index}`} className="text-gray-700 dark:text-gray-300 font-medium">Notes</Label>
+                                                <Label
+                                                    htmlFor={`id_notes_${index}`}
+                                                    className="font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Notes
+                                                </Label>
                                                 <Input
                                                     id={`id_notes_${index}`}
                                                     value={idNumber.notes}
-                                                    onChange={(e) => updateIdNumber(index, 'notes', e.target.value)}
+                                                    onChange={(e) =>
+                                                        updateIdNumber(
+                                                            index,
+                                                            'notes',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Additional notes about this ID (optional)"
-                                                    className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent transition-all duration-200"
+                                                    className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-emerald-400"
                                                 />
                                             </div>
                                         </div>
                                     ))}
                                     {errors.id_numbers && (
-                                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                                        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                             {errors.id_numbers}
                                         </p>
                                     )}
@@ -628,8 +894,8 @@ export default function Create({ auth, client_identifier }: Props) {
                                 {/* Group Selection */}
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                                        <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            <div className="mr-3 h-2 w-2 rounded-full bg-orange-500"></div>
                                             Groups
                                         </h3>
                                         <Button
@@ -637,30 +903,42 @@ export default function Create({ auth, client_identifier }: Props) {
                                             variant="outline"
                                             size="sm"
                                             onClick={addGroup}
-                                            className="relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:border-orange-300 dark:hover:border-orange-600 transition-all duration-200"
+                                            className="group relative border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 hover:border-orange-300 hover:bg-orange-50 dark:border-gray-600 dark:bg-gray-900/80 dark:hover:border-orange-600 dark:hover:bg-orange-900/20"
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                                            <PlusIcon className="h-4 w-4 mr-1 relative z-10" />
-                                            <span className="relative z-10 text-xs">Add Group</span>
+                                            <div className="absolute inset-0 rounded-md bg-gradient-to-r from-orange-500 to-red-600 opacity-0 blur transition-opacity group-hover:opacity-10"></div>
+                                            <PlusIcon className="relative z-10 mr-1 h-4 w-4" />
+                                            <span className="relative z-10 text-xs">
+                                                Add Group
+                                            </span>
                                         </Button>
                                     </div>
                                     <Separator className="my-4" />
                                     <div className="space-y-3">
                                         {data.group.map((group, index) => (
-                                            <div key={index} className="flex items-center gap-3">
+                                            <div
+                                                key={index}
+                                                className="flex items-center gap-3"
+                                            >
                                                 <Input
                                                     type="text"
                                                     value={group}
-                                                    onChange={(e) => updateGroup(index, e.target.value)}
+                                                    onChange={(e) =>
+                                                        updateGroup(
+                                                            index,
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Enter group name"
-                                                    className="flex-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-200"
+                                                    className="flex-1 border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-orange-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-orange-400"
                                                 />
                                                 <Button
                                                     type="button"
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => removeGroup(index)}
-                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+                                                    onClick={() =>
+                                                        removeGroup(index)
+                                                    }
+                                                    className="text-red-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                                                 >
                                                     <XIcon className="h-4 w-4" />
                                                 </Button>
@@ -668,21 +946,23 @@ export default function Create({ auth, client_identifier }: Props) {
                                         ))}
                                     </div>
                                     {errors.group && (
-                                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                                        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                             {errors.group}
                                         </p>
                                     )}
                                 </div>
 
                                 <div className="flex justify-end pt-8">
-                                    <Button 
-                                        type="submit" 
+                                    <Button
+                                        type="submit"
                                         disabled={processing}
-                                        className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                        className="group relative transform bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
                                     >
-                                        <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 blur transition-opacity group-hover:opacity-100"></div>
                                         <span className="relative z-10 font-semibold">
-                                            {processing ? 'Saving...' : 'Save Contact'}
+                                            {processing
+                                                ? 'Saving...'
+                                                : 'Save Contact'}
                                         </span>
                                     </Button>
                                 </div>
@@ -693,4 +973,4 @@ export default function Create({ auth, client_identifier }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

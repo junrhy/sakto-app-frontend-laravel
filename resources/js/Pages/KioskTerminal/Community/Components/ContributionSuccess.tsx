@@ -1,4 +1,4 @@
-import React from 'react';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
@@ -6,13 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import {
-    CheckCircle,
-    ArrowLeft,
-    Users,
-    DollarSign,
-} from 'lucide-react';
+import { ArrowLeft, CheckCircle, DollarSign, Users } from 'lucide-react';
 
 interface ContributionSuccessProps {
     type: 'health_insurance' | 'mortuary';
@@ -28,16 +22,17 @@ interface ContributionSuccessProps {
 export default function ContributionSuccess({
     type,
     successData,
-    onBack
+    onBack,
 }: ContributionSuccessProps) {
-    const typeLabel = type === 'health_insurance' ? 'Health Insurance' : 'Mortuary';
-    
+    const typeLabel =
+        type === 'health_insurance' ? 'Health Insurance' : 'Mortuary';
+
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-50">
-            <Card className="w-full max-w-2xl border-2 dark:bg-white dark:border-gray-200">
-                <CardHeader className="text-center pb-6 dark:bg-white">
-                    <div className="flex justify-center mb-4">
-                        <CheckCircle className="w-20 h-20 text-green-600" />
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-50">
+            <Card className="w-full max-w-2xl border-2 dark:border-gray-200 dark:bg-white">
+                <CardHeader className="pb-6 text-center dark:bg-white">
+                    <div className="mb-4 flex justify-center">
+                        <CheckCircle className="h-20 w-20 text-green-600" />
                     </div>
                     <CardTitle className="text-3xl font-bold text-green-600 dark:text-green-600">
                         Success!
@@ -49,46 +44,52 @@ export default function ContributionSuccess({
                 <CardContent className="space-y-8 dark:bg-white">
                     {/* Success Message */}
                     <div className="text-center">
-                        <p className="text-lg text-gray-700 dark:text-gray-700 mb-4">
+                        <p className="mb-4 text-lg text-gray-700 dark:text-gray-700">
                             {successData.message}
                         </p>
                     </div>
 
                     {/* Statistics */}
                     <div className="flex flex-wrap justify-center gap-6">
-                        <div className="text-center p-4 bg-green-50 dark:bg-green-50 rounded-lg w-full max-w-[200px]">
-                            <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                        <div className="w-full max-w-[200px] rounded-lg bg-green-50 p-4 text-center dark:bg-green-50">
+                            <Users className="mx-auto mb-2 h-8 w-8 text-green-600" />
                             <div className="text-2xl font-bold text-green-600 dark:text-green-600">
                                 {successData.total}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-600">Total Members</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-600">
+                                Total Members
+                            </div>
                         </div>
-                        <div className="text-center p-4 bg-blue-50 dark:bg-blue-50 rounded-lg w-full max-w-[200px]">
-                            <CheckCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                        <div className="w-full max-w-[200px] rounded-lg bg-blue-50 p-4 text-center dark:bg-blue-50">
+                            <CheckCircle className="mx-auto mb-2 h-8 w-8 text-blue-600" />
                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-600">
                                 {successData.successful}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-600">Successful</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-600">
+                                Successful
+                            </div>
                         </div>
                         {successData.failed > 0 && (
-                            <div className="text-center p-4 bg-red-50 dark:bg-red-50 rounded-lg w-full max-w-[200px]">
-                                <DollarSign className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                            <div className="w-full max-w-[200px] rounded-lg bg-red-50 p-4 text-center dark:bg-red-50">
+                                <DollarSign className="mx-auto mb-2 h-8 w-8 text-red-600" />
                                 <div className="text-2xl font-bold text-red-600 dark:text-red-600">
                                     {successData.failed}
                                 </div>
-                                <div className="text-sm text-gray-600 dark:text-gray-600">Failed</div>
+                                <div className="text-sm text-gray-600 dark:text-gray-600">
+                                    Failed
+                                </div>
                             </div>
                         )}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-center items-center">
-                        <Button 
+                    <div className="flex items-center justify-center">
+                        <Button
                             onClick={onBack}
                             variant="outline"
-                            className="min-w-[200px] h-12 text-lg dark:bg-white dark:text-gray-900 dark:border-gray-300 dark:hover:bg-gray-50 flex items-center justify-center"
+                            className="flex h-12 min-w-[200px] items-center justify-center text-lg dark:border-gray-300 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-50"
                         >
-                            <ArrowLeft className="w-5 h-5 mr-2" />
+                            <ArrowLeft className="mr-2 h-5 w-5" />
                             Main Menu
                         </Button>
                     </div>
@@ -102,4 +103,4 @@ export default function ContributionSuccess({
             </Card>
         </div>
     );
-} 
+}

@@ -10,7 +10,12 @@ export interface Appointment {
     patient_email?: string;
     appointment_date: string;
     appointment_time: string;
-    appointment_type: 'consultation' | 'follow_up' | 'emergency' | 'checkup' | 'procedure';
+    appointment_type:
+        | 'consultation'
+        | 'follow_up'
+        | 'emergency'
+        | 'checkup'
+        | 'procedure';
     notes?: string;
     status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
     doctor_name?: string;
@@ -39,7 +44,12 @@ export interface NewAppointment {
     patient_id: number;
     appointment_date: string;
     appointment_time: string;
-    appointment_type: 'consultation' | 'follow_up' | 'emergency' | 'checkup' | 'procedure';
+    appointment_type:
+        | 'consultation'
+        | 'follow_up'
+        | 'emergency'
+        | 'checkup'
+        | 'procedure';
     notes?: string;
     doctor_name?: string;
     fee?: number;

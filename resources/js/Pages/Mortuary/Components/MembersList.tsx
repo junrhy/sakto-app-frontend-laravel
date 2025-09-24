@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -7,14 +9,23 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Edit, Trash2, Search, Eye, List, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { format } from 'date-fns';
-import { router } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { Input } from '@/Components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { router } from '@inertiajs/react';
+import { format } from 'date-fns';
+import {
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Edit,
+    Eye,
+    List,
+    Search,
+    Trash2,
+    Users,
+} from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface Contribution {
     id: string;
@@ -56,7 +67,15 @@ interface Props {
     };
 }
 
-export default function MembersList({ members, onMemberSelect, onMemberUpdate, onAddMember, canEdit, canDelete, appCurrency }: Props) {
+export default function MembersList({
+    members,
+    onMemberSelect,
+    onMemberUpdate,
+    onAddMember,
+    canEdit,
+    canDelete,
+    appCurrency,
+}: Props) {
     const [sortField, setSortField] = useState<keyof Member>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +96,11 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
     };
 
     const handleDelete = (memberId: string) => {
-        if (window.confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+        if (
+            window.confirm(
+                'Are you sure you want to delete this member? This action cannot be undone.',
+            )
+        ) {
             router.delete(`/mortuary/members/${memberId}`, {
                 onSuccess: () => {
                     toast.success('Member deleted successfully');
@@ -88,7 +111,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                 },
                 onError: () => {
                     toast.error('Failed to delete member');
-                }
+                },
             });
         }
     };
@@ -100,7 +123,9 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
         if (sortField === 'net_balance') {
             const aNetBalance = a.total_contribution - a.total_claims_amount;
             const bNetBalance = b.total_contribution - b.total_claims_amount;
-            return sortDirection === 'asc' ? aNetBalance - bNetBalance : bNetBalance - aNetBalance;
+            return sortDirection === 'asc'
+                ? aNetBalance - bNetBalance
+                : bNetBalance - aNetBalance;
         }
 
         if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -116,9 +141,9 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
         return 0;
     });
 
-    const filteredMembers = sortedMembers.filter(member => {
+    const filteredMembers = sortedMembers.filter((member) => {
         const searchLower = searchQuery.toLowerCase();
-        
+
         return (
             member.name.toLowerCase().includes(searchLower) ||
             member.contribution_frequency.toLowerCase().includes(searchLower) ||
@@ -170,27 +195,36 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
         }
     };
 
-    const groupedMembers = filteredMembers.reduce((acc, member) => {
-        const group = member.group || 'Ungrouped';
-        if (!acc[group]) {
-            acc[group] = [];
-        }
-        acc[group].push(member);
-        return acc;
-    }, {} as Record<string, typeof filteredMembers>);
+    const groupedMembers = filteredMembers.reduce(
+        (acc, member) => {
+            const group = member.group || 'Ungrouped';
+            if (!acc[group]) {
+                acc[group] = [];
+            }
+            acc[group].push(member);
+            return acc;
+        },
+        {} as Record<string, typeof filteredMembers>,
+    );
 
     // Get unique group names for the filter dropdown
     const groupNames = Object.keys(groupedMembers).sort();
 
     // Filter groups based on selected group
-    const filteredGroupedMembers = selectedGroup === 'all' 
-        ? groupedMembers 
-        : { [selectedGroup]: groupedMembers[selectedGroup] || [] };
+    const filteredGroupedMembers =
+        selectedGroup === 'all'
+            ? groupedMembers
+            : { [selectedGroup]: groupedMembers[selectedGroup] || [] };
 
     // Group pagination logic
     const getGroupPaginationData = () => {
         if (selectedGroup === 'all') {
-            return { totalPages: 0, startIndex: 0, endIndex: 0, currentGroupMembers: [] };
+            return {
+                totalPages: 0,
+                startIndex: 0,
+                endIndex: 0,
+                currentGroupMembers: [],
+            };
         }
 
         const groupMembers = groupedMembers[selectedGroup] || [];
@@ -202,7 +236,12 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
         return { totalPages, startIndex, endIndex, currentGroupMembers };
     };
 
-    const { totalPages: groupTotalPages, startIndex: groupStartIndex, endIndex: groupEndIndex, currentGroupMembers } = getGroupPaginationData();
+    const {
+        totalPages: groupTotalPages,
+        startIndex: groupStartIndex,
+        endIndex: groupEndIndex,
+        currentGroupMembers,
+    } = getGroupPaginationData();
 
     const renderPagination = () => {
         if (totalPages <= 1) return null;
@@ -210,7 +249,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
         const getPageNumbers = () => {
             const pages = [];
             const maxVisiblePages = 5;
-            
+
             if (totalPages <= maxVisiblePages) {
                 for (let i = 1; i <= totalPages; i++) {
                     pages.push(i);
@@ -238,7 +277,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                     pages.push(totalPages);
                 }
             }
-            
+
             return pages;
         };
 
@@ -246,14 +285,18 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
             <div className="flex items-center justify-between px-2 py-4">
                 <div className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300">
                     <span>
-                        Showing {startIndex + 1} to {Math.min(endIndex, filteredMembers.length)} of {filteredMembers.length} members
+                        Showing {startIndex + 1} to{' '}
+                        {Math.min(endIndex, filteredMembers.length)} of{' '}
+                        {filteredMembers.length} members
                     </span>
                     <span className="text-slate-400">|</span>
                     <span>Items per page:</span>
                     <select
                         value={itemsPerPage}
-                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                        className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                        onChange={(e) =>
+                            handleItemsPerPageChange(Number(e.target.value))
+                        }
+                        className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                     >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
@@ -261,14 +304,14 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                         <option value={50}>50</option>
                     </select>
                 </div>
-                
+
                 <div className="flex items-center space-x-1">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(1)}
                         disabled={currentPage === 1}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronsLeft className="h-4 w-4" />
                     </Button>
@@ -277,24 +320,32 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                         size="sm"
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    
+
                     {getPageNumbers().map((page, index) => (
                         <div key={index}>
                             {page === '...' ? (
-                                <span className="px-3 py-2 text-slate-500 dark:text-slate-400">...</span>
+                                <span className="px-3 py-2 text-slate-500 dark:text-slate-400">
+                                    ...
+                                </span>
                             ) : (
                                 <Button
-                                    variant={currentPage === page ? "default" : "outline"}
+                                    variant={
+                                        currentPage === page
+                                            ? 'default'
+                                            : 'outline'
+                                    }
                                     size="sm"
-                                    onClick={() => handlePageChange(page as number)}
+                                    onClick={() =>
+                                        handlePageChange(page as number)
+                                    }
                                     className={`h-8 w-8 p-0 ${
                                         currentPage === page
-                                            ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
-                                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                            ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                                            : 'border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'
                                     }`}
                                 >
                                     {page}
@@ -302,13 +353,13 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                             )}
                         </div>
                     ))}
-                    
+
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -317,7 +368,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                         size="sm"
                         onClick={() => handlePageChange(totalPages)}
                         disabled={currentPage === totalPages}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronsRight className="h-4 w-4" />
                     </Button>
@@ -332,7 +383,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
         const getPageNumbers = () => {
             const pages = [];
             const maxVisiblePages = 5;
-            
+
             if (groupTotalPages <= maxVisiblePages) {
                 for (let i = 1; i <= groupTotalPages; i++) {
                     pages.push(i);
@@ -347,20 +398,28 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                 } else if (groupCurrentPage >= groupTotalPages - 2) {
                     pages.push(1);
                     pages.push('...');
-                    for (let i = groupTotalPages - 3; i <= groupTotalPages; i++) {
+                    for (
+                        let i = groupTotalPages - 3;
+                        i <= groupTotalPages;
+                        i++
+                    ) {
                         pages.push(i);
                     }
                 } else {
                     pages.push(1);
                     pages.push('...');
-                    for (let i = groupCurrentPage - 1; i <= groupCurrentPage + 1; i++) {
+                    for (
+                        let i = groupCurrentPage - 1;
+                        i <= groupCurrentPage + 1;
+                        i++
+                    ) {
                         pages.push(i);
                     }
                     pages.push('...');
                     pages.push(groupTotalPages);
                 }
             }
-            
+
             return pages;
         };
 
@@ -370,14 +429,20 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
             <div className="flex items-center justify-between px-2 py-4">
                 <div className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300">
                     <span>
-                        Showing {groupStartIndex + 1} to {Math.min(groupEndIndex, groupMembers.length)} of {groupMembers.length} members in {selectedGroup}
+                        Showing {groupStartIndex + 1} to{' '}
+                        {Math.min(groupEndIndex, groupMembers.length)} of{' '}
+                        {groupMembers.length} members in {selectedGroup}
                     </span>
                     <span className="text-slate-400">|</span>
                     <span>Items per page:</span>
                     <select
                         value={groupItemsPerPage}
-                        onChange={(e) => handleGroupItemsPerPageChange(Number(e.target.value))}
-                        className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                        onChange={(e) =>
+                            handleGroupItemsPerPageChange(
+                                Number(e.target.value),
+                            )
+                        }
+                        className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                     >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
@@ -385,40 +450,50 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                         <option value={50}>50</option>
                     </select>
                 </div>
-                
+
                 <div className="flex items-center space-x-1">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleGroupPageChange(1)}
                         disabled={groupCurrentPage === 1}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronsLeft className="h-4 w-4" />
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleGroupPageChange(groupCurrentPage - 1)}
+                        onClick={() =>
+                            handleGroupPageChange(groupCurrentPage - 1)
+                        }
                         disabled={groupCurrentPage === 1}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    
+
                     {getPageNumbers().map((page, index) => (
                         <div key={index}>
                             {page === '...' ? (
-                                <span className="px-3 py-2 text-slate-500 dark:text-slate-400">...</span>
+                                <span className="px-3 py-2 text-slate-500 dark:text-slate-400">
+                                    ...
+                                </span>
                             ) : (
                                 <Button
-                                    variant={groupCurrentPage === page ? "default" : "outline"}
+                                    variant={
+                                        groupCurrentPage === page
+                                            ? 'default'
+                                            : 'outline'
+                                    }
                                     size="sm"
-                                    onClick={() => handleGroupPageChange(page as number)}
+                                    onClick={() =>
+                                        handleGroupPageChange(page as number)
+                                    }
                                     className={`h-8 w-8 p-0 ${
                                         groupCurrentPage === page
-                                            ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
-                                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                            ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                                            : 'border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800'
                                     }`}
                                 >
                                     {page}
@@ -426,13 +501,15 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                             )}
                         </div>
                     ))}
-                    
+
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleGroupPageChange(groupCurrentPage + 1)}
+                        onClick={() =>
+                            handleGroupPageChange(groupCurrentPage + 1)
+                        }
                         disabled={groupCurrentPage === groupTotalPages}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -441,7 +518,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                         size="sm"
                         onClick={() => handleGroupPageChange(groupTotalPages)}
                         disabled={groupCurrentPage === groupTotalPages}
-                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        className="h-8 w-8 border-slate-300 p-0 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                         <ChevronsRight className="h-4 w-4" />
                     </Button>
@@ -455,89 +532,144 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
             <Table>
                 <TableHeader>
                     <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50 hover:dark:bg-slate-800/70">
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('name')}
                         >
-                            Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Name{' '}
+                            {sortField === 'name' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('membership_start_date')}
                         >
-                            Start Date {sortField === 'membership_start_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Start Date{' '}
+                            {sortField === 'membership_start_date' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('contribution_amount')}
                         >
-                            Premium {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Premium{' '}
+                            {sortField === 'contribution_amount' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('contribution_frequency')}
                         >
-                            Frequency {sortField === 'contribution_frequency' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Frequency{' '}
+                            {sortField === 'contribution_frequency' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('total_contribution')}
                         >
-                            Total Contribution {sortField === 'total_contribution' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Total Contribution{' '}
+                            {sortField === 'total_contribution' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('total_claims_amount')}
                         >
-                            Total Claims {sortField === 'total_claims_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Total Claims{' '}
+                            {sortField === 'total_claims_amount' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('net_balance')}
                         >
-                            Net Balance {sortField === 'net_balance' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Net Balance{' '}
+                            {sortField === 'net_balance' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead 
-                            className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                        <TableHead
+                            className="cursor-pointer font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
                             onClick={() => handleSort('status')}
                         >
-                            Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            Status{' '}
+                            {sortField === 'status' &&
+                                (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
+                        <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                            Actions
+                        </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {currentMembers.map((member) => (
-                        <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
-                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">{member.name}</TableCell>
-                            <TableCell className="text-slate-700 dark:text-slate-300">
-                                {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                        <TableRow
+                            key={member.id}
+                            className="border-slate-200 transition-colors dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50"
+                        >
+                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                                {member.name}
                             </TableCell>
-                            <TableCell className="text-slate-700 dark:text-slate-300 font-mono">
-                                <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                    {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <TableCell className="text-slate-700 dark:text-slate-300">
+                                {format(
+                                    new Date(member.membership_start_date),
+                                    'MMM d, yyyy',
+                                )}
+                            </TableCell>
+                            <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                                <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                    {appCurrency.symbol}
+                                    {Number(
+                                        member.contribution_amount,
+                                    ).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </span>
                             </TableCell>
                             <TableCell className="capitalize text-slate-700 dark:text-slate-300">
                                 {member.contribution_frequency}
                             </TableCell>
-                            <TableCell className="text-slate-700 dark:text-slate-300 font-mono">
-                                <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                    {appCurrency.symbol}{Number(member.total_contribution).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                                <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                    {appCurrency.symbol}
+                                    {Number(
+                                        member.total_contribution,
+                                    ).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </span>
                             </TableCell>
-                            <TableCell className="text-slate-700 dark:text-slate-300 font-mono">
-                                <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                    {appCurrency.symbol}{Number(member.total_claims_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                                <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                    {appCurrency.symbol}
+                                    {Number(
+                                        member.total_claims_amount,
+                                    ).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </span>
                             </TableCell>
                             <TableCell>
-                                <span className={`font-mono font-semibold ${Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                                    {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <span
+                                    className={`font-mono font-semibold ${Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                                >
+                                    {appCurrency.symbol}
+                                    {(
+                                        Number(member.total_contribution) -
+                                        Number(member.total_claims_amount)
+                                    ).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </span>
                             </TableCell>
                             <TableCell>
-                                <Badge className={getStatusColor(member.status)}>
+                                <Badge
+                                    className={getStatusColor(member.status)}
+                                >
                                     {member.status}
                                 </Badge>
                             </TableCell>
@@ -546,8 +678,13 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => window.open(`/mortuary/members/${member.id}/public`, '_blank')}
-                                        className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+                                        onClick={() =>
+                                            window.open(
+                                                `/mortuary/members/${member.id}/public`,
+                                                '_blank',
+                                            )
+                                        }
+                                        className="text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                     >
                                         <Eye className="h-4 w-4" />
                                     </Button>
@@ -555,8 +692,10 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => onMemberSelect(member)}
-                                            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+                                            onClick={() =>
+                                                onMemberSelect(member)
+                                            }
+                                            className="text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                         >
                                             <Edit className="h-4 w-4" />
                                         </Button>
@@ -565,8 +704,10 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
-                                            onClick={() => handleDelete(member.id)}
+                                            className="text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 dark:text-orange-300 dark:hover:bg-orange-900/20 dark:hover:text-orange-200"
+                                            onClick={() =>
+                                                handleDelete(member.id)
+                                            }
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -594,12 +735,15 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                         setSelectedGroup(e.target.value);
                         setGroupCurrentPage(1); // Reset to first page when changing groups
                     }}
-                    className="border border-slate-300 dark:border-slate-600 rounded px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
+                    className="rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-400 focus:ring-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-500"
                 >
-                    <option value="all">All Groups ({filteredMembers.length} members)</option>
+                    <option value="all">
+                        All Groups ({filteredMembers.length} members)
+                    </option>
                     {groupNames.map((groupName) => (
                         <option key={groupName} value={groupName}>
-                            {groupName} ({groupedMembers[groupName]?.length || 0} members)
+                            {groupName} (
+                            {groupedMembers[groupName]?.length || 0} members)
                         </option>
                     ))}
                 </select>
@@ -607,54 +751,122 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
 
             {Object.entries(filteredGroupedMembers).map(([group, members]) => (
                 <div key={group} className="space-y-3">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2">{group}</h3>
+                    <h3 className="border-b border-slate-200 pb-2 text-lg font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+                        {group}
+                    </h3>
                     <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
                         <Table>
                             <TableHeader>
                                 <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Name</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Start Date</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Premium</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Frequency</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Total Contribution</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Total Claims</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Net Balance</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Status</TableHead>
-                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Name
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Start Date
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Premium
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Frequency
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Total Contribution
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Total Claims
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Net Balance
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-slate-700 dark:text-slate-200">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {(selectedGroup === 'all' ? members : currentGroupMembers).map((member) => (
-                                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
-                                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">{member.name}</TableCell>
-                                        <TableCell className="text-slate-700 dark:text-slate-300">
-                                            {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                                {(selectedGroup === 'all'
+                                    ? members
+                                    : currentGroupMembers
+                                ).map((member) => (
+                                    <TableRow
+                                        key={member.id}
+                                        className="border-slate-200 transition-colors dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50"
+                                    >
+                                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                                            {member.name}
                                         </TableCell>
-                                        <TableCell className="text-slate-700 dark:text-slate-300 font-mono">
-                                            <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                                {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <TableCell className="text-slate-700 dark:text-slate-300">
+                                            {format(
+                                                new Date(
+                                                    member.membership_start_date,
+                                                ),
+                                                'MMM d, yyyy',
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                                            <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                                {appCurrency.symbol}
+                                                {Number(
+                                                    member.contribution_amount,
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </span>
                                         </TableCell>
                                         <TableCell className="capitalize text-slate-700 dark:text-slate-300">
                                             {member.contribution_frequency}
                                         </TableCell>
-                                        <TableCell className="text-slate-700 dark:text-slate-300 font-mono">
-                                            <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                                {appCurrency.symbol}{Number(member.total_contribution).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                                            <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                                {appCurrency.symbol}
+                                                {Number(
+                                                    member.total_contribution,
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="text-slate-700 dark:text-slate-300 font-mono">
-                                            <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                                {appCurrency.symbol}{Number(member.total_claims_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                                            <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                                {appCurrency.symbol}
+                                                {Number(
+                                                    member.total_claims_amount,
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`font-mono font-semibold ${Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                                                {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            <span
+                                                className={`font-mono font-semibold ${Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                                            >
+                                                {appCurrency.symbol}
+                                                {(
+                                                    Number(
+                                                        member.total_contribution,
+                                                    ) -
+                                                    Number(
+                                                        member.total_claims_amount,
+                                                    )
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge className={getStatusColor(member.status)}>
+                                            <Badge
+                                                className={getStatusColor(
+                                                    member.status,
+                                                )}
+                                            >
                                                 {member.status}
                                             </Badge>
                                         </TableCell>
@@ -663,8 +875,13 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={() => window.open(`/mortuary/members/${member.id}/public`, '_blank')}
-                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+                                                    onClick={() =>
+                                                        window.open(
+                                                            `/mortuary/members/${member.id}/public`,
+                                                            '_blank',
+                                                        )
+                                                    }
+                                                    className="text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -672,8 +889,12 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        onClick={() => onMemberSelect(member)}
-                                                        className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+                                                        onClick={() =>
+                                                            onMemberSelect(
+                                                                member,
+                                                            )
+                                                        }
+                                                        className="text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
@@ -682,8 +903,12 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
-                                                        onClick={() => handleDelete(member.id)}
+                                                        className="text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 dark:text-orange-300 dark:hover:bg-orange-900/20 dark:hover:text-orange-200"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                member.id,
+                                                            )
+                                                        }
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -701,7 +926,7 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
 
             {/* Show message when no groups match the filter */}
             {Object.keys(filteredGroupedMembers).length === 0 && (
-                <div className="text-center py-8">
+                <div className="py-8 text-center">
                     <p className="text-slate-500 dark:text-slate-400">
                         No members found in the selected group.
                     </p>
@@ -712,30 +937,35 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
                 <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                     <Input
                         placeholder="Search members..."
                         value={searchQuery}
                         onChange={handleSearchChange}
-                        className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
+                        className="border-slate-300 bg-white pl-8 text-slate-900 placeholder-slate-500 focus:border-slate-400 focus:ring-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-400 dark:focus:border-slate-500 dark:focus:ring-slate-500"
                     />
                 </div>
-                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'list' | 'group')}>
-                    <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                        <TabsTrigger 
+                <Tabs
+                    value={viewMode}
+                    onValueChange={(value) =>
+                        setViewMode(value as 'list' | 'group')
+                    }
+                >
+                    <TabsList className="border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+                        <TabsTrigger
                             value="list"
-                            className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm"
+                            className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm dark:text-slate-300 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-slate-100"
                         >
-                            <List className="h-4 w-4 mr-2" />
+                            <List className="mr-2 h-4 w-4" />
                             List View
                         </TabsTrigger>
-                        <TabsTrigger 
+                        <TabsTrigger
                             value="group"
-                            className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm"
+                            className="text-slate-700 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm dark:text-slate-300 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-slate-100"
                         >
-                            <Users className="h-4 w-4 mr-2" />
+                            <Users className="mr-2 h-4 w-4" />
                             Group View
                         </TabsTrigger>
                     </TabsList>
@@ -744,4 +974,4 @@ export default function MembersList({ members, onMemberSelect, onMemberUpdate, o
             {viewMode === 'list' ? renderListView() : renderGroupView()}
         </div>
     );
-} 
+}

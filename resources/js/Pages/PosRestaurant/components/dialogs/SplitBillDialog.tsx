@@ -1,10 +1,22 @@
-import React, { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Checkbox } from "@/Components/ui/checkbox";
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import React, { useMemo, useState } from 'react';
 import { OrderItem } from '../../types';
 
 interface SplitBillDialogProps {
@@ -35,8 +47,8 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
     const selectedItemsTotal = useMemo(() => {
         if (splitMethod === 'item') {
             return orderItems
-                .filter(item => selectedItems.includes(item.id))
-                .reduce((total, item) => total + (item.price * item.quantity), 0);
+                .filter((item) => selectedItems.includes(item.id))
+                .reduce((total, item) => total + item.price * item.quantity, 0);
         }
         return finalTotal;
     }, [orderItems, selectedItems, splitMethod, finalTotal]);
@@ -47,15 +59,15 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
 
     const handleItemSelection = (itemId: number, checked: boolean) => {
         if (checked) {
-            setSelectedItems(prev => [...prev, itemId]);
+            setSelectedItems((prev) => [...prev, itemId]);
         } else {
-            setSelectedItems(prev => prev.filter(id => id !== itemId));
+            setSelectedItems((prev) => prev.filter((id) => id !== itemId));
         }
     };
 
     const handleSelectAllItems = (checked: boolean) => {
         if (checked) {
-            setSelectedItems(orderItems.map(item => item.id));
+            setSelectedItems(orderItems.map((item) => item.id));
         } else {
             setSelectedItems([]);
         }
@@ -68,18 +80,23 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
             return;
         }
 
-        const orderItemsDetails = orderItems.map(item => {
-            const isSelected = splitMethod === 'item' ? selectedItems.includes(item.id) : true;
-            return `
+        const orderItemsDetails = orderItems
+            .map((item) => {
+                const isSelected =
+                    splitMethod === 'item'
+                        ? selectedItems.includes(item.id)
+                        : true;
+                return `
                 <tr>
                     <td>${item.name}</td>
                     <td>${item.quantity}</td>
                     <td>${currency_symbol}${item.price}</td>
-                    <td>${currency_symbol}${(item.price * item.quantity)}</td>
+                    <td>${currency_symbol}${item.price * item.quantity}</td>
                     <td>${isSelected ? '✓' : '✗'}</td>
                 </tr>
             `;
-        }).join('');
+            })
+            .join('');
 
         const printContent = `
             <html>
@@ -207,15 +224,26 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
                     <div className="space-y-4">
                         <div>
                             <Label>Split Method</Label>
-                            <Select value={splitMethod} onValueChange={(value: 'amount' | 'item') => setSplitMethod(value)}>
-                                <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                            <Select
+                                value={splitMethod}
+                                onValueChange={(value: 'amount' | 'item') =>
+                                    setSplitMethod(value)
+                                }
+                            >
+                                <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-                                    <SelectItem value="amount" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                    <SelectItem
+                                        value="amount"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                    >
                                         Split by Amount
                                     </SelectItem>
-                                    <SelectItem value="item" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600">
+                                    <SelectItem
+                                        value="item"
+                                        className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                    >
                                         Split by Selected Items
                                     </SelectItem>
                                 </SelectContent>
@@ -223,36 +251,63 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
                         </div>
 
                         <div>
-                            <Label htmlFor="splitAmount">Number of People</Label>
+                            <Label htmlFor="splitAmount">
+                                Number of People
+                            </Label>
                             <Input
                                 id="splitAmount"
                                 type="number"
                                 min="2"
                                 value={splitAmount}
-                                onChange={(e) => setSplitAmount(parseInt(e.target.value) || 2)}
-                                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400"
+                                onChange={(e) =>
+                                    setSplitAmount(
+                                        parseInt(e.target.value) || 2,
+                                    )
+                                }
+                                className="border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
                             />
                         </div>
 
                         {splitMethod === 'item' && (
                             <div>
                                 <Label>Select Items to Split</Label>
-                                <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                                <div className="mt-2 max-h-60 space-y-2 overflow-y-auto">
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
-                                            checked={selectedItems.length === orderItems.length && orderItems.length > 0}
-                                            onCheckedChange={handleSelectAllItems}
+                                            checked={
+                                                selectedItems.length ===
+                                                    orderItems.length &&
+                                                orderItems.length > 0
+                                            }
+                                            onCheckedChange={
+                                                handleSelectAllItems
+                                            }
                                         />
-                                        <Label className="text-sm font-medium">Select All</Label>
+                                        <Label className="text-sm font-medium">
+                                            Select All
+                                        </Label>
                                     </div>
                                     {orderItems.map((item) => (
-                                        <div key={item.id} className="flex items-center space-x-2">
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center space-x-2"
+                                        >
                                             <Checkbox
-                                                checked={selectedItems.includes(item.id)}
-                                                onCheckedChange={(checked) => handleItemSelection(item.id, checked as boolean)}
+                                                checked={selectedItems.includes(
+                                                    item.id,
+                                                )}
+                                                onCheckedChange={(checked) =>
+                                                    handleItemSelection(
+                                                        item.id,
+                                                        checked as boolean,
+                                                    )
+                                                }
                                             />
                                             <Label className="text-sm">
-                                                {item.name} - {currency_symbol}{item.price} x {item.quantity} = {currency_symbol}{(item.price * item.quantity)}
+                                                {item.name} - {currency_symbol}
+                                                {item.price} x {item.quantity} ={' '}
+                                                {currency_symbol}
+                                                {item.price * item.quantity}
                                             </Label>
                                         </div>
                                     ))}
@@ -260,11 +315,19 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
                             </div>
                         )}
 
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                            <h4 className="font-semibold mb-2">Split Summary</h4>
-                            <p>Amount to Split: {currency_symbol}{selectedItemsTotal}</p>
+                        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+                            <h4 className="mb-2 font-semibold">
+                                Split Summary
+                            </h4>
+                            <p>
+                                Amount to Split: {currency_symbol}
+                                {selectedItemsTotal}
+                            </p>
                             <p>Number of People: {splitAmount}</p>
-                            <p className="font-semibold text-lg">Amount per Person: {currency_symbol}{amountPerPerson.toFixed(2)}</p>
+                            <p className="text-lg font-semibold">
+                                Amount per Person: {currency_symbol}
+                                {amountPerPerson.toFixed(2)}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -272,9 +335,11 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
                     <Button variant="outline" onClick={handleClose}>
                         Cancel
                     </Button>
-                    <Button 
+                    <Button
                         onClick={printSplitBill}
-                        disabled={splitMethod === 'item' && selectedItems.length === 0}
+                        disabled={
+                            splitMethod === 'item' && selectedItems.length === 0
+                        }
                     >
                         Split Bill
                     </Button>

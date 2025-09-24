@@ -1,12 +1,13 @@
-import { useState, useMemo } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import ChallengeForm from '@/Components/Challenges/ChallengeForm';
 import { Badge } from '@/Components/ui/badge';
-import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users, ExternalLink, Calendar, Target, Users2, Filter, MoreHorizontal, Clock } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -14,14 +15,32 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import { Input } from '@/Components/ui/input';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/Components/ui/select";
-import ChallengeForm from '@/Components/Challenges/ChallengeForm';
+} from '@/Components/ui/select';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, Link, router } from '@inertiajs/react';
+import { format } from 'date-fns';
+import {
+    Calendar,
+    Edit,
+    ExternalLink,
+    FileDown,
+    Filter,
+    MoreHorizontal,
+    Plus,
+    SearchIcon,
+    Target,
+    Trash2,
+    Users,
+    Users2,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface User {
     id: number;
@@ -31,7 +50,16 @@ interface User {
 }
 
 interface Reward {
-    type: 'badge' | 'points' | 'achievement' | 'cash' | 'item' | 'gift' | 'certificate' | 'trophy' | 'medal';
+    type:
+        | 'badge'
+        | 'points'
+        | 'achievement'
+        | 'cash'
+        | 'item'
+        | 'gift'
+        | 'certificate'
+        | 'trophy'
+        | 'medal';
     value: string;
 }
 
@@ -41,7 +69,21 @@ interface Challenge {
     description: string;
     start_date: string;
     end_date: string;
-    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'cooking' | 'photography' | 'art' | 'writing' | 'music' | 'dance' | 'sports' | 'quiz' | 'other';
+    goal_type:
+        | 'steps'
+        | 'calories'
+        | 'distance'
+        | 'time'
+        | 'weight'
+        | 'cooking'
+        | 'photography'
+        | 'art'
+        | 'writing'
+        | 'music'
+        | 'dance'
+        | 'sports'
+        | 'quiz'
+        | 'other';
     goal_value: number;
     goal_unit: string;
     participants: number[];
@@ -72,9 +114,11 @@ interface Props {
 
 export default function Index({ auth, challenges: initialChallenges }: Props) {
     console.log('Auth data:', auth);
-    const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
+    const [challenges, setChallenges] =
+        useState<Challenge[]>(initialChallenges);
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-    const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+    const [selectedChallenge, setSelectedChallenge] =
+        useState<Challenge | null>(null);
     const [search, setSearch] = useState('');
     const [selectedChallenges, setSelectedChallenges] = useState<number[]>([]);
     const [visibilityFilter, setVisibilityFilter] = useState<string>('all');
@@ -84,7 +128,10 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
     // Check if current team member has admin or manager role
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager')
+            );
         }
         // If no team member is selected, check if the main user is admin
         return auth.user.is_admin;
@@ -93,7 +140,11 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
     // Check if current team member has admin, manager, or user role
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         // If no team member is selected, check if the main user is admin
         return auth.user.is_admin;
@@ -101,21 +152,26 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
 
     const filteredChallenges = useMemo(() => {
         let filtered = challenges;
-        
+
         if (search.trim()) {
             const searchLower = search.toLowerCase();
-            filtered = filtered.filter(challenge => 
-                challenge.title.toLowerCase().includes(searchLower) ||
-                challenge.description.toLowerCase().includes(searchLower)
+            filtered = filtered.filter(
+                (challenge) =>
+                    challenge.title.toLowerCase().includes(searchLower) ||
+                    challenge.description.toLowerCase().includes(searchLower),
             );
         }
 
         if (visibilityFilter !== 'all') {
-            filtered = filtered.filter(challenge => challenge.visibility === visibilityFilter);
+            filtered = filtered.filter(
+                (challenge) => challenge.visibility === visibilityFilter,
+            );
         }
 
         if (goalTypeFilter !== 'all') {
-            filtered = filtered.filter(challenge => challenge.goal_type === goalTypeFilter);
+            filtered = filtered.filter(
+                (challenge) => challenge.goal_type === goalTypeFilter,
+            );
         }
 
         return filtered;
@@ -125,36 +181,51 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
         if (selectedChallenges.length === filteredChallenges.length) {
             setSelectedChallenges([]);
         } else {
-            setSelectedChallenges(filteredChallenges.map(challenge => challenge.id));
+            setSelectedChallenges(
+                filteredChallenges.map((challenge) => challenge.id),
+            );
         }
     };
 
     const toggleSelect = (id: number) => {
         if (selectedChallenges.includes(id)) {
-            setSelectedChallenges(selectedChallenges.filter(challengeId => challengeId !== id));
+            setSelectedChallenges(
+                selectedChallenges.filter((challengeId) => challengeId !== id),
+            );
         } else {
             setSelectedChallenges([...selectedChallenges, id]);
         }
     };
 
     const exportToCSV = () => {
-        const selectedData = challenges.filter(challenge => selectedChallenges.includes(challenge.id));
-        const headers = ['Title', 'Goal Type', 'Goal Value', 'Visibility', 'Start Date', 'End Date'];
-        const csvData = selectedData.map(challenge => [
+        const selectedData = challenges.filter((challenge) =>
+            selectedChallenges.includes(challenge.id),
+        );
+        const headers = [
+            'Title',
+            'Goal Type',
+            'Goal Value',
+            'Visibility',
+            'Start Date',
+            'End Date',
+        ];
+        const csvData = selectedData.map((challenge) => [
             challenge.title,
             challenge.goal_type,
             `${challenge.goal_value} ${challenge.goal_unit}`,
             challenge.visibility,
             format(new Date(challenge.start_date), 'PPP'),
-            format(new Date(challenge.end_date), 'PPP')
+            format(new Date(challenge.end_date), 'PPP'),
         ]);
 
         const csvContent = [
             headers.join(','),
-            ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+            ...csvData.map((row) => row.map((cell) => `"${cell}"`).join(',')),
         ].join('\n');
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csvContent], {
+            type: 'text/csv;charset=utf-8;',
+        });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'challenges.csv';
@@ -167,7 +238,9 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
         }
     };
 
-    const handleCreateChallenge = async (formData: Record<string, any>): Promise<void> => {
+    const handleCreateChallenge = async (
+        formData: Record<string, any>,
+    ): Promise<void> => {
         try {
             await router.post(route('challenges.store'), formData);
             setIsFormOpen(false);
@@ -176,7 +249,10 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
         }
     };
 
-    const handleUpdateChallenge = async (id: number, formData: Record<string, any>): Promise<void> => {
+    const handleUpdateChallenge = async (
+        id: number,
+        formData: Record<string, any>,
+    ): Promise<void> => {
         try {
             await router.put(route('challenges.update', id), formData);
             setSelectedChallenge(null);
@@ -257,63 +333,110 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                             Challenges
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400">
-                            Create and manage fitness, wellness, and personal development challenges
+                            Create and manage fitness, wellness, and personal
+                            development challenges
                         </p>
                     </div>
-                    
-                    <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-                        <div className="flex flex-col sm:flex-row gap-3">
+
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row">
                             <div className="relative flex-1 sm:max-w-sm">
-                                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
+                                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400" />
                                 <Input
                                     type="search"
                                     placeholder="Search challenges..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-9 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                    className="border-gray-300 bg-white pl-9 dark:border-gray-700 dark:bg-gray-900"
                                 />
                             </div>
                             <div className="flex gap-2">
-                                <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-                                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
-                                        <Filter className="w-4 h-4 mr-2" />
+                                <Select
+                                    value={visibilityFilter}
+                                    onValueChange={setVisibilityFilter}
+                                >
+                                    <SelectTrigger className="w-full border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900 sm:w-[180px]">
+                                        <Filter className="mr-2 h-4 w-4" />
                                         <SelectValue placeholder="Visibility" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Visibilities</SelectItem>
-                                        <SelectItem value="public">Public</SelectItem>
-                                        <SelectItem value="private">Private</SelectItem>
-                                        <SelectItem value="friends">Friends</SelectItem>
-                                        <SelectItem value="family">Family</SelectItem>
-                                        <SelectItem value="coworkers">Coworkers</SelectItem>
+                                        <SelectItem value="all">
+                                            All Visibilities
+                                        </SelectItem>
+                                        <SelectItem value="public">
+                                            Public
+                                        </SelectItem>
+                                        <SelectItem value="private">
+                                            Private
+                                        </SelectItem>
+                                        <SelectItem value="friends">
+                                            Friends
+                                        </SelectItem>
+                                        <SelectItem value="family">
+                                            Family
+                                        </SelectItem>
+                                        <SelectItem value="coworkers">
+                                            Coworkers
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Select value={goalTypeFilter} onValueChange={setGoalTypeFilter}>
-                                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
-                                        <Target className="w-4 h-4 mr-2" />
+                                <Select
+                                    value={goalTypeFilter}
+                                    onValueChange={setGoalTypeFilter}
+                                >
+                                    <SelectTrigger className="w-full border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900 sm:w-[180px]">
+                                        <Target className="mr-2 h-4 w-4" />
                                         <SelectValue placeholder="Goal Type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Goal Types</SelectItem>
-                                        <SelectItem value="steps">Steps</SelectItem>
-                                        <SelectItem value="calories">Calories</SelectItem>
-                                        <SelectItem value="distance">Distance</SelectItem>
-                                        <SelectItem value="time">Time</SelectItem>
-                                        <SelectItem value="weight">Weight</SelectItem>
-                                        <SelectItem value="cooking">Cooking</SelectItem>
-                                        <SelectItem value="photography">Photography</SelectItem>
+                                        <SelectItem value="all">
+                                            All Goal Types
+                                        </SelectItem>
+                                        <SelectItem value="steps">
+                                            Steps
+                                        </SelectItem>
+                                        <SelectItem value="calories">
+                                            Calories
+                                        </SelectItem>
+                                        <SelectItem value="distance">
+                                            Distance
+                                        </SelectItem>
+                                        <SelectItem value="time">
+                                            Time
+                                        </SelectItem>
+                                        <SelectItem value="weight">
+                                            Weight
+                                        </SelectItem>
+                                        <SelectItem value="cooking">
+                                            Cooking
+                                        </SelectItem>
+                                        <SelectItem value="photography">
+                                            Photography
+                                        </SelectItem>
                                         <SelectItem value="art">Art</SelectItem>
-                                        <SelectItem value="writing">Writing</SelectItem>
-                                        <SelectItem value="music">Music</SelectItem>
-                                        <SelectItem value="dance">Dance</SelectItem>
-                                        <SelectItem value="sports">Sports</SelectItem>
-                                        <SelectItem value="quiz">Quiz</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        <SelectItem value="writing">
+                                            Writing
+                                        </SelectItem>
+                                        <SelectItem value="music">
+                                            Music
+                                        </SelectItem>
+                                        <SelectItem value="dance">
+                                            Dance
+                                        </SelectItem>
+                                        <SelectItem value="sports">
+                                            Sports
+                                        </SelectItem>
+                                        <SelectItem value="quiz">
+                                            Quiz
+                                        </SelectItem>
+                                        <SelectItem value="other">
+                                            Other
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-3">
                             {selectedChallenges.length > 0 && (
                                 <Button
@@ -321,12 +444,15 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                     onClick={exportToCSV}
                                     className="flex items-center"
                                 >
-                                    <FileDown className="w-4 h-4 mr-2" />
+                                    <FileDown className="mr-2 h-4 w-4" />
                                     Export ({selectedChallenges.length})
                                 </Button>
                             )}
-                            <Button onClick={() => setIsFormOpen(true)} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                                <Plus className="w-4 h-4 mr-2" />
+                            <Button
+                                onClick={() => setIsFormOpen(true)}
+                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
                                 Create Challenge
                             </Button>
                         </div>
@@ -337,65 +463,96 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
             <Head title="Challenges" />
 
             <div className="py-8">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                    <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
+                        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-900/20 dark:to-blue-800/20">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Challenges</p>
-                                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{challenges.length}</p>
+                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                            Total Challenges
+                                        </p>
+                                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                            {challenges.length}
+                                        </p>
                                     </div>
-                                    <div className="h-12 w-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500">
                                         <Target className="h-6 w-6 text-white" />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
-                        
-                        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+
+                        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100 dark:border-green-800 dark:from-green-900/20 dark:to-green-800/20">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">Active</p>
+                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                                            Active
+                                        </p>
                                         <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                            {challenges.filter(c => c.status === 'active').length}
+                                            {
+                                                challenges.filter(
+                                                    (c) =>
+                                                        c.status === 'active',
+                                                ).length
+                                            }
                                         </p>
                                     </div>
-                                    <div className="h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
-                                        <div className="h-3 w-3 bg-white rounded-full animate-pulse"></div>
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500">
+                                        <div className="h-3 w-3 animate-pulse rounded-full bg-white"></div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
-                        
-                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+
+                        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:border-purple-800 dark:from-purple-900/20 dark:to-purple-800/20">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Completed</p>
+                                        <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                                            Completed
+                                        </p>
                                         <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                                            {challenges.filter(c => c.status === 'completed').length}
+                                            {
+                                                challenges.filter(
+                                                    (c) =>
+                                                        c.status ===
+                                                        'completed',
+                                                ).length
+                                            }
                                         </p>
                                     </div>
-                                    <div className="h-12 w-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                                        <div className="h-6 w-6 text-white">✓</div>
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500">
+                                        <div className="h-6 w-6 text-white">
+                                            ✓
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
-                        
-                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+
+                        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100 dark:border-orange-800 dark:from-orange-900/20 dark:to-orange-800/20">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Total Participants</p>
+                                        <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                                            Total Participants
+                                        </p>
                                         <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                                            {challenges.reduce((sum, c) => sum + (c.participants_count || c.participants?.length || 0), 0)}
+                                            {challenges.reduce(
+                                                (sum, c) =>
+                                                    sum +
+                                                    (c.participants_count ||
+                                                        c.participants
+                                                            ?.length ||
+                                                        0),
+                                                0,
+                                            )}
                                         </p>
                                     </div>
-                                    <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500">
                                         <Users2 className="h-6 w-6 text-white" />
                                     </div>
                                 </div>
@@ -405,87 +562,146 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
 
                     {/* Challenges Grid */}
                     {filteredChallenges.length === 0 ? (
-                        <Card className="text-center py-12">
+                        <Card className="py-12 text-center">
                             <CardContent>
-                                <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
                                     <Target className="h-12 w-12 text-gray-400" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No challenges found</h3>
-                                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                    {search || visibilityFilter !== 'all' || goalTypeFilter !== 'all' 
-                                        ? 'Try adjusting your filters or search terms.' 
+                                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                                    No challenges found
+                                </h3>
+                                <p className="mb-4 text-gray-600 dark:text-gray-400">
+                                    {search ||
+                                    visibilityFilter !== 'all' ||
+                                    goalTypeFilter !== 'all'
+                                        ? 'Try adjusting your filters or search terms.'
                                         : 'Get started by creating your first challenge!'}
                                 </p>
-                                {!search && visibilityFilter === 'all' && goalTypeFilter === 'all' && (
-                                    <Button onClick={() => setIsFormOpen(true)}>
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Create Challenge
-                                    </Button>
-                                )}
+                                {!search &&
+                                    visibilityFilter === 'all' &&
+                                    goalTypeFilter === 'all' && (
+                                        <Button
+                                            onClick={() => setIsFormOpen(true)}
+                                        >
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Create Challenge
+                                        </Button>
+                                    )}
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {filteredChallenges.map((challenge) => (
-                                <Card key={challenge.id} className="group hover:shadow-lg transition-all duration-200 border-gray-200 dark:border-gray-700">
+                                <Card
+                                    key={challenge.id}
+                                    className="group border-gray-200 transition-all duration-200 hover:shadow-lg dark:border-gray-700"
+                                >
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex items-center space-x-3">
-                                                <div className="text-2xl">{getGoalTypeIcon(challenge.goal_type)}</div>
-                                                <div className="flex-1 min-w-0">
-                                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                                <div className="text-2xl">
+                                                    {getGoalTypeIcon(
+                                                        challenge.goal_type,
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <CardTitle className="truncate text-lg font-semibold text-gray-900 dark:text-white">
                                                         {challenge.title}
                                                     </CardTitle>
-                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                    <CardDescription className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
                                                         {challenge.description}
                                                     </CardDescription>
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
-                                                    checked={selectedChallenges.includes(challenge.id)}
-                                                    onCheckedChange={() => toggleSelect(challenge.id)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    checked={selectedChallenges.includes(
+                                                        challenge.id,
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        toggleSelect(
+                                                            challenge.id,
+                                                        )
+                                                    }
+                                                    className="opacity-0 transition-opacity group-hover:opacity-100"
                                                 />
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                                        >
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('challenges.participants', challenge.id)}>
-                                                                <Users className="w-4 h-4 mr-2" />
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={route(
+                                                                    'challenges.participants',
+                                                                    challenge.id,
+                                                                )}
+                                                            >
+                                                                <Users className="mr-2 h-4 w-4" />
                                                                 Participants
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('challenges.leaderboard', challenge.id)}>
-                                                                <Users className="w-4 h-4 mr-2" />
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={route(
+                                                                    'challenges.leaderboard',
+                                                                    challenge.id,
+                                                                )}
+                                                            >
+                                                                <Users className="mr-2 h-4 w-4" />
                                                                 Leaderboard
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        {challenge.visibility === 'public' && (
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={route('challenges.public-show', challenge.id)}>
-                                                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                                        {challenge.visibility ===
+                                                            'public' && (
+                                                            <DropdownMenuItem
+                                                                asChild
+                                                            >
+                                                                <Link
+                                                                    href={route(
+                                                                        'challenges.public-show',
+                                                                        challenge.id,
+                                                                    )}
+                                                                >
+                                                                    <ExternalLink className="mr-2 h-4 w-4" />
                                                                     Public View
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                         )}
                                                         {canEdit && (
-                                                            <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    setSelectedChallenge(
+                                                                        challenge,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Edit className="mr-2 h-4 w-4" />
                                                                 Edit
                                                             </DropdownMenuItem>
                                                         )}
                                                         {canDelete && (
                                                             <DropdownMenuItem
                                                                 className="text-red-600"
-                                                                onClick={() => handleDelete(challenge.id)}
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        challenge.id,
+                                                                    )
+                                                                }
                                                             >
-                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                <Trash2 className="mr-2 h-4 w-4" />
                                                                 Delete
                                                             </DropdownMenuItem>
                                                         )}
@@ -494,49 +710,79 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    
+
                                     <CardContent className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center space-x-2">
                                                 <Target className="h-4 w-4 text-gray-500" />
                                                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {challenge.goal_value} {challenge.goal_unit}
+                                                    {challenge.goal_value}{' '}
+                                                    {challenge.goal_unit}
                                                 </span>
                                             </div>
-                                            <Badge 
-                                                variant={getVisibilityBadgeColor(challenge.visibility)}
+                                            <Badge
+                                                variant={getVisibilityBadgeColor(
+                                                    challenge.visibility,
+                                                )}
                                                 className="capitalize"
                                             >
                                                 {challenge.visibility}
                                             </Badge>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                                             <div className="flex items-center space-x-1">
                                                 <Calendar className="h-4 w-4" />
-                                                <span>{format(new Date(challenge.start_date), 'MMM dd')}</span>
+                                                <span>
+                                                    {format(
+                                                        new Date(
+                                                            challenge.start_date,
+                                                        ),
+                                                        'MMM dd',
+                                                    )}
+                                                </span>
                                                 <span>-</span>
-                                                <span>{format(new Date(challenge.end_date), 'MMM dd, yyyy')}</span>
+                                                <span>
+                                                    {format(
+                                                        new Date(
+                                                            challenge.end_date,
+                                                        ),
+                                                        'MMM dd, yyyy',
+                                                    )}
+                                                </span>
                                             </div>
                                             <div className="flex items-center space-x-1">
                                                 <Users2 className="h-4 w-4" />
-                                                <span>{challenge.participants_count || challenge.participants?.length || 0}</span>
+                                                <span>
+                                                    {challenge.participants_count ||
+                                                        challenge.participants
+                                                            ?.length ||
+                                                        0}
+                                                </span>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(challenge.status)}`}>
+                                            <span
+                                                className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(challenge.status)}`}
+                                            >
                                                 {challenge.status}
                                             </span>
-                                            {challenge.visibility === 'public' && (
+                                            {challenge.visibility ===
+                                                'public' && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     asChild
                                                     className="text-xs"
                                                 >
-                                                    <Link href={route('challenges.public-register', challenge.id)}>
-                                                        <ExternalLink className="w-3 h-3 mr-1" />
+                                                    <Link
+                                                        href={route(
+                                                            'challenges.public-register',
+                                                            challenge.id,
+                                                        )}
+                                                    >
+                                                        <ExternalLink className="mr-1 h-3 w-3" />
                                                         Join
                                                     </Link>
                                                 </Button>
@@ -561,10 +807,12 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
             {selectedChallenge && (
                 <ChallengeForm
                     challenge={selectedChallenge}
-                    onSubmit={(formData: Partial<Challenge>) => handleUpdateChallenge(selectedChallenge.id, formData)}
+                    onSubmit={(formData: Partial<Challenge>) =>
+                        handleUpdateChallenge(selectedChallenge.id, formData)
+                    }
                     onClose={() => setSelectedChallenge(null)}
                 />
             )}
         </AuthenticatedLayout>
     );
-} 
+}

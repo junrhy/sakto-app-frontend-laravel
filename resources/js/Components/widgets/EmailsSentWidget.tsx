@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@/Components/ui/card";
-import { ScrollArea } from "@/Components/ui/scroll-area";
-import { Mail, Send, CheckCircle2, Clock, AlertCircle } from "lucide-react";
-import { Progress } from "@/Components/ui/progress";
+import { Card, CardContent } from '@/Components/ui/card';
+import { Progress } from '@/Components/ui/progress';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { AlertCircle, CheckCircle2, Clock, Send } from 'lucide-react';
 
 interface SentEmail {
     id: number;
@@ -16,39 +16,45 @@ export function EmailsSentWidget() {
     const sentEmails: SentEmail[] = [
         {
             id: 1,
-            to: "john@example.com",
-            subject: "Project Update",
-            date: "10:30 AM",
-            status: 'delivered'
+            to: 'john@example.com',
+            subject: 'Project Update',
+            date: '10:30 AM',
+            status: 'delivered',
         },
         {
             id: 2,
-            to: "jane@example.com",
-            subject: "Meeting Tomorrow",
-            date: "9:15 AM",
-            status: 'sent'
+            to: 'jane@example.com',
+            subject: 'Meeting Tomorrow',
+            date: '9:15 AM',
+            status: 'sent',
         },
         {
             id: 3,
-            to: "team@example.com",
-            subject: "Weekly Report",
-            date: "Yesterday",
-            status: 'pending'
+            to: 'team@example.com',
+            subject: 'Weekly Report',
+            date: 'Yesterday',
+            status: 'pending',
         },
         {
             id: 4,
-            to: "client@example.com",
-            subject: "Proposal Review",
-            date: "Yesterday",
-            status: 'failed'
-        }
+            to: 'client@example.com',
+            subject: 'Proposal Review',
+            date: 'Yesterday',
+            status: 'failed',
+        },
     ];
 
     // Calculate statistics
     const total = sentEmails.length;
-    const delivered = sentEmails.filter(email => email.status === 'delivered').length;
-    const pending = sentEmails.filter(email => email.status === 'pending').length;
-    const failed = sentEmails.filter(email => email.status === 'failed').length;
+    const delivered = sentEmails.filter(
+        (email) => email.status === 'delivered',
+    ).length;
+    const pending = sentEmails.filter(
+        (email) => email.status === 'pending',
+    ).length;
+    const failed = sentEmails.filter(
+        (email) => email.status === 'failed',
+    ).length;
     const deliveryRate = (delivered / total) * 100;
 
     const getStatusIcon = (status: SentEmail['status']) => {
@@ -65,17 +71,23 @@ export function EmailsSentWidget() {
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Sent Emails</h3>
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                    Sent Emails
+                </h3>
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Delivery Rate:</span>
-                    <span className="text-sm font-medium">{deliveryRate.toFixed(1)}%</span>
+                    <span className="text-sm text-gray-500">
+                        Delivery Rate:
+                    </span>
+                    <span className="text-sm font-medium">
+                        {deliveryRate.toFixed(1)}%
+                    </span>
                 </div>
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="mb-6 grid grid-cols-2 gap-4">
                 <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -83,7 +95,9 @@ export function EmailsSentWidget() {
                                 <CheckCircle2 className="h-4 w-4 text-green-500" />
                                 <span className="text-sm">Delivered</span>
                             </div>
-                            <span className="text-sm font-medium">{delivered}</span>
+                            <span className="text-sm font-medium">
+                                {delivered}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -94,7 +108,9 @@ export function EmailsSentWidget() {
                                 <Clock className="h-4 w-4 text-yellow-500" />
                                 <span className="text-sm">Pending</span>
                             </div>
-                            <span className="text-sm font-medium">{pending}</span>
+                            <span className="text-sm font-medium">
+                                {pending}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -105,7 +121,13 @@ export function EmailsSentWidget() {
                                 <Send className="h-4 w-4 text-blue-500" />
                                 <span className="text-sm">Sent</span>
                             </div>
-                            <span className="text-sm font-medium">{sentEmails.filter(email => email.status === 'sent').length}</span>
+                            <span className="text-sm font-medium">
+                                {
+                                    sentEmails.filter(
+                                        (email) => email.status === 'sent',
+                                    ).length
+                                }
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -116,7 +138,9 @@ export function EmailsSentWidget() {
                                 <AlertCircle className="h-4 w-4 text-red-500" />
                                 <span className="text-sm">Failed</span>
                             </div>
-                            <span className="text-sm font-medium">{failed}</span>
+                            <span className="text-sm font-medium">
+                                {failed}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>
@@ -137,12 +161,18 @@ export function EmailsSentWidget() {
                                     <div className="flex-shrink-0">
                                         {getStatusIcon(email.status)}
                                     </div>
-                                    <div className="flex-grow min-w-0">
+                                    <div className="min-w-0 flex-grow">
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium truncate">{email.to}</span>
-                                            <span className="text-sm text-gray-500">{email.date}</span>
+                                            <span className="truncate font-medium">
+                                                {email.to}
+                                            </span>
+                                            <span className="text-sm text-gray-500">
+                                                {email.date}
+                                            </span>
                                         </div>
-                                        <p className="text-sm text-gray-500 truncate mt-2">{email.subject}</p>
+                                        <p className="mt-2 truncate text-sm text-gray-500">
+                                            {email.subject}
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -152,4 +182,4 @@ export function EmailsSentWidget() {
             </ScrollArea>
         </div>
     );
-} 
+}

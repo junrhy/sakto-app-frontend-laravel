@@ -1,6 +1,11 @@
-import { useState } from 'react';
-import { PencilIcon, TrashIcon, UserGroupIcon, TrophyIcon } from '@heroicons/react/24/outline';
+import {
+    PencilIcon,
+    TrashIcon,
+    TrophyIcon,
+    UserGroupIcon,
+} from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { useState } from 'react';
 
 interface Reward {
     type: 'badge' | 'points' | 'achievement';
@@ -37,7 +42,10 @@ export default function ChallengeCard({ challenge, onEdit, onDelete }: Props) {
 
     const getProgressPercentage = (): number => {
         if (!challenge.progress || challenge.progress.length === 0) return 0;
-        const totalProgress = challenge.progress.reduce((sum, p) => sum + p.progress_value, 0);
+        const totalProgress = challenge.progress.reduce(
+            (sum, p) => sum + p.progress_value,
+            0,
+        );
         return Math.min((totalProgress / challenge.goal_value) * 100, 100);
     };
 
@@ -59,12 +67,16 @@ export default function ChallengeCard({ challenge, onEdit, onDelete }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="overflow-hidden rounded-lg bg-white shadow-md">
             <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
+                <div className="mb-4 flex items-start justify-between">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{challenge.title}</h3>
-                        <p className="text-sm text-gray-500">{getVisibilityIcon()} {challenge.visibility}</p>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            {challenge.title}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                            {getVisibilityIcon()} {challenge.visibility}
+                        </p>
                     </div>
                     <div className="flex space-x-2">
                         <button
@@ -82,30 +94,35 @@ export default function ChallengeCard({ challenge, onEdit, onDelete }: Props) {
                     </div>
                 </div>
 
-                <p className="text-gray-600 mb-4">{challenge.description}</p>
+                <p className="mb-4 text-gray-600">{challenge.description}</p>
 
-                <div className="space-y-2 mb-4">
+                <div className="mb-4 space-y-2">
                     <div className="flex items-center text-sm text-gray-500">
-                        <TrophyIcon className="h-4 w-4 mr-1" />
-                        <span>Goal: {challenge.goal_value} {challenge.goal_unit}</span>
+                        <TrophyIcon className="mr-1 h-4 w-4" />
+                        <span>
+                            Goal: {challenge.goal_value} {challenge.goal_unit}
+                        </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
-                        <UserGroupIcon className="h-4 w-4 mr-1" />
-                        <span>{challenge.participants?.length || 0} participants</span>
+                        <UserGroupIcon className="mr-1 h-4 w-4" />
+                        <span>
+                            {challenge.participants?.length || 0} participants
+                        </span>
                     </div>
                     <div className="text-sm text-gray-500">
-                        {format(new Date(challenge.start_date), 'MMM d, yyyy')} - {format(new Date(challenge.end_date), 'MMM d, yyyy')}
+                        {format(new Date(challenge.start_date), 'MMM d, yyyy')}{' '}
+                        - {format(new Date(challenge.end_date), 'MMM d, yyyy')}
                     </div>
                 </div>
 
                 <div className="mb-4">
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="mb-1 flex justify-between text-sm">
                         <span>Progress</span>
                         <span>{Math.round(getProgressPercentage())}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-gray-200">
                         <div
-                            className="bg-indigo-600 h-2 rounded-full"
+                            className="h-2 rounded-full bg-indigo-600"
                             style={{ width: `${getProgressPercentage()}%` }}
                         ></div>
                     </div>
@@ -119,8 +136,10 @@ export default function ChallengeCard({ challenge, onEdit, onDelete }: Props) {
                 </button>
 
                 {showDetails && (
-                    <div className="mt-4 pt-4 border-t">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Rewards</h4>
+                    <div className="mt-4 border-t pt-4">
+                        <h4 className="mb-2 text-sm font-medium text-gray-900">
+                            Rewards
+                        </h4>
                         {challenge.rewards?.map((reward, index) => (
                             <div key={index} className="text-sm text-gray-600">
                                 {reward.type}: {reward.value}
@@ -131,4 +150,4 @@ export default function ChallengeCard({ challenge, onEdit, onDelete }: Props) {
             </div>
         </div>
     );
-} 
+}

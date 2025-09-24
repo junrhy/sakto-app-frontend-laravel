@@ -1,18 +1,44 @@
-import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { formatAmount } from '@/lib/utils';
-import axios from 'axios';
-import { FileDown, MoreHorizontal, Search, Trash2, History, FileText, Mail } from 'lucide-react';
-import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { formatAmount } from '@/lib/utils';
+import { Head } from '@inertiajs/react';
+import axios from 'axios';
+import { FileDown, FileText, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface CbuFund {
@@ -128,25 +154,36 @@ interface Props {
 export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager') ||
+                auth.selectedTeamMember.roles.includes('user')
+            );
         }
         return auth.user.is_admin || false;
     }, [auth.selectedTeamMember, auth.user?.is_admin]);
 
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('manager')
+            );
         }
         return auth.user.is_admin || false;
     }, [auth.selectedTeamMember, auth.user?.is_admin]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [isContributionDialogOpen, setIsContributionDialogOpen] = useState(false);
+    const [isContributionDialogOpen, setIsContributionDialogOpen] =
+        useState(false);
     const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
     const [isDividendDialogOpen, setIsDividendDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isViewContributionsDialogOpen, setIsViewContributionsDialogOpen] = useState(false);
-    const [isViewWithdrawalsDialogOpen, setIsViewWithdrawalsDialogOpen] = useState(false);
-    const [isViewDividendsDialogOpen, setIsViewDividendsDialogOpen] = useState(false);
+    const [isViewContributionsDialogOpen, setIsViewContributionsDialogOpen] =
+        useState(false);
+    const [isViewWithdrawalsDialogOpen, setIsViewWithdrawalsDialogOpen] =
+        useState(false);
+    const [isViewDividendsDialogOpen, setIsViewDividendsDialogOpen] =
+        useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -169,25 +206,25 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         end_date: '',
         value_per_share: '',
         total_amount: '0',
-        number_of_shares: 0
+        number_of_shares: 0,
     });
     const [contribution, setContribution] = useState({
         cbu_fund_id: '',
         amount: '',
         contribution_date: new Date().toISOString().split('T')[0],
-        notes: ''
+        notes: '',
     });
     const [withdrawal, setWithdrawal] = useState({
         cbu_fund_id: '',
         amount: '',
         withdrawal_date: new Date().toISOString().split('T')[0],
-        notes: ''
+        notes: '',
     });
     const [dividend, setDividend] = useState({
         cbu_fund_id: '',
         amount: '',
         dividend_date: new Date().toISOString().split('T')[0],
-        notes: ''
+        notes: '',
     });
     const [editingFund, setEditingFund] = useState<CbuFund | null>(null);
     const [fundToDelete, setFundToDelete] = useState<CbuFund | null>(null);
@@ -195,7 +232,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
     const [reportDateRange, setReportDateRange] = useState({
         start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date().toISOString().split('T')[0]
+        end_date: new Date().toISOString().split('T')[0],
     });
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [reportData, setReportData] = useState<CbuReport | null>(null);
@@ -203,7 +240,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
     const [isSendingReport, setIsSendingReport] = useState(false);
     const [reportEmailData, setReportEmailData] = useState({
         email: '',
-        message: ''
+        message: '',
     });
 
     const handleAddFund = () => {
@@ -215,7 +252,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             end_date: '',
             value_per_share: '',
             total_amount: '0',
-            number_of_shares: 0
+            number_of_shares: 0,
         });
         setIsAddDialogOpen(true);
     };
@@ -239,7 +276,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             cbu_fund_id: fund.id.toString(),
             amount: '',
             contribution_date: new Date().toISOString().split('T')[0],
-            notes: ''
+            notes: '',
         });
         setIsContributionDialogOpen(true);
     };
@@ -249,7 +286,10 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         if (!selectedFund) return;
 
         try {
-            const response = await axios.post(`/loan/cbu/${selectedFund.id}/contribution`, contribution);
+            const response = await axios.post(
+                `/loan/cbu/${selectedFund.id}/contribution`,
+                contribution,
+            );
             if (response.data) {
                 setIsContributionDialogOpen(false);
                 window.location.reload();
@@ -265,7 +305,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             cbu_fund_id: fund.id.toString(),
             amount: '',
             withdrawal_date: new Date().toISOString().split('T')[0],
-            notes: ''
+            notes: '',
         });
         setIsWithdrawDialogOpen(true);
     };
@@ -275,7 +315,10 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         if (!selectedFund) return;
 
         try {
-            const response = await axios.post(`/loan/cbu/${selectedFund.id}/withdraw`, withdrawal);
+            const response = await axios.post(
+                `/loan/cbu/${selectedFund.id}/withdraw`,
+                withdrawal,
+            );
             if (response.data) {
                 setIsWithdrawDialogOpen(false);
                 window.location.reload();
@@ -291,7 +334,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             cbu_fund_id: fund.id.toString(),
             amount: '',
             dividend_date: new Date().toISOString().split('T')[0],
-            notes: ''
+            notes: '',
         });
         setIsDividendDialogOpen(true);
     };
@@ -306,7 +349,10 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         if (!selectedFund) return;
 
         try {
-            const response = await axios.post(`/loan/cbu/${selectedFund.id}/dividend`, dividend);
+            const response = await axios.post(
+                `/loan/cbu/${selectedFund.id}/dividend`,
+                dividend,
+            );
             if (response.data) {
                 setIsDividendDialogOpen(false);
                 window.location.reload();
@@ -320,7 +366,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         setSelectedFund(fund);
         setIsLoadingContributions(true);
         try {
-            const response = await axios.get(`/loan/cbu/${fund.id}/contributions`);
+            const response = await axios.get(
+                `/loan/cbu/${fund.id}/contributions`,
+            );
             if (response.data) {
                 setContributions(response.data.data.cbu_contributions);
                 setIsViewContributionsDialogOpen(true);
@@ -336,7 +384,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         setSelectedFund(fund);
         setIsLoadingWithdrawals(true);
         try {
-            const response = await axios.get(`/loan/cbu/${fund.id}/withdrawals`);
+            const response = await axios.get(
+                `/loan/cbu/${fund.id}/withdrawals`,
+            );
             if (response.data) {
                 setWithdrawals(response.data.data.cbu_withdrawals);
                 setIsViewWithdrawalsDialogOpen(true);
@@ -376,7 +426,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                 start_date: editingFund.start_date,
                 end_date: editingFund.end_date,
                 value_per_share: editingFund.value_per_share,
-                number_of_shares: editingFund.number_of_shares
+                number_of_shares: editingFund.number_of_shares,
             });
             if (response.data) {
                 setIsEditDialogOpen(false);
@@ -408,20 +458,22 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         if (selectedFunds.length === cbuFunds.length) {
             setSelectedFunds([]);
         } else {
-            setSelectedFunds(cbuFunds.map(fund => fund.id));
+            setSelectedFunds(cbuFunds.map((fund) => fund.id));
         }
     };
 
     const toggleSelect = (id: number) => {
         if (selectedFunds.includes(id)) {
-            setSelectedFunds(selectedFunds.filter(fundId => fundId !== id));
+            setSelectedFunds(selectedFunds.filter((fundId) => fundId !== id));
         } else {
             setSelectedFunds([...selectedFunds, id]);
         }
     };
 
     const exportToCSV = () => {
-        const selectedData = cbuFunds.filter(fund => selectedFunds.includes(fund.id));
+        const selectedData = cbuFunds.filter((fund) =>
+            selectedFunds.includes(fund.id),
+        );
         const headers = [
             'Name',
             'Description',
@@ -432,27 +484,41 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             'Start Date',
             'End Date',
             'Created At',
-            'Updated At'
+            'Updated At',
         ];
-        const csvData = selectedData.map(fund => [
+        const csvData = selectedData.map((fund) => [
             fund.name || '',
             fund.description || '',
-            fund.target_amount ? formatAmount(fund.target_amount, appCurrency) : '',
-            fund.total_amount ? formatAmount(fund.total_amount, appCurrency) : '',
-            fund.value_per_share ? formatAmount(fund.value_per_share, appCurrency) : '',
+            fund.target_amount
+                ? formatAmount(fund.target_amount, appCurrency)
+                : '',
+            fund.total_amount
+                ? formatAmount(fund.total_amount, appCurrency)
+                : '',
+            fund.value_per_share
+                ? formatAmount(fund.value_per_share, appCurrency)
+                : '',
             fund.number_of_shares || '0',
-            fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '',
+            fund.start_date
+                ? new Date(fund.start_date).toLocaleDateString()
+                : '',
             fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '',
-            fund.created_at ? new Date(fund.created_at).toLocaleDateString() : '',
-            fund.updated_at ? new Date(fund.updated_at).toLocaleDateString() : ''
+            fund.created_at
+                ? new Date(fund.created_at).toLocaleDateString()
+                : '',
+            fund.updated_at
+                ? new Date(fund.updated_at).toLocaleDateString()
+                : '',
         ]);
 
         const csvContent = [
             headers.join(','),
-            ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+            ...csvData.map((row) => row.map((cell) => `"${cell}"`).join(',')),
         ].join('\n');
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csvContent], {
+            type: 'text/csv;charset=utf-8;',
+        });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'cbu_funds.csv';
@@ -463,41 +529,58 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         setSelectedFund(fund);
         setIsLoadingHistory(true);
         try {
-            const [contributionsResponse, withdrawalsResponse, dividendsResponse] = await Promise.all([
+            const [
+                contributionsResponse,
+                withdrawalsResponse,
+                dividendsResponse,
+            ] = await Promise.all([
                 axios.get(`/loan/cbu/${fund.id}/contributions`),
                 axios.get(`/loan/cbu/${fund.id}/withdrawals`),
-                axios.get(`/loan/cbu/${fund.id}/dividends`)
+                axios.get(`/loan/cbu/${fund.id}/dividends`),
             ]);
 
-            const contributions = contributionsResponse.data.data.cbu_contributions.map((c: CbuContribution) => ({
-                id: c.id,
-                type: 'contribution' as const,
-                amount: c.amount,
-                date: c.contribution_date,
-                notes: c.notes,
-                created_at: c.created_at
-            }));
+            const contributions =
+                contributionsResponse.data.data.cbu_contributions.map(
+                    (c: CbuContribution) => ({
+                        id: c.id,
+                        type: 'contribution' as const,
+                        amount: c.amount,
+                        date: c.contribution_date,
+                        notes: c.notes,
+                        created_at: c.created_at,
+                    }),
+                );
 
-            const withdrawals = withdrawalsResponse.data.data.cbu_withdrawals.map((w: CbuWithdrawal) => ({
-                id: w.id,
-                type: 'withdrawal' as const,
-                amount: w.amount,
-                date: w.date,
-                notes: w.notes,
-                created_at: w.created_at
-            }));
+            const withdrawals =
+                withdrawalsResponse.data.data.cbu_withdrawals.map(
+                    (w: CbuWithdrawal) => ({
+                        id: w.id,
+                        type: 'withdrawal' as const,
+                        amount: w.amount,
+                        date: w.date,
+                        notes: w.notes,
+                        created_at: w.created_at,
+                    }),
+                );
 
-            const dividends = dividendsResponse.data.data.cbu_dividends.map((d: CbuDividend) => ({
-                id: d.id,
-                type: 'dividend' as const,
-                amount: d.amount,
-                date: d.dividend_date,
-                notes: d.notes,
-                created_at: d.created_at
-            }));
+            const dividends = dividendsResponse.data.data.cbu_dividends.map(
+                (d: CbuDividend) => ({
+                    id: d.id,
+                    type: 'dividend' as const,
+                    amount: d.amount,
+                    date: d.dividend_date,
+                    notes: d.notes,
+                    created_at: d.created_at,
+                }),
+            );
 
-            const combinedHistory = [...contributions, ...withdrawals, ...dividends].sort((a, b) => 
-                new Date(b.date).getTime() - new Date(a.date).getTime()
+            const combinedHistory = [
+                ...contributions,
+                ...withdrawals,
+                ...dividends,
+            ].sort(
+                (a, b) =>
+                    new Date(b.date).getTime() - new Date(a.date).getTime(),
             );
 
             setFundHistory(combinedHistory);
@@ -515,11 +598,11 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             const response = await axios.get('/loan/cbu/report', {
                 params: reportDateRange,
                 headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
             });
-            
+
             if (response.data && response.data.data) {
                 setReportData(response.data.data);
             } else {
@@ -556,44 +639,72 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             'Net Balance',
             'Average Contribution',
             'Average Dividend',
-            'Contribution Rate'
+            'Contribution Rate',
         ];
 
         // Calculate values
-        const netBalance = reportData.total_contributions && reportData.total_withdrawals ? 
-            (parseFloat(reportData.total_contributions) + parseFloat(reportData.total_dividends || '0') - parseFloat(reportData.total_withdrawals)).toString() : '0';
-        
-        const avgContribution = reportData.total_contributions && reportData.total_funds ? 
-            (parseFloat(reportData.total_contributions) / reportData.total_funds).toString() : '0';
-        
-        const avgDividend = reportData.total_dividends && reportData.total_funds ? 
-            (parseFloat(reportData.total_dividends) / reportData.total_funds).toString() : '0';
-        
-        const contributionRate = reportData.total_funds ? 
-            ((reportData.active_funds / reportData.total_funds) * 100).toFixed(1) + '%' : '0%';
+        const netBalance =
+            reportData.total_contributions && reportData.total_withdrawals
+                ? (
+                      parseFloat(reportData.total_contributions) +
+                      parseFloat(reportData.total_dividends || '0') -
+                      parseFloat(reportData.total_withdrawals)
+                  ).toString()
+                : '0';
+
+        const avgContribution =
+            reportData.total_contributions && reportData.total_funds
+                ? (
+                      parseFloat(reportData.total_contributions) /
+                      reportData.total_funds
+                  ).toString()
+                : '0';
+
+        const avgDividend =
+            reportData.total_dividends && reportData.total_funds
+                ? (
+                      parseFloat(reportData.total_dividends) /
+                      reportData.total_funds
+                  ).toString()
+                : '0';
+
+        const contributionRate = reportData.total_funds
+            ? (
+                  (reportData.active_funds / reportData.total_funds) *
+                  100
+              ).toFixed(1) + '%'
+            : '0%';
 
         // Prepare data row
         const data = [
             `${new Date(reportDateRange.start_date).toLocaleDateString()} - ${new Date(reportDateRange.end_date).toLocaleDateString()}`,
             reportData.total_funds.toString(),
             reportData.active_funds.toString(),
-            reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-',
-            reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-',
-            reportData.total_dividends ? formatAmount(reportData.total_dividends, appCurrency) : '-',
+            reportData.total_contributions
+                ? formatAmount(reportData.total_contributions, appCurrency)
+                : '-',
+            reportData.total_withdrawals
+                ? formatAmount(reportData.total_withdrawals, appCurrency)
+                : '-',
+            reportData.total_dividends
+                ? formatAmount(reportData.total_dividends, appCurrency)
+                : '-',
             formatAmount(netBalance, appCurrency),
             formatAmount(avgContribution, appCurrency),
             formatAmount(avgDividend, appCurrency),
-            contributionRate
+            contributionRate,
         ];
 
         // Create CSV content
         const csvContent = [
             headers.join(','),
-            data.map(cell => `"${cell}"`).join(',')
+            data.map((cell) => `"${cell}"`).join(','),
         ].join('\n');
 
         // Create and download file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csvContent], {
+            type: 'text/csv;charset=utf-8;',
+        });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `cbu_report_${reportDateRange.start_date}_to_${reportDateRange.end_date}.csv`;
@@ -606,8 +717,11 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
 
         setIsSendingReport(true);
         try {
-            const response = await axios.post(`/loan/cbu/${selectedFund.id}/send-report`, reportEmailData);
-            
+            const response = await axios.post(
+                `/loan/cbu/${selectedFund.id}/send-report`,
+                reportEmailData,
+            );
+
             if (response.data) {
                 toast.success('Fund report sent successfully');
                 setIsSendReportDialogOpen(false);
@@ -621,9 +735,13 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         }
     };
 
-    const filteredFunds = cbuFunds.filter(fund => 
-        fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (fund.description && fund.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    const filteredFunds = cbuFunds.filter(
+        (fund) =>
+            fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (fund.description &&
+                fund.description
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())),
     );
 
     const totalPages = Math.ceil(filteredFunds.length / itemsPerPage);
@@ -650,30 +768,38 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
         >
             <Head title="CBU Funds" />
 
-            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="rounded-lg border border-gray-200 p-4 shadow-sm dark:border-gray-700">
                 <Card>
                     <CardHeader>
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle>CBU Funds</CardTitle>
-                                <CardDescription>Manage your Capital Build Up funds</CardDescription>
+                                <CardDescription>
+                                    Manage your Capital Build Up funds
+                                </CardDescription>
                             </div>
                             <div className="flex gap-2">
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setIsReportDialogOpen(true)}
                                     className="flex items-center gap-2"
                                 >
-                                    <FileText className="w-4 h-4" />
+                                    <FileText className="h-4 w-4" />
                                     Generate Report
                                 </Button>
                                 {selectedFunds.length > 0 && (
-                                    <Button variant="outline" onClick={exportToCSV} className="flex items-center">
-                                        <FileDown className="w-4 h-4 mr-2" />
+                                    <Button
+                                        variant="outline"
+                                        onClick={exportToCSV}
+                                        className="flex items-center"
+                                    >
+                                        <FileDown className="mr-2 h-4 w-4" />
                                         Export Selected
                                     </Button>
                                 )}
-                                <Button onClick={handleAddFund}>Add CBU Fund</Button>
+                                <Button onClick={handleAddFund}>
+                                    Add CBU Fund
+                                </Button>
                             </div>
                         </div>
                     </CardHeader>
@@ -684,7 +810,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     placeholder="Search by name or description..."
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
                                     className="pl-8"
                                 />
                             </div>
@@ -695,8 +823,13 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     <TableRow>
                                         <TableHead className="w-[50px]">
                                             <Checkbox
-                                                checked={selectedFunds.length === filteredFunds.length}
-                                                onCheckedChange={toggleSelectAll}
+                                                checked={
+                                                    selectedFunds.length ===
+                                                    filteredFunds.length
+                                                }
+                                                onCheckedChange={
+                                                    toggleSelectAll
+                                                }
                                             />
                                         </TableHead>
                                         <TableHead>Name</TableHead>
@@ -715,78 +848,168 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                         <TableRow key={fund.id}>
                                             <TableCell>
                                                 <Checkbox
-                                                    checked={selectedFunds.includes(fund.id)}
-                                                    onCheckedChange={() => toggleSelect(fund.id)}
+                                                    checked={selectedFunds.includes(
+                                                        fund.id,
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        toggleSelect(fund.id)
+                                                    }
                                                 />
                                             </TableCell>
                                             <TableCell>{fund.name}</TableCell>
-                                            <TableCell>{fund.description || '-'}</TableCell>
-                                            <TableCell>{fund.target_amount ? formatAmount(fund.target_amount, appCurrency) : '-'}</TableCell>
-                                            <TableCell>{fund.total_amount ? formatAmount(fund.total_amount, appCurrency) : '-'}</TableCell>
-                                            <TableCell>{fund.value_per_share ? formatAmount(fund.value_per_share, appCurrency) : '-'}</TableCell>
-                                            <TableCell>{fund.number_of_shares || '0'}</TableCell>
-                                            <TableCell>{fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '-'}</TableCell>
-                                            <TableCell>{fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>
-                                                <Select onValueChange={(value) => {
-                                                    switch (value) {
-                                                        case 'view_contributions':
-                                                            handleViewContributions(fund);
-                                                            break;
-                                                        case 'view_withdrawals':
-                                                            handleViewWithdrawals(fund);
-                                                            break;
-                                                        case 'view_dividends':
-                                                            handleViewDividends(fund);
-                                                            break;
-                                                        case 'add_contribution':
-                                                            handleAddContribution(fund);
-                                                            break;
-                                                        case 'add_dividend':
-                                                            handleAddDividend(fund);
-                                                            break;
-                                                        case 'withdraw':
-                                                            handleWithdraw(fund);
-                                                            break;
-                                                        case 'edit':
-                                                            if (canEdit) {
-                                                                handleUpdateFund(fund);
-                                                            } else {
-                                                                toast.error('You do not have permission to edit funds.');
-                                                            }
-                                                            break;
-                                                        case 'delete':
-                                                            if (canDelete) {
-                                                                confirmDelete(fund);
-                                                            } else {
-                                                                toast.error('You do not have permission to delete funds.');
-                                                            }
-                                                            break;
-                                                        case 'history':
-                                                            handleViewHistory(fund);
-                                                            break;
-                                                        case 'send_report':
-                                                            setSelectedFund(fund);
-                                                            setIsSendReportDialogOpen(true);
-                                                            break;
-                                                    }
-                                                }}>
+                                                {fund.description || '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {fund.target_amount
+                                                    ? formatAmount(
+                                                          fund.target_amount,
+                                                          appCurrency,
+                                                      )
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {fund.total_amount
+                                                    ? formatAmount(
+                                                          fund.total_amount,
+                                                          appCurrency,
+                                                      )
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {fund.value_per_share
+                                                    ? formatAmount(
+                                                          fund.value_per_share,
+                                                          appCurrency,
+                                                      )
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {fund.number_of_shares || '0'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {fund.start_date
+                                                    ? new Date(
+                                                          fund.start_date,
+                                                      ).toLocaleDateString()
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {fund.end_date
+                                                    ? new Date(
+                                                          fund.end_date,
+                                                      ).toLocaleDateString()
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Select
+                                                    onValueChange={(value) => {
+                                                        switch (value) {
+                                                            case 'view_contributions':
+                                                                handleViewContributions(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'view_withdrawals':
+                                                                handleViewWithdrawals(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'view_dividends':
+                                                                handleViewDividends(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'add_contribution':
+                                                                handleAddContribution(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'add_dividend':
+                                                                handleAddDividend(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'withdraw':
+                                                                handleWithdraw(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'edit':
+                                                                if (canEdit) {
+                                                                    handleUpdateFund(
+                                                                        fund,
+                                                                    );
+                                                                } else {
+                                                                    toast.error(
+                                                                        'You do not have permission to edit funds.',
+                                                                    );
+                                                                }
+                                                                break;
+                                                            case 'delete':
+                                                                if (canDelete) {
+                                                                    confirmDelete(
+                                                                        fund,
+                                                                    );
+                                                                } else {
+                                                                    toast.error(
+                                                                        'You do not have permission to delete funds.',
+                                                                    );
+                                                                }
+                                                                break;
+                                                            case 'history':
+                                                                handleViewHistory(
+                                                                    fund,
+                                                                );
+                                                                break;
+                                                            case 'send_report':
+                                                                setSelectedFund(
+                                                                    fund,
+                                                                );
+                                                                setIsSendReportDialogOpen(
+                                                                    true,
+                                                                );
+                                                                break;
+                                                        }
+                                                    }}
+                                                >
                                                     <SelectTrigger className="w-[180px]">
                                                         <span>Actions</span>
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="history">View History</SelectItem>
-                                                        <SelectItem value="view_contributions">View Contributions</SelectItem>
-                                                        <SelectItem value="view_withdrawals">View Withdrawals</SelectItem>
-                                                        <SelectItem value="view_dividends">View Dividends</SelectItem>
-                                                        <SelectItem value="add_contribution">Add Contribution</SelectItem>
-                                                        <SelectItem value="add_dividend">Add Dividend</SelectItem>
-                                                        <SelectItem value="withdraw">Withdraw</SelectItem>
+                                                        <SelectItem value="history">
+                                                            View History
+                                                        </SelectItem>
+                                                        <SelectItem value="view_contributions">
+                                                            View Contributions
+                                                        </SelectItem>
+                                                        <SelectItem value="view_withdrawals">
+                                                            View Withdrawals
+                                                        </SelectItem>
+                                                        <SelectItem value="view_dividends">
+                                                            View Dividends
+                                                        </SelectItem>
+                                                        <SelectItem value="add_contribution">
+                                                            Add Contribution
+                                                        </SelectItem>
+                                                        <SelectItem value="add_dividend">
+                                                            Add Dividend
+                                                        </SelectItem>
+                                                        <SelectItem value="withdraw">
+                                                            Withdraw
+                                                        </SelectItem>
                                                         {canEdit && (
-                                                            <SelectItem value="edit">Edit Fund</SelectItem>
+                                                            <SelectItem value="edit">
+                                                                Edit Fund
+                                                            </SelectItem>
                                                         )}
                                                         {canDelete && (
-                                                            <SelectItem value="delete" className="text-red-600">Delete Fund</SelectItem>
+                                                            <SelectItem
+                                                                value="delete"
+                                                                className="text-red-600"
+                                                            >
+                                                                Delete Fund
+                                                            </SelectItem>
                                                         )}
                                                     </SelectContent>
                                                 </Select>
@@ -796,9 +1019,11 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 </TableBody>
                             </Table>
                         </div>
-                        <div className="flex items-center justify-between mt-4">
+                        <div className="mt-4 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">Items per page:</span>
+                                <span className="text-sm text-gray-600">
+                                    Items per page:
+                                </span>
                                 <Select
                                     value={itemsPerPage.toString()}
                                     onValueChange={handleItemsPerPageChange}
@@ -814,26 +1039,39 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     </SelectContent>
                                 </Select>
                                 <span className="text-sm text-gray-600">
-                                    Showing {startIndex + 1}-{Math.min(endIndex, filteredFunds.length)} of {filteredFunds.length} items
+                                    Showing {startIndex + 1}-
+                                    {Math.min(endIndex, filteredFunds.length)}{' '}
+                                    of {filteredFunds.length} items
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    onClick={() =>
+                                        handlePageChange(currentPage - 1)
+                                    }
                                     disabled={currentPage === 1}
                                 >
                                     Previous
                                 </Button>
                                 <div className="flex items-center gap-1">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, i) => i + 1,
+                                    ).map((page) => (
                                         <Button
                                             key={page}
-                                            variant={currentPage === page ? "default" : "outline"}
+                                            variant={
+                                                currentPage === page
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                             size="sm"
-                                            onClick={() => handlePageChange(page)}
-                                            className="w-8 h-8 p-0"
+                                            onClick={() =>
+                                                handlePageChange(page)
+                                            }
+                                            className="h-8 w-8 p-0"
                                         >
                                             {page}
                                         </Button>
@@ -842,7 +1080,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    onClick={() =>
+                                        handlePageChange(currentPage + 1)
+                                    }
                                     disabled={currentPage === totalPages}
                                 >
                                     Next
@@ -858,7 +1098,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Add New CBU Fund</DialogTitle>
-                        <DialogDescription>Create a new Capital Build Up fund</DialogDescription>
+                        <DialogDescription>
+                            Create a new Capital Build Up fund
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveFund}>
                         <div className="grid gap-4 py-4">
@@ -867,7 +1109,12 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     id="name"
                                     value={newFund.name}
-                                    onChange={(e) => setNewFund({ ...newFund, name: e.target.value })}
+                                    onChange={(e) =>
+                                        setNewFund({
+                                            ...newFund,
+                                            name: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -876,38 +1123,70 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     id="description"
                                     value={newFund.description}
-                                    onChange={(e) => setNewFund({ ...newFund, description: e.target.value })}
+                                    onChange={(e) =>
+                                        setNewFund({
+                                            ...newFund,
+                                            description: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="target_amount">Target Amount</Label>
+                                <Label htmlFor="target_amount">
+                                    Target Amount
+                                </Label>
                                 <Input
                                     id="target_amount"
                                     type="number"
                                     value={newFund.target_amount}
-                                    onChange={(e) => setNewFund({ ...newFund, target_amount: e.target.value })}
+                                    onChange={(e) =>
+                                        setNewFund({
+                                            ...newFund,
+                                            target_amount: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="value_per_share">Value Per Share</Label>
+                                <Label htmlFor="value_per_share">
+                                    Value Per Share
+                                </Label>
                                 <Input
                                     id="value_per_share"
                                     type="number"
                                     min="0"
                                     value={newFund.value_per_share}
-                                    onChange={(e) => setNewFund({ ...newFund, value_per_share: e.target.value })}
+                                    onChange={(e) =>
+                                        setNewFund({
+                                            ...newFund,
+                                            value_per_share: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="number_of_shares">Number of Shares (Calculated)</Label>
+                                <Label htmlFor="number_of_shares">
+                                    Number of Shares (Calculated)
+                                </Label>
                                 <Input
                                     id="number_of_shares"
                                     type="number"
                                     min="0"
-                                    value={newFund.total_amount && newFund.value_per_share ? 
-                                        Math.ceil(parseFloat(newFund.total_amount) / parseFloat(newFund.value_per_share)) : 0}
+                                    value={
+                                        newFund.total_amount &&
+                                        newFund.value_per_share
+                                            ? Math.ceil(
+                                                  parseFloat(
+                                                      newFund.total_amount,
+                                                  ) /
+                                                      parseFloat(
+                                                          newFund.value_per_share,
+                                                      ),
+                                              )
+                                            : 0
+                                    }
                                     disabled
                                 />
                             </div>
@@ -917,17 +1196,29 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     id="start_date"
                                     type="date"
                                     value={newFund.start_date}
-                                    onChange={(e) => setNewFund({ ...newFund, start_date: e.target.value })}
+                                    onChange={(e) =>
+                                        setNewFund({
+                                            ...newFund,
+                                            start_date: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="end_date">End Date (Optional)</Label>
+                                <Label htmlFor="end_date">
+                                    End Date (Optional)
+                                </Label>
                                 <Input
                                     id="end_date"
                                     type="date"
                                     value={newFund.end_date}
-                                    onChange={(e) => setNewFund({ ...newFund, end_date: e.target.value })}
+                                    onChange={(e) =>
+                                        setNewFund({
+                                            ...newFund,
+                                            end_date: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
@@ -939,11 +1230,16 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* Add Contribution Dialog */}
-            <Dialog open={isContributionDialogOpen} onOpenChange={setIsContributionDialogOpen}>
+            <Dialog
+                open={isContributionDialogOpen}
+                onOpenChange={setIsContributionDialogOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Add Contribution</DialogTitle>
-                        <DialogDescription>Add a new contribution to the CBU fund</DialogDescription>
+                        <DialogDescription>
+                            Add a new contribution to the CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveContribution}>
                         <div className="grid gap-4 py-4">
@@ -953,17 +1249,29 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     id="amount"
                                     type="number"
                                     value={contribution.amount}
-                                    onChange={(e) => setContribution({ ...contribution, amount: e.target.value })}
+                                    onChange={(e) =>
+                                        setContribution({
+                                            ...contribution,
+                                            amount: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="contribution_date">Contribution Date</Label>
+                                <Label htmlFor="contribution_date">
+                                    Contribution Date
+                                </Label>
                                 <Input
                                     id="contribution_date"
                                     type="date"
                                     value={contribution.contribution_date}
-                                    onChange={(e) => setContribution({ ...contribution, contribution_date: e.target.value })}
+                                    onChange={(e) =>
+                                        setContribution({
+                                            ...contribution,
+                                            contribution_date: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -972,7 +1280,12 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     id="notes"
                                     value={contribution.notes}
-                                    onChange={(e) => setContribution({ ...contribution, notes: e.target.value })}
+                                    onChange={(e) =>
+                                        setContribution({
+                                            ...contribution,
+                                            notes: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
@@ -984,31 +1297,50 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* Withdraw Dialog */}
-            <Dialog open={isWithdrawDialogOpen} onOpenChange={setIsWithdrawDialogOpen}>
+            <Dialog
+                open={isWithdrawDialogOpen}
+                onOpenChange={setIsWithdrawDialogOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Process Withdrawal</DialogTitle>
-                        <DialogDescription>Process a withdrawal from the CBU fund</DialogDescription>
+                        <DialogDescription>
+                            Process a withdrawal from the CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleProcessWithdrawal}>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="withdrawal_amount">Amount</Label>
+                                <Label htmlFor="withdrawal_amount">
+                                    Amount
+                                </Label>
                                 <Input
                                     id="withdrawal_amount"
                                     type="number"
                                     value={withdrawal.amount}
-                                    onChange={(e) => setWithdrawal({ ...withdrawal, amount: e.target.value })}
+                                    onChange={(e) =>
+                                        setWithdrawal({
+                                            ...withdrawal,
+                                            amount: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="withdrawal_date">Withdrawal Date</Label>
+                                <Label htmlFor="withdrawal_date">
+                                    Withdrawal Date
+                                </Label>
                                 <Input
                                     id="withdrawal_date"
                                     type="date"
                                     value={withdrawal.withdrawal_date}
-                                    onChange={(e) => setWithdrawal({ ...withdrawal, withdrawal_date: e.target.value })}
+                                    onChange={(e) =>
+                                        setWithdrawal({
+                                            ...withdrawal,
+                                            withdrawal_date: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -1017,7 +1349,12 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     id="withdrawal_notes"
                                     value={withdrawal.notes}
-                                    onChange={(e) => setWithdrawal({ ...withdrawal, notes: e.target.value })}
+                                    onChange={(e) =>
+                                        setWithdrawal({
+                                            ...withdrawal,
+                                            notes: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -1030,11 +1367,16 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* Add Dividend Dialog */}
-            <Dialog open={isDividendDialogOpen} onOpenChange={setIsDividendDialogOpen}>
+            <Dialog
+                open={isDividendDialogOpen}
+                onOpenChange={setIsDividendDialogOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Add Dividend</DialogTitle>
-                        <DialogDescription>Add a dividend payment to the CBU fund</DialogDescription>
+                        <DialogDescription>
+                            Add a dividend payment to the CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveDividend}>
                         <div className="grid gap-4 py-4">
@@ -1044,17 +1386,29 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     id="dividend_amount"
                                     type="number"
                                     value={dividend.amount}
-                                    onChange={(e) => setDividend({ ...dividend, amount: e.target.value })}
+                                    onChange={(e) =>
+                                        setDividend({
+                                            ...dividend,
+                                            amount: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="dividend_date">Dividend Date</Label>
+                                <Label htmlFor="dividend_date">
+                                    Dividend Date
+                                </Label>
                                 <Input
                                     id="dividend_date"
                                     type="date"
                                     value={dividend.dividend_date}
-                                    onChange={(e) => setDividend({ ...dividend, dividend_date: e.target.value })}
+                                    onChange={(e) =>
+                                        setDividend({
+                                            ...dividend,
+                                            dividend_date: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -1063,7 +1417,12 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     id="dividend_notes"
                                     value={dividend.notes}
-                                    onChange={(e) => setDividend({ ...dividend, notes: e.target.value })}
+                                    onChange={(e) =>
+                                        setDividend({
+                                            ...dividend,
+                                            notes: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
@@ -1079,7 +1438,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Edit CBU Fund</DialogTitle>
-                        <DialogDescription>Modify the Capital Build Up fund details</DialogDescription>
+                        <DialogDescription>
+                            Modify the Capital Build Up fund details
+                        </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveEdit}>
                         <div className="grid gap-4 py-4">
@@ -1088,67 +1449,148 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Input
                                     id="edit_name"
                                     value={editingFund?.name || ''}
-                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, name: e.target.value } : null)}
+                                    onChange={(e) =>
+                                        setEditingFund(
+                                            editingFund
+                                                ? {
+                                                      ...editingFund,
+                                                      name: e.target.value,
+                                                  }
+                                                : null,
+                                        )
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit_description">Description</Label>
+                                <Label htmlFor="edit_description">
+                                    Description
+                                </Label>
                                 <Input
                                     id="edit_description"
                                     value={editingFund?.description || ''}
-                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, description: e.target.value } : null)}
+                                    onChange={(e) =>
+                                        setEditingFund(
+                                            editingFund
+                                                ? {
+                                                      ...editingFund,
+                                                      description:
+                                                          e.target.value,
+                                                  }
+                                                : null,
+                                        )
+                                    }
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit_target_amount">Target Amount</Label>
+                                <Label htmlFor="edit_target_amount">
+                                    Target Amount
+                                </Label>
                                 <Input
                                     id="edit_target_amount"
                                     type="number"
                                     value={editingFund?.target_amount || ''}
-                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, target_amount: e.target.value } : null)}
+                                    onChange={(e) =>
+                                        setEditingFund(
+                                            editingFund
+                                                ? {
+                                                      ...editingFund,
+                                                      target_amount:
+                                                          e.target.value,
+                                                  }
+                                                : null,
+                                        )
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit_value_per_share">Value Per Share</Label>
+                                <Label htmlFor="edit_value_per_share">
+                                    Value Per Share
+                                </Label>
                                 <Input
                                     id="edit_value_per_share"
                                     type="number"
                                     min="0"
                                     value={editingFund?.value_per_share || ''}
-                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, value_per_share: e.target.value } : null)}
+                                    onChange={(e) =>
+                                        setEditingFund(
+                                            editingFund
+                                                ? {
+                                                      ...editingFund,
+                                                      value_per_share:
+                                                          e.target.value,
+                                                  }
+                                                : null,
+                                        )
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit_number_of_shares">Number of Shares (Calculated)</Label>
+                                <Label htmlFor="edit_number_of_shares">
+                                    Number of Shares (Calculated)
+                                </Label>
                                 <Input
                                     id="edit_number_of_shares"
                                     type="number"
                                     min="0"
-                                    value={editingFund?.total_amount && editingFund?.value_per_share ? 
-                                        Math.ceil(parseFloat(editingFund.total_amount) / parseFloat(editingFund.value_per_share)) : 0}
+                                    value={
+                                        editingFund?.total_amount &&
+                                        editingFund?.value_per_share
+                                            ? Math.ceil(
+                                                  parseFloat(
+                                                      editingFund.total_amount,
+                                                  ) /
+                                                      parseFloat(
+                                                          editingFund.value_per_share,
+                                                      ),
+                                              )
+                                            : 0
+                                    }
                                     disabled
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit_start_date">Start Date</Label>
+                                <Label htmlFor="edit_start_date">
+                                    Start Date
+                                </Label>
                                 <Input
                                     id="edit_start_date"
                                     type="date"
                                     value={editingFund?.start_date || ''}
-                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, start_date: e.target.value } : null)}
+                                    onChange={(e) =>
+                                        setEditingFund(
+                                            editingFund
+                                                ? {
+                                                      ...editingFund,
+                                                      start_date:
+                                                          e.target.value,
+                                                  }
+                                                : null,
+                                        )
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="edit_end_date">End Date (Optional)</Label>
+                                <Label htmlFor="edit_end_date">
+                                    End Date (Optional)
+                                </Label>
                                 <Input
                                     id="edit_end_date"
                                     type="date"
                                     value={editingFund?.end_date || ''}
-                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, end_date: e.target.value } : null)}
+                                    onChange={(e) =>
+                                        setEditingFund(
+                                            editingFund
+                                                ? {
+                                                      ...editingFund,
+                                                      end_date: e.target.value,
+                                                  }
+                                                : null,
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -1160,15 +1602,24 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* View Contributions Dialog */}
-            <Dialog open={isViewContributionsDialogOpen} onOpenChange={setIsViewContributionsDialogOpen}>
+            <Dialog
+                open={isViewContributionsDialogOpen}
+                onOpenChange={setIsViewContributionsDialogOpen}
+            >
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
-                        <DialogTitle>Contributions for {selectedFund?.name}</DialogTitle>
-                        <DialogDescription>View all contributions made to this CBU fund</DialogDescription>
+                        <DialogTitle>
+                            Contributions for {selectedFund?.name}
+                        </DialogTitle>
+                        <DialogDescription>
+                            View all contributions made to this CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-x-auto">
                         {isLoadingContributions ? (
-                            <div className="text-center py-4">Loading contributions...</div>
+                            <div className="py-4 text-center">
+                                Loading contributions...
+                            </div>
                         ) : (
                             <Table>
                                 <TableHeader>
@@ -1180,18 +1631,37 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {contributions && contributions.length > 0 ? (
+                                    {contributions &&
+                                    contributions.length > 0 ? (
                                         contributions.map((contribution) => (
                                             <TableRow key={contribution.id}>
-                                                <TableCell>{formatAmount(contribution.amount, appCurrency)}</TableCell>
-                                                <TableCell>{new Date(contribution.contribution_date).toLocaleDateString()}</TableCell>
-                                                <TableCell>{contribution.notes || '-'}</TableCell>
-                                                <TableCell>{new Date(contribution.created_at).toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    {formatAmount(
+                                                        contribution.amount,
+                                                        appCurrency,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        contribution.contribution_date,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {contribution.notes || '-'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        contribution.created_at,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-4">
+                                            <TableCell
+                                                colSpan={4}
+                                                className="py-4 text-center"
+                                            >
                                                 No contributions found
                                             </TableCell>
                                         </TableRow>
@@ -1204,15 +1674,24 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* View Withdrawals Dialog */}
-            <Dialog open={isViewWithdrawalsDialogOpen} onOpenChange={setIsViewWithdrawalsDialogOpen}>
+            <Dialog
+                open={isViewWithdrawalsDialogOpen}
+                onOpenChange={setIsViewWithdrawalsDialogOpen}
+            >
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
-                        <DialogTitle>Withdrawals for {selectedFund?.name}</DialogTitle>
-                        <DialogDescription>View all withdrawals made from this CBU fund</DialogDescription>
+                        <DialogTitle>
+                            Withdrawals for {selectedFund?.name}
+                        </DialogTitle>
+                        <DialogDescription>
+                            View all withdrawals made from this CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-x-auto">
                         {isLoadingWithdrawals ? (
-                            <div className="text-center py-4">Loading withdrawals...</div>
+                            <div className="py-4 text-center">
+                                Loading withdrawals...
+                            </div>
                         ) : (
                             <Table>
                                 <TableHeader>
@@ -1227,15 +1706,33 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     {withdrawals && withdrawals.length > 0 ? (
                                         withdrawals.map((withdrawal) => (
                                             <TableRow key={withdrawal.id}>
-                                                <TableCell>{formatAmount(withdrawal.amount, appCurrency)}</TableCell>
-                                                <TableCell>{new Date(withdrawal.date).toLocaleDateString()}</TableCell>
-                                                <TableCell>{withdrawal.notes || '-'}</TableCell>
-                                                <TableCell>{new Date(withdrawal.created_at).toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    {formatAmount(
+                                                        withdrawal.amount,
+                                                        appCurrency,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        withdrawal.date,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {withdrawal.notes || '-'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        withdrawal.created_at,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-4">
+                                            <TableCell
+                                                colSpan={5}
+                                                className="py-4 text-center"
+                                            >
                                                 No withdrawals found
                                             </TableCell>
                                         </TableRow>
@@ -1248,15 +1745,24 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* View Dividends Dialog */}
-            <Dialog open={isViewDividendsDialogOpen} onOpenChange={setIsViewDividendsDialogOpen}>
+            <Dialog
+                open={isViewDividendsDialogOpen}
+                onOpenChange={setIsViewDividendsDialogOpen}
+            >
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
-                        <DialogTitle>Dividends for {selectedFund?.name}</DialogTitle>
-                        <DialogDescription>View all dividends paid to this CBU fund</DialogDescription>
+                        <DialogTitle>
+                            Dividends for {selectedFund?.name}
+                        </DialogTitle>
+                        <DialogDescription>
+                            View all dividends paid to this CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-x-auto">
                         {isLoadingDividends ? (
-                            <div className="text-center py-4">Loading dividends...</div>
+                            <div className="py-4 text-center">
+                                Loading dividends...
+                            </div>
                         ) : (
                             <Table>
                                 <TableHeader>
@@ -1271,15 +1777,33 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     {dividends && dividends.length > 0 ? (
                                         dividends.map((dividend) => (
                                             <TableRow key={dividend.id}>
-                                                <TableCell>{formatAmount(dividend.amount, appCurrency)}</TableCell>
-                                                <TableCell>{new Date(dividend.dividend_date).toLocaleDateString()}</TableCell>
-                                                <TableCell>{dividend.notes || '-'}</TableCell>
-                                                <TableCell>{new Date(dividend.created_at).toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    {formatAmount(
+                                                        dividend.amount,
+                                                        appCurrency,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        dividend.dividend_date,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {dividend.notes || '-'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        dividend.created_at,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-4">
+                                            <TableCell
+                                                colSpan={4}
+                                                className="py-4 text-center"
+                                            >
                                                 No dividends found
                                             </TableCell>
                                         </TableRow>
@@ -1292,17 +1816,22 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* Delete Confirmation Dialog */}
-            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Delete CBU Fund</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete the fund "{fundToDelete?.name}"? This action cannot be undone.
+                            Are you sure you want to delete the fund "
+                            {fundToDelete?.name}"? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                         <p className="text-sm text-gray-500">
-                            This will permanently delete the fund and all associated contributions and withdrawals.
+                            This will permanently delete the fund and all
+                            associated contributions and withdrawals.
                         </p>
                     </div>
                     <DialogFooter>
@@ -1323,15 +1852,24 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* History Dialog */}
-            <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+            <Dialog
+                open={isHistoryDialogOpen}
+                onOpenChange={setIsHistoryDialogOpen}
+            >
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
-                        <DialogTitle>Transaction History - {selectedFund?.name}</DialogTitle>
-                        <DialogDescription>View all transactions for this CBU fund</DialogDescription>
+                        <DialogTitle>
+                            Transaction History - {selectedFund?.name}
+                        </DialogTitle>
+                        <DialogDescription>
+                            View all transactions for this CBU fund
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-x-auto">
                         {isLoadingHistory ? (
-                            <div className="text-center py-4">Loading history...</div>
+                            <div className="py-4 text-center">
+                                Loading history...
+                            </div>
                         ) : (
                             <Table>
                                 <TableHeader>
@@ -1346,32 +1884,76 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <TableBody>
                                     {fundHistory.length > 0 ? (
                                         fundHistory.map((item) => (
-                                            <TableRow key={`${item.type}-${item.id}`}>
+                                            <TableRow
+                                                key={`${item.type}-${item.id}`}
+                                            >
                                                 <TableCell>
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                        item.type === 'contribution' 
-                                                            ? 'bg-green-100 text-green-800' 
-                                                            : item.type === 'withdrawal' 
-                                                                ? 'bg-red-100 text-red-800'
-                                                                : 'bg-blue-100 text-blue-800'
-                                                    }`}>
-                                                        {item.type === 'contribution' ? 'Contribution' : item.type === 'withdrawal' ? 'Withdrawal' : 'Dividend'}
+                                                    <span
+                                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                            item.type ===
+                                                            'contribution'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : item.type ===
+                                                                    'withdrawal'
+                                                                  ? 'bg-red-100 text-red-800'
+                                                                  : 'bg-blue-100 text-blue-800'
+                                                        }`}
+                                                    >
+                                                        {item.type ===
+                                                        'contribution'
+                                                            ? 'Contribution'
+                                                            : item.type ===
+                                                                'withdrawal'
+                                                              ? 'Withdrawal'
+                                                              : 'Dividend'}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className={item.type === 'withdrawal' ? 'text-red-600' : item.type === 'contribution' ? 'text-green-600' : 'text-blue-600'}>
-                                                        {item.type === 'withdrawal' ? '-' : item.type === 'contribution' ? '+' : '+'}
-                                                        {formatAmount(item.amount, appCurrency)}
+                                                    <span
+                                                        className={
+                                                            item.type ===
+                                                            'withdrawal'
+                                                                ? 'text-red-600'
+                                                                : item.type ===
+                                                                    'contribution'
+                                                                  ? 'text-green-600'
+                                                                  : 'text-blue-600'
+                                                        }
+                                                    >
+                                                        {item.type ===
+                                                        'withdrawal'
+                                                            ? '-'
+                                                            : item.type ===
+                                                                'contribution'
+                                                              ? '+'
+                                                              : '+'}
+                                                        {formatAmount(
+                                                            item.amount,
+                                                            appCurrency,
+                                                        )}
                                                     </span>
                                                 </TableCell>
-                                                <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
-                                                <TableCell>{item.notes || '-'}</TableCell>
-                                                <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        item.date,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.notes || '-'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(
+                                                        item.created_at,
+                                                    ).toLocaleDateString()}
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-4">
+                                            <TableCell
+                                                colSpan={5}
+                                                className="py-4 text-center"
+                                            >
                                                 No transaction history found
                                             </TableCell>
                                         </TableRow>
@@ -1384,8 +1966,11 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
 
             {/* Report Generation Dialog */}
-            <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+            <Dialog
+                open={isReportDialogOpen}
+                onOpenChange={setIsReportDialogOpen}
+            >
+                <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto p-0">
                     <div className="p-6">
                         <DialogHeader>
                             <DialogTitle>CBU Report</DialogTitle>
@@ -1396,28 +1981,36 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="report_start_date">Start Date</Label>
+                                    <Label htmlFor="report_start_date">
+                                        Start Date
+                                    </Label>
                                     <Input
                                         id="report_start_date"
                                         type="date"
                                         value={reportDateRange.start_date}
-                                        onChange={(e) => setReportDateRange({
-                                            ...reportDateRange,
-                                            start_date: e.target.value
-                                        })}
+                                        onChange={(e) =>
+                                            setReportDateRange({
+                                                ...reportDateRange,
+                                                start_date: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="report_end_date">End Date</Label>
+                                    <Label htmlFor="report_end_date">
+                                        End Date
+                                    </Label>
                                     <Input
                                         id="report_end_date"
                                         type="date"
                                         value={reportDateRange.end_date}
-                                        onChange={(e) => setReportDateRange({
-                                            ...reportDateRange,
-                                            end_date: e.target.value
-                                        })}
+                                        onChange={(e) =>
+                                            setReportDateRange({
+                                                ...reportDateRange,
+                                                end_date: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
@@ -1425,102 +2018,216 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
 
                             {reportData && (
                                 <>
-                                    <div className="flex justify-end mb-4">
+                                    <div className="mb-4 flex justify-end">
                                         <Button
                                             variant="outline"
                                             onClick={exportReportToCSV}
                                             className="flex items-center gap-2"
                                         >
-                                            <FileDown className="w-4 h-4" />
+                                            <FileDown className="h-4 w-4" />
                                             Export Report
                                         </Button>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 border rounded-lg">
-                                            <h3 className="font-semibold mb-2">Summary</h3>
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="mb-2 font-semibold">
+                                                Summary
+                                            </h3>
                                             <div className="space-y-2">
-                                                <p>Total Funds: {reportData.total_funds}</p>
-                                                <p>Active Funds: {reportData.active_funds}</p>
-                                                <p>Total Contributions: {reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-'}</p>
-                                                <p>Total Withdrawals: {reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-'}</p>
-                                                <p>Total Dividends: {reportData.total_dividends ? formatAmount(reportData.total_dividends, appCurrency) : '-'}</p>
+                                                <p>
+                                                    Total Funds:{' '}
+                                                    {reportData.total_funds}
+                                                </p>
+                                                <p>
+                                                    Active Funds:{' '}
+                                                    {reportData.active_funds}
+                                                </p>
+                                                <p>
+                                                    Total Contributions:{' '}
+                                                    {reportData.total_contributions
+                                                        ? formatAmount(
+                                                              reportData.total_contributions,
+                                                              appCurrency,
+                                                          )
+                                                        : '-'}
+                                                </p>
+                                                <p>
+                                                    Total Withdrawals:{' '}
+                                                    {reportData.total_withdrawals
+                                                        ? formatAmount(
+                                                              reportData.total_withdrawals,
+                                                              appCurrency,
+                                                          )
+                                                        : '-'}
+                                                </p>
+                                                <p>
+                                                    Total Dividends:{' '}
+                                                    {reportData.total_dividends
+                                                        ? formatAmount(
+                                                              reportData.total_dividends,
+                                                              appCurrency,
+                                                          )
+                                                        : '-'}
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className="p-4 border rounded-lg">
-                                            <h3 className="font-semibold mb-2">Statistics</h3>
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="mb-2 font-semibold">
+                                                Statistics
+                                            </h3>
                                             <div className="space-y-2">
-                                                <p>Net Balance: {reportData.total_contributions && reportData.total_withdrawals ? 
-                                                    formatAmount(
-                                                        (parseFloat(reportData.total_contributions) + parseFloat(reportData.total_dividends || '0') - parseFloat(reportData.total_withdrawals)).toString(),
-                                                        appCurrency
-                                                    ) : '-'}</p>
-                                                <p>Average Contribution: {reportData.total_contributions && reportData.total_funds ? 
-                                                    formatAmount(
-                                                        (parseFloat(reportData.total_contributions) / reportData.total_funds).toString(),
-                                                        appCurrency
-                                                    ) : '-'}</p>
-                                                <p>Average Dividend: {reportData.total_dividends && reportData.total_funds ? 
-                                                    formatAmount(
-                                                        (parseFloat(reportData.total_dividends) / reportData.total_funds).toString(),
-                                                        appCurrency
-                                                    ) : '-'}</p>
-                                                <p>Contribution Rate: {reportData.total_funds ? 
-                                                    `${((reportData.active_funds / reportData.total_funds) * 100).toFixed(1)}%` : '-'}</p>
-                                                <p>Period: {new Date(reportDateRange.start_date).toLocaleDateString()} - {new Date(reportDateRange.end_date).toLocaleDateString()}</p>
+                                                <p>
+                                                    Net Balance:{' '}
+                                                    {reportData.total_contributions &&
+                                                    reportData.total_withdrawals
+                                                        ? formatAmount(
+                                                              (
+                                                                  parseFloat(
+                                                                      reportData.total_contributions,
+                                                                  ) +
+                                                                  parseFloat(
+                                                                      reportData.total_dividends ||
+                                                                          '0',
+                                                                  ) -
+                                                                  parseFloat(
+                                                                      reportData.total_withdrawals,
+                                                                  )
+                                                              ).toString(),
+                                                              appCurrency,
+                                                          )
+                                                        : '-'}
+                                                </p>
+                                                <p>
+                                                    Average Contribution:{' '}
+                                                    {reportData.total_contributions &&
+                                                    reportData.total_funds
+                                                        ? formatAmount(
+                                                              (
+                                                                  parseFloat(
+                                                                      reportData.total_contributions,
+                                                                  ) /
+                                                                  reportData.total_funds
+                                                              ).toString(),
+                                                              appCurrency,
+                                                          )
+                                                        : '-'}
+                                                </p>
+                                                <p>
+                                                    Average Dividend:{' '}
+                                                    {reportData.total_dividends &&
+                                                    reportData.total_funds
+                                                        ? formatAmount(
+                                                              (
+                                                                  parseFloat(
+                                                                      reportData.total_dividends,
+                                                                  ) /
+                                                                  reportData.total_funds
+                                                              ).toString(),
+                                                              appCurrency,
+                                                          )
+                                                        : '-'}
+                                                </p>
+                                                <p>
+                                                    Contribution Rate:{' '}
+                                                    {reportData.total_funds
+                                                        ? `${((reportData.active_funds / reportData.total_funds) * 100).toFixed(1)}%`
+                                                        : '-'}
+                                                </p>
+                                                <p>
+                                                    Period:{' '}
+                                                    {new Date(
+                                                        reportDateRange.start_date,
+                                                    ).toLocaleDateString()}{' '}
+                                                    -{' '}
+                                                    {new Date(
+                                                        reportDateRange.end_date,
+                                                    ).toLocaleDateString()}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 border rounded-lg">
-                                            <h3 className="font-semibold mb-2">Activity Distribution</h3>
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="mb-2 font-semibold">
+                                                Activity Distribution
+                                            </h3>
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span>Contributions:</span>
                                                     <span className="text-green-600">
-                                                        {reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-'}
+                                                        {reportData.total_contributions
+                                                            ? formatAmount(
+                                                                  reportData.total_contributions,
+                                                                  appCurrency,
+                                                              )
+                                                            : '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span>Withdrawals:</span>
                                                     <span className="text-red-600">
-                                                        {reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-'}
+                                                        {reportData.total_withdrawals
+                                                            ? formatAmount(
+                                                                  reportData.total_withdrawals,
+                                                                  appCurrency,
+                                                              )
+                                                            : '-'}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span>Dividends:</span>
                                                     <span className="text-blue-600">
-                                                        {reportData.total_dividends ? formatAmount(reportData.total_dividends, appCurrency) : '-'}
+                                                        {reportData.total_dividends
+                                                            ? formatAmount(
+                                                                  reportData.total_dividends,
+                                                                  appCurrency,
+                                                              )
+                                                            : '-'}
                                                     </span>
                                                 </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                                                    <div 
-                                                        className="bg-green-600 h-2.5 rounded-full" 
-                                                        style={{ 
-                                                            width: reportData.total_contributions && reportData.total_withdrawals && reportData.total_dividends ? 
-                                                                `${(parseFloat(reportData.total_contributions) / (parseFloat(reportData.total_contributions) + parseFloat(reportData.total_withdrawals) + parseFloat(reportData.total_dividends))) * 100}%` : '0%'
+                                                <div className="mt-2 h-2.5 w-full rounded-full bg-gray-200">
+                                                    <div
+                                                        className="h-2.5 rounded-full bg-green-600"
+                                                        style={{
+                                                            width:
+                                                                reportData.total_contributions &&
+                                                                reportData.total_withdrawals &&
+                                                                reportData.total_dividends
+                                                                    ? `${(parseFloat(reportData.total_contributions) / (parseFloat(reportData.total_contributions) + parseFloat(reportData.total_withdrawals) + parseFloat(reportData.total_dividends))) * 100}%`
+                                                                    : '0%',
                                                         }}
                                                     ></div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="p-4 border rounded-lg">
-                                            <h3 className="font-semibold mb-2">Fund Status</h3>
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="mb-2 font-semibold">
+                                                Fund Status
+                                            </h3>
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span>Active Funds:</span>
-                                                    <span>{reportData.active_funds}</span>
+                                                    <span>
+                                                        {
+                                                            reportData.active_funds
+                                                        }
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span>Inactive Funds:</span>
-                                                    <span>{reportData.total_funds - reportData.active_funds}</span>
+                                                    <span>
+                                                        {reportData.total_funds -
+                                                            reportData.active_funds}
+                                                    </span>
                                                 </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                                                    <div 
-                                                        className="bg-blue-600 h-2.5 rounded-full" 
-                                                        style={{ 
-                                                            width: reportData.total_funds ? 
-                                                                `${(reportData.active_funds / reportData.total_funds) * 100}%` : '0%'
+                                                <div className="mt-2 h-2.5 w-full rounded-full bg-gray-200">
+                                                    <div
+                                                        className="h-2.5 rounded-full bg-blue-600"
+                                                        style={{
+                                                            width: reportData.total_funds
+                                                                ? `${(reportData.active_funds / reportData.total_funds) * 100}%`
+                                                                : '0%',
                                                         }}
                                                     ></div>
                                                 </div>
@@ -1529,54 +2236,111 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                     </div>
 
                                     <div className="mt-4">
-                                        <h3 className="font-semibold mb-2">Recent Activities</h3>
+                                        <h3 className="mb-2 font-semibold">
+                                            Recent Activities
+                                        </h3>
                                         <div className="overflow-x-auto">
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Date</TableHead>
-                                                        <TableHead>Fund</TableHead>
-                                                        <TableHead>Type</TableHead>
-                                                        <TableHead>Amount</TableHead>
-                                                        <TableHead>Notes</TableHead>
+                                                        <TableHead>
+                                                            Date
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Fund
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Type
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Amount
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Notes
+                                                        </TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {reportData.recent_activities && reportData.recent_activities.length > 0 ? (
-                                                        reportData.recent_activities.map((activity) => (
-                                                            <TableRow key={activity.id}>
-                                                                <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
-                                                                <TableCell>{activity.fund.name}</TableCell>
-                                                                <TableCell>
-                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                                        activity.action === 'contribution' 
-                                                                            ? 'bg-green-100 text-green-800' 
-                                                                            : activity.action === 'withdrawal'
-                                                                                ? 'bg-red-100 text-red-800'
-                                                                                : 'bg-blue-100 text-blue-800'
-                                                                    }`}>
-                                                                        {activity.action === 'contribution' ? 'Contribution' : activity.action === 'withdrawal' ? 'Withdrawal' : 'Dividend'}
-                                                                    </span>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <span className={
-                                                                        activity.action === 'withdrawal' 
-                                                                            ? 'text-red-600' 
-                                                                            : activity.action === 'contribution'
-                                                                                ? 'text-green-600'
-                                                                                : 'text-blue-600'
-                                                                    }>
-                                                                        {activity.action === 'withdrawal' ? '-' : '+'}
-                                                                        {formatAmount(activity.amount, appCurrency)}
-                                                                    </span>
-                                                                </TableCell>
-                                                                <TableCell>{activity.notes || '-'}</TableCell>
-                                                            </TableRow>
-                                                        ))
+                                                    {reportData.recent_activities &&
+                                                    reportData.recent_activities
+                                                        .length > 0 ? (
+                                                        reportData.recent_activities.map(
+                                                            (activity) => (
+                                                                <TableRow
+                                                                    key={
+                                                                        activity.id
+                                                                    }
+                                                                >
+                                                                    <TableCell>
+                                                                        {new Date(
+                                                                            activity.date,
+                                                                        ).toLocaleDateString()}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {
+                                                                            activity
+                                                                                .fund
+                                                                                .name
+                                                                        }
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <span
+                                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                                                activity.action ===
+                                                                                'contribution'
+                                                                                    ? 'bg-green-100 text-green-800'
+                                                                                    : activity.action ===
+                                                                                        'withdrawal'
+                                                                                      ? 'bg-red-100 text-red-800'
+                                                                                      : 'bg-blue-100 text-blue-800'
+                                                                            }`}
+                                                                        >
+                                                                            {activity.action ===
+                                                                            'contribution'
+                                                                                ? 'Contribution'
+                                                                                : activity.action ===
+                                                                                    'withdrawal'
+                                                                                  ? 'Withdrawal'
+                                                                                  : 'Dividend'}
+                                                                        </span>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <span
+                                                                            className={
+                                                                                activity.action ===
+                                                                                'withdrawal'
+                                                                                    ? 'text-red-600'
+                                                                                    : activity.action ===
+                                                                                        'contribution'
+                                                                                      ? 'text-green-600'
+                                                                                      : 'text-blue-600'
+                                                                            }
+                                                                        >
+                                                                            {activity.action ===
+                                                                            'withdrawal'
+                                                                                ? '-'
+                                                                                : '+'}
+                                                                            {formatAmount(
+                                                                                activity.amount,
+                                                                                appCurrency,
+                                                                            )}
+                                                                        </span>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {activity.notes ||
+                                                                            '-'}
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ),
+                                                        )
                                                     ) : (
                                                         <TableRow>
-                                                            <TableCell colSpan={5} className="text-center py-4">
-                                                                No recent activities found
+                                                            <TableCell
+                                                                colSpan={5}
+                                                                className="py-4 text-center"
+                                                            >
+                                                                No recent
+                                                                activities found
                                                             </TableCell>
                                                         </TableRow>
                                                     )}
@@ -1588,7 +2352,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                             )}
                         </div>
                     </div>
-                    <DialogFooter className="sticky bottom-0 bg-background border-t p-6">
+                    <DialogFooter className="sticky bottom-0 border-t bg-background p-6">
                         <Button
                             variant="outline"
                             onClick={() => {
@@ -1602,39 +2366,59 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                             onClick={handleGenerateReport}
                             disabled={isGeneratingReport}
                         >
-                            {isGeneratingReport ? 'Generating...' : 'Generate Report'}
+                            {isGeneratingReport
+                                ? 'Generating...'
+                                : 'Generate Report'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             {/* Send Fund Report Dialog */}
-            <Dialog open={isSendReportDialogOpen} onOpenChange={setIsSendReportDialogOpen}>
+            <Dialog
+                open={isSendReportDialogOpen}
+                onOpenChange={setIsSendReportDialogOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Send Fund Report</DialogTitle>
                         <DialogDescription>
-                            Send a detailed report of {selectedFund?.name} to the fund owner
+                            Send a detailed report of {selectedFund?.name} to
+                            the fund owner
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSendFundReport}>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="report_email">Recipient Email</Label>
+                                <Label htmlFor="report_email">
+                                    Recipient Email
+                                </Label>
                                 <Input
                                     id="report_email"
                                     type="email"
                                     value={reportEmailData.email}
-                                    onChange={(e) => setReportEmailData({ ...reportEmailData, email: e.target.value })}
+                                    onChange={(e) =>
+                                        setReportEmailData({
+                                            ...reportEmailData,
+                                            email: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="report_message">Message (Optional)</Label>
+                                <Label htmlFor="report_message">
+                                    Message (Optional)
+                                </Label>
                                 <Textarea
                                     id="report_message"
                                     value={reportEmailData.message}
-                                    onChange={(e) => setReportEmailData({ ...reportEmailData, message: e.target.value })}
+                                    onChange={(e) =>
+                                        setReportEmailData({
+                                            ...reportEmailData,
+                                            message: e.target.value,
+                                        })
+                                    }
                                     placeholder="Add a personal message to the email..."
                                 />
                             </div>
@@ -1646,10 +2430,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                             >
                                 Cancel
                             </Button>
-                            <Button
-                                type="submit"
-                                disabled={isSendingReport}
-                            >
+                            <Button type="submit" disabled={isSendingReport}>
                                 {isSendingReport ? 'Sending...' : 'Send Report'}
                             </Button>
                         </DialogFooter>
@@ -1658,4 +2439,4 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             </Dialog>
         </AuthenticatedLayout>
     );
-} 
+}
