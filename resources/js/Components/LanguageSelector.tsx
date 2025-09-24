@@ -266,7 +266,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             {label && (
                 <Label
                     htmlFor="language-selector"
-                    className="text-gray-900 dark:text-white"
+                    className="text-sm font-medium text-gray-700"
                 >
                     {label}
                     {required && <span className="ml-1 text-red-500">*</span>}
@@ -279,16 +279,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             >
                 <SelectTrigger
                     id="language-selector"
-                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="border-gray-200 bg-white text-gray-900 focus:border-teal-500 focus:ring-teal-500"
                 >
                     <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
+                <SelectContent className="max-h-60 bg-white border-gray-200">
                     {LANGUAGES.map((language) => (
-                        <SelectItem key={language.code} value={language.name}>
+                        <SelectItem key={language.code} value={language.name} className="text-gray-900 hover:bg-gray-50">
                             <div className="flex w-full items-center justify-between">
                                 <span>{language.name}</span>
-                                <span className="ml-2 text-sm text-muted-foreground">
+                                <span className="ml-2 text-sm text-gray-500">
                                     {language.native}
                                 </span>
                             </div>

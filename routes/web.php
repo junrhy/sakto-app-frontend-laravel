@@ -48,6 +48,7 @@ use App\Http\Controllers\BillerController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\QueueDisplayController;
+use App\Http\Controllers\MedicalController;
 
 use App\Models\User;
 
@@ -276,6 +277,10 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
     Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
+    
+    // Medical/Clinic Public Routes
+    Route::get('/medical/clinic/{identifier}', [MedicalController::class, 'show'])->name('medical.clinic.show');
+    Route::post('/medical/clinic/{identifier}/book-appointment', [MedicalController::class, 'bookAppointment'])->name('medical.clinic.book-appointment');
 
     Route::get('/', function (Request $request) {
         $host = $request->getHost();
