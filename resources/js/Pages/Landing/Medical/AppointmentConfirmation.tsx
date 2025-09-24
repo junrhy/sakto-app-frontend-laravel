@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { faCheckCircle, faCalendarAlt, faUser, faEnvelope, faPhone, faClock, faStethoscope, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { usePDF } from 'react-to-pdf';
 
 interface AppointmentData {
@@ -219,7 +219,7 @@ const AppointmentConfirmation: React.FC<Props> = ({ appointment, clinic, message
                     {/* Action Buttons */}
                     <div className="mt-8 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 sm:justify-center">
                         <Button
-                            onClick={() => window.location.href = `/medical/${clinic.slug || clinic.id}`}
+                            onClick={() => router.visit(`/medical/clinic/${clinic.slug || clinic.identifier || clinic.id}`)}
                             className="bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500"
                         >
                             <FontAwesomeIcon

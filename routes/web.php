@@ -49,6 +49,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\QueueDisplayController;
 use App\Http\Controllers\MedicalController;
+use App\Http\Controllers\ClinicEmbedController;
 
 use App\Models\User;
 
@@ -282,6 +283,13 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/medical/clinic/{identifier}', [MedicalController::class, 'show'])->name('medical.clinic.show');
     Route::post('/medical/clinic/{identifier}/book-appointment', [MedicalController::class, 'bookAppointment'])->name('medical.clinic.book-appointment');
 
+    // Embeddable Appointment Form Routes
+    Route::get('/embed/appointment/{identifier}', [ClinicEmbedController::class, 'showWidget'])->name('embed.appointment.widget');
+    Route::get('/embed/appointment/{identifier}/script', [ClinicEmbedController::class, 'generateEmbedScript'])->name('embed.appointment.script');
+    Route::get('/embed/appointment/{identifier}/widget.js', function($identifier) {
+        return response()->file(public_path('embed/widget.js'));
+    })->name('embed.appointment.widget.js');
+
     Route::get('/', function (Request $request) {
         $host = $request->getHost();
         $path = $request->path();
@@ -435,6 +443,12 @@ Route::get('/debug-auth', function () {
         'session_has_user' => session()->has('auth.user'),
         'session_user_id' => session()->get('auth.user'),
     ]);
+
+    // Embed API Routes (public, no authentication required, with CORS)
+    Route::prefix('api/embed/appointment')->middleware('cors')->group(function () {
+        Route::get('/clinic-info/{identifier}', [ClinicEmbedController::class, 'getClinicInfo']);
+        Route::post('/book', [ClinicEmbedController::class, 'bookAppointment']);
+    });
 });
 
 // Routes that require authentication but not subscription
