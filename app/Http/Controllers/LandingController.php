@@ -110,4 +110,14 @@ class LandingController extends Controller
             'phpVersion' => PHP_VERSION,
         ]);
     }
+
+    public function neulify()
+    {
+        return Inertia::render('Landing/Neulify', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+        ]);
+    }
 }

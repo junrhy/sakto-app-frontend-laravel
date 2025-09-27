@@ -102,8 +102,16 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
                                 <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                    {hostname}
+                                    {hostname === 'sakto' ? 'Sakto Solutions' : hostname}
                                 </span>
+                                <div className="ml-3 hidden items-center gap-1 sm:flex">
+                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        by
+                                    </span>
+                                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-sm font-semibold text-transparent">
+                                        Neulify
+                                    </span>
+                                </div>
                             </div>
                             <div className="flex items-center">
                                 {/* Desktop Navigation */}
@@ -121,7 +129,7 @@ export default function Welcome({ auth }: PageProps) {
                                             }
                                             className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                         >
-                                            Apps
+                                            Our Solutions
                                             <svg
                                                 className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -158,6 +166,12 @@ export default function Welcome({ auth }: PageProps) {
                                             </div>
                                         )}
                                     </div>
+                                    <Link
+                                        href={route('neulify')}
+                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                    >
+                                        Neulify
+                                    </Link>
                                     <Link
                                         href={route('features')}
                                         className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
@@ -283,6 +297,12 @@ export default function Welcome({ auth }: PageProps) {
                                     </div>
                                     <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
                                         <Link
+                                            href={route('neulify')}
+                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            Neulify
+                                        </Link>
+                                        <Link
                                             href={route('features')}
                                             className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                         >
@@ -340,6 +360,14 @@ export default function Welcome({ auth }: PageProps) {
                                             Tailored for Your Industry
                                         </span>
                                     </h1>
+                                    <div className="mt-4 flex items-center justify-center gap-2">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Powered by
+                                        </span>
+                                        <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent">
+                                            Neulify
+                                        </span>
+                                    </div>
                                     <p className="mx-auto mt-3 max-w-md text-base text-gray-600 dark:text-gray-300 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
                                         Select from our specialized platforms
                                         designed for multiple sectors. Each
@@ -364,6 +392,14 @@ export default function Welcome({ auth }: PageProps) {
                                         and transform your business operations
                                         with ease.
                                     </p>
+                                    <div className="mt-4 flex items-center justify-center gap-2">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Built by
+                                        </span>
+                                        <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent">
+                                            Neulify
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="rounded-2xl border border-white/20 p-8 shadow-lg dark:border-gray-700/20 dark:bg-gray-800/80">
                                     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -1122,7 +1158,7 @@ export default function Welcome({ auth }: PageProps) {
                 </div>
 
                 {/* Scroll Indicators */}
-                <div className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 space-x-2">
+                <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 space-x-2 sm:bottom-20">
                     {/* Show 3 indicators for Hero, How It Works, and CTA sections */}
                     {[0, 1, 2].map((index) => (
                         <button
@@ -1143,6 +1179,24 @@ export default function Welcome({ auth }: PageProps) {
                             }`}
                         />
                     ))}
+                </div>
+
+                {/* Footer */}
+                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
+                    <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+                        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
+                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <span>© {new Date().getFullYear()}</span>
+                                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent">
+                                    Neulify
+                                </span>
+                                <span>All rights reserved.</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
+                                <span>Powering the next generation of digital industries.</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

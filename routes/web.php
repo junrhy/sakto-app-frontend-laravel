@@ -195,6 +195,7 @@ Route::group(['middleware' => ['web']], function () {
 
     // Welcome and Policy Routes
     Route::get('/landing', [LandingController::class, 'index'])->name('landing');
+    Route::get('/neulify', [LandingController::class, 'neulify'])->name('neulify');
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
