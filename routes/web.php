@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\PosRetailController;
 use App\Http\Controllers\PosRetailSaleController;
@@ -195,6 +196,7 @@ Route::group(['middleware' => ['web']], function () {
 
     // Welcome and Policy Routes
     Route::get('/landing', [LandingController::class, 'index'])->name('landing');
+    Route::post('/partner-application', [PartnerController::class, 'store'])->name('partner.application');
     Route::get('/neulify', [LandingController::class, 'neulify'])->name('neulify');
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
