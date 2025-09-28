@@ -17,12 +17,12 @@ interface PageProps {
 }
 
 export default function Pricing({ auth }: PageProps) {
+    const hostname = getHost();
     const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('Komunidad');
+    const [activeTab, setActiveTab] = useState(hostname === 'sakto' ? 'Komunidad' : 'Community');
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
-    const hostname = getHost();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -45,15 +45,25 @@ export default function Pricing({ auth }: PageProps) {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const productsMenuItems = [
-        { name: 'Komunidad', href: route('community') },
-        { name: 'Logistika', href: route('logistics') },
-        { name: 'Medikal', href: route('medical') },
-        { name: 'Lakbay', href: route('travel.landing') },
-        { name: 'Hatid', href: route('delivery') },
-        { name: 'Taohan', href: route('jobs') },
-        { name: 'Merkado', href: route('shop') },
-    ];
+    const productsMenuItems = hostname === 'sakto' 
+        ? [
+            { name: 'Komunidad', href: route('community') },
+            { name: 'Logistika', href: route('logistics') },
+            { name: 'Medikal', href: route('medical') },
+            { name: 'Lakbay', href: route('travel.landing') },
+            { name: 'Hatid', href: route('delivery') },
+            { name: 'Taohan', href: route('jobs') },
+            { name: 'Merkado', href: route('shop') },
+        ]
+        : [
+            { name: 'Community', href: route('community') },
+            { name: 'Logistics', href: route('logistics') },
+            { name: 'Medical', href: route('medical') },
+            { name: 'Travel', href: route('travel.landing') },
+            { name: 'Delivery', href: route('delivery') },
+            { name: 'Jobs', href: route('jobs') },
+            { name: 'Shop', href: route('shop') },
+        ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -62,8 +72,8 @@ export default function Pricing({ auth }: PageProps) {
         { name: 'FAQ', href: route('faq') },
     ];
     const projectPlans = {
-        Komunidad: {
-            name: 'Komunidad',
+        [hostname === 'sakto' ? 'Komunidad' : 'Community']: {
+            name: hostname === 'sakto' ? 'Komunidad' : 'Community',
             icon: UserGroupIcon,
             plans: [
                 {
@@ -106,8 +116,8 @@ export default function Pricing({ auth }: PageProps) {
                 },
             ],
         },
-        Logistika: {
-            name: 'Logistika',
+        [hostname === 'sakto' ? 'Logistika' : 'Logistics']: {
+            name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
             icon: TruckIcon,
             plans: [
                 {
@@ -149,8 +159,8 @@ export default function Pricing({ auth }: PageProps) {
                 },
             ],
         },
-        Medikal: {
-            name: 'Medikal',
+        [hostname === 'sakto' ? 'Medikal' : 'Medical']: {
+            name: hostname === 'sakto' ? 'Medikal' : 'Medical',
             icon: HeartIcon,
             plans: [
                 {
@@ -192,6 +202,178 @@ export default function Pricing({ auth }: PageProps) {
                 },
             ],
         },
+        [hostname === 'sakto' ? 'Lakbay' : 'Travel']: {
+            name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
+            icon: TruckIcon,
+            plans: [
+                {
+                    name: 'Basic',
+                    price: 199,
+                    project: 'travel',
+                    description: 'Perfect for small travel agencies',
+                    features: [
+                        'All Travel Apps',
+                        'Basic Support',
+                        'Email Support',
+                    ],
+                },
+                {
+                    name: 'Pro',
+                    price: 399,
+                    project: 'travel',
+                    description: 'Ideal for growing travel companies',
+                    features: [
+                        'All Travel Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                    ],
+                },
+                {
+                    name: 'Business',
+                    price: 599,
+                    project: 'travel',
+                    description:
+                        'Perfect for established travel companies with advanced needs',
+                    features: [
+                        'All Travel Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Hatid' : 'Delivery']: {
+            name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
+            icon: TruckIcon,
+            plans: [
+                {
+                    name: 'Basic',
+                    price: 199,
+                    project: 'delivery',
+                    description: 'Perfect for small delivery services',
+                    features: [
+                        'All Delivery Apps',
+                        'Basic Support',
+                        'Email Support',
+                    ],
+                },
+                {
+                    name: 'Pro',
+                    price: 399,
+                    project: 'delivery',
+                    description: 'Ideal for growing delivery companies',
+                    features: [
+                        'All Delivery Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                    ],
+                },
+                {
+                    name: 'Business',
+                    price: 599,
+                    project: 'delivery',
+                    description:
+                        'Perfect for established delivery companies with advanced needs',
+                    features: [
+                        'All Delivery Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Taohan' : 'Jobs']: {
+            name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
+            icon: UserGroupIcon,
+            plans: [
+                {
+                    name: 'Basic',
+                    price: 199,
+                    project: 'jobs',
+                    description: 'Perfect for small job boards',
+                    features: [
+                        'All Jobs Apps',
+                        'Basic Support',
+                        'Email Support',
+                    ],
+                },
+                {
+                    name: 'Pro',
+                    price: 399,
+                    project: 'jobs',
+                    description: 'Ideal for growing job platforms',
+                    features: [
+                        'All Jobs Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                    ],
+                },
+                {
+                    name: 'Business',
+                    price: 599,
+                    project: 'jobs',
+                    description:
+                        'Perfect for established job platforms with advanced needs',
+                    features: [
+                        'All Jobs Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Merkado' : 'Shop']: {
+            name: hostname === 'sakto' ? 'Merkado' : 'Shop',
+            icon: TruckIcon,
+            plans: [
+                {
+                    name: 'Basic',
+                    price: 199,
+                    project: 'shop',
+                    description: 'Perfect for small online stores',
+                    features: [
+                        'All Shop Apps',
+                        'Basic Support',
+                        'Email Support',
+                    ],
+                },
+                {
+                    name: 'Pro',
+                    price: 399,
+                    project: 'shop',
+                    description: 'Ideal for growing e-commerce businesses',
+                    features: [
+                        'All Shop Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                    ],
+                },
+                {
+                    name: 'Business',
+                    price: 599,
+                    project: 'shop',
+                    description:
+                        'Perfect for established e-commerce businesses with advanced needs',
+                    features: [
+                        'All Shop Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        'Virtual Assistant',
+                    ],
+                },
+            ],
+        },
     };
 
     return (
@@ -223,7 +405,7 @@ export default function Pricing({ auth }: PageProps) {
                                         }
                                         className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                     >
-                                        Solutions
+                                        Our Solutions
                                         <svg
                                             className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
                                             xmlns="http://www.w3.org/2000/svg"
@@ -258,6 +440,14 @@ export default function Pricing({ auth }: PageProps) {
                                         </div>
                                     )}
                                 </div>
+                                {hostname === 'neulify' && (
+                                    <Link
+                                        href={route('neulify')}
+                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                    >
+                                        Our Company
+                                    </Link>
+                                )}
                                 <Link
                                     href={route('features')}
                                     className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
@@ -412,10 +602,16 @@ export default function Pricing({ auth }: PageProps) {
                                                     </p>
                                                     {!auth.user && (
                                                         <Link
-                                                            href={`/register?project=${plan.project}&plan=${plan.name.toLowerCase()}`}
+                                                            href={plan.project === 'community' ? `${route('community')}?plan=${plan.name.toLowerCase()}` : 
+                                                                  plan.project === 'logistics' ? `${route('logistics')}?plan=${plan.name.toLowerCase()}` :
+                                                                  plan.project === 'medical' ? `${route('medical')}?plan=${plan.name.toLowerCase()}` :
+                                                                  plan.project === 'travel' ? `${route('travel.landing')}?plan=${plan.name.toLowerCase()}` :
+                                                                  plan.project === 'delivery' ? `${route('delivery')}?plan=${plan.name.toLowerCase()}` :
+                                                                  plan.project === 'jobs' ? `${route('jobs')}?plan=${plan.name.toLowerCase()}` :
+                                                                  plan.project === 'shop' ? `${route('shop')}?plan=${plan.name.toLowerCase()}` : '#'}
                                                             className="mt-4 block w-full rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2 text-center text-sm font-medium text-white shadow transition-all duration-200 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-600 dark:hover:bg-indigo-700"
                                                         >
-                                                            Get Started
+                                                            Choose Plan
                                                         </Link>
                                                     )}
                                                 </div>

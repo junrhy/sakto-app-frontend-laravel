@@ -17,12 +17,12 @@ interface PageProps {
 }
 
 export default function Features({ auth }: PageProps) {
+    const hostname = getHost();
     const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('Komunidad');
+    const [activeTab, setActiveTab] = useState(hostname === 'sakto' ? 'Komunidad' : 'Community');
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
-    const hostname = getHost();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -45,15 +45,25 @@ export default function Features({ auth }: PageProps) {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const productsMenuItems = [
-        { name: 'Komunidad', href: route('community') },
-        { name: 'Logistika', href: route('logistics') },
-        { name: 'Medikal', href: route('medical') },
-        { name: 'Lakbay', href: route('travel.landing') },
-        { name: 'Hatid', href: route('delivery') },
-        { name: 'Taohan', href: route('jobs') },
-        { name: 'Merkado', href: route('shop') },
-    ];
+    const productsMenuItems = hostname === 'sakto' 
+        ? [
+            { name: 'Komunidad', href: route('community') },
+            { name: 'Logistika', href: route('logistics') },
+            { name: 'Medikal', href: route('medical') },
+            { name: 'Lakbay', href: route('travel.landing') },
+            { name: 'Hatid', href: route('delivery') },
+            { name: 'Taohan', href: route('jobs') },
+            { name: 'Merkado', href: route('shop') },
+        ]
+        : [
+            { name: 'Community', href: route('community') },
+            { name: 'Logistics', href: route('logistics') },
+            { name: 'Medical', href: route('medical') },
+            { name: 'Travel', href: route('travel.landing') },
+            { name: 'Delivery', href: route('delivery') },
+            { name: 'Jobs', href: route('jobs') },
+            { name: 'Shop', href: route('shop') },
+        ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -63,8 +73,8 @@ export default function Features({ auth }: PageProps) {
     ];
 
     const projectFeatures = {
-        Komunidad: {
-            name: 'Komunidad',
+        [hostname === 'sakto' ? 'Komunidad' : 'Community']: {
+            name: hostname === 'sakto' ? 'Komunidad' : 'Community',
             project: 'community',
             icon: UserGroupIcon,
             features: [
@@ -115,8 +125,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        Logistika: {
-            name: 'Logistika',
+        [hostname === 'sakto' ? 'Logistika' : 'Logistics']: {
+            name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
             project: 'logistics',
             icon: TruckIcon,
             features: [
@@ -152,8 +162,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        Medikal: {
-            name: 'Medikal',
+        [hostname === 'sakto' ? 'Medikal' : 'Medical']: {
+            name: hostname === 'sakto' ? 'Medikal' : 'Medical',
             project: 'medical',
             icon: HeartIcon,
             features: [
@@ -181,6 +191,154 @@ export default function Features({ auth }: PageProps) {
                     title: 'SMS Integration',
                     description:
                         'Send SMS to your customers and clients. Supports Twilio and Semaphore. Easily integrate with your existing apps.',
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Lakbay' : 'Travel']: {
+            name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
+            project: 'travel',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Travel Booking',
+                    description:
+                        'Complete travel booking system with flight, hotel, and car rental reservations. Real-time availability and pricing.',
+                },
+                {
+                    title: 'Itinerary Management',
+                    description:
+                        'Create and manage travel itineraries with detailed schedules, bookings, and travel documents.',
+                },
+                {
+                    title: 'Customer Management',
+                    description:
+                        'Manage travel customers with booking history, preferences, and loyalty programs.',
+                },
+                {
+                    title: 'Email Integration',
+                    description:
+                        'Send travel confirmations and updates to customers. Supports multiple email providers and templates.',
+                },
+                {
+                    title: 'SMS Integration',
+                    description:
+                        'Send travel notifications and updates via SMS. Supports Twilio and Semaphore integration.',
+                },
+                {
+                    title: 'Payment Processing',
+                    description:
+                        'Secure payment processing for travel bookings with multiple payment methods and currency support.',
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Hatid' : 'Delivery']: {
+            name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
+            project: 'delivery',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Delivery Management',
+                    description:
+                        'Complete delivery management system with order tracking, route optimization, and delivery scheduling.',
+                },
+                {
+                    title: 'Driver Management',
+                    description:
+                        'Manage delivery drivers with scheduling, performance tracking, and route assignments.',
+                },
+                {
+                    title: 'Customer Management',
+                    description:
+                        'Manage delivery customers with order history, preferences, and delivery addresses.',
+                },
+                {
+                    title: 'Email Integration',
+                    description:
+                        'Send delivery notifications and updates to customers. Supports multiple email providers and templates.',
+                },
+                {
+                    title: 'SMS Integration',
+                    description:
+                        'Send delivery notifications and tracking updates via SMS. Supports Twilio and Semaphore integration.',
+                },
+                {
+                    title: 'Real-time Tracking',
+                    description:
+                        'Real-time delivery tracking with GPS location updates and estimated delivery times.',
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Taohan' : 'Jobs']: {
+            name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
+            project: 'jobs',
+            icon: UserGroupIcon,
+            features: [
+                {
+                    title: 'Job Posting',
+                    description:
+                        'Create and manage job postings with detailed descriptions, requirements, and application tracking.',
+                },
+                {
+                    title: 'Candidate Management',
+                    description:
+                        'Manage job candidates with applications, resumes, and interview scheduling.',
+                },
+                {
+                    title: 'Employer Management',
+                    description:
+                        'Manage employers with company profiles, job postings, and candidate matching.',
+                },
+                {
+                    title: 'Email Integration',
+                    description:
+                        'Send job notifications and updates to candidates and employers. Supports multiple email providers and templates.',
+                },
+                {
+                    title: 'SMS Integration',
+                    description:
+                        'Send job alerts and notifications via SMS. Supports Twilio and Semaphore integration.',
+                },
+                {
+                    title: 'Application Tracking',
+                    description:
+                        'Track job applications with status updates, interview scheduling, and hiring pipeline management.',
+                },
+            ],
+        },
+        [hostname === 'sakto' ? 'Merkado' : 'Shop']: {
+            name: hostname === 'sakto' ? 'Merkado' : 'Shop',
+            project: 'shop',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Product Management',
+                    description:
+                        'Complete product management system with inventory tracking, pricing, and product variations.',
+                },
+                {
+                    title: 'Order Management',
+                    description:
+                        'Manage orders with processing, fulfillment, and shipping tracking. Complete order lifecycle management.',
+                },
+                {
+                    title: 'Customer Management',
+                    description:
+                        'Manage shop customers with purchase history, preferences, and loyalty programs.',
+                },
+                {
+                    title: 'Email Integration',
+                    description:
+                        'Send order confirmations and updates to customers. Supports multiple email providers and templates.',
+                },
+                {
+                    title: 'SMS Integration',
+                    description:
+                        'Send order notifications and updates via SMS. Supports Twilio and Semaphore integration.',
+                },
+                {
+                    title: 'Payment Processing',
+                    description:
+                        'Secure payment processing for online orders with multiple payment methods and currency support.',
                 },
             ],
         },
@@ -215,7 +373,7 @@ export default function Features({ auth }: PageProps) {
                                         }
                                         className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
                                     >
-                                        Solutions
+                                        Our Solutions
                                         <svg
                                             className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
                                             xmlns="http://www.w3.org/2000/svg"
@@ -250,6 +408,14 @@ export default function Features({ auth }: PageProps) {
                                         </div>
                                     )}
                                 </div>
+                                {hostname === 'neulify' && (
+                                    <Link
+                                        href={route('neulify')}
+                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                    >
+                                        Our Company
+                                    </Link>
+                                )}
                                 <Link
                                     href={route('features')}
                                     className="rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-600 transition-colors duration-200 dark:bg-indigo-900/30 dark:text-indigo-400"
@@ -368,10 +534,16 @@ export default function Features({ auth }: PageProps) {
                                             </h2>
                                         </div>
                                         <Link
-                                            href={`/register?project=${project.project}`}
+                                            href={project.project === 'community' ? route('community') : 
+                                                  project.project === 'logistics' ? route('logistics') :
+                                                  project.project === 'medical' ? route('medical') :
+                                                  project.project === 'travel' ? route('travel.landing') :
+                                                  project.project === 'delivery' ? route('delivery') :
+                                                  project.project === 'jobs' ? route('jobs') :
+                                                  project.project === 'shop' ? route('shop') : '#'}
                                             className="inline-flex items-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-500 hover:to-purple-500 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                         >
-                                            Get Started
+                                            Learn More
                                             <svg
                                                 className="-mr-1 ml-2 h-4 w-4"
                                                 xmlns="http://www.w3.org/2000/svg"

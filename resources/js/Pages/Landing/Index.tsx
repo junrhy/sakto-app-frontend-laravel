@@ -22,6 +22,9 @@ export default function Welcome({ auth }: PageProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
+    const autoSlideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const currentScrollXRef = useRef(0);
+    const resetAutoSlideRef = useRef<(() => void) | null>(null);
     const hostname = getHost();
 
     useEffect(() => {
@@ -31,7 +34,9 @@ export default function Welcome({ auth }: PageProps) {
 
         const handleScroll = () => {
             if (containerRef.current) {
-                setScrollX(containerRef.current.scrollLeft);
+                const scrollLeft = containerRef.current.scrollLeft;
+                setScrollX(scrollLeft);
+                currentScrollXRef.current = scrollLeft;
             }
         };
 
@@ -50,12 +55,105 @@ export default function Welcome({ auth }: PageProps) {
             }
         };
 
+        const handleWheel = (event: WheelEvent) => {
+            if (!containerRef.current) return;
+            
+            // Only handle wheel events when the container is in view
+            const rect = containerRef.current.getBoundingClientRect();
+            const isInView = rect.top <= 0 && rect.bottom >= window.innerHeight;
+            
+            if (!isInView) return;
+            
+            // Prevent default scrolling behavior
+            event.preventDefault();
+            
+            const currentIndex = Math.round(scrollX / window.innerWidth);
+            const maxIndex = 2; // We have 3 slides (0, 1, 2)
+            
+            if (event.deltaY > 0) {
+                // Scrolling down - go to next slide
+                const nextIndex = Math.min(maxIndex, currentIndex + 1);
+                if (nextIndex !== currentIndex) {
+                    containerRef.current.scrollTo({
+                        left: window.innerWidth * nextIndex,
+                        behavior: 'smooth',
+                    });
+                }
+            } else {
+                // Scrolling up - go to previous slide
+                const prevIndex = Math.max(0, currentIndex - 1);
+                if (prevIndex !== currentIndex) {
+                    containerRef.current.scrollTo({
+                        left: window.innerWidth * prevIndex,
+                        behavior: 'smooth',
+                    });
+                }
+            }
+            
+            // Reset auto-slide timer on user interaction
+            resetAutoSlide();
+        };
+
+        const startAutoSlide = () => {
+            if (autoSlideTimeoutRef.current) {
+                clearTimeout(autoSlideTimeoutRef.current);
+            }
+            
+            autoSlideTimeoutRef.current = setTimeout(() => {
+                if (!containerRef.current) return;
+                
+                const currentIndex = Math.round(currentScrollXRef.current / window.innerWidth);
+                const maxIndex = 2; // We have 3 slides (0, 1, 2)
+                const nextIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1; // Loop back to first slide
+                
+                containerRef.current.scrollTo({
+                    left: window.innerWidth * nextIndex,
+                    behavior: 'smooth',
+                });
+                
+                // Continue auto-sliding
+                startAutoSlide();
+            }, 12000); // 12 seconds delay
+        };
+
+        const resetAutoSlide = () => {
+            if (autoSlideTimeoutRef.current) {
+                clearTimeout(autoSlideTimeoutRef.current);
+            }
+            startAutoSlide();
+        };
+
+        // Assign the function to the ref so it can be accessed outside useEffect
+        resetAutoSlideRef.current = resetAutoSlide;
+
+        const stopAutoSlide = () => {
+            if (autoSlideTimeoutRef.current) {
+                clearTimeout(autoSlideTimeoutRef.current);
+                autoSlideTimeoutRef.current = null;
+            }
+        };
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
         if (containerRef.current) {
             containerRef.current.addEventListener('scroll', handleScroll);
+            containerRef.current.addEventListener('wheel', handleWheel, { passive: false });
         }
         document.addEventListener('mousedown', handleClickOutside);
+        
+        // Add event listeners for user interactions to reset auto-slide
+        const handleUserInteraction = () => {
+            resetAutoSlide();
+        };
+        
+        // Listen for various user interactions
+        document.addEventListener('mousedown', handleUserInteraction);
+        document.addEventListener('mousemove', handleUserInteraction);
+        document.addEventListener('keydown', handleUserInteraction);
+        document.addEventListener('touchstart', handleUserInteraction);
+        
+        // Start auto-slide
+        startAutoSlide();
 
         return () => {
             window.removeEventListener('resize', checkMobile);
@@ -64,20 +162,40 @@ export default function Welcome({ auth }: PageProps) {
                     'scroll',
                     handleScroll,
                 );
+                containerRef.current.removeEventListener('wheel', handleWheel);
             }
             document.removeEventListener('mousedown', handleClickOutside);
+            
+            // Remove user interaction listeners
+            document.removeEventListener('mousedown', handleUserInteraction);
+            document.removeEventListener('mousemove', handleUserInteraction);
+            document.removeEventListener('keydown', handleUserInteraction);
+            document.removeEventListener('touchstart', handleUserInteraction);
+            
+            // Stop auto-slide
+            stopAutoSlide();
         };
     }, []);
 
-    const productsMenuItems = [
-        { name: 'Komunidad', href: route('community') },
-        { name: 'Logistika', href: route('logistics') },
-        { name: 'Medikal', href: route('medical') },
-        { name: 'Lakbay', href: route('travel.landing') },
-        { name: 'Hatid', href: route('delivery') },
-        { name: 'Taohan', href: route('jobs') },
-        { name: 'Merkado', href: route('shop') },
-    ];
+    const productsMenuItems = hostname === 'sakto' 
+        ? [
+            { name: 'Komunidad', href: route('community') },
+            { name: 'Logistika', href: route('logistics') },
+            { name: 'Medikal', href: route('medical') },
+            { name: 'Lakbay', href: route('travel.landing') },
+            { name: 'Hatid', href: route('delivery') },
+            { name: 'Taohan', href: route('jobs') },
+            { name: 'Merkado', href: route('shop') },
+        ]
+        : [
+            { name: 'Community', href: route('community') },
+            { name: 'Logistics', href: route('logistics') },
+            { name: 'Medical', href: route('medical') },
+            { name: 'Travel', href: route('travel.landing') },
+            { name: 'Delivery', href: route('delivery') },
+            { name: 'Jobs', href: route('jobs') },
+            { name: 'Shop', href: route('shop') },
+        ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -158,12 +276,14 @@ export default function Welcome({ auth }: PageProps) {
                                             </div>
                                         )}
                                     </div>
-                                    <Link
-                                        href={route('neulify')}
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Neulify
-                                    </Link>
+                                    {hostname === 'neulify' && (
+                                        <Link
+                                            href={route('neulify')}
+                                            className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            Our Company
+                                        </Link>
+                                    )}
                                     <Link
                                         href={route('features')}
                                         className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
@@ -288,12 +408,14 @@ export default function Welcome({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
-                                        <Link
-                                            href={route('neulify')}
-                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                        >
-                                            Neulify
-                                        </Link>
+                                        {hostname === 'neulify' && (
+                                            <Link
+                                                href={route('neulify')}
+                                                className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            >
+                                                Our Company
+                                            </Link>
+                                        )}
                                         <Link
                                             href={route('features')}
                                             className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
@@ -352,14 +474,19 @@ export default function Welcome({ auth }: PageProps) {
                                             Tailored for Your Industry
                                         </span>
                                     </h1>
-                                    <div className="mt-4 flex items-center justify-center gap-2">
-                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Powered by
-                                        </span>
-                                        <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent">
-                                            Neulify
-                                        </span>
-                                    </div>
+                                    {hostname !== 'neulify' && (
+                                        <div className="mt-4 flex items-center justify-center gap-2">
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Powered by
+                                            </span>
+                                            <Link
+                                                href={route('neulify')}
+                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                                            >
+                                                Neulify
+                                            </Link>
+                                        </div>
+                                    )}
                                     <p className="mx-auto mt-3 max-w-md text-base text-gray-600 dark:text-gray-300 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
                                         Select from our specialized platforms
                                         designed for multiple sectors. Each
@@ -384,14 +511,19 @@ export default function Welcome({ auth }: PageProps) {
                                         and transform your business operations
                                         with ease.
                                     </p>
-                                    <div className="mt-4 flex items-center justify-center gap-2">
-                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Built by
-                                        </span>
-                                        <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent">
-                                            Neulify
-                                        </span>
-                                    </div>
+                                    {hostname !== 'neulify' && (
+                                        <div className="mt-4 flex items-center justify-center gap-2">
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Built by
+                                            </span>
+                                            <Link
+                                                href={route('neulify')}
+                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                                            >
+                                                Neulify
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="rounded-2xl border border-white/20 p-8 shadow-lg dark:border-gray-700/20 dark:bg-gray-800/80">
                                     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -557,8 +689,9 @@ export default function Welcome({ auth }: PageProps) {
                                             <div className="mb-6 flex flex-wrap justify-center gap-1 sm:mb-8 sm:gap-2">
                                                 {[
                                                     {
-                                                        name: 'Komunidad',
+                                                        name: hostname === 'sakto' ? 'Komunidad' : 'Community',
                                                         color: 'from-pink-500 to-rose-500',
+                                                        enabled: true,
                                                         description:
                                                             'Create and manage thriving communities with member engagement tools, event organization, content sharing, and real-time communication features. Perfect for organizations, clubs, and online communities.',
                                                         icon: (
@@ -584,8 +717,9 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                     },
                                                     {
-                                                        name: 'Logistika',
+                                                        name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
                                                         color: 'from-cyan-500 to-blue-500',
+                                                        enabled: true,
                                                         description:
                                                             'Streamline your logistics operations with intelligent route optimization, real-time fleet tracking, delivery analytics, and comprehensive supply chain management tools. Ideal for delivery companies and transportation businesses.',
                                                         icon: (
@@ -611,8 +745,9 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                     },
                                                     {
-                                                        name: 'Medikal',
+                                                        name: hostname === 'sakto' ? 'Medikal' : 'Medical',
                                                         color: 'from-emerald-500 to-teal-500',
+                                                        enabled: true,
                                                         description:
                                                             'Transform healthcare delivery with comprehensive patient management, secure medical records, appointment scheduling, and health analytics. Designed for clinics, hospitals, and healthcare providers.',
                                                         icon: (
@@ -636,8 +771,9 @@ export default function Welcome({ auth }: PageProps) {
                                                         link: route('medical'),
                                                     },
                                                     {
-                                                        name: 'Lakbay',
+                                                        name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
                                                         color: 'from-blue-500 to-indigo-600',
+                                                        enabled: true,
                                                         description:
                                                             'Revolutionize travel planning with comprehensive flight booking, hotel reservations, travel packages, and insurance services. Complete solution for travel agencies and tour operators.',
                                                         icon: (
@@ -663,8 +799,9 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                     },
                                                     {
-                                                        name: 'Hatid',
+                                                        name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
                                                         color: 'from-purple-500 to-violet-500',
+                                                        enabled: true,
                                                         description:
                                                             'Optimize retail operations with advanced order management, inventory tracking, delivery scheduling, and customer analytics. Perfect for retail stores and e-commerce businesses.',
                                                         icon: (
@@ -688,8 +825,9 @@ export default function Welcome({ auth }: PageProps) {
                                                         link: route('delivery'),
                                                     },
                                                     {
-                                                        name: 'Taohan',
+                                                        name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
                                                         color: 'from-indigo-500 to-blue-600',
+                                                        enabled: true,
                                                         description:
                                                             'Streamline HR operations with comprehensive employee management, recruitment tools, performance tracking, and payroll integration. Essential for businesses of all sizes.',
                                                         icon: (
@@ -711,6 +849,32 @@ export default function Welcome({ auth }: PageProps) {
                                                             </svg>
                                                         ),
                                                         link: route('jobs'),
+                                                    },
+                                                    {
+                                                        name: hostname === 'sakto' ? 'Merkado' : 'Shop',
+                                                        color: 'from-green-500 to-emerald-600',
+                                                        enabled: true,
+                                                        description:
+                                                            'Launch and scale your online business with powerful product management, order processing, payment integration, and customer support tools. Complete e-commerce solution.',
+                                                        icon: (
+                                                            <svg
+                                                                className="h-5 w-5"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M2.25 3h1.5c.513 0 1.024.195 1.414.586L9 9.414V18a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 001 1h2a1 1 0 001-1V9.414l3.836-3.828A2.25 2.25 0 0021.75 3h-1.5a2.25 2.25 0 00-2.25 2.25v.75a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-.75A2.25 2.25 0 004.5 3z"
+                                                                />
+                                                            </svg>
+                                                        ),
+                                                        link: route('shop'),
                                                     },
                                                 ].map((project, index) => (
                                                     <button
@@ -741,8 +905,9 @@ export default function Welcome({ auth }: PageProps) {
                                                 {(() => {
                                                     const projects = [
                                                         {
-                                                            name: 'Community',
+                                                            name: hostname === 'sakto' ? 'Komunidad' : 'Community',
                                                             color: 'from-pink-500 to-rose-500',
+                                                            enabled: true,
                                                             description:
                                                                 'Create and manage thriving communities with member engagement tools, event organization, content sharing, and real-time communication features. Perfect for organizations, clubs, and online communities.',
                                                             icon: (
@@ -766,8 +931,9 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('community'),
                                                         },
                                                         {
-                                                            name: 'Logistics',
+                                                            name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
                                                             color: 'from-cyan-500 to-blue-500',
+                                                            enabled: true,
                                                             description:
                                                                 'Streamline your logistics operations with intelligent route optimization, real-time fleet tracking, delivery analytics, and comprehensive supply chain management tools. Ideal for delivery companies and transportation businesses.',
                                                             icon: (
@@ -791,8 +957,9 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('logistics'),
                                                         },
                                                         {
-                                                            name: 'Medical',
+                                                            name: hostname === 'sakto' ? 'Medikal' : 'Medical',
                                                             color: 'from-emerald-500 to-teal-500',
+                                                            enabled: true,
                                                             description:
                                                                 'Transform healthcare delivery with comprehensive patient management, secure medical records, appointment scheduling, and health analytics. Designed for clinics, hospitals, and healthcare providers.',
                                                             icon: (
@@ -816,8 +983,9 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('medical'),
                                                         },
                                                         {
-                                                            name: 'Travel',
+                                                            name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
                                                             color: 'from-blue-500 to-indigo-600',
+                                                            enabled: true,
                                                             description:
                                                                 'Revolutionize travel planning with comprehensive flight booking, hotel reservations, travel packages, and insurance services. Complete solution for travel agencies and tour operators.',
                                                             icon: (
@@ -841,8 +1009,9 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('travel.landing'),
                                                         },
                                                         {
-                                                            name: 'Retail Delivery',
+                                                            name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
                                                             color: 'from-purple-500 to-violet-500',
+                                                            enabled: true,
                                                             description:
                                                                 'Optimize retail operations with advanced order management, inventory tracking, delivery scheduling, and customer analytics. Perfect for retail stores and e-commerce businesses.',
                                                             icon: (
@@ -866,8 +1035,9 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('delivery'),
                                                         },
                                                         {
-                                                            name: 'Human Resources',
+                                                            name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
                                                             color: 'from-indigo-500 to-blue-600',
+                                                            enabled: true,
                                                             description:
                                                                 'Streamline HR operations with comprehensive employee management, recruitment tools, performance tracking, and payroll integration. Essential for businesses of all sizes.',
                                                             icon: (
@@ -891,8 +1061,9 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('jobs'),
                                                         },
                                                         {
-                                                            name: 'E-Commerce',
+                                                            name: hostname === 'sakto' ? 'Merkado' : 'Shop',
                                                             color: 'from-green-500 to-emerald-600',
+                                                            enabled: true,
                                                             description:
                                                                 'Launch and scale your online business with powerful product management, order processing, payment integration, and customer support tools. Complete e-commerce solution.',
                                                             icon: (
@@ -1022,14 +1193,20 @@ export default function Welcome({ auth }: PageProps) {
                                                                 </p>
                                                             </div>
                                                             <div className="flex flex-shrink-0 items-center">
-                                                                <Link
-                                                                    href={
-                                                                        project.link
-                                                                    }
-                                                                    className={`inline-flex items-center bg-gradient-to-r px-4 py-2 text-sm font-medium text-white sm:px-6 sm:py-2.5 ${project.color} rounded-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2`}
-                                                                >
-                                                                    Get Started
-                                                                </Link>
+                                                                {project.enabled ? (
+                                                                    <Link
+                                                                        href={
+                                                                            project.link
+                                                                        }
+                                                                        className={`inline-flex items-center bg-gradient-to-r px-4 py-2 text-sm font-medium text-white sm:px-6 sm:py-2.5 ${project.color} rounded-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                                                                    >
+                                                                        Launch
+                                                                    </Link>
+                                                                ) : (
+                                                                    <div className="inline-flex items-center bg-gray-400 px-4 py-2 text-sm font-medium text-white sm:px-6 sm:py-2.5 rounded-lg cursor-not-allowed opacity-60">
+                                                                        Coming Soon
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     );
@@ -1043,95 +1220,100 @@ export default function Welcome({ auth }: PageProps) {
                     </div>
                 </div>
 
-                {/* Navigation Arrows */}
-                {Math.round(scrollX / window.innerWidth) > 0 && (
-                    <div className="fixed left-8 top-1/2 z-50 -translate-y-1/2 lg:left-16 xl:left-24">
-                        <button
-                            onClick={() => {
-                                if (containerRef.current) {
-                                    const currentIndex = Math.round(scrollX / window.innerWidth);
-                                    const newIndex = Math.max(0, currentIndex - 1);
-                                    containerRef.current.scrollTo({
-                                        left: window.innerWidth * newIndex,
-                                        behavior: 'smooth',
-                                    });
-                                }
-                            }}
-                            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800"
-                        >
-                            <svg
-                                className="h-6 w-6 text-gray-600 dark:text-gray-300"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 19l-7-7 7-7"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                )}
 
-                {Math.round(scrollX / window.innerWidth) < 2 && (
-                    <div className="fixed right-8 top-1/2 z-50 -translate-y-1/2 lg:right-16 xl:right-24">
-                        <button
-                            onClick={() => {
-                                if (containerRef.current) {
-                                    const currentIndex = Math.round(scrollX / window.innerWidth);
-                                    const newIndex = Math.min(2, currentIndex + 1);
-                                    containerRef.current.scrollTo({
-                                        left: window.innerWidth * newIndex,
-                                        behavior: 'smooth',
-                                    });
-                                }
-                            }}
-                            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800"
+                {/* Navigation Controls */}
+                <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center space-x-4 sm:bottom-20">
+                    {/* Left Arrow */}
+                    <button
+                        onClick={() => {
+                            if (containerRef.current) {
+                                const currentIndex = Math.round(scrollX / window.innerWidth);
+                                const newIndex = Math.max(0, currentIndex - 1);
+                                containerRef.current.scrollTo({
+                                    left: window.innerWidth * newIndex,
+                                    behavior: 'smooth',
+                                });
+                            }
+                            resetAutoSlideRef.current?.();
+                        }}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800 ${
+                            Math.round(scrollX / window.innerWidth) === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        disabled={Math.round(scrollX / window.innerWidth) === 0}
+                    >
+                        <svg
+                            className="h-5 w-5 text-gray-600 dark:text-gray-300"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
                         >
-                            <svg
-                                className="h-6 w-6 text-gray-600 dark:text-gray-300"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 5l7 7-7 7"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                )}
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                    </button>
 
-                {/* Scroll Indicators */}
-                <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 space-x-2 sm:bottom-20">
-                    {/* Show 3 indicators for Hero, How It Works, and CTA sections */}
-                    {[0, 1, 2].map((index) => (
-                        <button
-                            key={index}
-                            onClick={() => {
-                                if (containerRef.current) {
-                                    containerRef.current.scrollTo({
-                                        left: window.innerWidth * index,
-                                        behavior: 'smooth',
-                                    });
-                                }
-                            }}
-                            className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                                Math.round(scrollX / window.innerWidth) ===
-                                index
-                                    ? 'w-8 bg-indigo-600'
-                                    : 'bg-gray-300 dark:bg-gray-600'
-                            }`}
-                        />
-                    ))}
+                    {/* Scroll Indicators */}
+                    <div className="flex space-x-2">
+                        {[0, 1, 2].map((index) => (
+                            <button
+                                key={index}
+                                onClick={() => {
+                                    if (containerRef.current) {
+                                        containerRef.current.scrollTo({
+                                            left: window.innerWidth * index,
+                                            behavior: 'smooth',
+                                        });
+                                    }
+                                    resetAutoSlideRef.current?.();
+                                }}
+                                className={`h-3 w-3 rounded-full transition-all duration-300 ${
+                                    Math.round(scrollX / window.innerWidth) ===
+                                    index
+                                        ? 'w-8 bg-indigo-600'
+                                        : 'bg-gray-300 dark:bg-gray-600'
+                                }`}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Right Arrow */}
+                    <button
+                        onClick={() => {
+                            if (containerRef.current) {
+                                const currentIndex = Math.round(scrollX / window.innerWidth);
+                                const newIndex = Math.min(2, currentIndex + 1);
+                                containerRef.current.scrollTo({
+                                    left: window.innerWidth * newIndex,
+                                    behavior: 'smooth',
+                                });
+                            }
+                            resetAutoSlideRef.current?.();
+                        }}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800 ${
+                            Math.round(scrollX / window.innerWidth) === 2 ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        disabled={Math.round(scrollX / window.innerWidth) === 2}
+                    >
+                        <svg
+                            className="h-5 w-5 text-gray-600 dark:text-gray-300"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </button>
                 </div>
 
             </div>
