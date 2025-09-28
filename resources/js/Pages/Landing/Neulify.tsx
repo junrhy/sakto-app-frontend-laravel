@@ -1,4 +1,4 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import NeulifyLogo from '@/Components/NeulifyLogo';
 import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
@@ -15,8 +15,8 @@ interface PageProps extends Record<string, any> {
 export default function Neulify({ auth }: PageProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const legalDropdownRef = useRef<HTMLDivElement>(null);
+    const [isPartnersDropdownOpen, setIsPartnersDropdownOpen] = useState(false);
+    const partnersDropdownRef = useRef<HTMLDivElement>(null);
     const hostname = getHost();
 
     useEffect(() => {
@@ -26,10 +26,10 @@ export default function Neulify({ auth }: PageProps) {
 
         const handleClickOutside = (event: MouseEvent) => {
             if (
-                legalDropdownRef.current &&
-                !legalDropdownRef.current.contains(event.target as Node)
+                partnersDropdownRef.current &&
+                !partnersDropdownRef.current.contains(event.target as Node)
             ) {
-                setIsLegalDropdownOpen(false);
+                setIsPartnersDropdownOpen(false);
             }
         };
 
@@ -43,12 +43,9 @@ export default function Neulify({ auth }: PageProps) {
         };
     }, []);
 
-
-    const legalMenuItems = [
-        { name: 'Privacy Policy', href: route('privacy-policy') },
-        { name: 'Terms & Conditions', href: route('terms-and-conditions') },
-        { name: 'Cookie Policy', href: route('cookie-policy') },
-        { name: 'FAQ', href: route('faq') },
+    const partnersMenuItems = [
+        { name: 'Sakto Solutions', href: route('landing'), description: 'Philippine Market Partner' },
+        // Future partners can be added here
     ];
 
     return (
@@ -56,10 +53,10 @@ export default function Neulify({ auth }: PageProps) {
             <Head title="Neulify - Empowering Digital Innovation" />
             <div className="relative min-h-screen">
                 {/* Background */}
-                <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-100/70 via-transparent to-transparent dark:from-indigo-900/10"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/20 via-transparent to-transparent dark:from-[#14B8A6]/10"></div>
                 {/* Navigation */}
-                <nav className="fixed left-1/2 top-4 z-50 mx-auto w-[95%] max-w-7xl -translate-x-1/2 rounded-2xl border border-gray-100 bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 dark:shadow-gray-900/50">
+                <nav className="fixed left-1/2 top-4 z-50 mx-auto w-[95%] max-w-7xl -translate-x-1/2 rounded-2xl border border-[#E2E8F0] bg-white/90 shadow-lg shadow-[#334155]/10 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 dark:shadow-gray-900/50">
                     <div className="px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex items-center">
@@ -67,10 +64,7 @@ export default function Neulify({ auth }: PageProps) {
                                     onClick={() => window.location.reload()}
                                     className="flex items-center hover:opacity-80 transition-opacity duration-200"
                                 >
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
-                                    <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                        Neulify
-                                    </span>
+                                    <NeulifyLogo className="block h-9 w-auto" />
                                 </button>
                             </div>
                             <div className="flex items-center">
@@ -78,39 +72,33 @@ export default function Neulify({ auth }: PageProps) {
                                 <div className="hidden items-center space-x-1 md:flex">
                                     <a
                                         href="#about"
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         About Us
                                     </a>
                                     <a
                                         href="#values"
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Core Values
                                     </a>
-                                    <Link
-                                        href={route('landing')}
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Sakto Solutions
-                                    </Link>
-                                    <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-                                    {/* Legal Dropdown */}
+                                    <div className="mx-2 h-6 w-px bg-[#E2E8F0] dark:bg-gray-700"></div>
+                                    {/* Partners Dropdown */}
                                     <div
                                         className="relative"
-                                        ref={legalDropdownRef}
+                                        ref={partnersDropdownRef}
                                     >
                                         <button
                                             onClick={() =>
-                                                setIsLegalDropdownOpen(
-                                                    !isLegalDropdownOpen,
+                                                setIsPartnersDropdownOpen(
+                                                    !isPartnersDropdownOpen,
                                                 )
                                             }
-                                            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
-                                            Legal
+                                            Partners
                                             <svg
-                                                className={`ml-1 h-4 w-4 transition-transform duration-200 ${isLegalDropdownOpen ? 'rotate-180' : ''}`}
+                                                className={`ml-1 h-4 w-4 transition-transform duration-200 ${isPartnersDropdownOpen ? 'rotate-180' : ''}`}
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
@@ -124,20 +112,21 @@ export default function Neulify({ auth }: PageProps) {
                                                 />
                                             </svg>
                                         </button>
-                                        {isLegalDropdownOpen && (
-                                            <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                                                {legalMenuItems.map((item) => (
+                                        {isPartnersDropdownOpen && (
+                                            <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-[#E2E8F0] bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                                {partnersMenuItems.map((partner) => (
                                                     <Link
-                                                        key={item.name}
-                                                        href={item.href}
-                                                        className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                        key={partner.name}
+                                                        href={partner.href}
+                                                        className="block px-4 py-3 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                         onClick={() =>
-                                                            setIsLegalDropdownOpen(
+                                                            setIsPartnersDropdownOpen(
                                                                 false,
                                                             )
                                                         }
                                                     >
-                                                        {item.name}
+                                                        <div className="font-medium">{partner.name}</div>
+                                                        <div className="text-xs text-[#334155]/70 dark:text-gray-400">{partner.description}</div>
                                                     </Link>
                                                 ))}
                                             </div>
@@ -151,7 +140,7 @@ export default function Neulify({ auth }: PageProps) {
                                         onClick={() =>
                                             setIsMenuOpen(!isMenuOpen)
                                         }
-                                        className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:text-indigo-600 focus:outline-none dark:text-gray-200 dark:hover:text-white"
+                                        className="inline-flex items-center justify-center rounded-md p-2 text-[#334155] hover:text-[#14B8A6] focus:outline-none dark:text-gray-200 dark:hover:text-white"
                                     >
                                         <svg
                                             className="h-6 w-6"
@@ -185,41 +174,36 @@ export default function Neulify({ auth }: PageProps) {
                         {isMenuOpen && (
                             <div className="md:hidden">
                                 <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-                                    <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+                                    <div className="border-t border-[#E2E8F0] pt-2 dark:border-gray-700">
                                         <a
                                             href="#about"
-                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             About Us
                                         </a>
                                         <a
                                             href="#values"
-                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Core Values
                                         </a>
-                                        <Link
-                                            href={route('landing')}
-                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                        >
-                                            Sakto Solutions
-                                        </Link>
-                                        {/* Legal Section */}
+                                        {/* Partners Section */}
                                         <div className="px-3 py-2">
-                                            <div className="text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Legal
+                                            <div className="text-sm font-medium uppercase tracking-wider text-[#334155]/70 dark:text-gray-400">
+                                                Partners
                                             </div>
                                             <div className="mt-2 space-y-1">
-                                                {legalMenuItems.map((item) => (
+                                                {partnersMenuItems.map((partner) => (
                                                     <Link
-                                                        key={item.name}
-                                                        href={item.href}
-                                                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                                        key={partner.name}
+                                                        href={partner.href}
+                                                        className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                                         onClick={() =>
                                                             setIsMenuOpen(false)
                                                         }
                                                     >
-                                                        {item.name}
+                                                        <div className="font-medium">{partner.name}</div>
+                                                        <div className="text-xs text-[#334155]/70 dark:text-gray-400">{partner.description}</div>
                                                     </Link>
                                                 ))}
                                             </div>
@@ -237,27 +221,27 @@ export default function Neulify({ auth }: PageProps) {
                     <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20">
                         <div className="relative mx-auto max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
                             <div className="text-center">
-                                <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl">
+                                <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl">
                                     <span className="block">
                                         Neulify
                                     </span>
-                                    <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:text-indigo-400">
+                                    <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-transparent dark:text-[#14B8A6]">
                                         Empowering Digital Innovation
                                     </span>
                                 </h1>
-                                <p className="mx-auto mt-3 max-w-md text-base text-gray-600 dark:text-gray-300 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
+                                <p className="mx-auto mt-3 max-w-md text-base text-[#334155] dark:text-gray-300 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
                                     We are a technology company dedicated to creating innovative digital solutions that transform industries and empower businesses to thrive in the digital age.
                                 </p>
                                 <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                                     <Link
                                         href={route('landing')}
-                                        className="inline-flex items-center rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 text-base font-medium text-white shadow-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        className="inline-flex items-center rounded-lg bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-6 py-3 text-base font-medium text-white shadow-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
                                     >
                                         Explore Our Solutions
                                     </Link>
                                     <a
                                         href="#about"
-                                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        className="inline-flex items-center rounded-lg border border-[#E2E8F0] bg-white px-6 py-3 text-base font-medium text-[#334155] shadow-sm transition-all duration-200 hover:bg-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                                     >
                                         Learn More
                                     </a>
@@ -270,21 +254,21 @@ export default function Neulify({ auth }: PageProps) {
                     <section id="about" className="relative flex min-h-screen items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
                                 <div className="mb-12 text-center">
-                                    <h2 className="mb-4 bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
+                                    <h2 className="mb-4 bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
                                         About Neulify
                                     </h2>
-                                    <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gray-300">
+                                    <p className="mx-auto max-w-3xl text-xl text-[#334155] dark:text-gray-300">
                                         We believe in the power of technology to solve real-world problems and create meaningful impact across various industries.
                                     </p>
                                 </div>
-                                <div className="rounded-2xl border border-white/20 p-8 shadow-lg dark:border-gray-700/20 dark:bg-gray-800/80">
+                                <div className="rounded-2xl border border-[#E2E8F0] p-8 shadow-lg dark:border-gray-700/20 dark:bg-gray-800/80">
                                     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                                         {/* Mission */}
                                         <div className="text-center">
                                             <div className="relative mb-6">
-                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#14B8A6]/10 dark:bg-[#14B8A6]/20">
                                                     <svg
-                                                        className="h-8 w-8 text-indigo-600 dark:text-indigo-400"
+                                                        className="h-8 w-8 text-[#14B8A6] dark:text-[#14B8A6]"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -298,10 +282,10 @@ export default function Neulify({ auth }: PageProps) {
                                                     </svg>
                                                 </div>
                                             </div>
-                                            <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                            <h3 className="mb-3 text-xl font-semibold text-[#334155] dark:text-gray-100">
                                                 Our Mission
                                             </h3>
-                                            <p className="text-gray-600 dark:text-gray-300">
+                                            <p className="text-[#334155]/80 dark:text-gray-300">
                                                 To empower businesses and organizations with cutting-edge digital solutions that drive innovation, efficiency, and growth.
                                             </p>
                                         </div>
@@ -309,9 +293,9 @@ export default function Neulify({ auth }: PageProps) {
                                         {/* Vision */}
                                         <div className="text-center">
                                             <div className="relative mb-6">
-                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#06B6D4]/10 dark:bg-[#06B6D4]/20">
                                                     <svg
-                                                        className="h-8 w-8 text-emerald-600 dark:text-emerald-400"
+                                                        className="h-8 w-8 text-[#06B6D4] dark:text-[#06B6D4]"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -331,10 +315,10 @@ export default function Neulify({ auth }: PageProps) {
                                                     </svg>
                                                 </div>
                                             </div>
-                                            <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                            <h3 className="mb-3 text-xl font-semibold text-[#334155] dark:text-gray-100">
                                                 Our Vision
                                             </h3>
-                                            <p className="text-gray-600 dark:text-gray-300">
+                                            <p className="text-[#334155]/80 dark:text-gray-300">
                                                 To be the leading force in digital transformation, creating a world where technology seamlessly integrates with human potential.
                                             </p>
                                         </div>
@@ -342,9 +326,9 @@ export default function Neulify({ auth }: PageProps) {
                                         {/* Values */}
                                         <div className="text-center">
                                             <div className="relative mb-6">
-                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#1E3A8A]/10 dark:bg-[#1E3A8A]/20">
                                                     <svg
-                                                        className="h-8 w-8 text-purple-600 dark:text-purple-400"
+                                                        className="h-8 w-8 text-[#1E3A8A] dark:text-[#1E3A8A]"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -358,10 +342,10 @@ export default function Neulify({ auth }: PageProps) {
                                                     </svg>
                                                 </div>
                                             </div>
-                                            <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                            <h3 className="mb-3 text-xl font-semibold text-[#334155] dark:text-gray-100">
                                                 Our Values
                                             </h3>
-                                            <p className="text-gray-600 dark:text-gray-300">
+                                            <p className="text-[#334155]/80 dark:text-gray-300">
                                                 Innovation, integrity, and excellence guide everything we do. We believe in building lasting partnerships and delivering exceptional value.
                                             </p>
                                         </div>
@@ -374,10 +358,10 @@ export default function Neulify({ auth }: PageProps) {
                     <section id="values" className="relative flex min-h-screen items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
                             <div className="text-center">
-                                <h2 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
+                                <h2 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
                                     Our Core Values
                                 </h2>
-                                <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
+                                <p className="mx-auto mt-6 max-w-3xl text-xl text-[#334155] dark:text-gray-300">
                                     The principles that guide everything we do and shape our company culture.
                                 </p>
                                 <div className="mx-auto mt-12 max-w-6xl">
@@ -402,7 +386,7 @@ export default function Neulify({ auth }: PageProps) {
                                                         />
                                                     </svg>
                                                 ),
-                                                color: 'from-yellow-500 to-orange-500',
+                                                color: 'from-[#14B8A6] to-[#06B6D4]',
                                             },
                                             {
                                                 title: 'Integrity',
@@ -423,7 +407,7 @@ export default function Neulify({ auth }: PageProps) {
                                                         />
                                                     </svg>
                                                 ),
-                                                color: 'from-blue-500 to-cyan-500',
+                                                color: 'from-[#1E3A8A] to-[#14B8A6]',
                                             },
                                             {
                                                 title: 'Excellence',
@@ -444,7 +428,7 @@ export default function Neulify({ auth }: PageProps) {
                                                         />
                                                     </svg>
                                                 ),
-                                                color: 'from-purple-500 to-pink-500',
+                                                color: 'from-[#06B6D4] to-[#14B8A6]',
                                             },
                                             {
                                                 title: 'Collaboration',
@@ -465,7 +449,7 @@ export default function Neulify({ auth }: PageProps) {
                                                         />
                                                     </svg>
                                                 ),
-                                                color: 'from-green-500 to-emerald-500',
+                                                color: 'from-[#14B8A6] to-[#1E3A8A]',
                                             },
                                             {
                                                 title: 'Growth',
@@ -486,7 +470,7 @@ export default function Neulify({ auth }: PageProps) {
                                                         />
                                                     </svg>
                                                 ),
-                                                color: 'from-indigo-500 to-blue-500',
+                                                color: 'from-[#06B6D4] to-[#1E3A8A]',
                                             },
                                             {
                                                 title: 'Impact',
@@ -507,20 +491,20 @@ export default function Neulify({ auth }: PageProps) {
                                                         />
                                                     </svg>
                                                 ),
-                                                color: 'from-red-500 to-rose-500',
+                                                color: 'from-[#1E3A8A] to-[#06B6D4]',
                                             },
                                         ].map((value) => (
                                             <div
                                                 key={value.title}
-                                                className="group rounded-xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                                                className="group rounded-xl border border-[#E2E8F0] bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
                                             >
                                                 <div className={`inline-flex items-center justify-center rounded-lg bg-gradient-to-r ${value.color} p-4 text-white shadow-lg`}>
                                                     {value.icon}
                                                 </div>
-                                                <h3 className="mt-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                                <h3 className="mt-6 text-xl font-semibold text-[#334155] dark:text-gray-100">
                                                     {value.title}
                                                 </h3>
-                                                <p className="mt-4 text-gray-600 dark:text-gray-300">
+                                                <p className="mt-4 text-[#334155]/80 dark:text-gray-300">
                                                     {value.description}
                                                 </p>
                                             </div>
@@ -533,17 +517,17 @@ export default function Neulify({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer className="relative z-10 border-t border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
+                <footer className="relative z-10 border-t border-[#E2E8F0] bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                         <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-4 text-sm text-[#334155] dark:text-gray-400">
                                 <span>© {new Date().getFullYear()}</span>
-                                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent">
+                                <span className="bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text font-semibold text-transparent">
                                     Neulify
                                 </span>
                                 <span>All rights reserved.</span>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
+                            <div className="flex items-center gap-4 text-sm text-[#334155]/70 dark:text-gray-500">
                                 <span>Empowering the next generation of digital innovation.</span>
                             </div>
                         </div>
