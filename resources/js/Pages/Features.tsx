@@ -1,3 +1,4 @@
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getHost } from '@/lib/utils';
 import {
     HeartIcon,
@@ -349,13 +350,14 @@ export default function Features({ auth }: PageProps) {
             <Head title={`Features - ${hostname}`} />
             <div className="min-h-screen from-white via-indigo-50/30 to-white dark:bg-gray-900">
                 {/* Navigation */}
-                <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <nav className="fixed left-1/2 top-4 z-50 mx-auto w-[95%] max-w-7xl -translate-x-1/2 rounded-2xl border border-gray-100 bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 dark:shadow-gray-900/50">
+                    <div className="px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex items-center">
                                 <Link href="/" className="flex items-center">
-                                    <span className="bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                        {hostname}
+                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
+                                    <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
+                                        {hostname === 'sakto' ? 'Sakto Solutions' : hostname}
                                     </span>
                                 </Link>
                             </div>
@@ -483,7 +485,7 @@ export default function Features({ auth }: PageProps) {
                 </nav>
 
                 {/* Features Section */}
-                <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 pt-32 pb-24 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-3xl text-center">
                         <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
                             Tailored Solutions for Every Industry
