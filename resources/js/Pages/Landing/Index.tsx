@@ -104,14 +104,6 @@ export default function Welcome({ auth }: PageProps) {
                                 <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
                                     {hostname === 'sakto' ? 'Sakto Solutions' : hostname}
                                 </span>
-                                <div className="ml-3 hidden items-center gap-1 sm:flex">
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        by
-                                    </span>
-                                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-sm font-semibold text-transparent">
-                                        Neulify
-                                    </span>
-                                </div>
                             </div>
                             <div className="flex items-center">
                                 {/* Desktop Navigation */}
@@ -720,31 +712,6 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                         link: route('jobs'),
                                                     },
-                                                    {
-                                                        name: 'Merkado',
-                                                        color: 'from-green-500 to-emerald-600',
-                                                        description:
-                                                            'Launch and scale your online business with powerful product management, order processing, payment integration, and customer support tools. Complete e-commerce solution.',
-                                                        icon: (
-                                                            <svg
-                                                                className="h-5 w-5"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={
-                                                                    1.5
-                                                                }
-                                                                stroke="currentColor"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M2.25 3h1.5c.513 0 1.024.195 1.414.586L9 9.414V18a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 001 1h2a1 1 0 001-1V9.414l3.836-3.828A2.25 2.25 0 0021.75 3h-1.5a2.25 2.25 0 00-2.25 2.25v.75a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-.75A2.25 2.25 0 004.5 3z"
-                                                                />
-                                                            </svg>
-                                                        ),
-                                                        link: route('shop'),
-                                                    },
                                                 ].map((project, index) => (
                                                     <button
                                                         key={project.name}
@@ -796,13 +763,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'community',
-                                                                },
-                                                            ),
+                                                            link: route('community'),
                                                         },
                                                         {
                                                             name: 'Logistics',
@@ -827,13 +788,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'logistics',
-                                                                },
-                                                            ),
+                                                            link: route('logistics'),
                                                         },
                                                         {
                                                             name: 'Medical',
@@ -858,13 +813,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'medical',
-                                                                },
-                                                            ),
+                                                            link: route('medical'),
                                                         },
                                                         {
                                                             name: 'Travel',
@@ -889,13 +838,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'travel',
-                                                                },
-                                                            ),
+                                                            link: route('travel.landing'),
                                                         },
                                                         {
                                                             name: 'Retail Delivery',
@@ -920,13 +863,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'retail-delivery',
-                                                                },
-                                                            ),
+                                                            link: route('delivery'),
                                                         },
                                                         {
                                                             name: 'Human Resources',
@@ -951,13 +888,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'human-resources',
-                                                                },
-                                                            ),
+                                                            link: route('jobs'),
                                                         },
                                                         {
                                                             name: 'E-Commerce',
@@ -982,44 +913,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'ecommerce',
-                                                                },
-                                                            ),
-                                                        },
-                                                        {
-                                                            name: 'Enterprise',
-                                                            color: 'from-orange-500 to-amber-500',
-                                                            description:
-                                                                'Unified platform combining all solutions with advanced analytics, custom integrations, and enterprise-grade security. Perfect for large organizations and growing businesses.',
-                                                            icon: (
-                                                                <svg
-                                                                    className="h-12 w-12"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    fill="none"
-                                                                    viewBox="0 0 24 24"
-                                                                    strokeWidth={
-                                                                        1.5
-                                                                    }
-                                                                    stroke="currentColor"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
-                                                                    />
-                                                                </svg>
-                                                            ),
-                                                            link: route(
-                                                                'register',
-                                                                {
-                                                                    project:
-                                                                        'enterprise',
-                                                                },
-                                                            ),
+                                                            link: route('shop'),
                                                         },
                                                     ];
 
@@ -1102,14 +996,6 @@ export default function Welcome({ auth }: PageProps) {
                                                                                             d="M2.25 3h1.5c.513 0 1.024.195 1.414.586L9 9.414V18a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 001 1h2a1 1 0 001-1V9.414l3.836-3.828A2.25 2.25 0 0021.75 3h-1.5a2.25 2.25 0 00-2.25 2.25v.75a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-.75A2.25 2.25 0 004.5 3z"
                                                                                         />
                                                                                     );
-                                                                                case 'Enterprise':
-                                                                                    return (
-                                                                                        <path
-                                                                                            strokeLinecap="round"
-                                                                                            strokeLinejoin="round"
-                                                                                            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
-                                                                                        />
-                                                                                    );
                                                                                 default:
                                                                                     return (
                                                                                         <path
@@ -1157,6 +1043,73 @@ export default function Welcome({ auth }: PageProps) {
                     </div>
                 </div>
 
+                {/* Navigation Arrows */}
+                {Math.round(scrollX / window.innerWidth) > 0 && (
+                    <div className="fixed left-8 top-1/2 z-50 -translate-y-1/2 lg:left-16 xl:left-24">
+                        <button
+                            onClick={() => {
+                                if (containerRef.current) {
+                                    const currentIndex = Math.round(scrollX / window.innerWidth);
+                                    const newIndex = Math.max(0, currentIndex - 1);
+                                    containerRef.current.scrollTo({
+                                        left: window.innerWidth * newIndex,
+                                        behavior: 'smooth',
+                                    });
+                                }
+                            }}
+                            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800"
+                        >
+                            <svg
+                                className="h-6 w-6 text-gray-600 dark:text-gray-300"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 19l-7-7 7-7"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+
+                {Math.round(scrollX / window.innerWidth) < 2 && (
+                    <div className="fixed right-8 top-1/2 z-50 -translate-y-1/2 lg:right-16 xl:right-24">
+                        <button
+                            onClick={() => {
+                                if (containerRef.current) {
+                                    const currentIndex = Math.round(scrollX / window.innerWidth);
+                                    const newIndex = Math.min(2, currentIndex + 1);
+                                    containerRef.current.scrollTo({
+                                        left: window.innerWidth * newIndex,
+                                        behavior: 'smooth',
+                                    });
+                                }
+                            }}
+                            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800"
+                        >
+                            <svg
+                                className="h-6 w-6 text-gray-600 dark:text-gray-300"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 5l7 7-7 7"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+
                 {/* Scroll Indicators */}
                 <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 space-x-2 sm:bottom-20">
                     {/* Show 3 indicators for Hero, How It Works, and CTA sections */}
@@ -1181,23 +1134,6 @@ export default function Welcome({ auth }: PageProps) {
                     ))}
                 </div>
 
-                {/* Footer */}
-                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
-                    <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-                        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                <span>© {new Date().getFullYear()}</span>
-                                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent">
-                                    Neulify
-                                </span>
-                                <span>All rights reserved.</span>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
-                                <span>Powering the next generation of digital industries.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </>
     );
