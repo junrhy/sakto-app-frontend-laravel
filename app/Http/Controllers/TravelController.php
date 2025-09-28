@@ -104,4 +104,43 @@ class TravelController extends Controller
     {
         return response()->json(['success' => true]);
     }
+
+    public function show($identifier)
+    {
+        try {
+            // Check if identifier is numeric (ID) or string (slug)
+            $travel = null;
+            
+            if (is_numeric($identifier)) {
+                // Search by ID
+                $travel = \App\Models\User::where('project_identifier', 'travel')
+                    ->where('id', $identifier)
+                    ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+                    ->first();
+            } else {
+                // Search by slug
+                $travel = \App\Models\User::where('project_identifier', 'travel')
+                    ->where('slug', $identifier)
+                    ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+                    ->first();
+            }
+
+            if (!$travel) {
+                abort(404, 'Travel service not found');
+            }
+
+            return Inertia::render('Landing/Travel/Show', [
+                'travel' => $travel,
+                'identifier' => $identifier,
+                'canLogin' => \Illuminate\Support\Facades\Route::has('login'),
+                'canRegister' => \Illuminate\Support\Facades\Route::has('register'),
+                'auth' => [
+                    'user' => auth()->user()
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('TravelController show error: ' . $e->getMessage());
+            abort(500, 'Unable to load travel information');
+        }
+    }
 }

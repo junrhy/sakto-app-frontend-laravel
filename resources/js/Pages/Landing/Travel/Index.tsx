@@ -1,6 +1,11 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import {
+    faPlane,
+    faMapMarkerAlt,
+    faHeart,
+    faShieldAlt,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -11,236 +16,48 @@ interface PageProps {
     };
 }
 
-interface Destination {
-    id: number;
-    name: string;
-    country: string;
-    image: string;
-    price: number;
-    rating: number;
-    duration: string;
-}
-
-interface Flight {
-    id: number;
-    from: string;
-    to: string;
-    airline: string;
-    price: number;
-    duration: string;
-    departure: string;
-    arrival: string;
-}
-
-export default function WelcomeTravel({ auth }: PageProps) {
-    const [isMobile, setIsMobile] = useState(false);
-    const [activeTab, setActiveTab] = useState('flights');
-    const [searchQuery, setSearchQuery] = useState('');
-
-    // Mock destinations data
-    const destinations: Destination[] = [
-        {
-            id: 1,
-            name: 'Bali',
-            country: 'Indonesia',
-            image: 'https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            price: 899,
-            rating: 4.8,
-            duration: '7 days',
-        },
-        {
-            id: 2,
-            name: 'Santorini',
-            country: 'Greece',
-            image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            price: 1299,
-            rating: 4.9,
-            duration: '10 days',
-        },
-        {
-            id: 3,
-            name: 'Tokyo',
-            country: 'Japan',
-            image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            price: 1499,
-            rating: 4.7,
-            duration: '8 days',
-        },
-        {
-            id: 4,
-            name: 'New York',
-            country: 'USA',
-            image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-            price: 999,
-            rating: 4.6,
-            duration: '6 days',
-        },
-    ];
-
-    // Mock flights data
-    const flights: Flight[] = [
-        {
-            id: 1,
-            from: 'Manila',
-            to: 'Bangkok',
-            airline: 'Philippine Airlines',
-            price: 299,
-            duration: '3h 45m',
-            departure: '08:30',
-            arrival: '12:15',
-        },
-        {
-            id: 2,
-            from: 'Manila',
-            to: 'Singapore',
-            airline: 'Cebu Pacific',
-            price: 199,
-            duration: '3h 20m',
-            departure: '14:00',
-            arrival: '17:20',
-        },
-        {
-            id: 3,
-            from: 'Manila',
-            to: 'Tokyo',
-            airline: 'Japan Airlines',
-            price: 599,
-            duration: '4h 15m',
-            departure: '10:30',
-            arrival: '14:45',
-        },
-    ];
-
-    const features = [
-        {
-            title: 'Flight Booking',
-            description:
-                'Search and book flights to destinations worldwide with real-time pricing and availability.',
-            icon: (
-                <svg
-                    className="h-8 w-8 text-blue-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
-                    />
-                </svg>
-            ),
-        },
-        {
-            title: 'Hotel Reservations',
-            description:
-                'Find and book hotels, resorts, and accommodations that match your preferences and budget.',
-            icon: (
-                <svg
-                    className="h-8 w-8 text-blue-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205l3 1m1.5.5l-1.5-.5M6.75 7.364V3h-3v18m3-13.636l10.5-3.819"
-                    />
-                </svg>
-            ),
-        },
-        {
-            title: 'Travel Packages',
-            description:
-                'Discover curated travel packages that combine flights, hotels, and activities for the perfect trip.',
-            icon: (
-                <svg
-                    className="h-8 w-8 text-blue-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-                    />
-                </svg>
-            ),
-        },
-        {
-            title: 'Travel Insurance',
-            description:
-                'Comprehensive travel insurance coverage to protect your journey and give you peace of mind.',
-            icon: (
-                <svg
-                    className="h-8 w-8 text-blue-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-                    />
-                </svg>
-            ),
-        },
-    ];
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
+export default function TravelIndex({ auth }: PageProps) {
     return (
         <>
-            <Head title="Travel & Tourism Platform" />
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-                {/* Navigation */}
-                <nav className="sticky top-0 z-50 bg-white/90 shadow-sm backdrop-blur-sm">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="flex h-16 justify-between">
-                            <div className="flex">
-                                <div className="flex flex-shrink-0 items-center">
-                                    <ApplicationLogo className="block h-9 w-auto" />
-                                    <span className="ml-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold text-transparent">
-                                        Travel
-                                    </span>
+            <Head title="Travel - Discover Amazing Destinations" />
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100">
+                {/* Header */}
+                <div className="border-b border-slate-700 bg-gradient-to-r from-blue-800 to-indigo-900 shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="flex-shrink-0">
+                                    <div className="rounded-lg bg-blue-800 p-2">
+                                        <FontAwesomeIcon
+                                            icon={faPlane}
+                                            className="h-6 w-6 text-white"
+                                        />
+                                    </div>
                                 </div>
+                                <h1 className="text-xl font-bold text-white">
+                                    Travel
+                                </h1>
                             </div>
-                            <div className="flex items-center space-x-4">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Search destinations..."
-                                        className="w-64 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        value={searchQuery}
-                                        onChange={(e) =>
-                                            setSearchQuery(e.target.value)
-                                        }
-                                    />
-                                </div>
+                            <div className="flex items-center space-x-6">
                                 {auth.user ? (
                                     <Link
-                                        href={route('dashboard')}
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                                        href={route('home')}
+                                        className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition-colors duration-200 hover:bg-slate-50"
                                     >
-                                        Dashboard
+                                        My Account
+                                        <svg
+                                            className="ml-2 h-4 w-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                            />
+                                        </svg>
                                     </Link>
                                 ) : (
                                     <>
@@ -248,393 +65,671 @@ export default function WelcomeTravel({ auth }: PageProps) {
                                             href={route('login', {
                                                 project: 'travel',
                                             })}
-                                            className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                                            className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
                                         >
-                                            Log in
+                                            Login
                                         </Link>
                                         <Link
                                             href={route('register', {
                                                 project: 'travel',
                                             })}
-                                            className="ml-4 inline-flex items-center rounded-md border border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white hover:from-blue-700 hover:to-indigo-700"
+                                            className="inline-flex items-center rounded-lg border border-transparent bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-800"
                                         >
                                             Get Started
+                                            <svg
+                                                className="ml-2 h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                                />
+                                            </svg>
                                         </Link>
                                     </>
                                 )}
                             </div>
                         </div>
                     </div>
-                </nav>
+                </div>
 
+                {/* Main Content */}
+                <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+                    <div className="text-center">
                 {/* Hero Section */}
-                <div className="relative overflow-hidden">
-                    <div className="absolute inset-0">
-                        <img
-                            className="h-full w-full object-cover"
-                            src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-                            alt="Travel destinations"
-                        />
-                        <div className="absolute inset-0 bg-black/40"></div>
-                    </div>
-                    <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-                        <div className="text-center">
-                            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-                                <span className="block">Explore the World</span>
-                                <span className="block text-blue-200">
-                                    One Journey at a Time
-                                </span>
-                            </h1>
-                            <p className="mx-auto mt-6 max-w-2xl text-xl text-gray-200">
-                                Discover amazing destinations, book flights, and
-                                create unforgettable travel experiences with our
-                                comprehensive travel platform.
-                            </p>
-                            <div className="mt-10">
-                                <Link
-                                    href={route('register', {
-                                        project: 'travel',
-                                    })}
-                                    className="inline-flex items-center rounded-md border border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-base font-medium text-white hover:from-blue-700 hover:to-indigo-700"
-                                >
-                                    Start Your Journey
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Search Tabs */}
-                <div className="relative z-10 mx-auto -mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="rounded-lg bg-white p-6 shadow-lg">
-                        <div className="mb-6 flex space-x-1">
-                            {['flights', 'hotels', 'packages'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`rounded-md px-6 py-2 text-sm font-medium transition-colors ${
-                                        activeTab === tab
-                                            ? 'bg-blue-600 text-white'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                    }`}
-                                >
-                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                                </button>
-                            ))}
-                        </div>
-
-                        {activeTab === 'flights' && (
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <input
-                                    type="text"
-                                    placeholder="From"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="To"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <input
-                                    type="date"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        )}
-
-                        {activeTab === 'hotels' && (
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <input
-                                    type="text"
-                                    placeholder="Destination"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <input
-                                    type="date"
-                                    placeholder="Check-in"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <input
-                                    type="date"
-                                    placeholder="Check-out"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        )}
-
-                        {activeTab === 'packages' && (
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <input
-                                    type="text"
-                                    placeholder="Destination"
-                                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <select className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option>Select Package Type</option>
-                                    <option>Beach Getaway</option>
-                                    <option>City Break</option>
-                                    <option>Adventure Tour</option>
-                                    <option>Cultural Experience</option>
-                                </select>
-                            </div>
-                        )}
-
-                        <div className="mt-4">
-                            <button className="w-full rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-medium text-white transition-colors hover:from-blue-700 hover:to-indigo-700">
-                                Search{' '}
-                                {activeTab.charAt(0).toUpperCase() +
-                                    activeTab.slice(1)}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Features Section */}
-                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                    <div className="mb-12 text-center">
-                        <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                            Everything You Need for Your Journey
-                        </h2>
-                        <p className="mt-4 text-lg text-gray-600">
-                            Comprehensive travel services to make your trip
-                            planning seamless and enjoyable.
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-                        {features.map((feature) => (
-                            <div key={feature.title} className="text-center">
-                                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                                    {feature.icon}
+                        <div className="mb-16 lg:mb-20">
+                            <div className="mb-8">
+                                <div className="mb-6 inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
+                                    <FontAwesomeIcon
+                                        icon={faHeart}
+                                        className="mr-2 h-4 w-4 text-red-500"
+                                    />
+                                    Trusted by 10,000+ Travelers
                                 </div>
-                                <h3 className="mb-2 text-lg font-medium text-gray-900">
-                                    {feature.title}
+                    </div>
+                            <h2 className="mb-6 text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
+                                Discover Amazing
+                                <span className="block text-blue-600">
+                                    Destinations
+                                </span>
+                            </h2>
+                            <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
+                                Plan your perfect getaway with our comprehensive travel platform. 
+                                Book flights, find hotels, and create unforgettable travel experiences 
+                                with ease and confidence.
+                            </p>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+                                <Link
+                                    href={route('travel.show', { identifier: 'explore' })}
+                                    className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700"
+                                >
+                                    Explore Destinations
+                                    <svg
+                                        className="ml-2 h-5 w-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                        />
+                                    </svg>
+                                </Link>
+                                {!auth.user && (
+                                    <Link
+                                        href={route('register', {
+                                            project: 'travel',
+                                        })}
+                                        className="inline-flex items-center rounded-lg border border-blue-600 bg-white px-8 py-3 text-base font-medium text-blue-600 shadow-sm transition-colors duration-200 hover:bg-blue-50"
+                                    >
+                                        Get Started Free
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Features Section */}
+                        <div className="mt-20 lg:mt-24">
+                            <div className="mb-12">
+                                <h3 className="mb-4 text-3xl font-bold text-slate-900 lg:text-4xl">
+                                    Everything You Need for Travel
                                 </h3>
-                                <p className="text-gray-600">
-                                    {feature.description}
+                                <p className="mx-auto max-w-3xl text-lg text-slate-600">
+                                    Our platform provides all the tools and services you need to 
+                                    plan, book, and enjoy your perfect vacation.
                                 </p>
                             </div>
-                        ))}
+                            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+                                <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+                                    <div className="mb-6 flex items-center">
+                                        <div className="rounded-xl bg-blue-100 p-3">
+                                            <FontAwesomeIcon
+                                                icon={faPlane}
+                                                className="h-8 w-8 text-blue-600"
+                                            />
                     </div>
                 </div>
-
-                {/* Popular Destinations */}
-                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                    <div className="mb-12 text-center">
-                        <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                            Popular Destinations
-                        </h2>
-                        <p className="mt-4 text-lg text-gray-600">
-                            Discover trending destinations that travelers love.
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        {destinations.map((destination) => (
-                            <div
-                                key={destination.id}
-                                className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
-                            >
-                                <div className="relative pb-[60%]">
-                                    <img
-                                        src={destination.image}
-                                        alt={destination.name}
-                                        className="absolute inset-0 h-full w-full object-cover"
-                                    />
-                                    <div className="absolute right-2 top-2 rounded-full bg-white px-2 py-1 text-sm font-medium text-gray-900">
-                                        ${destination.price}
-                                    </div>
-                                </div>
-                                <div className="p-4">
-                                    <h3 className="text-lg font-medium text-gray-900">
-                                        {destination.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-500">
-                                        {destination.country}
+                                    <h4 className="mb-3 text-xl font-bold text-slate-900">
+                                        Flight Booking
+                                    </h4>
+                                    <p className="leading-relaxed text-slate-600">
+                                        Search and book flights to destinations worldwide with 
+                                        real-time pricing, flexible dates, and the best deals 
+                                        from top airlines.
                                     </p>
-                                    <div className="mt-2 flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <span className="text-yellow-400">
-                                                ★
-                                            </span>
-                                            <span className="ml-1 text-sm text-gray-600">
-                                                {destination.rating}
-                                            </span>
+                        </div>
+
+                                <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+                                    <div className="mb-6 flex items-center">
+                                        <div className="rounded-xl bg-emerald-100 p-3">
+                                            <FontAwesomeIcon
+                                                icon={faMapMarkerAlt}
+                                                className="h-8 w-8 text-emerald-600"
+                                />
+                            </div>
+                                    </div>
+                                    <h4 className="mb-3 text-xl font-bold text-slate-900">
+                                        Hotel Reservations
+                                    </h4>
+                                    <p className="leading-relaxed text-slate-600">
+                                        Find and book the perfect accommodation from luxury 
+                                        resorts to budget-friendly hotels, all with verified 
+                                        reviews and instant confirmation.
+                                    </p>
+                                </div>
+
+                                <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+                                    <div className="mb-6 flex items-center">
+                                        <div className="rounded-xl bg-purple-100 p-3">
+                                            <FontAwesomeIcon
+                                                icon={faShieldAlt}
+                                                className="h-8 w-8 text-purple-600"
+                                            />
                                         </div>
-                                        <span className="text-sm text-gray-500">
-                                            {destination.duration}
-                                        </span>
+                                    </div>
+                                    <h4 className="mb-3 text-xl font-bold text-slate-900">
+                                        Travel Protection
+                                    </h4>
+                                    <p className="leading-relaxed text-slate-600">
+                                        Comprehensive travel insurance and 24/7 customer support 
+                                        to ensure your journey is safe, secure, and worry-free.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Trust Indicators */}
+                        <div className="mt-20 rounded-2xl border border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 shadow-lg lg:mt-24 lg:p-12">
+                            <h3 className="mb-8 text-center text-2xl font-bold text-slate-900 lg:text-3xl">
+                                Trusted by Travelers Worldwide
+                            </h3>
+                            <div className="grid grid-cols-2 items-center gap-8 md:grid-cols-4">
+                                <div className="text-center">
+                                    <div className="mb-2 text-3xl font-bold text-slate-800">
+                                        10K+
+                                    </div>
+                                    <div className="text-slate-600">
+                                        Happy Travelers
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="mb-2 text-3xl font-bold text-slate-800">
+                                        500+
+                                    </div>
+                                    <div className="text-slate-600">
+                                        Destinations
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="mb-2 text-3xl font-bold text-slate-800">
+                                        4.9★
+                                    </div>
+                                    <div className="text-slate-600">
+                                        Rating
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="mb-2 text-3xl font-bold text-slate-800">
+                                        24/7
+                                    </div>
+                                    <div className="text-slate-600">
+                                        Support
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Flight Deals */}
-                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                {/* Pricing Section */}
+                <div id="pricing" className="mb-16 mt-16">
                     <div className="mb-12 text-center">
-                        <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                            Flight Deals
+                        <h2 className="mb-4 text-3xl font-bold text-slate-900">
+                            Choose Your Travel Plan
                         </h2>
-                        <p className="mt-4 text-lg text-gray-600">
-                            Best prices on flights from Manila to popular
-                            destinations.
+                        <p className="mx-auto max-w-2xl text-lg text-slate-600">
+                            Select the perfect plan for your travel needs. All plans include 
+                            our core booking features with different levels of support and benefits.
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                        {flights.map((flight) => (
-                            <div
-                                key={flight.id}
-                                className="rounded-lg bg-white p-6 shadow-md transition-shadow hover:shadow-lg"
-                            >
-                                <div className="mb-4 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900">
-                                            {flight.from} → {flight.to}
-                                        </h3>
-                                        <p className="text-sm text-gray-500">
-                                            {flight.airline}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-2xl font-bold text-blue-600">
-                                            ${flight.price}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {flight.duration}
-                                        </p>
-                                    </div>
+
+                    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-3">
+                        {/* Basic Plan */}
+                        <div className="group relative">
+                            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 opacity-0 transition duration-200 group-hover:opacity-10"></div>
+                            <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
+                                <div>
+                                    <h3 className="mb-2 text-xl font-bold text-slate-900">
+                                        Explorer
+                                    </h3>
+                                    <p className="mb-6 text-sm text-slate-600">
+                                        Perfect for occasional travelers
+                                    </p>
+                                    <p className="mb-6">
+                                        <span className="text-3xl font-extrabold text-slate-900">
+                                            Free
+                                        </span>
+                                    </p>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('register', {
+                                                project: 'travel',
+                                                plan: 'explorer',
+                                            })}
+                                            className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
+                                        >
+                                            Get Started
+                                        </Link>
+                                    )}
                                 </div>
-                                <div className="flex justify-between text-sm text-gray-600">
-                                    <span>Departure: {flight.departure}</span>
-                                    <span>Arrival: {flight.arrival}</span>
+                                <div className="mt-6 flex-grow">
+                                    <ul className="space-y-3">
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Flight & hotel search
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Basic customer support
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Travel tips & guides
+                                            </span>
+                                        </li>
+                                    </ul>
                                 </div>
-                                <button className="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
-                                    Book Now
-                                </button>
-                            </div>
-                        ))}
                     </div>
                 </div>
 
-                {/* CTA Section */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 py-16">
-                    <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-                        <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-                            Ready to Start Your Adventure?
-                        </h2>
-                        <p className="mt-4 text-xl text-blue-100">
-                            Join thousands of travelers who trust us for their
-                            journey planning.
-                        </p>
-                        <div className="mt-8">
-                            <Link
-                                href={route('register', { project: 'travel' })}
-                                className="inline-flex items-center rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-blue-600 hover:bg-gray-50"
-                            >
-                                Create Your Account
-                            </Link>
+                        {/* Pro Plan */}
+                        <div className="group relative lg:-mt-4 lg:mb-4">
+                            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 opacity-20 transition duration-200"></div>
+                            <div className="relative flex h-full flex-col rounded-xl border-2 border-blue-500 bg-white p-8 shadow-lg">
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+                                    <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                                        Most Popular
+                                    </span>
+                                </div>
+                                <div>
+                                    <h3 className="mb-2 text-xl font-bold text-slate-900">
+                                        Traveler
+                                    </h3>
+                                    <p className="mb-6 text-sm text-slate-600">
+                                        Ideal for frequent travelers
+                                    </p>
+                                    <p className="mb-6">
+                                        <span className="text-3xl font-extrabold text-slate-900">
+                                            ₱299
+                                        </span>
+                                        <span className="text-sm text-slate-600">
+                                            /month
+                                        </span>
+                                    </p>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('register', {
+                                                project: 'travel',
+                                                plan: 'traveler',
+                                            })}
+                                            className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
+                                        >
+                                            Get Started
+                                        </Link>
+                                    )}
+                                </div>
+                                <div className="mt-6 flex-grow">
+                                    <ul className="space-y-3">
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Everything in Explorer
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Priority booking
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Travel insurance
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Premium support
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                                        </div>
+
+                        {/* Enterprise Plan */}
+                        <div className="group relative">
+                            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 opacity-0 transition duration-200 group-hover:opacity-10"></div>
+                            <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
+                                <div>
+                                    <h3 className="mb-2 text-xl font-bold text-slate-900">
+                                        Adventure
+                                    </h3>
+                                    <p className="mb-6 text-sm text-slate-600">
+                                        Perfect for travel enthusiasts
+                                    </p>
+                                    <p className="mb-6">
+                                        <span className="text-3xl font-extrabold text-slate-900">
+                                            ₱499
+                                        </span>
+                                        <span className="text-sm text-slate-600">
+                                            /month
+                                        </span>
+                                    </p>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="block w-full rounded-lg border border-transparent bg-purple-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-purple-700"
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('register', {
+                                                project: 'travel',
+                                                plan: 'adventure',
+                                            })}
+                                            className="block w-full rounded-lg border border-transparent bg-purple-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-purple-700"
+                                        >
+                                            Get Started
+                                        </Link>
+                                    )}
+                                    </div>
+                                <div className="mt-6 flex-grow">
+                                    <ul className="space-y-3">
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-purple-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Everything in Traveler
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-purple-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Exclusive deals
+                                            </span>
+                                        </li>
+                                        <li className="flex items-center text-sm">
+                                            <svg
+                                                className="mr-3 h-4 w-4 flex-shrink-0 text-purple-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <span className="text-slate-600">
+                                                Personal travel concierge
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                    </div>
+                </div>
+                    </div>
+
+                    {/* FAQ Section */}
+                    <div className="mt-16">
+                        <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-lg backdrop-blur-sm">
+                            <h3 className="mb-8 text-center text-2xl font-bold text-slate-900">
+                                Frequently Asked Questions
+                                        </h3>
+                            <div className="w-full">
+                                <dl className="space-y-6">
+                                    <div className="rounded-lg border border-slate-200 bg-white p-6">
+                                        <dt className="mb-2 text-lg font-medium text-slate-900">
+                                            How do I book a flight?
+                                        </dt>
+                                        <dd className="text-slate-600">
+                                            Simply search for your destination, select your dates, 
+                                            and choose from available flights. Our platform compares 
+                                            prices from multiple airlines to find you the best deals.
+                                        </dd>
+                                    </div>
+                                    <div className="rounded-lg border border-slate-200 bg-white p-6">
+                                        <dt className="mb-2 text-lg font-medium text-slate-900">
+                                            What if I need to cancel my booking?
+                                        </dt>
+                                        <dd className="text-slate-600">
+                                            We offer flexible cancellation policies. Most bookings 
+                                            can be cancelled or modified up to 24 hours before 
+                                            departure. Check your booking details for specific terms.
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <footer className="bg-gray-900">
+                <footer id="contact" className="mt-16 bg-slate-900 text-white">
                     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-                            <div>
-                                <ApplicationLogo className="block h-8 w-auto text-white" />
-                                <p className="mt-4 text-gray-400">
-                                    Your trusted partner for unforgettable
-                                    travel experiences.
+                            {/* Company Info */}
+                            <div className="col-span-1 md:col-span-2">
+                                <div className="mb-4 flex items-center">
+                                    <div className="mr-3 rounded-lg bg-blue-800 p-2">
+                                        <FontAwesomeIcon
+                                            icon={faPlane}
+                                            className="h-6 w-6 text-white"
+                                        />
+                                    </div>
+                                    <span className="text-xl font-bold">
+                                        Travel
+                                    </span>
+                                </div>
+                                <p className="mb-4 max-w-md text-slate-300">
+                                    Discover amazing destinations and create unforgettable 
+                                    travel experiences with our comprehensive travel platform. 
+                                    Your journey starts here.
                                 </p>
+                                <div className="flex space-x-4">
+                                        <a
+                                            href="#"
+                                        className="text-slate-400 transition-colors hover:text-white"
+                                    >
+                                        <span className="sr-only">
+                                            Facebook
+                                        </span>
+                                        <svg
+                                            className="h-6 w-6"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </a>
+                                        <a
+                                            href="#"
+                                        className="text-slate-400 transition-colors hover:text-white"
+                                    >
+                                        <span className="sr-only">
+                                            Instagram
+                                        </span>
+                                        <svg
+                                            className="h-6 w-6"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.647.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.83-9.405c-.49 0-.875-.385-.875-.875s.385-.875.875-.875.875.385.875.875-.385.875-.875.875z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </a>
+                                </div>
                             </div>
+
+                            {/* Quick Links */}
                             <div>
-                                <h3 className="mb-4 font-medium text-white">
-                                    Services
+                                <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+                                    Quick Links
                                 </h3>
-                                <ul className="space-y-2 text-gray-400">
+                                <ul className="space-y-3">
                                     <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
+                                        <Link
+                                            href="#features"
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
                                         >
-                                            Flight Booking
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
-                                        >
-                                            Hotel Reservations
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
-                                        >
-                                            Travel Packages
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
-                                        >
-                                            Travel Insurance
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="mb-4 font-medium text-white">
-                                    Support
-                                </h3>
-                                <ul className="space-y-2 text-gray-400">
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
-                                        >
-                                            Help Center
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
-                                        >
-                                            Contact Us
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="hover:text-white"
-                                        >
-                                            Travel Tips
-                                        </a>
+                                            Features
+                                        </Link>
                                     </li>
                                     <li>
                                         <Link
-                                            href={route('faq')}
-                                            className="hover:text-white"
+                                            href="#pricing"
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
                                         >
-                                            FAQ
+                                            Pricing
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="#"
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
+                                        >
+                                            Help Center
                                         </Link>
                                     </li>
                                 </ul>
                             </div>
+
+                            {/* Legal Links */}
                             <div>
-                                <h3 className="mb-4 font-medium text-white">
+                                <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
                                     Legal
                                 </h3>
-                                <ul className="space-y-2 text-gray-400">
+                                <ul className="space-y-3">
                                     <li>
                                         <Link
                                             href={route('privacy-policy')}
-                                            className="hover:text-white"
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
                                         >
                                             Privacy Policy
                                         </Link>
@@ -642,7 +737,7 @@ export default function WelcomeTravel({ auth }: PageProps) {
                                     <li>
                                         <Link
                                             href={route('terms-and-conditions')}
-                                            className="hover:text-white"
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
                                         >
                                             Terms of Service
                                         </Link>
@@ -650,19 +745,61 @@ export default function WelcomeTravel({ auth }: PageProps) {
                                     <li>
                                         <Link
                                             href={route('cookie-policy')}
-                                            className="hover:text-white"
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
                                         >
                                             Cookie Policy
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={route('faq')}
+                                            className="text-sm text-slate-300 transition-colors hover:text-white"
+                                        >
+                                            FAQ
                                         </Link>
                                     </li>
                                 </ul>
                             </div>
                         </div>
-                        <div className="mt-8 border-t border-gray-800 pt-8 text-center">
-                            <p className="text-gray-400">
-                                &copy; 2024 Travel Platform. All rights
-                                reserved.
-                            </p>
+
+                        {/* Bottom Footer */}
+                        <div className="mt-12 border-t border-slate-800 pt-8">
+                            <div className="flex flex-col items-center justify-between md:flex-row">
+                                <div className="text-sm text-slate-400">
+                                    © {new Date().getFullYear()} Travel. All
+                                    rights reserved.
+                                </div>
+                                <div className="mt-4 flex items-center space-x-6 md:mt-0">
+                                    <div className="flex items-center text-sm text-slate-400">
+                                        <svg
+                                            className="mr-1 h-4 w-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        Secure Platform
+                                    </div>
+                                    <div className="flex items-center text-sm text-slate-400">
+                                        <svg
+                                            className="mr-1 h-4 w-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        A subsidiary of Sakto Technologies
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </footer>

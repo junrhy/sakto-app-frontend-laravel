@@ -111,6 +111,7 @@ class LandingController extends Controller
         ]);
     }
 
+
     public function neulify()
     {
         return Inertia::render('Landing/Neulify', [

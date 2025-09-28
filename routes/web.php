@@ -15,6 +15,9 @@ use App\Http\Controllers\RentalPropertyController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\TravelController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\JobsController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\WidgetController;
 use App\Http\Controllers\Auth\GoogleController;
@@ -281,6 +284,13 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
     Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
+    Route::get('/travel/{identifier}', [TravelController::class, 'show'])->name('travel.show');
+    Route::get('/landing/delivery', [LandingController::class, 'delivery'])->name('delivery.landing');
+    Route::get('/delivery/{identifier}', [DeliveryController::class, 'show'])->name('delivery.show');
+    Route::get('/landing/jobs', [LandingController::class, 'jobs'])->name('jobs.landing');
+    Route::get('/jobs/{identifier}', [JobsController::class, 'show'])->name('jobs.show');
+    Route::get('/landing/shop', [LandingController::class, 'shop'])->name('shop.landing');
+    Route::get('/shop/{identifier}', [ShopController::class, 'show'])->name('shop.show');
     
     // Medical/Clinic Public Routes
     Route::get('/medical/clinic/{identifier}', [MedicalController::class, 'show'])->name('medical.clinic.show');
