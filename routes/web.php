@@ -998,6 +998,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/', [ClinicController::class, 'index'])->name('clinic');
         Route::get('/inventory', [ClinicController::class, 'inventory'])->name('clinic.inventory');
         Route::get('/settings', [ClinicController::class, 'settings'])->name('clinic.settings');
+        Route::post('/settings', [ClinicController::class, 'saveSettings'])->name('clinic.settings.save');
         Route::post('/patients', [ClinicController::class, 'store']);
         Route::put('/patients/{id}', [ClinicController::class, 'update']);
         Route::delete('/patients/{id}', [ClinicController::class, 'destroy']);

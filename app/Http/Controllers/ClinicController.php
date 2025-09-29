@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ClinicController extends Controller
@@ -380,74 +381,127 @@ class ClinicController extends Controller
         }
     }
 
+    /**
+     * Get clinic settings from API
+     */
+    private function getSettingsFromApi($clientIdentifier)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/clinic/settings", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                Log::error('Failed to fetch clinic settings', [
+                    'response' => $response->json(),
+                    'status' => $response->status()
+                ]);
+                throw new \Exception('Failed to fetch clinic settings');
+            }
+
+            return $response->json('data', []);
+        } catch (\Exception $e) {
+            Log::error('Error fetching clinic settings', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Display the clinic settings page
+     */
     public function settings()
     {
         try {
-            // $clientIdentifier = auth()->user()->identifier;
-            // $response = Http::withToken($this->apiToken)
-            //     ->get("{$this->apiUrl}/clinic/settings", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
-
-            // if (!$response->successful()) {
-            //     throw new \Exception('Failed to fetch clinic settings');
-            // }
-
-            // Dummy data
-            $dummySettings = [
-                'data' => [
-                    'general' => [
-                        'clinic_name' => 'Sample Clinic',
-                        'description' => 'A modern healthcare facility',
-                        'address' => '123 Medical Street',
-                        'phone' => '+1234567890',
-                        'email' => 'clinic@example.com',
-                        'operating_hours' => [
-                            'monday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
-                            'tuesday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
-                            'wednesday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
-                            'thursday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
-                            'friday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
-                            'saturday' => ['open' => '09:00', 'close' => '13:00', 'closed' => false],
-                            'sunday' => ['open' => '00:00', 'close' => '00:00', 'closed' => true]
-                        ]
-                    ],
-                    'appointments' => [
-                        'enable_appointments' => true,
-                        'appointment_duration' => 30,
-                        'appointment_buffer' => 15,
-                        'enable_reminders' => true,
-                        'reminder_hours' => 24,
-                        'enable_online_booking' => true
-                    ],
-                    'features' => [
-                        'enable_insurance' => true,
-                        'insurance_providers' => ['Blue Cross', 'Aetna', 'Cigna'],
-                        'enable_prescriptions' => true,
-                        'enable_lab_results' => true,
-                        'enable_dental_charts' => true,
-                        'enable_medical_history' => true,
-                        'enable_patient_portal' => true
-                    ],
-                    'billing' => [
-                        'enable_billing' => true,
-                        'tax_rate' => 10,
-                        'currency' => 'USD',
-                        'payment_methods' => ['Cash', 'Credit Card', 'Insurance'],
-                        'invoice_prefix' => 'INV-',
-                        'invoice_footer' => 'Thank you for choosing our clinic!'
-                    ]
-                ]
-            ];
+            $clientIdentifier = auth()->user()->identifier;
+            $settings = $this->getSettingsFromApi($clientIdentifier);
 
             return Inertia::render('Clinic/Settings', [
-                'settings' => $dummySettings['data'],
-                'auth' => [
-                    'user' => auth()->user()
-                ]
+                'settings' => $settings
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
+
+    /**
+     * Save clinic settings
+     */
+    public function saveSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'general.clinic_name' => 'required|string|max:255',
+                'general.description' => 'nullable|string|max:500',
+                'general.address' => 'nullable|string|max:500',
+                'general.phone' => 'nullable|string|max:50',
+                'general.email' => 'nullable|email|max:255',
+                'general.operating_hours' => 'nullable|array',
+                'general.operating_hours.*.open' => 'nullable|string',
+                'general.operating_hours.*.close' => 'nullable|string',
+                'general.operating_hours.*.closed' => 'nullable|boolean',
+                'appointments.enable_appointments' => 'nullable|boolean',
+                'appointments.appointment_duration' => 'nullable|integer|min:15|max:120',
+                'appointments.appointment_buffer' => 'nullable|integer|min:0|max:60',
+                'appointments.enable_reminders' => 'nullable|boolean',
+                'appointments.reminder_hours' => 'nullable|integer|min:1|max:168',
+                'appointments.enable_online_booking' => 'nullable|boolean',
+                'features.enable_insurance' => 'nullable|boolean',
+                'features.insurance_providers' => 'nullable|array',
+                'features.insurance_providers.*' => 'string|max:255',
+                'features.enable_prescriptions' => 'nullable|boolean',
+                'features.enable_lab_results' => 'nullable|boolean',
+                'features.enable_dental_charts' => 'nullable|boolean',
+                'features.enable_medical_history' => 'nullable|boolean',
+                'features.enable_patient_portal' => 'nullable|boolean',
+                'billing.enable_billing' => 'nullable|boolean',
+                'billing.tax_rate' => 'nullable|numeric|min:0|max:100',
+                'billing.currency' => 'nullable|string|max:10',
+                'billing.payment_methods' => 'nullable|array',
+                'billing.payment_methods.*' => 'string|max:255',
+                'billing.invoice_prefix' => 'nullable|string|max:20',
+                'billing.invoice_footer' => 'nullable|string|max:500'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+
+            // Make API request to save settings
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/clinic/settings", array_merge($validated, [
+                    'client_identifier' => $clientIdentifier
+                ]));
+
+            if (!$response->successful()) {
+                Log::error('Failed to save clinic settings', [
+                    'api_url' => $this->apiUrl,
+                    'endpoint' => "{$this->apiUrl}/clinic/settings",
+                    'response' => $response->json(),
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return response()->json([
+                    'error' => 'Failed to save settings: ' . ($response->json('error') ?? $response->body() ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            return response()->json([
+                'message' => 'Settings saved successfully',
+                'data' => $response->json('data')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error saving clinic settings', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'api_url' => $this->apiUrl,
+                'api_token' => $this->apiToken ? 'present' : 'missing'
+            ]);
+            return response()->json([
+                'error' => 'Failed to save settings: ' . $e->getMessage()
+            ], 500);
         }
     }
 

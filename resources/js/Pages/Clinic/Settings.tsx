@@ -93,6 +93,58 @@ interface Props {
 }
 
 export default function Settings({ settings, auth }: Props) {
+    // Ensure settings has proper structure with fallbacks
+    const defaultSettings: Settings = {
+        general: {
+            clinic_name: '',
+            description: '',
+            address: '',
+            phone: '',
+            email: '',
+            operating_hours: {
+                monday: { open: '09:00', close: '17:00', closed: false },
+                tuesday: { open: '09:00', close: '17:00', closed: false },
+                wednesday: { open: '09:00', close: '17:00', closed: false },
+                thursday: { open: '09:00', close: '17:00', closed: false },
+                friday: { open: '09:00', close: '17:00', closed: false },
+                saturday: { open: '09:00', close: '13:00', closed: false },
+                sunday: { open: '00:00', close: '00:00', closed: true }
+            }
+        },
+        appointments: {
+            enable_appointments: true,
+            appointment_duration: 30,
+            appointment_buffer: 15,
+            enable_reminders: true,
+            reminder_hours: 24,
+            enable_online_booking: true
+        },
+        features: {
+            enable_insurance: true,
+            insurance_providers: [],
+            enable_prescriptions: true,
+            enable_lab_results: true,
+            enable_dental_charts: true,
+            enable_medical_history: true,
+            enable_patient_portal: true
+        },
+        billing: {
+            enable_billing: true,
+            tax_rate: 10,
+            currency: 'USD',
+            payment_methods: [],
+            invoice_prefix: 'INV-',
+            invoice_footer: 'Thank you for choosing our clinic!'
+        }
+    };
+
+    // Merge with actual settings data, using defaults for missing fields
+    const mergedSettings = {
+        general: { ...defaultSettings.general, ...settings?.general },
+        appointments: { ...defaultSettings.appointments, ...settings?.appointments },
+        features: { ...defaultSettings.features, ...settings?.features },
+        billing: { ...defaultSettings.billing, ...settings?.billing }
+    };
     // Check if current team member has admin or manager role
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -122,7 +174,7 @@ export default function Settings({ settings, auth }: Props) {
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const handleSubmit = async (data: Record<string, any>) => {
-        await axios.post('/api/clinic/settings', data);
+        await axios.post('/clinic/settings', data);
     };
 
     const weekDays = [
@@ -138,36 +190,35 @@ export default function Settings({ settings, auth }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-white">
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Clinic Settings
                 </h2>
             }
         >
             <Head title="Clinic Settings" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <Card className="border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
-                        <CardHeader className="pb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
-                                    <SettingsIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-2xl text-gray-900 dark:text-white">
-                                        Clinic Settings
-                                    </CardTitle>
-                                    <CardDescription className="mt-1 text-gray-600 dark:text-gray-400">
-                                        Configure your clinic settings,
-                                        operating hours, and features.
-                                    </CardDescription>
-                                </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                <Card className="border-0 bg-transparent shadow-none">
+                    <CardHeader className="pb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                                <SettingsIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
-                        </CardHeader>
-                        <CardContent>
+                            <div>
+                                <CardTitle className="text-2xl text-gray-900 dark:text-white">
+                                    Clinic Settings
+                                </CardTitle>
+                                <CardDescription className="mt-1 text-gray-600 dark:text-gray-400">
+                                    Configure your clinic settings,
+                                    operating hours, and features.
+                                </CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings}
+                                    settings={mergedSettings}
                                     onSubmit={handleSubmit}
                                 >
                                     {({ data, setData }) => (
@@ -1021,9 +1072,8 @@ export default function Settings({ settings, auth }: Props) {
                                     </p>
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </AuthenticatedLayout>
     );
