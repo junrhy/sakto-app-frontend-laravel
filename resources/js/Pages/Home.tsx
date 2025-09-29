@@ -75,6 +75,20 @@ interface Props {
             credits?: number;
             identifier?: string;
             theme?: 'light' | 'dark' | 'system';
+            subscription?: {
+                id: number;
+                identifier: string;
+                status: string;
+                start_date: string;
+                end_date: string;
+                plan: {
+                    id: number;
+                    name: string;
+                    slug: string;
+                    unlimited_access: boolean;
+                    features: any;
+                };
+            } | null;
         };
         project: {
             enabledModules: string[];
@@ -104,23 +118,20 @@ interface Props {
     };
 }
 
-interface Subscription {
-    plan: {
-        name: string;
-        unlimited_access: boolean;
-        slug?: string;
-    };
-    end_date: string;
-}
-
 export default function Home({ auth }: Props) {
-    const { theme, setTheme } = useTheme();
+    const { theme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
-    const [subscription, setSubscription] = useState<Subscription | null>(null);
-    const [isLoadingSubscription, setIsLoadingSubscription] =
-        useState<boolean>(true);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
+
+    // Use shared subscription data instead of separate state
+    const subscription = auth.user.subscription;
+
+    // Check if subscription is active and not expired
+    const isSubscriptionActive =
+        subscription &&
+        subscription.status === 'active' &&
+        new Date(subscription.end_date) > new Date();
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -152,34 +163,7 @@ export default function Home({ auth }: Props) {
             }
         };
 
-        const fetchSubscription = async () => {
-            try {
-                if (auth.user.identifier) {
-                    setIsLoadingSubscription(true);
-                    const response = await fetch(
-                        `/subscriptions/${auth.user.identifier}/active`,
-                    );
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.active) {
-                            setSubscription(data.subscription);
-                        } else {
-                            setSubscription(null);
-                        }
-                    } else {
-                        setSubscription(null);
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to fetch subscription:', error);
-                setSubscription(null);
-            } finally {
-                setIsLoadingSubscription(false);
-            }
-        };
-
         fetchCredits();
-        fetchSubscription();
         fetchApps();
     }, [auth.user.identifier]);
 
@@ -199,26 +183,15 @@ export default function Home({ auth }: Props) {
         return colorMap[colorClass] || '#475569'; // Default to slate-600
     };
 
-    const firstName = auth.user.name.split(' ')[0];
-
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
     };
 
     return (
         <ThemeProvider>
             <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900">
                 {/* Message for users without subscription */}
-                {!isLoadingSubscription && !subscription && (
+                {!isSubscriptionActive && (
                     <div className="fixed left-0 right-0 top-0 z-20 bg-gradient-to-r from-blue-600 to-indigo-600 py-1 text-center text-sm text-white">
                         <div className="container mx-auto flex flex-wrap items-center justify-center gap-2 px-4">
                             <span className="font-medium">
@@ -242,7 +215,7 @@ export default function Home({ auth }: Props) {
                 )}
 
                 <div
-                    className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80`}
+                    className={`fixed ${!isSubscriptionActive ? 'top-7' : 'top-0'} left-0 right-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80`}
                 >
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center">
@@ -381,7 +354,7 @@ export default function Home({ auth }: Props) {
                                     {formatNumber(credits)} Credits
                                 </span>
                             </Button>
-                            {subscription && (
+                            {isSubscriptionActive && (
                                 <div className="mt-1 text-sm text-gray-900 text-opacity-80 dark:text-white">
                                     <span className="mr-1 rounded-full bg-purple-500 px-2 py-0.5 text-xs font-medium text-white">
                                         {subscription.plan.name}
@@ -393,10 +366,10 @@ export default function Home({ auth }: Props) {
                 </div>
 
                 <div
-                    className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[200px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[160px]`}
+                    className={`container mx-auto px-4 ${!isSubscriptionActive ? 'pt-[220px]' : 'pt-[200px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[160px]`}
                 >
                     {/* Show subscription message when user has no subscription */}
-                    {!isLoadingSubscription && !subscription && (
+                    {!isSubscriptionActive && (
                         <div className="mb-8 text-center">
                             <div className="relative transform overflow-hidden rounded-2xl border-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 p-8 shadow-2xl transition-all duration-300 hover:scale-[1.02] dark:from-blue-600 dark:via-purple-700 dark:to-indigo-800">
                                 {/* Animated background elements */}
@@ -477,6 +450,10 @@ export default function Home({ auth }: Props) {
                     <div className="mx-auto grid w-full grid-cols-4 gap-3 gap-y-6 md:grid-cols-5 md:gap-4 md:gap-y-10 lg:grid-cols-6 lg:gap-6 lg:gap-y-12">
                         {apps
                             .filter((app) => {
+                                // If no active subscription, hide all apps
+                                if (!isSubscriptionActive) {
+                                    return false;
+                                }
                                 // Show apps that are available (either in subscription or user-added)
                                 return app.isAvailable;
                             })

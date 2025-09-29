@@ -29,6 +29,11 @@ export const menuCategories: MenuCategory[] = [
                 title: 'Transportation',
                 href: '/transportation?app=transportation',
             },
+            {
+                id: 'transportation-settings',
+                title: 'Settings',
+                href: '/transportation/settings?app=transportation',
+            },
         ],
     },
     {
@@ -52,7 +57,11 @@ export const menuCategories: MenuCategory[] = [
         title: 'Medical',
         items: [
             { id: 'clinic', title: 'Clinic', href: '/clinic?app=clinic' },
-            { id: 'clinic-settings', title: 'Settings', href: '/clinic/settings?app=clinic' },
+            {
+                id: 'clinic-settings',
+                title: 'Settings',
+                href: '/clinic/settings?app=clinic',
+            },
             {
                 id: 'queue-system',
                 title: 'Queue System',
@@ -142,15 +151,19 @@ export const shouldShowMenuItem = (
     url: string,
 ) => {
     const checkUrl = item.urlCheck || item.id;
-    
+
     // Handle submenu items (like clinic-settings) that should be visible when parent module is accessible
     if (item.id.includes('-')) {
         const parentModule = item.id.split('-')[0];
         const hasParentAccess = hasModuleAccess(parentModule);
-        const isCurrentApp = appParam === parentModule || url.includes(parentModule);
+        // Check if we're in the parent module context - either via appParam or URL contains the module
+        const isCurrentApp =
+            appParam === parentModule ||
+            url.includes(`/${parentModule}`) ||
+            url.includes(`?app=${parentModule}`);
         return hasParentAccess && isCurrentApp;
     }
-    
+
     return (
         hasModuleAccess(item.id) &&
         (appParam === item.id || url.includes(checkUrl))

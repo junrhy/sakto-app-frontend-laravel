@@ -21,7 +21,9 @@ export default function Features({ auth }: PageProps) {
     const hostname = getHost();
     const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState(hostname === 'sakto' ? 'Komunidad' : 'Community');
+    const [activeTab, setActiveTab] = useState(
+        hostname === 'sakto' ? 'Komunidad' : 'Community',
+    );
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -46,25 +48,26 @@ export default function Features({ auth }: PageProps) {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const productsMenuItems = hostname === 'sakto' 
-        ? [
-            { name: 'Komunidad', href: route('community') },
-            { name: 'Logistika', href: route('logistics') },
-            { name: 'Medikal', href: route('medical') },
-            { name: 'Lakbay', href: route('travel.landing') },
-            { name: 'Hatid', href: route('delivery') },
-            { name: 'Taohan', href: route('jobs') },
-            { name: 'Merkado', href: route('shop') },
-        ]
-        : [
-            { name: 'Community', href: route('community') },
-            { name: 'Logistics', href: route('logistics') },
-            { name: 'Medical', href: route('medical') },
-            { name: 'Travel', href: route('travel.landing') },
-            { name: 'Delivery', href: route('delivery') },
-            { name: 'Jobs', href: route('jobs') },
-            { name: 'Shop', href: route('shop') },
-        ];
+    const productsMenuItems =
+        hostname === 'sakto'
+            ? [
+                  { name: 'Komunidad', href: route('community') },
+                  { name: 'Logistika', href: route('logistics') },
+                  { name: 'Medikal', href: route('medical') },
+                  { name: 'Lakbay', href: route('travel.landing') },
+                  { name: 'Hatid', href: route('delivery') },
+                  { name: 'Taohan', href: route('jobs') },
+                  { name: 'Merkado', href: route('shop') },
+              ]
+            : [
+                  { name: 'Community', href: route('community') },
+                  { name: 'Logistics', href: route('logistics') },
+                  { name: 'Medical', href: route('medical') },
+                  { name: 'Travel', href: route('travel.landing') },
+                  { name: 'Delivery', href: route('delivery') },
+                  { name: 'Jobs', href: route('jobs') },
+                  { name: 'Shop', href: route('shop') },
+              ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -357,7 +360,9 @@ export default function Features({ auth }: PageProps) {
                                 <Link href="/" className="flex items-center">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
                                     <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                        {hostname === 'sakto' ? 'Sakto Solutions' : hostname}
+                                        {hostname === 'sakto'
+                                            ? 'Sakto Solutions'
+                                            : hostname}
                                     </span>
                                 </Link>
                             </div>
@@ -485,7 +490,7 @@ export default function Features({ auth }: PageProps) {
                 </nav>
 
                 {/* Features Section */}
-                <div className="mx-auto max-w-7xl px-4 pt-32 pb-24 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-3xl text-center">
                         <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
                             Tailored Solutions for Every Industry
@@ -536,13 +541,31 @@ export default function Features({ auth }: PageProps) {
                                             </h2>
                                         </div>
                                         <Link
-                                            href={project.project === 'community' ? route('community') : 
-                                                  project.project === 'logistics' ? route('logistics') :
-                                                  project.project === 'medical' ? route('medical') :
-                                                  project.project === 'travel' ? route('travel.landing') :
-                                                  project.project === 'delivery' ? route('delivery') :
-                                                  project.project === 'jobs' ? route('jobs') :
-                                                  project.project === 'shop' ? route('shop') : '#'}
+                                            href={
+                                                project.project === 'community'
+                                                    ? route('community')
+                                                    : project.project ===
+                                                        'logistics'
+                                                      ? route('logistics')
+                                                      : project.project ===
+                                                          'medical'
+                                                        ? route('medical')
+                                                        : project.project ===
+                                                            'travel'
+                                                          ? route(
+                                                                'travel.landing',
+                                                            )
+                                                          : project.project ===
+                                                              'delivery'
+                                                            ? route('delivery')
+                                                            : project.project ===
+                                                                'jobs'
+                                                              ? route('jobs')
+                                                              : project.project ===
+                                                                  'shop'
+                                                                ? route('shop')
+                                                                : '#'
+                                            }
                                             className="inline-flex items-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-500 hover:to-purple-500 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                         >
                                             Learn More

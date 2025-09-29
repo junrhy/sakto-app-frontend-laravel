@@ -1,8 +1,8 @@
 import {
-    faShoppingBag,
     faShieldAlt,
-    faTruck,
+    faShoppingBag,
     faStar,
+    faTruck,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
@@ -118,13 +118,16 @@ export default function ShopIndex({ auth }: PageProps) {
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Shop from thousands of verified sellers and discover unique products 
-                                at great prices. Enjoy secure payments, fast shipping, and excellent 
+                                Shop from thousands of verified sellers and
+                                discover unique products at great prices. Enjoy
+                                secure payments, fast shipping, and excellent
                                 customer service.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 <Link
-                                    href={route('shop.show', { identifier: 'shop' })}
+                                    href={route('shop.show', {
+                                        identifier: 'shop',
+                                    })}
                                     className="inline-flex items-center rounded-lg border border-transparent bg-green-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-green-700"
                                 >
                                     Start Shopping
@@ -162,8 +165,9 @@ export default function ShopIndex({ auth }: PageProps) {
                                     Why Shop With Us
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
-                                    We provide the best shopping experience with secure payments, 
-                                    fast delivery, and quality products from trusted sellers.
+                                    We provide the best shopping experience with
+                                    secure payments, fast delivery, and quality
+                                    products from trusted sellers.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -180,8 +184,10 @@ export default function ShopIndex({ auth }: PageProps) {
                                         Secure Shopping
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Your payments are protected with industry-standard encryption. 
-                                        Shop with confidence knowing your financial information is safe.
+                                        Your payments are protected with
+                                        industry-standard encryption. Shop with
+                                        confidence knowing your financial
+                                        information is safe.
                                     </p>
                                 </div>
 
@@ -198,8 +204,9 @@ export default function ShopIndex({ auth }: PageProps) {
                                         Fast Delivery
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Get your orders delivered quickly with our reliable shipping 
-                                        partners. Track your packages in real-time.
+                                        Get your orders delivered quickly with
+                                        our reliable shipping partners. Track
+                                        your packages in real-time.
                                     </p>
                                 </div>
 
@@ -216,8 +223,10 @@ export default function ShopIndex({ auth }: PageProps) {
                                         Quality Products
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        All products are verified for quality and authenticity. 
-                                        Read reviews from other customers before making a purchase.
+                                        All products are verified for quality
+                                        and authenticity. Read reviews from
+                                        other customers before making a
+                                        purchase.
                                     </p>
                                 </div>
                             </div>
@@ -249,9 +258,7 @@ export default function ShopIndex({ auth }: PageProps) {
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
                                         4.9★
                                     </div>
-                                    <div className="text-slate-600">
-                                        Rating
-                                    </div>
+                                    <div className="text-slate-600">Rating</div>
                                 </div>
                                 <div className="text-center">
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
@@ -273,8 +280,9 @@ export default function ShopIndex({ auth }: PageProps) {
                             Choose Your Shopping Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            Select the perfect plan for your shopping needs. All plans include 
-                            our core shopping features with different levels of benefits.
+                            Select the perfect plan for your shopping needs. All
+                            plans include our core shopping features with
+                            different levels of benefits.
                         </p>
                     </div>
 
@@ -600,9 +608,10 @@ export default function ShopIndex({ auth }: PageProps) {
                                             How do I place an order?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Simply browse our products, add items to your cart, and 
-                                            proceed to checkout. You can pay securely with various 
-                                            payment methods.
+                                            Simply browse our products, add
+                                            items to your cart, and proceed to
+                                            checkout. You can pay securely with
+                                            various payment methods.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -610,9 +619,10 @@ export default function ShopIndex({ auth }: PageProps) {
                                             What is your return policy?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            We offer a 30-day return policy for most items. If you're 
-                                            not satisfied with your purchase, you can return it for 
-                                            a full refund or exchange.
+                                            We offer a 30-day return policy for
+                                            most items. If you're not satisfied
+                                            with your purchase, you can return
+                                            it for a full refund or exchange.
                                         </dd>
                                     </div>
                                 </dl>
@@ -639,9 +649,11 @@ export default function ShopIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Discover amazing products from thousands of verified sellers. 
-                                    Shop with confidence knowing you're getting quality products 
-                                    at great prices with excellent customer service.
+                                    Discover amazing products from thousands of
+                                    verified sellers. Shop with confidence
+                                    knowing you're getting quality products at
+                                    great prices with excellent customer
+                                    service.
                                 </p>
                                 <div className="flex space-x-4">
                                     <a

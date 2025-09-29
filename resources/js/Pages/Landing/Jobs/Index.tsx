@@ -1,8 +1,8 @@
 import {
     faBriefcase,
-    faUsers,
     faChartLine,
     faHandshake,
+    faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
@@ -118,13 +118,16 @@ export default function JobsIndex({ auth }: PageProps) {
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Connect with top employers and discover opportunities that match 
-                                your skills and aspirations. Build your career with our comprehensive 
-                                job platform.
+                                Connect with top employers and discover
+                                opportunities that match your skills and
+                                aspirations. Build your career with our
+                                comprehensive job platform.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 <Link
-                                    href={route('jobs.show', { identifier: 'browse' })}
+                                    href={route('jobs.show', {
+                                        identifier: 'browse',
+                                    })}
                                     className="inline-flex items-center rounded-lg border border-transparent bg-purple-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-purple-700"
                                 >
                                     Browse Jobs
@@ -162,8 +165,9 @@ export default function JobsIndex({ auth }: PageProps) {
                                     Everything You Need for Your Career
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
-                                    Our platform provides comprehensive tools and resources to help 
-                                    you find the perfect job and advance your career.
+                                    Our platform provides comprehensive tools
+                                    and resources to help you find the perfect
+                                    job and advance your career.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -180,8 +184,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                         Job Matching
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Our smart algorithm matches you with relevant job opportunities 
-                                        based on your skills, experience, and career preferences.
+                                        Our smart algorithm matches you with
+                                        relevant job opportunities based on your
+                                        skills, experience, and career
+                                        preferences.
                                     </p>
                                 </div>
 
@@ -198,8 +204,9 @@ export default function JobsIndex({ auth }: PageProps) {
                                         Career Analytics
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Track your job search progress, analyze market trends, and 
-                                        get insights to improve your career prospects.
+                                        Track your job search progress, analyze
+                                        market trends, and get insights to
+                                        improve your career prospects.
                                     </p>
                                 </div>
 
@@ -216,8 +223,9 @@ export default function JobsIndex({ auth }: PageProps) {
                                         Professional Network
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Connect with industry professionals, mentors, and potential 
-                                        employers to expand your professional network.
+                                        Connect with industry professionals,
+                                        mentors, and potential employers to
+                                        expand your professional network.
                                     </p>
                                 </div>
                             </div>
@@ -273,8 +281,9 @@ export default function JobsIndex({ auth }: PageProps) {
                             Choose Your Career Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            Select the perfect plan for your job search needs. All plans include 
-                            our core job search features with different levels of support.
+                            Select the perfect plan for your job search needs.
+                            All plans include our core job search features with
+                            different levels of support.
                         </p>
                     </div>
 
@@ -288,7 +297,8 @@ export default function JobsIndex({ auth }: PageProps) {
                                         Job Seeker
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for finding your next opportunity
+                                        Perfect for finding your next
+                                        opportunity
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
@@ -600,9 +610,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                             How do I apply for jobs?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Simply browse our job listings, find positions that match 
-                                            your skills, and click "Apply Now". You can track your 
-                                            applications in your dashboard.
+                                            Simply browse our job listings, find
+                                            positions that match your skills,
+                                            and click "Apply Now". You can track
+                                            your applications in your dashboard.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -610,9 +621,11 @@ export default function JobsIndex({ auth }: PageProps) {
                                             Is my personal information secure?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Yes, we take data security seriously. Your personal 
-                                            information is encrypted and protected. We never share 
-                                            your data without your consent.
+                                            Yes, we take data security
+                                            seriously. Your personal information
+                                            is encrypted and protected. We never
+                                            share your data without your
+                                            consent.
                                         </dd>
                                     </div>
                                 </dl>
@@ -639,9 +652,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Connect with top employers and discover opportunities that match 
-                                    your skills and aspirations. Build your career with our comprehensive 
-                                    job platform.
+                                    Connect with top employers and discover
+                                    opportunities that match your skills and
+                                    aspirations. Build your career with our
+                                    comprehensive job platform.
                                 </p>
                                 <div className="flex space-x-4">
                                     <a
@@ -667,17 +681,13 @@ export default function JobsIndex({ auth }: PageProps) {
                                         href="#"
                                         className="text-slate-400 transition-colors hover:text-white"
                                     >
-                                        <span className="sr-only">
-                                            Twitter
-                                        </span>
+                                        <span className="sr-only">Twitter</span>
                                         <svg
                                             className="h-6 w-6"
                                             fill="currentColor"
                                             viewBox="0 0 24 24"
                                         >
-                                            <path
-                                                d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
-                                            />
+                                            <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                                         </svg>
                                     </a>
                                 </div>

@@ -66,7 +66,11 @@ interface PageProps {
     };
 }
 
-export default function DeliveryShow({ auth, identifier, delivery }: PageProps) {
+export default function DeliveryShow({
+    auth,
+    identifier,
+    delivery,
+}: PageProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [activeTab, setActiveTab] = useState('order');
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);

@@ -1,13 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { LanguageSelector } from '@/Components/LanguageSelector';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { LanguageSelector } from '@/Components/LanguageSelector';
-import { faCalendarAlt, faClock, faUser, faEnvelope, faPhone, faStethoscope, faCheckCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import {
+    faCalendarAlt,
+    faCheckCircle,
+    faClock,
+    faExclamationTriangle,
+    faStethoscope,
+    faUser,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from 'react';
 
 interface AppointmentFormData {
     patient_name: string;
@@ -127,9 +140,10 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
             const selectedDate = new Date(formData.appointment_date);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             if (selectedDate <= today) {
-                newErrors.appointment_date = 'Appointment date must be in the future';
+                newErrors.appointment_date =
+                    'Appointment date must be in the future';
             }
         }
 
@@ -143,7 +157,7 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
@@ -156,7 +170,7 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify({
                     ...formData,
@@ -174,7 +188,11 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
             onSuccess?.(data);
         } catch (error: any) {
             console.error('Error booking appointment:', error);
-            setErrors({ general: error.message || 'Failed to book appointment. Please try again.' });
+            setErrors({
+                general:
+                    error.message ||
+                    'Failed to book appointment. Please try again.',
+            });
             onError?.(error.message || 'Failed to book appointment');
         } finally {
             setIsSubmitting(false);
@@ -218,26 +236,29 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
             button: 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500',
             sectionTitle: 'text-white',
             icon: 'text-teal-400',
-        }
+        },
     };
 
     const currentTheme = themeClasses[theme];
 
     if (isSuccess) {
         return (
-            <Card className={`w-full max-w-2xl mx-auto ${currentTheme.card} shadow-lg`}>
+            <Card
+                className={`mx-auto w-full max-w-2xl ${currentTheme.card} shadow-lg`}
+            >
                 <CardContent className="p-8 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                    <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                         <FontAwesomeIcon
                             icon={faCheckCircle}
-                            className="w-8 h-8 text-green-600"
+                            className="h-8 w-8 text-green-600"
                         />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="mb-2 text-xl font-bold text-gray-900">
                         Appointment Booked Successfully!
                     </h3>
-                    <p className="text-gray-600 mb-4">
-                        Thank you for booking your appointment. We will contact you to confirm the details.
+                    <p className="mb-4 text-gray-600">
+                        Thank you for booking your appointment. We will contact
+                        you to confirm the details.
                     </p>
                     <Button
                         onClick={() => {
@@ -264,9 +285,13 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
     }
 
     return (
-        <Card className={`w-full max-w-2xl mx-auto ${currentTheme.card} shadow-lg`}>
+        <Card
+            className={`mx-auto w-full max-w-2xl ${currentTheme.card} shadow-lg`}
+        >
             <CardHeader className={currentTheme.header}>
-                <CardTitle className={`flex items-center text-xl font-bold ${currentTheme.title}`}>
+                <CardTitle
+                    className={`flex items-center text-xl font-bold ${currentTheme.title}`}
+                >
                     <FontAwesomeIcon
                         icon={faCalendarAlt}
                         className="mr-3 h-6 w-6"
@@ -274,125 +299,186 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
                     />
                     {customTitle}
                 </CardTitle>
-                <p className={currentTheme.subtitle}>
-                    {customSubtitle}
-                </p>
+                <p className={currentTheme.subtitle}>{customSubtitle}</p>
             </CardHeader>
             <CardContent className="bg-white">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Patient Information */}
                     <div className="space-y-4">
-                        <h3 className={`text-lg font-semibold ${currentTheme.sectionTitle} flex items-center`}>
+                        <h3
+                            className={`text-lg font-semibold ${currentTheme.sectionTitle} flex items-center`}
+                        >
                             <FontAwesomeIcon
                                 icon={faUser}
                                 className={`mr-2 h-5 w-5 ${currentTheme.icon}`}
                             />
                             Patient Information
                         </h3>
-                        
+
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="patient_name" className={`text-sm font-medium ${currentTheme.label}`}>
+                                <Label
+                                    htmlFor="patient_name"
+                                    className={`text-sm font-medium ${currentTheme.label}`}
+                                >
                                     Full Name *
                                 </Label>
                                 <Input
                                     id="patient_name"
                                     type="text"
                                     value={formData.patient_name}
-                                    onChange={(e) => handleInputChange('patient_name', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'patient_name',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="Enter your full name"
                                     className={currentTheme.input}
                                     maxLength={255}
                                 />
                                 {errors.patient_name && (
-                                    <p className="text-sm text-red-600">{errors.patient_name}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.patient_name}
+                                    </p>
                                 )}
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="patient_phone" className={`text-sm font-medium ${currentTheme.label}`}>
+                                <Label
+                                    htmlFor="patient_phone"
+                                    className={`text-sm font-medium ${currentTheme.label}`}
+                                >
                                     Phone Number *
                                 </Label>
                                 <Input
                                     id="patient_phone"
                                     type="tel"
                                     value={formData.patient_phone}
-                                    onChange={(e) => handleInputChange('patient_phone', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'patient_phone',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="Enter your phone number"
                                     className={currentTheme.input}
                                     maxLength={20}
                                 />
                                 {errors.patient_phone && (
-                                    <p className="text-sm text-red-600">{errors.patient_phone}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.patient_phone}
+                                    </p>
                                 )}
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="patient_email" className={`text-sm font-medium ${currentTheme.label}`}>
+                            <Label
+                                htmlFor="patient_email"
+                                className={`text-sm font-medium ${currentTheme.label}`}
+                            >
                                 Email Address *
                             </Label>
                             <Input
                                 id="patient_email"
                                 type="email"
                                 value={formData.patient_email}
-                                onChange={(e) => handleInputChange('patient_email', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'patient_email',
+                                        e.target.value,
+                                    )
+                                }
                                 placeholder="Enter your email address"
                                 className={currentTheme.input}
                                 maxLength={255}
                             />
                             {errors.patient_email && (
-                                <p className="text-sm text-red-600">{errors.patient_email}</p>
+                                <p className="text-sm text-red-600">
+                                    {errors.patient_email}
+                                </p>
                             )}
                         </div>
                     </div>
 
                     {/* Appointment Details */}
                     <div className="space-y-4">
-                        <h3 className={`text-lg font-semibold ${currentTheme.sectionTitle} flex items-center`}>
+                        <h3
+                            className={`text-lg font-semibold ${currentTheme.sectionTitle} flex items-center`}
+                        >
                             <FontAwesomeIcon
                                 icon={faClock}
                                 className={`mr-2 h-5 w-5 ${currentTheme.icon}`}
                             />
                             Appointment Details
                         </h3>
-                        
+
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="appointment_date" className={`text-sm font-medium ${currentTheme.label}`}>
+                                <Label
+                                    htmlFor="appointment_date"
+                                    className={`text-sm font-medium ${currentTheme.label}`}
+                                >
                                     Preferred Date *
                                 </Label>
                                 <Input
                                     id="appointment_date"
                                     type="date"
                                     value={formData.appointment_date}
-                                    onChange={(e) => handleInputChange('appointment_date', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'appointment_date',
+                                            e.target.value,
+                                        )
+                                    }
                                     min={new Date().toISOString().split('T')[0]}
                                     className={currentTheme.input}
                                 />
                                 {errors.appointment_date && (
-                                    <p className="text-sm text-red-600">{errors.appointment_date}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.appointment_date}
+                                    </p>
                                 )}
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="appointment_time" className={`text-sm font-medium ${currentTheme.label}`}>
+                                <Label
+                                    htmlFor="appointment_time"
+                                    className={`text-sm font-medium ${currentTheme.label}`}
+                                >
                                     Preferred Time *
                                 </Label>
-                                <Select value={formData.appointment_time} onValueChange={(value) => handleInputChange('appointment_time', value)}>
-                                    <SelectTrigger className={currentTheme.input}>
+                                <Select
+                                    value={formData.appointment_time}
+                                    onValueChange={(value) =>
+                                        handleInputChange(
+                                            'appointment_time',
+                                            value,
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        className={currentTheme.input}
+                                    >
                                         <SelectValue placeholder="Select time" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-white border-gray-200">
+                                    <SelectContent className="border-gray-200 bg-white">
                                         {timeSlots.map((time) => (
-                                            <SelectItem key={time} value={time} className="text-gray-900 hover:bg-gray-50">
+                                            <SelectItem
+                                                key={time}
+                                                value={time}
+                                                className="text-gray-900 hover:bg-gray-50"
+                                            >
                                                 {time}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                                 {errors.appointment_time && (
-                                    <p className="text-sm text-red-600">{errors.appointment_time}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.appointment_time}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -400,48 +486,70 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
 
                     {/* Service and Doctor Selection */}
                     <div className="space-y-4">
-                        <h3 className={`text-lg font-semibold ${currentTheme.sectionTitle} flex items-center`}>
+                        <h3
+                            className={`text-lg font-semibold ${currentTheme.sectionTitle} flex items-center`}
+                        >
                             <FontAwesomeIcon
                                 icon={faStethoscope}
                                 className={`mr-2 h-5 w-5 ${currentTheme.icon}`}
                             />
                             Service & Doctor Information
                         </h3>
-                        
+
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="service" className={`text-sm font-medium ${currentTheme.label}`}>
+                                <Label
+                                    htmlFor="service"
+                                    className={`text-sm font-medium ${currentTheme.label}`}
+                                >
                                     Service (Optional)
                                 </Label>
                                 <Input
                                     id="service"
                                     type="text"
                                     value={formData.service_name}
-                                    onChange={(e) => handleInputChange('service_name', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'service_name',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="e.g., General Consultation, Dental Cleaning"
                                     className={currentTheme.input}
                                     maxLength={255}
                                 />
                                 {errors.service_name && (
-                                    <p className="text-sm text-red-600">{errors.service_name}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.service_name}
+                                    </p>
                                 )}
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="preferred_doctor" className={`text-sm font-medium ${currentTheme.label}`}>
+                                <Label
+                                    htmlFor="preferred_doctor"
+                                    className={`text-sm font-medium ${currentTheme.label}`}
+                                >
                                     Preferred Doctor (Optional)
                                 </Label>
                                 <Input
                                     id="preferred_doctor"
                                     type="text"
                                     value={formData.doctor_name}
-                                    onChange={(e) => handleInputChange('doctor_name', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'doctor_name',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="e.g., Dr. Smith, Dr. Johnson"
                                     className={currentTheme.input}
                                     maxLength={255}
                                 />
                                 {errors.doctor_name && (
-                                    <p className="text-sm text-red-600">{errors.doctor_name}</p>
+                                    <p className="text-sm text-red-600">
+                                        {errors.doctor_name}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -449,38 +557,51 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
 
                     {/* Additional Information */}
                     <div className="space-y-4">
-                        <h3 className={`text-lg font-semibold ${currentTheme.sectionTitle}`}>Additional Information</h3>
-                        
+                        <h3
+                            className={`text-lg font-semibold ${currentTheme.sectionTitle}`}
+                        >
+                            Additional Information
+                        </h3>
+
                         <LanguageSelector
                             value={formData.preferred_language}
-                            onValueChange={(value) => handleInputChange('preferred_language', value)}
+                            onValueChange={(value) =>
+                                handleInputChange('preferred_language', value)
+                            }
                             placeholder="Select your preferred language"
                             label="Preferred Language"
                             className=""
                         />
 
                         <div className="space-y-2">
-                            <Label htmlFor="notes" className={`text-sm font-medium ${currentTheme.label}`}>
+                            <Label
+                                htmlFor="notes"
+                                className={`text-sm font-medium ${currentTheme.label}`}
+                            >
                                 Additional Notes
                             </Label>
                             <Textarea
                                 id="notes"
                                 value={formData.notes}
-                                onChange={(e) => handleInputChange('notes', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('notes', e.target.value)
+                                }
                                 placeholder="Any specific concerns or information you'd like us to know..."
                                 className={currentTheme.input}
                                 rows={3}
                                 maxLength={1000}
                             />
                             {errors.notes && (
-                                <p className="text-sm text-red-600">{errors.notes}</p>
+                                <p className="text-sm text-red-600">
+                                    {errors.notes}
+                                </p>
                             )}
                         </div>
                     </div>
 
                     {/* General Error Display */}
                     {errors.general && (
-                        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                        <div className="rounded-md border border-red-200 bg-red-50 p-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
                                     <FontAwesomeIcon
@@ -489,7 +610,9 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
                                     />
                                 </div>
                                 <div className="ml-3">
-                                    <p className="text-sm text-red-800">{errors.general}</p>
+                                    <p className="text-sm text-red-800">
+                                        {errors.general}
+                                    </p>
                                 </div>
                             </div>
                         </div>

@@ -57,19 +57,19 @@ export default function Welcome({ auth }: PageProps) {
 
         const handleWheel = (event: WheelEvent) => {
             if (!containerRef.current) return;
-            
+
             // Only handle wheel events when the container is in view
             const rect = containerRef.current.getBoundingClientRect();
             const isInView = rect.top <= 0 && rect.bottom >= window.innerHeight;
-            
+
             if (!isInView) return;
-            
+
             // Prevent default scrolling behavior
             event.preventDefault();
-            
+
             const currentIndex = Math.round(scrollX / window.innerWidth);
             const maxIndex = 2; // We have 3 slides (0, 1, 2)
-            
+
             if (event.deltaY > 0) {
                 // Scrolling down - go to next slide
                 const nextIndex = Math.min(maxIndex, currentIndex + 1);
@@ -89,7 +89,7 @@ export default function Welcome({ auth }: PageProps) {
                     });
                 }
             }
-            
+
             // Reset auto-slide timer on user interaction
             resetAutoSlide();
         };
@@ -98,19 +98,22 @@ export default function Welcome({ auth }: PageProps) {
             if (autoSlideTimeoutRef.current) {
                 clearTimeout(autoSlideTimeoutRef.current);
             }
-            
+
             autoSlideTimeoutRef.current = setTimeout(() => {
                 if (!containerRef.current) return;
-                
-                const currentIndex = Math.round(currentScrollXRef.current / window.innerWidth);
+
+                const currentIndex = Math.round(
+                    currentScrollXRef.current / window.innerWidth,
+                );
                 const maxIndex = 2; // We have 3 slides (0, 1, 2)
-                const nextIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1; // Loop back to first slide
-                
+                const nextIndex =
+                    currentIndex >= maxIndex ? 0 : currentIndex + 1; // Loop back to first slide
+
                 containerRef.current.scrollTo({
                     left: window.innerWidth * nextIndex,
                     behavior: 'smooth',
                 });
-                
+
                 // Continue auto-sliding
                 startAutoSlide();
             }, 12000); // 12 seconds delay
@@ -137,21 +140,23 @@ export default function Welcome({ auth }: PageProps) {
         window.addEventListener('resize', checkMobile);
         if (containerRef.current) {
             containerRef.current.addEventListener('scroll', handleScroll);
-            containerRef.current.addEventListener('wheel', handleWheel, { passive: false });
+            containerRef.current.addEventListener('wheel', handleWheel, {
+                passive: false,
+            });
         }
         document.addEventListener('mousedown', handleClickOutside);
-        
+
         // Add event listeners for user interactions to reset auto-slide
         const handleUserInteraction = () => {
             resetAutoSlide();
         };
-        
+
         // Listen for various user interactions
         document.addEventListener('mousedown', handleUserInteraction);
         document.addEventListener('mousemove', handleUserInteraction);
         document.addEventListener('keydown', handleUserInteraction);
         document.addEventListener('touchstart', handleUserInteraction);
-        
+
         // Start auto-slide
         startAutoSlide();
 
@@ -165,37 +170,38 @@ export default function Welcome({ auth }: PageProps) {
                 containerRef.current.removeEventListener('wheel', handleWheel);
             }
             document.removeEventListener('mousedown', handleClickOutside);
-            
+
             // Remove user interaction listeners
             document.removeEventListener('mousedown', handleUserInteraction);
             document.removeEventListener('mousemove', handleUserInteraction);
             document.removeEventListener('keydown', handleUserInteraction);
             document.removeEventListener('touchstart', handleUserInteraction);
-            
+
             // Stop auto-slide
             stopAutoSlide();
         };
     }, []);
 
-    const productsMenuItems = hostname === 'sakto' 
-        ? [
-            { name: 'Komunidad', href: route('community') },
-            { name: 'Logistika', href: route('logistics') },
-            { name: 'Medikal', href: route('medical') },
-            { name: 'Lakbay', href: route('travel.landing') },
-            { name: 'Hatid', href: route('delivery') },
-            { name: 'Taohan', href: route('jobs') },
-            { name: 'Merkado', href: route('shop') },
-        ]
-        : [
-            { name: 'Community', href: route('community') },
-            { name: 'Logistics', href: route('logistics') },
-            { name: 'Medical', href: route('medical') },
-            { name: 'Travel', href: route('travel.landing') },
-            { name: 'Delivery', href: route('delivery') },
-            { name: 'Jobs', href: route('jobs') },
-            { name: 'Shop', href: route('shop') },
-        ];
+    const productsMenuItems =
+        hostname === 'sakto'
+            ? [
+                  { name: 'Komunidad', href: route('community') },
+                  { name: 'Logistika', href: route('logistics') },
+                  { name: 'Medikal', href: route('medical') },
+                  { name: 'Lakbay', href: route('travel.landing') },
+                  { name: 'Hatid', href: route('delivery') },
+                  { name: 'Taohan', href: route('jobs') },
+                  { name: 'Merkado', href: route('shop') },
+              ]
+            : [
+                  { name: 'Community', href: route('community') },
+                  { name: 'Logistics', href: route('logistics') },
+                  { name: 'Medical', href: route('medical') },
+                  { name: 'Travel', href: route('travel.landing') },
+                  { name: 'Delivery', href: route('delivery') },
+                  { name: 'Jobs', href: route('jobs') },
+                  { name: 'Shop', href: route('shop') },
+              ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -220,7 +226,9 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
                                 <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                    {hostname === 'sakto' ? 'Sakto Solutions' : hostname}
+                                    {hostname === 'sakto'
+                                        ? 'Sakto Solutions'
+                                        : hostname}
                                 </span>
                             </div>
                             <div className="flex items-center">
@@ -481,7 +489,7 @@ export default function Welcome({ auth }: PageProps) {
                                             </span>
                                             <Link
                                                 href={route('neulify')}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent transition-all duration-200 hover:scale-105 hover:from-indigo-700 hover:to-purple-700"
                                             >
                                                 Neulify
                                             </Link>
@@ -518,7 +526,7 @@ export default function Welcome({ auth }: PageProps) {
                                             </span>
                                             <Link
                                                 href={route('neulify')}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:scale-105"
+                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent transition-all duration-200 hover:scale-105 hover:from-indigo-700 hover:to-purple-700"
                                             >
                                                 Neulify
                                             </Link>
@@ -689,7 +697,10 @@ export default function Welcome({ auth }: PageProps) {
                                             <div className="mb-6 flex flex-wrap justify-center gap-1 sm:mb-8 sm:gap-2">
                                                 {[
                                                     {
-                                                        name: hostname === 'sakto' ? 'Komunidad' : 'Community',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Komunidad'
+                                                                : 'Community',
                                                         color: 'from-pink-500 to-rose-500',
                                                         enabled: true,
                                                         description:
@@ -717,7 +728,10 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                     },
                                                     {
-                                                        name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Logistika'
+                                                                : 'Logistics',
                                                         color: 'from-cyan-500 to-blue-500',
                                                         enabled: true,
                                                         description:
@@ -745,7 +759,10 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                     },
                                                     {
-                                                        name: hostname === 'sakto' ? 'Medikal' : 'Medical',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Medikal'
+                                                                : 'Medical',
                                                         color: 'from-emerald-500 to-teal-500',
                                                         enabled: true,
                                                         description:
@@ -771,7 +788,10 @@ export default function Welcome({ auth }: PageProps) {
                                                         link: route('medical'),
                                                     },
                                                     {
-                                                        name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Lakbay'
+                                                                : 'Travel',
                                                         color: 'from-blue-500 to-indigo-600',
                                                         enabled: true,
                                                         description:
@@ -799,7 +819,10 @@ export default function Welcome({ auth }: PageProps) {
                                                         ),
                                                     },
                                                     {
-                                                        name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Hatid'
+                                                                : 'Delivery',
                                                         color: 'from-purple-500 to-violet-500',
                                                         enabled: true,
                                                         description:
@@ -825,7 +848,10 @@ export default function Welcome({ auth }: PageProps) {
                                                         link: route('delivery'),
                                                     },
                                                     {
-                                                        name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Taohan'
+                                                                : 'Jobs',
                                                         color: 'from-indigo-500 to-blue-600',
                                                         enabled: true,
                                                         description:
@@ -851,7 +877,10 @@ export default function Welcome({ auth }: PageProps) {
                                                         link: route('jobs'),
                                                     },
                                                     {
-                                                        name: hostname === 'sakto' ? 'Merkado' : 'Shop',
+                                                        name:
+                                                            hostname === 'sakto'
+                                                                ? 'Merkado'
+                                                                : 'Shop',
                                                         color: 'from-green-500 to-emerald-600',
                                                         enabled: true,
                                                         description:
@@ -905,7 +934,11 @@ export default function Welcome({ auth }: PageProps) {
                                                 {(() => {
                                                     const projects = [
                                                         {
-                                                            name: hostname === 'sakto' ? 'Komunidad' : 'Community',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Komunidad'
+                                                                    : 'Community',
                                                             color: 'from-pink-500 to-rose-500',
                                                             enabled: true,
                                                             description:
@@ -928,10 +961,16 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route('community'),
+                                                            link: route(
+                                                                'community',
+                                                            ),
                                                         },
                                                         {
-                                                            name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Logistika'
+                                                                    : 'Logistics',
                                                             color: 'from-cyan-500 to-blue-500',
                                                             enabled: true,
                                                             description:
@@ -954,10 +993,16 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route('logistics'),
+                                                            link: route(
+                                                                'logistics',
+                                                            ),
                                                         },
                                                         {
-                                                            name: hostname === 'sakto' ? 'Medikal' : 'Medical',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Medikal'
+                                                                    : 'Medical',
                                                             color: 'from-emerald-500 to-teal-500',
                                                             enabled: true,
                                                             description:
@@ -980,10 +1025,16 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route('medical'),
+                                                            link: route(
+                                                                'medical',
+                                                            ),
                                                         },
                                                         {
-                                                            name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Lakbay'
+                                                                    : 'Travel',
                                                             color: 'from-blue-500 to-indigo-600',
                                                             enabled: true,
                                                             description:
@@ -1006,10 +1057,16 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route('travel.landing'),
+                                                            link: route(
+                                                                'travel.landing',
+                                                            ),
                                                         },
                                                         {
-                                                            name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Hatid'
+                                                                    : 'Delivery',
                                                             color: 'from-purple-500 to-violet-500',
                                                             enabled: true,
                                                             description:
@@ -1032,10 +1089,16 @@ export default function Welcome({ auth }: PageProps) {
                                                                     />
                                                                 </svg>
                                                             ),
-                                                            link: route('delivery'),
+                                                            link: route(
+                                                                'delivery',
+                                                            ),
                                                         },
                                                         {
-                                                            name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Taohan'
+                                                                    : 'Jobs',
                                                             color: 'from-indigo-500 to-blue-600',
                                                             enabled: true,
                                                             description:
@@ -1061,7 +1124,11 @@ export default function Welcome({ auth }: PageProps) {
                                                             link: route('jobs'),
                                                         },
                                                         {
-                                                            name: hostname === 'sakto' ? 'Merkado' : 'Shop',
+                                                            name:
+                                                                hostname ===
+                                                                'sakto'
+                                                                    ? 'Merkado'
+                                                                    : 'Shop',
                                                             color: 'from-green-500 to-emerald-600',
                                                             enabled: true,
                                                             description:
@@ -1203,8 +1270,9 @@ export default function Welcome({ auth }: PageProps) {
                                                                         Launch
                                                                     </Link>
                                                                 ) : (
-                                                                    <div className="inline-flex items-center bg-gray-400 px-4 py-2 text-sm font-medium text-white sm:px-6 sm:py-2.5 rounded-lg cursor-not-allowed opacity-60">
-                                                                        Coming Soon
+                                                                    <div className="inline-flex cursor-not-allowed items-center rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white opacity-60 sm:px-6 sm:py-2.5">
+                                                                        Coming
+                                                                        Soon
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1220,14 +1288,15 @@ export default function Welcome({ auth }: PageProps) {
                     </div>
                 </div>
 
-
                 {/* Navigation Controls */}
                 <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center space-x-4 sm:bottom-20">
                     {/* Left Arrow */}
                     <button
                         onClick={() => {
                             if (containerRef.current) {
-                                const currentIndex = Math.round(scrollX / window.innerWidth);
+                                const currentIndex = Math.round(
+                                    scrollX / window.innerWidth,
+                                );
                                 const newIndex = Math.max(0, currentIndex - 1);
                                 containerRef.current.scrollTo({
                                     left: window.innerWidth * newIndex,
@@ -1237,7 +1306,9 @@ export default function Welcome({ auth }: PageProps) {
                             resetAutoSlideRef.current?.();
                         }}
                         className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800 ${
-                            Math.round(scrollX / window.innerWidth) === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                            Math.round(scrollX / window.innerWidth) === 0
+                                ? 'cursor-not-allowed opacity-50'
+                                : ''
                         }`}
                         disabled={Math.round(scrollX / window.innerWidth) === 0}
                     >
@@ -1285,7 +1356,9 @@ export default function Welcome({ auth }: PageProps) {
                     <button
                         onClick={() => {
                             if (containerRef.current) {
-                                const currentIndex = Math.round(scrollX / window.innerWidth);
+                                const currentIndex = Math.round(
+                                    scrollX / window.innerWidth,
+                                );
                                 const newIndex = Math.min(2, currentIndex + 1);
                                 containerRef.current.scrollTo({
                                     left: window.innerWidth * newIndex,
@@ -1295,7 +1368,9 @@ export default function Welcome({ auth }: PageProps) {
                             resetAutoSlideRef.current?.();
                         }}
                         className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-xl dark:bg-gray-800/90 dark:hover:bg-gray-800 ${
-                            Math.round(scrollX / window.innerWidth) === 2 ? 'opacity-50 cursor-not-allowed' : ''
+                            Math.round(scrollX / window.innerWidth) === 2
+                                ? 'cursor-not-allowed opacity-50'
+                                : ''
                         }`}
                         disabled={Math.round(scrollX / window.innerWidth) === 2}
                     >
@@ -1315,7 +1390,6 @@ export default function Welcome({ auth }: PageProps) {
                         </svg>
                     </button>
                 </div>
-
             </div>
         </>
     );

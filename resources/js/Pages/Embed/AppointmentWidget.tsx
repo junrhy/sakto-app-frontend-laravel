@@ -1,5 +1,5 @@
-import React from 'react';
 import EmbeddableAppointmentForm from '@/Components/EmbeddableAppointmentForm';
+import React from 'react';
 
 interface Props {
     clinicId: string;
@@ -19,8 +19,8 @@ const AppointmentWidget: React.FC<Props> = ({
     customSubtitle = 'Fill out the form below to schedule your appointment. We will contact you to confirm.',
 }) => {
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-gray-50 px-4 py-8">
+            <div className="mx-auto max-w-4xl">
                 <EmbeddableAppointmentForm
                     clinicId={clinicId}
                     apiUrl="/api/embed/appointment"

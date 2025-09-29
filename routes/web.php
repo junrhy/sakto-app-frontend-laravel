@@ -785,6 +785,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/{id}/location-history', [TransportationController::class, 'getTruckLocationHistory'])->name('transportation.fleet.location-history');
     });
 
+
     // Transportation Shipment Routes
     Route::prefix('transportation/shipments')->group(function () {
         Route::get('/list', [TransportationController::class, 'getShipments'])->name('transportation.shipments.list');
@@ -840,6 +841,12 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/{id}', [TransportationController::class, 'showPricingConfig'])->name('transportation.pricing-configs.show');
         Route::put('/{id}', [TransportationController::class, 'updatePricingConfig'])->name('transportation.pricing-configs.update');
         Route::delete('/{id}', [TransportationController::class, 'destroyPricingConfig'])->name('transportation.pricing-configs.destroy');
+    });
+
+    // Transportation Settings Routes
+    Route::prefix('transportation')->group(function () {
+        Route::get('/settings', [TransportationController::class, 'settings'])->name('transportation.settings');
+        Route::post('/settings', [TransportationController::class, 'saveSettings'])->name('transportation.settings.save');
     });
 });
 

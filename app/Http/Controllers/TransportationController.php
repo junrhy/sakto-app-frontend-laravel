@@ -1510,4 +1510,121 @@ class TransportationController extends Controller
             ], 500);
         }
     }
+
+    // ==================== TRANSPORTATION SETTINGS ====================
+
+    /**
+     * Display the transportation settings page.
+     */
+    public function settings()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/logistics/settings', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $settings = $response->json();
+
+            return Inertia::render('Transportation/Settings', [
+                'settings' => $settings
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch transportation settings', ['error' => $e->getMessage()]);
+            
+            // Return default settings if API fails
+            $defaultSettings = [
+                'general' => [
+                    'company_name' => '',
+                    'description' => '',
+                    'address' => '',
+                    'phone' => '',
+                    'email' => '',
+                    'website' => '',
+                    'operating_hours' => [
+                        'monday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                        'tuesday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                        'wednesday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                        'thursday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                        'friday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                        'saturday' => ['open' => '09:00', 'close' => '13:00', 'closed' => false],
+                        'sunday' => ['open' => '00:00', 'close' => '00:00', 'closed' => true]
+                    ]
+                ],
+                'fleet' => [
+                    'max_trucks' => 10,
+                    'truck_types' => [],
+                    'capacity_units' => 'kg',
+                    'insurance_required' => true,
+                    'insurance_providers' => []
+                ],
+                'pricing' => [
+                    'base_rate_per_km' => 0.0,
+                    'minimum_charge' => 0.0,
+                    'currency' => 'USD',
+                    'payment_methods' => [],
+                    'tax_rate' => 0.0
+                ],
+                'booking' => [
+                    'advance_booking_days' => 30,
+                    'cancellation_hours' => 24,
+                    'auto_approval' => false,
+                    'require_documents' => true,
+                    'tracking_enabled' => true
+                ],
+                'notifications' => [
+                    'email_notifications' => true,
+                    'sms_notifications' => false,
+                    'booking_confirmations' => true,
+                    'status_updates' => true
+                ]
+            ];
+
+            return Inertia::render('Transportation/Settings', [
+                'settings' => $defaultSettings
+            ]);
+        }
+    }
+
+    /**
+     * Save transportation settings.
+     */
+    public function saveSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'general' => 'nullable|array',
+                'fleet' => 'nullable|array',
+                'pricing' => 'nullable|array',
+                'booking' => 'nullable|array',
+                'notifications' => 'nullable|array',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/logistics/settings', $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transportation settings saved successfully',
+                'data' => $response->json()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to save transportation settings', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save transportation settings',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

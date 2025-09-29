@@ -45,7 +45,11 @@ export default function Neulify({ auth }: PageProps) {
     }, []);
 
     const partnersMenuItems = [
-        { name: 'Sakto Solutions', href: route('landing'), description: 'Philippine Market Partner' },
+        {
+            name: 'Sakto Solutions',
+            href: route('landing'),
+            description: 'Philippine Market Partner',
+        },
         // Future partners can be added here
     ];
 
@@ -57,7 +61,7 @@ export default function Neulify({ auth }: PageProps) {
                 <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/20 via-transparent to-transparent dark:from-[#14B8A6]/10"></div>
                 {/* Navigation */}
-                <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0]/50 shadow-sm dark:bg-gray-900/95 dark:border-gray-700/50">
+                <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[#E2E8F0]/50 bg-white/95 shadow-sm backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 items-center justify-between">
                             <div className="flex items-center">
@@ -114,21 +118,29 @@ export default function Neulify({ auth }: PageProps) {
                                         </button>
                                         {isPartnersDropdownOpen && (
                                             <div className="absolute left-0 top-full z-50 mt-2 w-64 rounded-lg border border-[#E2E8F0] bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                                                {partnersMenuItems.map((partner) => (
-                                                    <Link
-                                                        key={partner.name}
-                                                        href={partner.href}
-                                                        className="block px-4 py-3 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
-                                                        onClick={() =>
-                                                            setIsPartnersDropdownOpen(
-                                                                false,
-                                                            )
-                                                        }
-                                                    >
-                                                        <div className="font-medium">{partner.name}</div>
-                                                        <div className="text-xs text-[#334155]/70 dark:text-gray-400">{partner.description}</div>
-                                                    </Link>
-                                                ))}
+                                                {partnersMenuItems.map(
+                                                    (partner) => (
+                                                        <Link
+                                                            key={partner.name}
+                                                            href={partner.href}
+                                                            className="block px-4 py-3 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                            onClick={() =>
+                                                                setIsPartnersDropdownOpen(
+                                                                    false,
+                                                                )
+                                                            }
+                                                        >
+                                                            <div className="font-medium">
+                                                                {partner.name}
+                                                            </div>
+                                                            <div className="text-xs text-[#334155]/70 dark:text-gray-400">
+                                                                {
+                                                                    partner.description
+                                                                }
+                                                            </div>
+                                                        </Link>
+                                                    ),
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -193,19 +205,29 @@ export default function Neulify({ auth }: PageProps) {
                                                 Partners
                                             </div>
                                             <div className="mt-2 space-y-1">
-                                                {partnersMenuItems.map((partner) => (
-                                                    <Link
-                                                        key={partner.name}
-                                                        href={partner.href}
-                                                        className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
-                                                        onClick={() =>
-                                                            setIsMenuOpen(false)
-                                                        }
-                                                    >
-                                                        <div className="font-medium">{partner.name}</div>
-                                                        <div className="text-xs text-[#334155]/70 dark:text-gray-400">{partner.description}</div>
-                                                    </Link>
-                                                ))}
+                                                {partnersMenuItems.map(
+                                                    (partner) => (
+                                                        <Link
+                                                            key={partner.name}
+                                                            href={partner.href}
+                                                            className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
+                                                            onClick={() =>
+                                                                setIsMenuOpen(
+                                                                    false,
+                                                                )
+                                                            }
+                                                        >
+                                                            <div className="font-medium">
+                                                                {partner.name}
+                                                            </div>
+                                                            <div className="text-xs text-[#334155]/70 dark:text-gray-400">
+                                                                {
+                                                                    partner.description
+                                                                }
+                                                            </div>
+                                                        </Link>
+                                                    ),
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -223,36 +245,55 @@ export default function Neulify({ auth }: PageProps) {
                             <div className="text-center">
                                 <div className="mb-8">
                                     <div className="inline-flex items-center rounded-full bg-[#14B8A6]/10 px-4 py-2 text-sm font-medium text-[#14B8A6] dark:text-[#14B8A6]">
-                                        <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        <svg
+                                            className="mr-2 h-4 w-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                            />
                                         </svg>
                                         Global Technology Company
                                     </div>
                                 </div>
                                 <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl">
-                                    <span className="block">
-                                        Neulify
-                                    </span>
+                                    <span className="block">Neulify</span>
                                     <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-transparent dark:text-[#14B8A6]">
                                         Empowering Digital Innovation
                                     </span>
                                 </h1>
                                 <p className="mx-auto mt-6 max-w-2xl text-lg text-[#334155] dark:text-gray-300 sm:text-xl md:text-2xl">
-                                    We are a global technology company dedicated to creating innovative digital solutions that transform industries and empower businesses to thrive in the digital age.
+                                    We are a global technology company dedicated
+                                    to creating innovative digital solutions
+                                    that transform industries and empower
+                                    businesses to thrive in the digital age.
                                 </p>
                                 <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
                                     <a
                                         href="#partner"
-                                        className="inline-flex items-center rounded-lg bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-200 hover:shadow-2xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        className="inline-flex items-center rounded-lg bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2"
                                     >
                                         Become a Partner
-                                        <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        <svg
+                                            className="ml-2 h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                            />
                                         </svg>
                                     </a>
                                     <a
                                         href="#about"
-                                        className="inline-flex items-center rounded-lg border-2 border-[#E2E8F0] bg-white px-8 py-4 text-lg font-semibold text-[#334155] shadow-lg transition-all duration-200 hover:bg-[#F9FAFB] hover:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        className="inline-flex items-center rounded-lg border-2 border-[#E2E8F0] bg-white px-8 py-4 text-lg font-semibold text-[#334155] shadow-lg transition-all duration-200 hover:border-[#14B8A6] hover:bg-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                                     >
                                         Learn More
                                     </a>
@@ -262,7 +303,10 @@ export default function Neulify({ auth }: PageProps) {
                     </section>
 
                     {/* About Section */}
-                    <section id="about" className="relative bg-white py-24 dark:bg-gray-900">
+                    <section
+                        id="about"
+                        className="relative bg-white py-24 dark:bg-gray-900"
+                    >
                         <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                             <div className="text-center">
                                 <div className="mb-4">
@@ -274,25 +318,40 @@ export default function Neulify({ auth }: PageProps) {
                                     Our Corporate Foundation
                                 </h2>
                                 <p className="mx-auto max-w-4xl text-xl text-[#334155] dark:text-gray-300">
-                                    We believe in the power of technology to solve real-world problems and create meaningful impact across various industries.
+                                    We believe in the power of technology to
+                                    solve real-world problems and create
+                                    meaningful impact across various industries.
                                 </p>
                             </div>
-                            
+
                             <div className="mt-20 grid grid-cols-1 gap-12 lg:grid-cols-3">
                                 {/* Mission */}
                                 <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#14B8A6]/5 to-[#06B6D4]/5 p-8 shadow-lg transition-all duration-300 hover:shadow-xl">
                                     <div className="absolute inset-0 bg-gradient-to-br from-[#14B8A6]/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                                     <div className="relative">
                                         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#14B8A6] to-[#06B6D4] shadow-lg">
-                                            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            <svg
+                                                className="h-8 w-8 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                                                />
                                             </svg>
                                         </div>
                                         <h3 className="mb-4 text-2xl font-bold text-[#334155] dark:text-gray-100">
                                             Our Mission
                                         </h3>
                                         <p className="text-lg text-[#334155]/80 dark:text-gray-300">
-                                            To empower businesses and organizations with cutting-edge digital solutions that drive innovation, efficiency, and growth.
+                                            To empower businesses and
+                                            organizations with cutting-edge
+                                            digital solutions that drive
+                                            innovation, efficiency, and growth.
                                         </p>
                                     </div>
                                 </div>
@@ -302,16 +361,34 @@ export default function Neulify({ auth }: PageProps) {
                                     <div className="absolute inset-0 bg-gradient-to-br from-[#06B6D4]/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                                     <div className="relative">
                                         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#06B6D4] to-[#1E3A8A] shadow-lg">
-                                            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            <svg
+                                                className="h-8 w-8 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                />
                                             </svg>
                                         </div>
                                         <h3 className="mb-4 text-2xl font-bold text-[#334155] dark:text-gray-100">
                                             Our Vision
                                         </h3>
                                         <p className="text-lg text-[#334155]/80 dark:text-gray-300">
-                                            To be the leading force in digital transformation, creating a world where technology seamlessly integrates with human potential.
+                                            To be the leading force in digital
+                                            transformation, creating a world
+                                            where technology seamlessly
+                                            integrates with human potential.
                                         </p>
                                     </div>
                                 </div>
@@ -321,15 +398,29 @@ export default function Neulify({ auth }: PageProps) {
                                     <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A]/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                                     <div className="relative">
                                         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1E3A8A] to-[#14B8A6] shadow-lg">
-                                            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            <svg
+                                                className="h-8 w-8 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                                />
                                             </svg>
                                         </div>
                                         <h3 className="mb-4 text-2xl font-bold text-[#334155] dark:text-gray-100">
                                             Our Values
                                         </h3>
                                         <p className="text-lg text-[#334155]/80 dark:text-gray-300">
-                                            Innovation, integrity, and excellence guide everything we do. We believe in building lasting partnerships and delivering exceptional value.
+                                            Innovation, integrity, and
+                                            excellence guide everything we do.
+                                            We believe in building lasting
+                                            partnerships and delivering
+                                            exceptional value.
                                         </p>
                                     </div>
                                 </div>
@@ -338,7 +429,10 @@ export default function Neulify({ auth }: PageProps) {
                     </section>
 
                     {/* Company Values Section */}
-                    <section id="values" className="relative bg-[#F9FAFB] py-24 dark:bg-gray-800">
+                    <section
+                        id="values"
+                        className="relative bg-[#F9FAFB] py-24 dark:bg-gray-800"
+                    >
                         <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                             <div className="text-center">
                                 <div className="mb-4">
@@ -350,16 +444,18 @@ export default function Neulify({ auth }: PageProps) {
                                     Our Core Values
                                 </h2>
                                 <p className="mx-auto max-w-4xl text-xl text-[#334155] dark:text-gray-300">
-                                    The principles that guide everything we do and shape our company culture.
+                                    The principles that guide everything we do
+                                    and shape our company culture.
                                 </p>
                             </div>
-                            
+
                             <div className="mt-20">
                                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                                     {[
                                         {
                                             title: 'Innovation',
-                                            description: 'We constantly push boundaries and embrace new technologies to create cutting-edge solutions that drive progress.',
+                                            description:
+                                                'We constantly push boundaries and embrace new technologies to create cutting-edge solutions that drive progress.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -380,7 +476,8 @@ export default function Neulify({ auth }: PageProps) {
                                         },
                                         {
                                             title: 'Integrity',
-                                            description: 'We operate with honesty, transparency, and ethical practices in all our business relationships and decisions.',
+                                            description:
+                                                'We operate with honesty, transparency, and ethical practices in all our business relationships and decisions.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -401,7 +498,8 @@ export default function Neulify({ auth }: PageProps) {
                                         },
                                         {
                                             title: 'Excellence',
-                                            description: 'We strive for the highest quality in everything we do, from our products to our customer service.',
+                                            description:
+                                                'We strive for the highest quality in everything we do, from our products to our customer service.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -422,7 +520,8 @@ export default function Neulify({ auth }: PageProps) {
                                         },
                                         {
                                             title: 'Collaboration',
-                                            description: 'We believe in the power of teamwork and building strong partnerships with our clients and stakeholders.',
+                                            description:
+                                                'We believe in the power of teamwork and building strong partnerships with our clients and stakeholders.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -443,7 +542,8 @@ export default function Neulify({ auth }: PageProps) {
                                         },
                                         {
                                             title: 'Growth',
-                                            description: 'We are committed to continuous learning, improvement, and helping our clients achieve their full potential.',
+                                            description:
+                                                'We are committed to continuous learning, improvement, and helping our clients achieve their full potential.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -464,7 +564,8 @@ export default function Neulify({ auth }: PageProps) {
                                         },
                                         {
                                             title: 'Impact',
-                                            description: 'We measure our success by the positive impact we create for our clients, communities, and the world.',
+                                            description:
+                                                'We measure our success by the positive impact we create for our clients, communities, and the world.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -490,7 +591,9 @@ export default function Neulify({ auth }: PageProps) {
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-br from-white to-[#F9FAFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-gray-900 dark:to-gray-800"></div>
                                             <div className="relative">
-                                                <div className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r ${value.color} shadow-lg`}>
+                                                <div
+                                                    className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r ${value.color} shadow-lg`}
+                                                >
                                                     {value.icon}
                                                 </div>
                                                 <h3 className="mb-4 text-2xl font-bold text-[#334155] dark:text-gray-100">
@@ -509,7 +612,10 @@ export default function Neulify({ auth }: PageProps) {
                 </div>
 
                 {/* Partner Application Section */}
-                <section id="partner" className="relative bg-gradient-to-b from-[#F9FAFB] to-white py-24 dark:from-gray-900 dark:to-gray-800">
+                <section
+                    id="partner"
+                    className="relative bg-gradient-to-b from-[#F9FAFB] to-white py-24 dark:from-gray-900 dark:to-gray-800"
+                >
                     <div className="relative mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <div className="mb-4">
@@ -518,67 +624,98 @@ export default function Neulify({ auth }: PageProps) {
                                 </span>
                             </div>
                             <h2 className="mb-6 text-4xl font-bold text-[#334155] dark:text-white sm:text-5xl">
-                                Become a <span className="bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-transparent">Neulify Partner</span>
+                                Become a{' '}
+                                <span className="bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-transparent">
+                                    Neulify Partner
+                                </span>
                             </h2>
                             <p className="mx-auto mb-12 max-w-3xl text-lg text-[#334155]/80 dark:text-gray-300">
-                                Join our global network of technology partners and help us bring innovative digital solutions to markets worldwide.
+                                Join our global network of technology partners
+                                and help us bring innovative digital solutions
+                                to markets worldwide.
                             </p>
                         </div>
 
                         <div className="mx-auto max-w-2xl">
-                            <form 
+                            <form
                                 className="space-y-6"
                                 onSubmit={async (e) => {
                                     e.preventDefault();
-                                    const formData = new FormData(e.target as HTMLFormElement);
+                                    const formData = new FormData(
+                                        e.target as HTMLFormElement,
+                                    );
                                     const data = Object.fromEntries(formData);
-                                    
+
                                     // Show loading toast
-                                    const loadingToast = toast.loading('Submitting your partnership application...', {
-                                        description: 'Please wait while we process your request.',
-                                    });
-                                    
+                                    const loadingToast = toast.loading(
+                                        'Submitting your partnership application...',
+                                        {
+                                            description:
+                                                'Please wait while we process your request.',
+                                        },
+                                    );
+
                                     try {
-                                        const response = await fetch('/partner-application', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        const response = await fetch(
+                                            '/partner-application',
+                                            {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type':
+                                                        'application/json',
+                                                    'X-CSRF-TOKEN':
+                                                        document
+                                                            .querySelector(
+                                                                'meta[name="csrf-token"]',
+                                                            )
+                                                            ?.getAttribute(
+                                                                'content',
+                                                            ) || '',
+                                                },
+                                                body: JSON.stringify(data),
                                             },
-                                            body: JSON.stringify(data),
-                                        });
-                                        
+                                        );
+
                                         const result = await response.json();
-                                        
+
                                         if (result.success) {
                                             // Dismiss loading toast
                                             toast.dismiss(loadingToast);
-                                            
+
                                             // Show success toast
-                                            toast.success('Application Submitted Successfully!', {
-                                                description: 'Thank you for your interest in partnering with Neulify. Our team will review your application and contact you within 2-3 business days.',
-                                                duration: 8000,
-                                            });
-                                            
+                                            toast.success(
+                                                'Application Submitted Successfully!',
+                                                {
+                                                    description:
+                                                        'Thank you for your interest in partnering with Neulify. Our team will review your application and contact you within 2-3 business days.',
+                                                    duration: 8000,
+                                                },
+                                            );
+
                                             // Reset form
-                                            (e.target as HTMLFormElement).reset();
+                                            (
+                                                e.target as HTMLFormElement
+                                            ).reset();
                                         } else {
                                             // Dismiss loading toast
                                             toast.dismiss(loadingToast);
-                                            
+
                                             // Show error toast
                                             toast.error('Submission Failed', {
-                                                description: result.message || 'Please check your information and try again.',
+                                                description:
+                                                    result.message ||
+                                                    'Please check your information and try again.',
                                                 duration: 5000,
                                             });
                                         }
                                     } catch (error) {
                                         // Dismiss loading toast
                                         toast.dismiss(loadingToast);
-                                        
+
                                         // Show error toast
                                         toast.error('Network Error', {
-                                            description: 'Unable to submit your application. Please check your internet connection and try again.',
+                                            description:
+                                                'Unable to submit your application. Please check your internet connection and try again.',
                                             duration: 5000,
                                         });
                                     }
@@ -586,7 +723,10 @@ export default function Neulify({ auth }: PageProps) {
                             >
                                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                     <div>
-                                        <label htmlFor="company-name" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                        <label
+                                            htmlFor="company-name"
+                                            className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                        >
                                             Company Name *
                                         </label>
                                         <input
@@ -599,7 +739,10 @@ export default function Neulify({ auth }: PageProps) {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="contact-name" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                        <label
+                                            htmlFor="contact-name"
+                                            className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                        >
                                             Contact Name *
                                         </label>
                                         <input
@@ -615,7 +758,10 @@ export default function Neulify({ auth }: PageProps) {
 
                                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                     <div>
-                                        <label htmlFor="email" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                        <label
+                                            htmlFor="email"
+                                            className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                        >
                                             Email Address *
                                         </label>
                                         <input
@@ -628,7 +774,10 @@ export default function Neulify({ auth }: PageProps) {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="phone" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                        <label
+                                            htmlFor="phone"
+                                            className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                        >
                                             Phone Number
                                         </label>
                                         <input
@@ -642,7 +791,10 @@ export default function Neulify({ auth }: PageProps) {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="market" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                    <label
+                                        htmlFor="market"
+                                        className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                    >
                                         Target Market/Region *
                                     </label>
                                     <input
@@ -656,7 +808,10 @@ export default function Neulify({ auth }: PageProps) {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="company-description" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                    <label
+                                        htmlFor="company-description"
+                                        className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                    >
                                         Company Description *
                                     </label>
                                     <textarea
@@ -670,7 +825,10 @@ export default function Neulify({ auth }: PageProps) {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="partnership-interest" className="block text-sm font-medium text-[#334155] dark:text-gray-200">
+                                    <label
+                                        htmlFor="partnership-interest"
+                                        className="block text-sm font-medium text-[#334155] dark:text-gray-200"
+                                    >
                                         Partnership Interest *
                                     </label>
                                     <textarea
@@ -686,7 +844,7 @@ export default function Neulify({ auth }: PageProps) {
                                 <div className="pt-4">
                                     <button
                                         type="submit"
-                                        className="w-full rounded-lg bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-200 hover:shadow-2xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        className="w-full rounded-lg bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2"
                                     >
                                         Submit Partnership Application
                                     </button>
@@ -702,11 +860,13 @@ export default function Neulify({ auth }: PageProps) {
                         <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
                             {/* Company Info */}
                             <div className="lg:col-span-2">
-                                <div className="flex items-center mb-6">
+                                <div className="mb-6 flex items-center">
                                     <NeulifyLogo className="h-10 w-auto" />
                                 </div>
                                 <p className="mb-6 max-w-md text-lg text-[#334155] dark:text-gray-300">
-                                    Empowering the next generation of digital innovation through cutting-edge technology solutions and strategic partnerships.
+                                    Empowering the next generation of digital
+                                    innovation through cutting-edge technology
+                                    solutions and strategic partnerships.
                                 </p>
                                 <div className="flex items-center space-x-4">
                                     <span className="inline-flex items-center rounded-full bg-[#14B8A6]/10 px-3 py-1 text-sm font-medium text-[#14B8A6]">
@@ -714,27 +874,56 @@ export default function Neulify({ auth }: PageProps) {
                                     </span>
                                 </div>
                             </div>
-                            
+
                             {/* Quick Links */}
                             <div>
-                                <h3 className="mb-4 text-lg font-semibold text-[#334155] dark:text-gray-100">Company</h3>
+                                <h3 className="mb-4 text-lg font-semibold text-[#334155] dark:text-gray-100">
+                                    Company
+                                </h3>
                                 <ul className="space-y-3">
-                                    <li><a href="#about" className="text-[#334155]/80 hover:text-[#14B8A6] transition-colors duration-200">About Us</a></li>
-                                    <li><a href="#values" className="text-[#334155]/80 hover:text-[#14B8A6] transition-colors duration-200">Our Values</a></li>
-                                    <li><Link href={route('landing')} className="text-[#334155]/80 hover:text-[#14B8A6] transition-colors duration-200">Our Partners</Link></li>
+                                    <li>
+                                        <a
+                                            href="#about"
+                                            className="text-[#334155]/80 transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
+                                            About Us
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#values"
+                                            className="text-[#334155]/80 transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
+                                            Our Values
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href={route('landing')}
+                                            className="text-[#334155]/80 transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
+                                            Our Partners
+                                        </Link>
+                                    </li>
                                 </ul>
                             </div>
-                            
+
                             {/* Contact */}
                             <div>
-                                <h3 className="mb-4 text-lg font-semibold text-[#334155] dark:text-gray-100">Contact</h3>
+                                <h3 className="mb-4 text-lg font-semibold text-[#334155] dark:text-gray-100">
+                                    Contact
+                                </h3>
                                 <div className="space-y-3">
-                                    <p className="text-[#334155]/80">Global Headquarters</p>
-                                    <p className="text-[#334155]/80">Technology Innovation Center</p>
+                                    <p className="text-[#334155]/80">
+                                        Global Headquarters
+                                    </p>
+                                    <p className="text-[#334155]/80">
+                                        Technology Innovation Center
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="mt-12 border-t border-[#E2E8F0] pt-8 dark:border-gray-700">
                             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                                 <div className="flex items-center gap-4 text-sm text-[#334155] dark:text-gray-400">
@@ -745,7 +934,9 @@ export default function Neulify({ auth }: PageProps) {
                                     <span>All rights reserved.</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm text-[#334155]/70 dark:text-gray-500">
-                                    <span>Empowering digital innovation worldwide.</span>
+                                    <span>
+                                        Empowering digital innovation worldwide.
+                                    </span>
                                 </div>
                             </div>
                         </div>

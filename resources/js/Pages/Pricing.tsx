@@ -21,7 +21,9 @@ export default function Pricing({ auth }: PageProps) {
     const hostname = getHost();
     const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState(hostname === 'sakto' ? 'Komunidad' : 'Community');
+    const [activeTab, setActiveTab] = useState(
+        hostname === 'sakto' ? 'Komunidad' : 'Community',
+    );
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -46,25 +48,26 @@ export default function Pricing({ auth }: PageProps) {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const productsMenuItems = hostname === 'sakto' 
-        ? [
-            { name: 'Komunidad', href: route('community') },
-            { name: 'Logistika', href: route('logistics') },
-            { name: 'Medikal', href: route('medical') },
-            { name: 'Lakbay', href: route('travel.landing') },
-            { name: 'Hatid', href: route('delivery') },
-            { name: 'Taohan', href: route('jobs') },
-            { name: 'Merkado', href: route('shop') },
-        ]
-        : [
-            { name: 'Community', href: route('community') },
-            { name: 'Logistics', href: route('logistics') },
-            { name: 'Medical', href: route('medical') },
-            { name: 'Travel', href: route('travel.landing') },
-            { name: 'Delivery', href: route('delivery') },
-            { name: 'Jobs', href: route('jobs') },
-            { name: 'Shop', href: route('shop') },
-        ];
+    const productsMenuItems =
+        hostname === 'sakto'
+            ? [
+                  { name: 'Komunidad', href: route('community') },
+                  { name: 'Logistika', href: route('logistics') },
+                  { name: 'Medikal', href: route('medical') },
+                  { name: 'Lakbay', href: route('travel.landing') },
+                  { name: 'Hatid', href: route('delivery') },
+                  { name: 'Taohan', href: route('jobs') },
+                  { name: 'Merkado', href: route('shop') },
+              ]
+            : [
+                  { name: 'Community', href: route('community') },
+                  { name: 'Logistics', href: route('logistics') },
+                  { name: 'Medical', href: route('medical') },
+                  { name: 'Travel', href: route('travel.landing') },
+                  { name: 'Delivery', href: route('delivery') },
+                  { name: 'Jobs', href: route('jobs') },
+                  { name: 'Shop', href: route('shop') },
+              ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -389,7 +392,9 @@ export default function Pricing({ auth }: PageProps) {
                                 <Link href="/" className="flex items-center">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
                                     <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                        {hostname === 'sakto' ? 'Sakto Solutions' : hostname}
+                                        {hostname === 'sakto'
+                                            ? 'Sakto Solutions'
+                                            : hostname}
                                     </span>
                                 </Link>
                             </div>
@@ -517,7 +522,7 @@ export default function Pricing({ auth }: PageProps) {
                 </nav>
 
                 {/* Pricing Section */}
-                <div className="mx-auto max-w-7xl px-4 pt-32 pb-24 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
                             Project-Specific Pricing
@@ -604,13 +609,30 @@ export default function Pricing({ auth }: PageProps) {
                                                     </p>
                                                     {!auth.user && (
                                                         <Link
-                                                            href={plan.project === 'community' ? `${route('community')}?plan=${plan.name.toLowerCase()}` : 
-                                                                  plan.project === 'logistics' ? `${route('logistics')}?plan=${plan.name.toLowerCase()}` :
-                                                                  plan.project === 'medical' ? `${route('medical')}?plan=${plan.name.toLowerCase()}` :
-                                                                  plan.project === 'travel' ? `${route('travel.landing')}?plan=${plan.name.toLowerCase()}` :
-                                                                  plan.project === 'delivery' ? `${route('delivery')}?plan=${plan.name.toLowerCase()}` :
-                                                                  plan.project === 'jobs' ? `${route('jobs')}?plan=${plan.name.toLowerCase()}` :
-                                                                  plan.project === 'shop' ? `${route('shop')}?plan=${plan.name.toLowerCase()}` : '#'}
+                                                            href={
+                                                                plan.project ===
+                                                                'community'
+                                                                    ? `${route('community')}?plan=${plan.name.toLowerCase()}`
+                                                                    : plan.project ===
+                                                                        'logistics'
+                                                                      ? `${route('logistics')}?plan=${plan.name.toLowerCase()}`
+                                                                      : plan.project ===
+                                                                          'medical'
+                                                                        ? `${route('medical')}?plan=${plan.name.toLowerCase()}`
+                                                                        : plan.project ===
+                                                                            'travel'
+                                                                          ? `${route('travel.landing')}?plan=${plan.name.toLowerCase()}`
+                                                                          : plan.project ===
+                                                                              'delivery'
+                                                                            ? `${route('delivery')}?plan=${plan.name.toLowerCase()}`
+                                                                            : plan.project ===
+                                                                                'jobs'
+                                                                              ? `${route('jobs')}?plan=${plan.name.toLowerCase()}`
+                                                                              : plan.project ===
+                                                                                  'shop'
+                                                                                ? `${route('shop')}?plan=${plan.name.toLowerCase()}`
+                                                                                : '#'
+                                                            }
                                                             className="mt-4 block w-full rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2 text-center text-sm font-medium text-white shadow transition-all duration-200 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-600 dark:hover:bg-indigo-700"
                                                         >
                                                             Choose Plan

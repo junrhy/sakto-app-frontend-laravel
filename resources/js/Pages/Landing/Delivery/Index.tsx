@@ -1,8 +1,8 @@
 import {
-    faTruck,
     faClock,
-    faShieldAlt,
     faMapMarkerAlt,
+    faShieldAlt,
+    faTruck,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
@@ -118,13 +118,16 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Order from your favorite restaurants and get your food delivered 
-                                fast, fresh, and hot. Track your order in real-time and enjoy 
-                                the convenience of doorstep delivery.
+                                Order from your favorite restaurants and get
+                                your food delivered fast, fresh, and hot. Track
+                                your order in real-time and enjoy the
+                                convenience of doorstep delivery.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 <Link
-                                    href={route('delivery.show', { identifier: 'order' })}
+                                    href={route('delivery.show', {
+                                        identifier: 'order',
+                                    })}
                                     className="inline-flex items-center rounded-lg border border-transparent bg-orange-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-orange-700"
                                 >
                                     Order Now
@@ -162,8 +165,9 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     Why Choose Our Delivery Service
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
-                                    We provide the best food delivery experience with fast service, 
-                                    reliable tracking, and quality assurance.
+                                    We provide the best food delivery experience
+                                    with fast service, reliable tracking, and
+                                    quality assurance.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -180,8 +184,9 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         Lightning Fast Delivery
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Get your food delivered in 30 minutes or less. Our optimized 
-                                        delivery routes ensure your order arrives hot and fresh.
+                                        Get your food delivered in 30 minutes or
+                                        less. Our optimized delivery routes
+                                        ensure your order arrives hot and fresh.
                                     </p>
                                 </div>
 
@@ -198,8 +203,9 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         Real-time Tracking
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Track your order from kitchen to doorstep with live GPS 
-                                        tracking. Know exactly when your food will arrive.
+                                        Track your order from kitchen to
+                                        doorstep with live GPS tracking. Know
+                                        exactly when your food will arrive.
                                     </p>
                                 </div>
 
@@ -216,8 +222,9 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         Quality Guarantee
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        We ensure food safety and quality. If you're not satisfied, 
-                                        we'll make it right with our satisfaction guarantee.
+                                        We ensure food safety and quality. If
+                                        you're not satisfied, we'll make it
+                                        right with our satisfaction guarantee.
                                     </p>
                                 </div>
                             </div>
@@ -249,9 +256,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
                                         4.8★
                                     </div>
-                                    <div className="text-slate-600">
-                                        Rating
-                                    </div>
+                                    <div className="text-slate-600">Rating</div>
                                 </div>
                                 <div className="text-center">
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
@@ -273,8 +278,9 @@ export default function DeliveryIndex({ auth }: PageProps) {
                             Choose Your Delivery Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            Select the perfect plan for your delivery needs. All plans include 
-                            our core delivery features with different levels of benefits.
+                            Select the perfect plan for your delivery needs. All
+                            plans include our core delivery features with
+                            different levels of benefits.
                         </p>
                     </div>
 
@@ -600,9 +606,10 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                             How fast is your delivery?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            We aim to deliver your food within 30 minutes. Our 
-                                            optimized routes and experienced delivery partners 
-                                            ensure fast and reliable service.
+                                            We aim to deliver your food within
+                                            30 minutes. Our optimized routes and
+                                            experienced delivery partners ensure
+                                            fast and reliable service.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -610,9 +617,11 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                             Can I track my order?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Yes! You can track your order in real-time from 
-                                            preparation to delivery. Get live updates on your 
-                                            order status and estimated arrival time.
+                                            Yes! You can track your order in
+                                            real-time from preparation to
+                                            delivery. Get live updates on your
+                                            order status and estimated arrival
+                                            time.
                                         </dd>
                                     </div>
                                 </dl>
@@ -639,8 +648,9 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Fast, reliable food delivery service bringing your favorite 
-                                    meals to your doorstep. Order from top restaurants and 
+                                    Fast, reliable food delivery service
+                                    bringing your favorite meals to your
+                                    doorstep. Order from top restaurants and
                                     enjoy quality food delivered fresh.
                                 </p>
                                 <div className="flex space-x-4">

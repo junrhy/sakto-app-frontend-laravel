@@ -1,6 +1,8 @@
 import { ImgHTMLAttributes } from 'react';
 
-export default function NeulifyLogo(props: ImgHTMLAttributes<HTMLImageElement>) {
+export default function NeulifyLogo(
+    props: ImgHTMLAttributes<HTMLImageElement>,
+) {
     return (
         <div className={`${props.className} flex items-center space-x-3`}>
             <img

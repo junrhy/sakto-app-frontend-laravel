@@ -1,7 +1,7 @@
 import {
-    faPlane,
-    faMapMarkerAlt,
     faHeart,
+    faMapMarkerAlt,
+    faPlane,
     faShieldAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -100,7 +100,7 @@ export default function TravelIndex({ auth }: PageProps) {
                 {/* Main Content */}
                 <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
                     <div className="text-center">
-                {/* Hero Section */}
+                        {/* Hero Section */}
                         <div className="mb-16 lg:mb-20">
                             <div className="mb-8">
                                 <div className="mb-6 inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">
@@ -110,7 +110,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                     />
                                     Trusted by 10,000+ Travelers
                                 </div>
-                    </div>
+                            </div>
                             <h2 className="mb-6 text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
                                 Discover Amazing
                                 <span className="block text-blue-600">
@@ -118,13 +118,16 @@ export default function TravelIndex({ auth }: PageProps) {
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Plan your perfect getaway with our comprehensive travel platform. 
-                                Book flights, find hotels, and create unforgettable travel experiences 
-                                with ease and confidence.
+                                Plan your perfect getaway with our comprehensive
+                                travel platform. Book flights, find hotels, and
+                                create unforgettable travel experiences with
+                                ease and confidence.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 <Link
-                                    href={route('travel.show', { identifier: 'explore' })}
+                                    href={route('travel.show', {
+                                        identifier: 'explore',
+                                    })}
                                     className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700"
                                 >
                                     Explore Destinations
@@ -162,8 +165,9 @@ export default function TravelIndex({ auth }: PageProps) {
                                     Everything You Need for Travel
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
-                                    Our platform provides all the tools and services you need to 
-                                    plan, book, and enjoy your perfect vacation.
+                                    Our platform provides all the tools and
+                                    services you need to plan, book, and enjoy
+                                    your perfect vacation.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -174,17 +178,18 @@ export default function TravelIndex({ auth }: PageProps) {
                                                 icon={faPlane}
                                                 className="h-8 w-8 text-blue-600"
                                             />
-                    </div>
-                </div>
+                                        </div>
+                                    </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
                                         Flight Booking
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Search and book flights to destinations worldwide with 
-                                        real-time pricing, flexible dates, and the best deals 
-                                        from top airlines.
+                                        Search and book flights to destinations
+                                        worldwide with real-time pricing,
+                                        flexible dates, and the best deals from
+                                        top airlines.
                                     </p>
-                        </div>
+                                </div>
 
                                 <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-lg transition-shadow duration-300 hover:shadow-xl">
                                     <div className="mb-6 flex items-center">
@@ -192,16 +197,17 @@ export default function TravelIndex({ auth }: PageProps) {
                                             <FontAwesomeIcon
                                                 icon={faMapMarkerAlt}
                                                 className="h-8 w-8 text-emerald-600"
-                                />
-                            </div>
+                                            />
+                                        </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
                                         Hotel Reservations
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Find and book the perfect accommodation from luxury 
-                                        resorts to budget-friendly hotels, all with verified 
-                                        reviews and instant confirmation.
+                                        Find and book the perfect accommodation
+                                        from luxury resorts to budget-friendly
+                                        hotels, all with verified reviews and
+                                        instant confirmation.
                                     </p>
                                 </div>
 
@@ -218,8 +224,9 @@ export default function TravelIndex({ auth }: PageProps) {
                                         Travel Protection
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Comprehensive travel insurance and 24/7 customer support 
-                                        to ensure your journey is safe, secure, and worry-free.
+                                        Comprehensive travel insurance and 24/7
+                                        customer support to ensure your journey
+                                        is safe, secure, and worry-free.
                                     </p>
                                 </div>
                             </div>
@@ -251,9 +258,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
                                         4.9★
                                     </div>
-                                    <div className="text-slate-600">
-                                        Rating
-                                    </div>
+                                    <div className="text-slate-600">Rating</div>
                                 </div>
                                 <div className="text-center">
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
@@ -275,8 +280,9 @@ export default function TravelIndex({ auth }: PageProps) {
                             Choose Your Travel Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            Select the perfect plan for your travel needs. All plans include 
-                            our core booking features with different levels of support and benefits.
+                            Select the perfect plan for your travel needs. All
+                            plans include our core booking features with
+                            different levels of support and benefits.
                         </p>
                     </div>
 
@@ -371,8 +377,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                         </li>
                                     </ul>
                                 </div>
-                    </div>
-                </div>
+                            </div>
+                        </div>
 
                         {/* Pro Plan */}
                         <div className="group relative lg:-mt-4 lg:mb-4">
@@ -490,7 +496,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                     </ul>
                                 </div>
                             </div>
-                                        </div>
+                        </div>
 
                         {/* Enterprise Plan */}
                         <div className="group relative">
@@ -529,7 +535,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                             Get Started
                                         </Link>
                                     )}
-                                    </div>
+                                </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
                                         <li className="flex items-center text-sm">
@@ -585,8 +591,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                         </li>
                                     </ul>
                                 </div>
-                    </div>
-                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* FAQ Section */}
@@ -594,7 +600,7 @@ export default function TravelIndex({ auth }: PageProps) {
                         <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-lg backdrop-blur-sm">
                             <h3 className="mb-8 text-center text-2xl font-bold text-slate-900">
                                 Frequently Asked Questions
-                                        </h3>
+                            </h3>
                             <div className="w-full">
                                 <dl className="space-y-6">
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -602,9 +608,11 @@ export default function TravelIndex({ auth }: PageProps) {
                                             How do I book a flight?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Simply search for your destination, select your dates, 
-                                            and choose from available flights. Our platform compares 
-                                            prices from multiple airlines to find you the best deals.
+                                            Simply search for your destination,
+                                            select your dates, and choose from
+                                            available flights. Our platform
+                                            compares prices from multiple
+                                            airlines to find you the best deals.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -612,9 +620,11 @@ export default function TravelIndex({ auth }: PageProps) {
                                             What if I need to cancel my booking?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            We offer flexible cancellation policies. Most bookings 
-                                            can be cancelled or modified up to 24 hours before 
-                                            departure. Check your booking details for specific terms.
+                                            We offer flexible cancellation
+                                            policies. Most bookings can be
+                                            cancelled or modified up to 24 hours
+                                            before departure. Check your booking
+                                            details for specific terms.
                                         </dd>
                                     </div>
                                 </dl>
@@ -641,13 +651,14 @@ export default function TravelIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Discover amazing destinations and create unforgettable 
-                                    travel experiences with our comprehensive travel platform. 
-                                    Your journey starts here.
+                                    Discover amazing destinations and create
+                                    unforgettable travel experiences with our
+                                    comprehensive travel platform. Your journey
+                                    starts here.
                                 </p>
                                 <div className="flex space-x-4">
-                                        <a
-                                            href="#"
+                                    <a
+                                        href="#"
                                         className="text-slate-400 transition-colors hover:text-white"
                                     >
                                         <span className="sr-only">
@@ -665,8 +676,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                             />
                                         </svg>
                                     </a>
-                                        <a
-                                            href="#"
+                                    <a
+                                        href="#"
                                         className="text-slate-400 transition-colors hover:text-white"
                                     >
                                         <span className="sr-only">

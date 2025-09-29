@@ -316,4 +316,5 @@ class LogisticsController extends Controller
             'identifier' => $identifier,
         ]);
     }
+
 }
