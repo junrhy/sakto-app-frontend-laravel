@@ -320,58 +320,140 @@ if ($request->hasFile('images')) {
 **Note**: Files are stored in `storage/app/public/` and accessible via the public URL.
 
 ### Route Organization
-Routes should be properly grouped in `routes/web.php`:
+**CRITICAL**: All routes must be organized by controller name for maintainability and consistency.
 
-#### Public Routes Group:
-- All public routes (no authentication required) should be grouped together
-- Use middleware group `['web']` for public routes
-- Include landing pages, policy pages, public APIs, etc.
+#### Route File Structure:
+```
+routes/
+├── web.php (main file - imports all organized route files)
+├── auth.php (authentication routes)
+├── web/
+│   ├── admin.php (admin routes)
+│   ├── [ControllerName].php (authenticated routes per controller)
+│   └── public/
+│       ├── [ControllerName].php (public routes per controller)
+│       └── Static.php (static routes, policies, manifests)
+```
 
-#### Authenticated Routes Group:
-- All routes requiring authentication should be grouped with appropriate middleware
-- **CRITICAL**: Use middleware `['auth', 'verified', 'team.member.selection']` for all authenticated routes
-- Separate groups for different permission levels (admin, subscription-required, etc.)
-
-#### Required Middleware for Authenticated Routes:
-- `'auth'` - Ensures user is authenticated
-- `'verified'` - Ensures email is verified
-- `'team.member.selection'` - Handles team member context (REQUIRED for all authenticated routes)
-
-#### Example Structure:
+#### Main web.php Structure:
 ```php
-// Public routes
+<?php
+
+// Public routes (no authentication required)
 Route::group(['middleware' => ['web']], function () {
-    Route::get('/landing', [LandingController::class, 'index']);
-    Route::get('/community', [CommunityController::class, 'index']);
-    // ... other public routes
-});
-
-// Authenticated routes (ALWAYS use these 3 middleware)
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
-    // ... other authenticated routes
-});
-
-// Module routes (like clinic, pos, etc.) - MUST include all 3 middleware
-Route::prefix('clinic')->middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
-    Route::get('/', [ClinicController::class, 'index'])->name('clinic');
-    Route::post('/payment-accounts', [ClinicController::class, 'createPaymentAccount']);
-    // ... other clinic routes
+    require __DIR__.'/web/public/LandingController.php';
+    require __DIR__.'/web/public/TravelController.php';
+    require __DIR__.'/web/public/MedicalController.php';
+    require __DIR__.'/web/public/ClinicEmbedController.php';
+    require __DIR__.'/web/public/ContactsController.php';
+    require __DIR__.'/web/public/EventController.php';
+    require __DIR__.'/web/public/ChallengeController.php';
+    require __DIR__.'/web/public/MayaWebhookController.php';
+    require __DIR__.'/web/public/PagesController.php';
+    require __DIR__.'/web/public/HealthInsuranceController.php';
+    require __DIR__.'/web/public/ProductOrderController.php';
+    require __DIR__.'/web/public/ContentCreatorController.php';
+    require __DIR__.'/web/public/GoogleController.php';
+    require __DIR__.'/web/public/TransportationController.php';
+    require __DIR__.'/web/public/Static.php';
 });
 
 // Admin routes
-Route::middleware(['auth', 'verified', 'team.member.selection', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index']);
-    // ... admin routes
+require __DIR__.'/web/admin.php';
+
+// Authenticated routes (ALWAYS use these 3 middleware)
+Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+    require __DIR__.'/web/ProfileController.php';
+    require __DIR__.'/web/DashboardController.php';
+    require __DIR__.'/web/WidgetController.php';
+    require __DIR__.'/web/AppsController.php';
+    require __DIR__.'/web/QueueController.php';
+    require __DIR__.'/web/QueueDisplayController.php';
+    require __DIR__.'/web/ClinicController.php';
+    require __DIR__.'/web/ContactsController.php';
+    require __DIR__.'/web/TeamsController.php';
+    require __DIR__.'/web/SubscriptionController.php';
+    // ... all other controller route files
+});
+
+// Include authentication routes
+require __DIR__.'/auth.php';
+```
+
+#### Controller Route File Pattern:
+**For Authenticated Routes** (`routes/web/[ControllerName].php`):
+```php
+<?php
+
+use App\Http\Controllers\ControllerName;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Controller Name Routes
+|--------------------------------------------------------------------------
+|
+| Routes for controller functionality description.
+|
+*/
+
+Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+    // Controller routes here
+    Route::get('/', [ControllerName::class, 'index'])->name('controller.index');
+    Route::post('/', [ControllerName::class, 'store'])->name('controller.store');
+    // ... other routes
 });
 ```
 
-#### Common Route Issues:
-- **Missing Middleware**: Always include `['auth', 'verified', 'team.member.selection']` for authenticated routes
-- **404 Errors**: Often caused by missing middleware or incorrect route grouping
-- **Route Caching**: Clear route cache with `php artisan route:clear` after adding new routes
+**For Public Routes** (`routes/web/public/[ControllerName].php`):
+```php
+<?php
 
-**Note**: This grouping ensures proper middleware application and makes route management more organized.
+use App\Http\Controllers\ControllerName;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Controller Name Public Routes
+|--------------------------------------------------------------------------
+|
+| Public routes for controller functionality.
+|
+*/
+
+// Public routes here (no authentication required)
+Route::get('/public-endpoint', [ControllerName::class, 'publicMethod'])->name('controller.public');
+```
+
+#### Route Organization Rules:
+1. **Controller-Based Organization**: Each controller gets its own route file
+2. **Public vs Authenticated**: 
+   - Public routes go in `routes/web/public/[ControllerName].php`
+   - Authenticated routes go in `routes/web/[ControllerName].php`
+3. **Direct Imports**: Import route files directly in main `web.php` (no intermediate files)
+4. **Consistent Naming**: Route files must match controller names exactly
+5. **Proper Middleware**: 
+   - Public routes: `['web']` middleware group
+   - Authenticated routes: `['auth', 'verified', 'team.member.selection']`
+   - Admin routes: `['auth', 'verified', 'team.member.selection', 'admin']`
+
+#### When Adding New Routes:
+1. **Check Existing Files**: Look for existing controller route files
+2. **Public Routes**: Add to `routes/web/public/[ControllerName].php`
+3. **Authenticated Routes**: Add to `routes/web/[ControllerName].php`
+4. **Update Main File**: Add `require` statement to `web.php` if new controller file created
+5. **Test Routes**: Clear route cache with `php artisan route:clear`
+
+#### Static Routes:
+- Put routes that don't belong to specific controllers in `routes/web/public/Static.php`
+- Include: policies, manifests, debug routes, utility routes
+- **DO NOT** put controller-specific routes in Static.php
+
+#### Route Caching:
+- Always run `php artisan route:clear` after adding new routes
+- Test routes with `php artisan route:list` to ensure they're registered correctly
+
+**Note**: This organization ensures maintainability, consistency, and easy navigation of routes by controller.
 
 ### Component Architecture Guidelines
 - **Single Responsibility**: Each component should have one clear purpose
