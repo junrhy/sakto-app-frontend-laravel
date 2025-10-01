@@ -13,9 +13,11 @@ use App\Http\Controllers\ContactsController;
 
 // Public Contact Routes
 Route::prefix('contacts')->group(function () {
-    Route::get('/public/{identifier}', [ContactsController::class, 'publicShow'])->name('contacts.public.show');
-    Route::get('/public/{identifier}/wallet', [ContactsController::class, 'publicWallet'])->name('contacts.public.wallet');
-    Route::get('/public/{identifier}/transactions', [ContactsController::class, 'publicTransactions'])->name('contacts.public.transactions');
+    Route::get('/self-registration', [ContactsController::class, 'selfRegistration'])->name('contacts.self-registration');
+    Route::post('/store-self', [ContactsController::class, 'storeSelf'])->name('contacts.store-self');
+    Route::get('/{id}/public', [ContactsController::class, 'publicProfile'])->name('contacts.public-profile');
+    Route::get('/list', [ContactsController::class, 'getContacts'])->name('contacts.public-list');
+    Route::post('/bulk-delete', [ContactsController::class, 'destroyBulk'])->name('contacts.bulk-delete');
 });
 
 // Public Wallet Routes
