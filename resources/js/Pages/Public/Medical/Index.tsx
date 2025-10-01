@@ -7,6 +7,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
+import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -18,6 +19,11 @@ interface PageProps {
 }
 
 export default function Medical({ auth }: PageProps) {
+    const pricing = getPricingForService('medical');
+    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
+    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+
     return (
         <React.Fragment>
             <Head title="Medikal - Professional Healthcare Management" />

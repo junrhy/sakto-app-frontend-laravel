@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
+import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -17,6 +18,11 @@ interface PageProps {
 }
 
 export default function DeliveryIndex({ auth }: PageProps) {
+    const pricing = getPricingForService('delivery');
+    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
+    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+
     return (
         <>
             <Head title="Delivery - Fast & Reliable Food Delivery" />
@@ -291,15 +297,16 @@ export default function DeliveryIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Basic
+                                        {basicPlan?.name || 'Basic'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for occasional orders
+                                        {basicPlan?.description || 'Perfect for occasional orders'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            Free
+                                            {basicPlan?.currency || ''}{basicPlan?.price === 0 ? 'Free' : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
                                         </span>
+                                        {basicPlan?.period && <span className="text-sm text-slate-600">{basicPlan.period}</span>}
                                     </p>
                                     {auth.user ? (
                                         <Link
@@ -312,11 +319,11 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'delivery',
-                                                plan: 'basic',
+                                                plan: basicPlan?.id || 'basic',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            Get Started
+                                            {basicPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -389,17 +396,17 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                 </div>
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Premium
+                                        {proPlan?.name || 'Premium'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Ideal for frequent food lovers
+                                        {proPlan?.description || 'Ideal for frequent food lovers'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱199
+                                            {proPlan?.currency || '₱'}{proPlan?.price || 199}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {proPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -413,11 +420,11 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'delivery',
-                                                plan: 'premium',
+                                                plan: proPlan?.id || 'premium',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-orange-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-orange-700"
                                         >
-                                            Get Started
+                                            {proPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -502,17 +509,17 @@ export default function DeliveryIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        VIP
+                                        {businessPlan?.name || 'VIP'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for food enthusiasts
+                                        {businessPlan?.description || 'Perfect for food enthusiasts'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱399
+                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 399}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {businessPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -526,11 +533,11 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'delivery',
-                                                plan: 'vip',
+                                                plan: businessPlan?.id || 'vip',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-red-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-red-700"
                                         >
-                                            Get Started
+                                            {businessPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>

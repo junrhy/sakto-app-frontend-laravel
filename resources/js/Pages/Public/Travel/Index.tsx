@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
+import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -17,6 +18,11 @@ interface PageProps {
 }
 
 export default function TravelIndex({ auth }: PageProps) {
+    const pricing = getPricingForService('travel');
+    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
+    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+
     return (
         <>
             <Head title="Travel - Discover Amazing Destinations" />

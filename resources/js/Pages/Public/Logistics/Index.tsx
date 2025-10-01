@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
+import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -17,6 +18,11 @@ interface PageProps {
 }
 
 export default function LogisticsIndex({ auth }: PageProps) {
+    const pricing = getPricingForService('logistics');
+    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
+    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+
     return (
         <>
             <Head title="Logistics - Professional Fleet Management" />
@@ -261,17 +267,17 @@ export default function LogisticsIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Basic
+                                        {basicPlan?.name || 'Basic'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for small fleets and startups
+                                        {basicPlan?.description || 'Perfect for small fleets and startups'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱299
+                                            {basicPlan?.currency || '₱'}{basicPlan?.price || 299}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {basicPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -285,67 +291,35 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: 'starter',
+                                                plan: basicPlan?.id || 'starter',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            Get Started
+                                            {basicPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Up to 10 vehicles
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                GPS tracking
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Email support
-                                            </span>
-                                        </li>
+                                        {(basicPlan?.features || ['Up to 10 vehicles', 'GPS tracking', 'Email support']).map((feature, index) => (
+                                            <li key={index} className="flex items-center text-sm">
+                                                <svg
+                                                    className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span className="text-slate-600">
+                                                    {feature}
+                                                </span>
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
@@ -362,17 +336,17 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                 </div>
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Pro
+                                        {proPlan?.name || 'Pro'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Ideal for growing logistics companies
+                                        {proPlan?.description || 'Ideal for growing logistics companies'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱499
+                                            {proPlan?.currency || '₱'}{proPlan?.price || 499}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {proPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -386,84 +360,35 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: 'professional',
+                                                plan: proPlan?.id || 'professional',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-emerald-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-emerald-700"
                                         >
-                                            Get Started
+                                            {proPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-emerald-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Up to 50 vehicles
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-emerald-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                GPS tracking
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-emerald-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Analytics dashboard
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-emerald-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Priority support
-                                            </span>
-                                        </li>
+                                        {(proPlan?.features || ['Up to 50 vehicles', 'GPS tracking', 'Analytics dashboard', 'Priority support']).map((feature, index) => (
+                                            <li key={index} className="flex items-center text-sm">
+                                                <svg
+                                                    className="mr-3 h-4 w-4 flex-shrink-0 text-emerald-500"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span className="text-slate-600">
+                                                    {feature}
+                                                </span>
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
@@ -475,17 +400,17 @@ export default function LogisticsIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Business
+                                        {businessPlan?.name || 'Business'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for large-scale operations
+                                        {businessPlan?.description || 'Perfect for large-scale operations'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱699
+                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 699}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {businessPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -499,67 +424,35 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: 'enterprise',
+                                                plan: businessPlan?.id || 'enterprise',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
                                         >
-                                            Get Started
+                                            {businessPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Unlimited vehicles
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                GPS tracking
-                                            </span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg
-                                                className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <span className="text-slate-600">
-                                                Advanced analytics
-                                            </span>
-                                        </li>
+                                        {(businessPlan?.features || ['Unlimited vehicles', 'GPS tracking', 'Advanced analytics']).map((feature, index) => (
+                                            <li key={index} className="flex items-center text-sm">
+                                                <svg
+                                                    className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span className="text-slate-600">
+                                                    {feature}
+                                                </span>
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>

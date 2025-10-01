@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
+import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -17,6 +18,11 @@ interface PageProps {
 }
 
 export default function ShopIndex({ auth }: PageProps) {
+    const pricing = getPricingForService('shop');
+    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
+    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+
     return (
         <>
             <Head title="Shop - Discover Amazing Products" />
@@ -293,15 +299,16 @@ export default function ShopIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Shopper
+                                        {basicPlan?.name || 'Shopper'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for casual shopping
+                                        {basicPlan?.description || 'Perfect for casual shopping'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            Free
+                                            {basicPlan?.currency || ''}{basicPlan?.price === 0 ? 'Free' : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
                                         </span>
+                                        {basicPlan?.period && <span className="text-sm text-slate-600">{basicPlan.period}</span>}
                                     </p>
                                     {auth.user ? (
                                         <Link
@@ -314,11 +321,11 @@ export default function ShopIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'shop',
-                                                plan: 'shopper',
+                                                plan: basicPlan?.id || 'shopper',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            Get Started
+                                            {basicPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -391,17 +398,17 @@ export default function ShopIndex({ auth }: PageProps) {
                                 </div>
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        Premium
+                                        {proPlan?.name || 'Premium'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Ideal for frequent shoppers
+                                        {proPlan?.description || 'Ideal for frequent shoppers'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱299
+                                            {proPlan?.currency || '₱'}{proPlan?.price || 299}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {proPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -415,11 +422,11 @@ export default function ShopIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'shop',
-                                                plan: 'premium',
+                                                plan: proPlan?.id || 'premium',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-green-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-green-700"
                                         >
-                                            Get Started
+                                            {proPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -504,17 +511,17 @@ export default function ShopIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        VIP
+                                        {businessPlan?.name || 'VIP'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        Perfect for shopping enthusiasts
+                                        {businessPlan?.description || 'Perfect for shopping enthusiasts'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            ₱599
+                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 599}
                                         </span>
                                         <span className="text-sm text-slate-600">
-                                            /month
+                                            {businessPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -528,11 +535,11 @@ export default function ShopIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'shop',
-                                                plan: 'vip',
+                                                plan: businessPlan?.id || 'vip',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-emerald-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-emerald-700"
                                         >
-                                            Get Started
+                                            {businessPlan?.buttonText || 'Get Started'}
                                         </Link>
                                     )}
                                 </div>
