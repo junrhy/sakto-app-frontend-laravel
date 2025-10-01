@@ -46,7 +46,7 @@ class MedicalController extends Controller
             // Get clinic services and information from backend API
             $clinicInfo = $this->getClinicInfo($clinic->identifier);
             
-            return Inertia::render('Landing/Medical/Show', [
+            return Inertia::render('Public/Medical/Show', [
                 'clinic' => $clinic,
                 'clinicInfo' => $clinicInfo,
                 'canLogin' => \Illuminate\Support\Facades\Route::has('login'),
@@ -234,7 +234,7 @@ class MedicalController extends Controller
                 'created_at' => now()->toISOString(),
             ];
 
-            return Inertia::render('Landing/Medical/AppointmentConfirmation', [
+            return Inertia::render('Public/Medical/AppointmentConfirmation', [
                 'appointment' => $appointmentData,
                 'clinic' => $clinic,
                 'message' => 'Appointment booked successfully! We will contact you to confirm.'

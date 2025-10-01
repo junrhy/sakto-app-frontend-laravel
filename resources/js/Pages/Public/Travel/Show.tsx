@@ -236,7 +236,7 @@ export default function TravelShow({ auth, identifier, travel }: PageProps) {
                             </div>
                             <div className="flex items-center space-x-4">
                                 <Link
-                                    href={route('travel.landing')}
+                                    href={route('travel')}
                                     className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
                                 >
                                     ← Back to Overview

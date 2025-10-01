@@ -54,7 +54,7 @@ export default function Features({ auth }: PageProps) {
                   { name: 'Komunidad', href: route('community') },
                   { name: 'Logistika', href: route('logistics') },
                   { name: 'Medikal', href: route('medical') },
-                  { name: 'Lakbay', href: route('travel.landing') },
+                  { name: 'Lakbay', href: route('travel') },
                   { name: 'Hatid', href: route('delivery') },
                   { name: 'Taohan', href: route('jobs') },
                   { name: 'Merkado', href: route('shop') },
@@ -63,7 +63,7 @@ export default function Features({ auth }: PageProps) {
                   { name: 'Community', href: route('community') },
                   { name: 'Logistics', href: route('logistics') },
                   { name: 'Medical', href: route('medical') },
-                  { name: 'Travel', href: route('travel.landing') },
+                  { name: 'Travel', href: route('travel') },
                   { name: 'Delivery', href: route('delivery') },
                   { name: 'Jobs', href: route('jobs') },
                   { name: 'Shop', href: route('shop') },
@@ -553,7 +553,7 @@ export default function Features({ auth }: PageProps) {
                                                         : project.project ===
                                                             'travel'
                                                           ? route(
-                                                                'travel.landing',
+                                                                'travel',
                                                             )
                                                           : project.project ===
                                                               'delivery'

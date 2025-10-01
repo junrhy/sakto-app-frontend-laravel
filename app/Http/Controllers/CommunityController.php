@@ -43,7 +43,7 @@ class CommunityController extends Controller
             \Log::error('Failed to fetch total contacts count: ' . $e->getMessage());
         }
 
-        return Inertia::render('Landing/Community/Index', [
+        return Inertia::render('Public/Community/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -55,12 +55,12 @@ class CommunityController extends Controller
 
     public function about()
     {
-        return Inertia::render('Landing/Community/AboutUs');
+        return Inertia::render('Public/Community/AboutUs');
     }
 
     public function help()
     {
-        return Inertia::render('Landing/Community/HelpCenter');
+        return Inertia::render('Public/Community/HelpCenter');
     }
 
     public function search()
@@ -85,7 +85,7 @@ class CommunityController extends Controller
             \Log::error('Failed to fetch total contacts count: ' . $e->getMessage());
         }
 
-        return Inertia::render('Landing/Community/SearchMember', [
+        return Inertia::render('Public/Community/SearchMember', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -252,7 +252,7 @@ class CommunityController extends Controller
             // Optionally log error
         }
 
-        return Inertia::render('Landing/Community/Member', [
+        return Inertia::render('Public/Community/Member', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -969,7 +969,7 @@ class CommunityController extends Controller
 
                 $appCurrency = json_decode($member->app_currency) ?? null;
 
-                return Inertia::render('Landing/Community/ProductDetail', [
+                return Inertia::render('Public/Community/ProductDetail', [
                     'product' => $product,
                     'appCurrency' => $appCurrency,
                     'member' => [
@@ -1025,7 +1025,7 @@ class CommunityController extends Controller
             $products = [];
         }
 
-        return Inertia::render('Landing/Community/Checkout', [
+        return Inertia::render('Public/Community/Checkout', [
             'products' => $products,
             'member' => [
                 'id' => $member->id,
@@ -1258,7 +1258,7 @@ class CommunityController extends Controller
                 }
             }
 
-            return Inertia::render('Landing/Community/Course/Show', [
+            return Inertia::render('Public/Community/Course/Show', [
                 'member' => $member,
                 'course' => $course,
                 'viewingContact' => $contact,
@@ -1427,7 +1427,7 @@ class CommunityController extends Controller
                 }
             }
 
-            return Inertia::render('Landing/Community/Course/Lessons/Index', [
+            return Inertia::render('Public/Community/Course/Lessons/Index', [
                 'member' => $member,
                 'course' => $course,
                 'lessons' => $lessons,
@@ -1542,7 +1542,7 @@ class CommunityController extends Controller
                 $currentLesson = $lessons[0] ?? null;
             }
 
-            return Inertia::render('Landing/Community/Course/Learn', [
+            return Inertia::render('Public/Community/Course/Learn', [
                 'member' => $member,
                 'course' => $course,
                 'lessons' => $lessons,

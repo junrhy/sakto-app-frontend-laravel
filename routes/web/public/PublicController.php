@@ -1,29 +1,26 @@
 <?php
 
-use App\Http\Controllers\LandingController;
+use App\Http\Controllers\PublicController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-| Landing Controller Public Routes
+| Public Controller Public Routes
 |--------------------------------------------------------------------------
 |
-| Public routes for landing pages and home redirects.
+| Public routes for public pages and home redirects.
 |
 */
 
-// Landing Pages
-Route::get('/landing', [LandingController::class, 'index'])->name('landing');
-Route::get('/neulify', [LandingController::class, 'neulify'])->name('neulify');
-Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
-Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
-Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
-Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
-Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
-Route::get('/landing/delivery', [LandingController::class, 'delivery'])->name('delivery.landing');
-Route::get('/landing/jobs', [LandingController::class, 'jobs'])->name('jobs.landing');
-Route::get('/landing/shop', [LandingController::class, 'shop'])->name('shop.landing');
+// Public Pages
+Route::get('/public', [PublicController::class, 'index'])->name('public');
+Route::get('/neulify', [PublicController::class, 'neulify'])->name('neulify');
+Route::get('/shop', [PublicController::class, 'shop'])->name('shop');
+Route::get('/delivery', [PublicController::class, 'delivery'])->name('delivery');
+Route::get('/jobs', [PublicController::class, 'jobs'])->name('jobs');
+Route::get('/medical', [PublicController::class, 'medical'])->name('medical');
+Route::get('/travel', [PublicController::class, 'travel'])->name('travel');
 
 // Home Route with Host-based Redirects
 Route::get('/', function (Request $request) {
@@ -44,5 +41,5 @@ Route::get('/', function (Request $request) {
     }
     
     // Default welcome page
-    return redirect()->route('landing');
+    return redirect()->route('public');
 });

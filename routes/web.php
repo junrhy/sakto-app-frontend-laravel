@@ -15,7 +15,7 @@ use Inertia\Inertia;
 
 // Public routes (no authentication required)
 Route::group(['middleware' => ['web']], function () {
-    require __DIR__.'/web/public/LandingController.php';
+    require __DIR__.'/web/public/PublicController.php';
     require __DIR__.'/web/public/TravelController.php';
     require __DIR__.'/web/public/MedicalController.php';
     require __DIR__.'/web/public/ClinicEmbedController.php';

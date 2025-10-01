@@ -129,7 +129,7 @@ class TravelController extends Controller
                 abort(404, 'Travel service not found');
             }
 
-            return Inertia::render('Landing/Travel/Show', [
+            return Inertia::render('Public/Travel/Show', [
                 'travel' => $travel,
                 'identifier' => $identifier,
                 'canLogin' => \Illuminate\Support\Facades\Route::has('login'),

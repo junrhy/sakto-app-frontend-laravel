@@ -31,7 +31,7 @@ class JobsController extends Controller
                 abort(404, 'Jobs service not found');
             }
 
-            return Inertia::render('Landing/Jobs/Show', [
+            return Inertia::render('Public/Jobs/Show', [
                 'jobsService' => $jobs,
                 'identifier' => $identifier,
                 'canLogin' => \Illuminate\Support\Facades\Route::has('login'),

@@ -31,7 +31,7 @@ class DeliveryController extends Controller
                 abort(404, 'Delivery service not found');
             }
 
-            return Inertia::render('Landing/Delivery/Show', [
+            return Inertia::render('Public/Delivery/Show', [
                 'delivery' => $delivery,
                 'identifier' => $identifier,
                 'canLogin' => \Illuminate\Support\Facades\Route::has('login'),

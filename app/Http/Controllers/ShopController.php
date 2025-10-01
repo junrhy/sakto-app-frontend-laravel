@@ -31,7 +31,7 @@ class ShopController extends Controller
                 abort(404, 'Shop service not found');
             }
 
-            return Inertia::render('Landing/Shop/Show', [
+            return Inertia::render('Public/Shop/Show', [
                 'shop' => $shop,
                 'identifier' => $identifier,
                 'canLogin' => \Illuminate\Support\Facades\Route::has('login'),

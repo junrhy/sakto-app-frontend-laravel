@@ -28,7 +28,7 @@ class LogisticsController extends Controller
      */
     public function index(Request $request)
     {
-        return Inertia::render('Landing/Logistics/Index', [
+        return Inertia::render('Public/Logistics/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -45,7 +45,7 @@ class LogisticsController extends Controller
      */
     public function show(Request $request, $identifier)
     {
-        return Inertia::render('Landing/Logistics/Show', [
+        return Inertia::render('Public/Logistics/Show', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -308,7 +308,7 @@ class LogisticsController extends Controller
      */
     public function trackBooking(Request $request, $identifier)
     {
-        return Inertia::render('Landing/Logistics/TrackBooking', [
+        return Inertia::render('Public/Logistics/TrackBooking', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
