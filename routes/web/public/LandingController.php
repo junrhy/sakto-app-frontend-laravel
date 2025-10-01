@@ -15,6 +15,8 @@ use Inertia\Inertia;
 
 // Landing Pages
 Route::get('/landing', [LandingController::class, 'index'])->name('landing');
+Route::get('/neulify', [LandingController::class, 'neulify'])->name('neulify');
+Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
 Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
 Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
 Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
@@ -30,15 +32,17 @@ Route::get('/', function (Request $request) {
     
     // Check for shop, delivery, or jobs in host or path
     if (stripos($host, 'shop') !== false || stripos($path, 'shop') !== false) {
-        return redirect()->route('shop.landing');
+        return redirect()->route('shop');   
     } elseif (stripos($host, 'delivery') !== false || stripos($path, 'delivery') !== false) {
-        return redirect()->route('delivery.landing');
+        return redirect()->route('delivery');
     } elseif (stripos($host, 'jobs') !== false || stripos($path, 'jobs') !== false) {
-        return redirect()->route('jobs.landing');
-    } elseif (stripos($host, 'travel') !== false || stripos($path, 'travel') !== false) {
-        return redirect()->route('travel.landing');
+        return redirect()->route('jobs');
+    } elseif (stripos($host, 'community') !== false || stripos($path, 'community') !== false) {
+        return redirect()->route('community');
+    } elseif (stripos($host, 'logistics') !== false || stripos($path, 'logistics') !== false) {
+        return redirect()->route('logistics');
     }
     
-    // Default to main landing page
+    // Default welcome page
     return redirect()->route('landing');
 });

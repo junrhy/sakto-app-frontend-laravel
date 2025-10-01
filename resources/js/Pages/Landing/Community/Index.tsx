@@ -161,7 +161,7 @@ export default function Community({
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                 <div className="ml-3">
                                     <div className="text-2xl font-bold leading-tight text-white">
-                                        Komunidad
+                                        Community
                                     </div>
                                 </div>
                             </div>

@@ -1,5 +1,7 @@
 <?php
 
+use Inertia\Inertia;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -32,6 +34,17 @@ Route::group(['middleware' => ['web']], function () {
 
 // Admin routes
 require __DIR__.'/web/admin.php';
+
+// Authenticated simple routes
+Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+    Route::get('/home', function () {
+        return Inertia::render('Home');
+    })->name('home');
+    
+    Route::get('/help', function () {
+        return Inertia::render('Help');
+    })->name('help');
+});
 
 // Include controller-specific route files
 require __DIR__.'/web/DashboardController.php';

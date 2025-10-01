@@ -36,7 +36,7 @@ export default function Medical({ auth }: PageProps) {
                                     </div>
                                 </div>
                                 <h1 className="text-xl font-bold text-white">
-                                    Medikal
+                                    Medical
                                 </h1>
                             </div>
                             <div className="flex items-center space-x-6">

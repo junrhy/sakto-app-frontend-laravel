@@ -35,7 +35,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                     </div>
                                 </div>
                                 <h1 className="text-xl font-bold text-white">
-                                    Logistika
+                                    Logistics
                                 </h1>
                             </div>
                             <div className="flex items-center space-x-6">

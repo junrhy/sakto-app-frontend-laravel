@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 /*
@@ -15,35 +16,52 @@ use Inertia\Inertia;
 
 // Static Pages
 Route::get('/pricing', function () {
-    return Inertia::render('Landing/Pricing');
+    return Inertia::render('Pricing');
 })->name('pricing');
+
+Route::get('/features', function () {
+    return Inertia::render('Features');
+})->name('features');
 
 // Policy Routes
 Route::prefix('policies')->group(function () {
-    Route::get('/privacy', function () {
-        return Inertia::render('Policies/Privacy');
-    })->name('policies.privacy');
+    Route::get('/privacy', function (Request $request) { 
+        $hostname = $request->getHost();
+        $subdomain = explode('.', $hostname)[0];
+        $appName = $subdomain !== $hostname ? ucfirst(str_replace('-', ' ', $subdomain)) : ucfirst($hostname);
+        return Inertia::render('Policies/PrivacyPolicy', [
+            'hostname' => $appName
+        ]); 
+    })->name('privacy-policy');
     
-    Route::get('/terms', function () {
-        return Inertia::render('Policies/Terms');
-    })->name('policies.terms');
+    Route::get('/terms', function (Request $request) { 
+        $hostname = $request->getHost();
+        $subdomain = explode('.', $hostname)[0];
+        $appName = $subdomain !== $hostname ? ucfirst(str_replace('-', ' ', $subdomain)) : ucfirst($hostname);
+        return Inertia::render('Policies/TermsAndConditions', [
+            'hostname' => $appName
+        ]); 
+    })->name('terms-and-conditions');
     
-    Route::get('/cookies', function () {
-        return Inertia::render('Policies/Cookies');
-    })->name('policies.cookies');
+    Route::get('/cookies', function (Request $request) { 
+        $hostname = $request->getHost();
+        $subdomain = explode('.', $hostname)[0];
+        $appName = $subdomain !== $hostname ? ucfirst(str_replace('-', ' ', $subdomain)) : ucfirst($hostname);
+        return Inertia::render('Policies/CookiePolicy', [
+            'hostname' => $appName
+        ]); 
+    })->name('cookie-policy');
     
-    Route::get('/refund', function () {
-        return Inertia::render('Policies/Refund');
-    })->name('policies.refund');
-    
-    Route::get('/shipping', function () {
-        return Inertia::render('Policies/Shipping');
-    })->name('policies.shipping');
-    
-    Route::get('/returns', function () {
-        return Inertia::render('Policies/Returns');
-    })->name('policies.returns');
+    Route::get('/faq', function (Request $request) { 
+        $hostname = $request->getHost();
+        $subdomain = explode('.', $hostname)[0];
+        $appName = $subdomain !== $hostname ? ucfirst(str_replace('-', ' ', $subdomain)) : ucfirst($hostname);
+        return Inertia::render('Policies/FAQ', [
+            'hostname' => $appName
+        ]); 
+    })->name('faq');
 });
+
 
 // Manifest Routes
 Route::get('/manifest/member/{identifier}.json', function ($identifier) {
