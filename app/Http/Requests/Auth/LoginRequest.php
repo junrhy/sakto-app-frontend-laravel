@@ -29,6 +29,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'project_identifier' => ['nullable', 'string'],
         ];
     }
 
@@ -46,6 +47,20 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // Check if user's project_identifier matches the requested project
+        $user = Auth::user();
+        $requestedProject = $this->input('project_identifier');
+
+        // Only validate if both user and request have project_identifier set
+        if ($user && $user->project_identifier && $requestedProject && $user->project_identifier !== $requestedProject) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'This account is not associated with this project. Please check your login URL or contact support.',
             ]);
         }
 

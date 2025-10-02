@@ -50,21 +50,52 @@ export default function Login({
     const urlProject = new URLSearchParams(window.location.search).get(
         'project',
     );
-    const validProject: (typeof ALLOWED_PROJECTS)[number] =
-        ALLOWED_PROJECTS.includes(urlProject as any)
-            ? (urlProject as (typeof ALLOWED_PROJECTS)[number])
-            : 'trial';
+    
+    // Check if project parameter exists and is valid
+    if (!urlProject || !ALLOWED_PROJECTS.includes(urlProject as any)) {
+        return (
+            <GuestLayout>
+                <Head title="404 - Project Not Found" />
+                <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+                    <div className="text-center">
+                        <h1 className="text-6xl font-bold text-gray-900 dark:text-white">404</h1>
+                        <h2 className="mt-4 text-2xl font-semibold text-gray-700 dark:text-gray-300">
+                            Project Not Found
+                        </h2>
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">
+                            {!urlProject 
+                                ? "Project parameter is required."
+                                : `The project "${urlProject}" is not valid.`
+                            }
+                        </p>
+                        <div className="mt-4">
+                            <Link
+                                href={route('login', { project: 'trial' })}
+                                className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                            >
+                                Go to Trial Login
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </GuestLayout>
+        );
+    }
+    
+    const validProject: (typeof ALLOWED_PROJECTS)[number] = urlProject as (typeof ALLOWED_PROJECTS)[number];
 
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
+        project_identifier: validProject,
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         post(route('login'), {
+            ...data,
             onFinish: () => reset('password'),
         });
     };
