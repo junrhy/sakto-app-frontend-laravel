@@ -29,7 +29,7 @@ import {
     Users as UsersIcon,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 
 interface Event {
     message: string;
@@ -234,7 +234,6 @@ export default function PublicRegister({ event }: Props) {
     return (
         <>
             <Head title={`Register for ${eventData?.title}`} />
-            <Toaster position="top-right" richColors />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
                 {/* Hero Section - Hidden on mobile */}

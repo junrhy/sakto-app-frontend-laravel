@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { Toaster } from 'sonner';
 import ChallengesSection from './Components/ChallengesSection';
 import ContactsSection from './Components/ContactsSection';
 import CoursesSection from './Components/CoursesSection';
@@ -1047,8 +1046,6 @@ export default function Member({
                 </div>
             </div>
 
-            {/* Toast Notifications */}
-            <Toaster position="top-right" richColors />
         </>
     );
 }

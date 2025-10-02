@@ -29,7 +29,7 @@ import {
     UserIcon,
 } from '@heroicons/react/24/outline';
 import { Search } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 // App interface and utility functions
 interface App {
     icon?: JSX.Element;
@@ -1438,13 +1438,6 @@ export default function Apps() {
                 onRemoveApp={handleRemoveFromSelection}
             />
 
-            {/* Toast Notifications */}
-            <Toaster
-                position="top-right"
-                expand={true}
-                richColors={true}
-                closeButton={true}
-            />
         </div>
     );
 }

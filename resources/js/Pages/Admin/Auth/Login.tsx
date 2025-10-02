@@ -5,7 +5,6 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect } from 'react';
-import { Toaster } from 'sonner';
 
 export default function Login() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -28,7 +27,6 @@ export default function Login() {
     return (
         <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-gray-50 to-gray-100 pt-6 dark:from-gray-900 dark:to-gray-800 sm:justify-center sm:pt-0">
             <Head title="Admin Login" />
-            <Toaster richColors />
 
             <div className="mt-6 w-full overflow-hidden border border-gray-200 bg-white px-6 py-4 shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:max-w-md sm:rounded-lg">
                 <div className="mb-6 flex justify-center">

@@ -5,7 +5,7 @@ import { Content, YouTubeVideo } from '@/types/content';
 import { Head } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { Calendar, Copy, Facebook } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 
 interface Props {
     content: Content;
@@ -121,7 +121,6 @@ export default function PublicShow({
             </Head>
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-                <Toaster />
                 <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
                     {/* Title, Date, and Excerpt */}
                     <div className="mb-8">

@@ -10,7 +10,7 @@ import {
     UtensilsCrossed,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { usePosApi } from './hooks/usePosApi';
 import { usePosState } from './hooks/usePosState';
@@ -636,7 +636,6 @@ export default function PosRestaurantIndex({
             }
         >
             <Head title="POS Restaurant" />
-            <Toaster position="top-right" richColors />
 
             <div className="min-h-screen p-6">
                 <div className="mx-auto max-w-7xl">

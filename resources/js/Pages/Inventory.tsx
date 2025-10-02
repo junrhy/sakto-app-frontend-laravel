@@ -41,7 +41,7 @@ import {
     Upload as UploadIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 
 interface Category {
     id: number;
@@ -1010,7 +1010,6 @@ export default function Inventory(props: {
                 </CardContent>
             </Card>
             <ImagePreviewModal />
-            <Toaster />
         </AuthenticatedLayout>
     );
 }

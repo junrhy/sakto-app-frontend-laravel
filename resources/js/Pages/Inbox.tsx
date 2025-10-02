@@ -22,7 +22,7 @@ import { Head, Link as InertiaLink } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import axios from 'axios';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 
 interface Subscription {
     plan: {
@@ -491,13 +491,6 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                 </div>
             </div>
 
-            {/* Sonner Toaster for this component */}
-            <Toaster
-                position="top-right"
-                richColors
-                closeButton
-                duration={4000}
-            />
 
             {selectedMessage && (
                 <MessageDialog
