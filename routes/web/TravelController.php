@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     // Travel
     Route::prefix('travel')->group(function () {
-        Route::get('/', [TravelController::class, 'index'])->name('travel');
         Route::get('/packages', [TravelController::class, 'getPackages']);
         Route::post('/packages', [TravelController::class, 'storePackage']);
         Route::put('/packages/{id}', [TravelController::class, 'updatePackage']);

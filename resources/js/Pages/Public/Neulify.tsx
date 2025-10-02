@@ -47,7 +47,7 @@ export default function Neulify({ auth }: PageProps) {
     const partnersMenuItems = [
         {
             name: 'Sakto Solutions',
-            href: route('landing'),
+            href: route('public'),
             description: 'Philippine Market Partner',
         },
         // Future partners can be added here
@@ -259,9 +259,9 @@ export default function Neulify({ auth }: PageProps) {
                                         Global Technology Company
                                     </div>
                                 </div>
-                                <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl">
+                                <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl leading-tight">
                                     <span className="block">Neulify</span>
-                                    <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-transparent dark:text-[#14B8A6]">
+                                    <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-transparent dark:text-[#14B8A6] leading-tight">
                                         Empowering Digital Innovation
                                     </span>
                                 </h1>
@@ -899,7 +899,7 @@ export default function Neulify({ auth }: PageProps) {
                                     </li>
                                     <li>
                                         <Link
-                                            href={route('landing')}
+                                            href={route('public')}
                                             className="text-[#334155]/80 transition-colors duration-200 hover:text-[#14B8A6]"
                                         >
                                             Our Partners
