@@ -1,16 +1,17 @@
 import { Payroll } from '../types';
 
 export const formatCurrency = (
-    amount: number,
+    amount: number | string,
     currency_symbol: string = '$',
 ) => {
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })
-        .format(amount)
+        .format(numericAmount)
         .replace('$', currency_symbol);
 };
 

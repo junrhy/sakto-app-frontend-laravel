@@ -99,12 +99,12 @@ export const SalaryHistoryTab = ({
                                         <TableCell>
                                             <div
                                                 className={`flex items-center gap-1 ${
-                                                    parseFloat(history.salary_change) >= 0
+                                                    parseFloat(String(history.salary_change)) >= 0
                                                         ? 'text-green-600 dark:text-green-400'
                                                         : 'text-red-600 dark:text-red-400'
                                                 }`}
                                             >
-                                                {parseFloat(history.salary_change) >= 0 ? (
+                                                {parseFloat(String(history.salary_change)) >= 0 ? (
                                                     <TrendingUp className="h-4 w-4" />
                                                 ) : (
                                                     <TrendingDown className="h-4 w-4" />
@@ -120,16 +120,16 @@ export const SalaryHistoryTab = ({
                                         <TableCell>
                                             <span
                                                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                    parseFloat(history.percentage_change) >=
+                                                    parseFloat(String(history.percentage_change)) >=
                                                     0
                                                         ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
                                                         : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
                                                 }`}
                                             >
-                                                {parseFloat(history.percentage_change) >= 0
+                                                {parseFloat(String(history.percentage_change)) >= 0
                                                     ? '+'
                                                     : ''}
-                                                {parseFloat(history.percentage_change).toFixed(
+                                                {parseFloat(String(history.percentage_change)).toFixed(
                                                     2,
                                                 )}
                                                 %
