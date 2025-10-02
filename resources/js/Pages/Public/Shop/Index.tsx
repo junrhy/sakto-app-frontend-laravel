@@ -1,3 +1,4 @@
+import { getPricingForService } from '@/config/pricing';
 import {
     faShieldAlt,
     faShoppingBag,
@@ -6,7 +7,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -19,9 +19,9 @@ interface PageProps {
 
 export default function ShopIndex({ auth }: PageProps) {
     const pricing = getPricingForService('shop');
-    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
-    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
-    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+    const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
+    const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
 
     return (
         <>
@@ -302,13 +302,21 @@ export default function ShopIndex({ auth }: PageProps) {
                                         {basicPlan?.name || 'Shopper'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {basicPlan?.description || 'Perfect for casual shopping'}
+                                        {basicPlan?.description ||
+                                            'Perfect for casual shopping'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {basicPlan?.currency || ''}{basicPlan?.price === 0 ? 'Free' : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
+                                            {basicPlan?.currency || ''}
+                                            {basicPlan?.price === 0
+                                                ? 'Free'
+                                                : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
                                         </span>
-                                        {basicPlan?.period && <span className="text-sm text-slate-600">{basicPlan.period}</span>}
+                                        {basicPlan?.period && (
+                                            <span className="text-sm text-slate-600">
+                                                {basicPlan.period}
+                                            </span>
+                                        )}
                                     </p>
                                     {auth.user ? (
                                         <Link
@@ -321,11 +329,13 @@ export default function ShopIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'shop',
-                                                plan: basicPlan?.id || 'shopper',
+                                                plan:
+                                                    basicPlan?.id || 'shopper',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            {basicPlan?.buttonText || 'Get Started'}
+                                            {basicPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -401,11 +411,13 @@ export default function ShopIndex({ auth }: PageProps) {
                                         {proPlan?.name || 'Premium'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {proPlan?.description || 'Ideal for frequent shoppers'}
+                                        {proPlan?.description ||
+                                            'Ideal for frequent shoppers'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {proPlan?.currency || '₱'}{proPlan?.price || 299}
+                                            {proPlan?.currency || '₱'}
+                                            {proPlan?.price || 299}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {proPlan?.period || '/month'}
@@ -426,7 +438,8 @@ export default function ShopIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-green-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-green-700"
                                         >
-                                            {proPlan?.buttonText || 'Get Started'}
+                                            {proPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -514,11 +527,13 @@ export default function ShopIndex({ auth }: PageProps) {
                                         {businessPlan?.name || 'VIP'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {businessPlan?.description || 'Perfect for shopping enthusiasts'}
+                                        {businessPlan?.description ||
+                                            'Perfect for shopping enthusiasts'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 599}
+                                            {businessPlan?.currency || '₱'}
+                                            {businessPlan?.price || 599}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {businessPlan?.period || '/month'}
@@ -539,7 +554,8 @@ export default function ShopIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-emerald-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-emerald-700"
                                         >
-                                            {businessPlan?.buttonText || 'Get Started'}
+                                            {businessPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -813,7 +829,10 @@ export default function ShopIndex({ auth }: PageProps) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                        <Link
+                                            href={route('neulify')}
+                                            className="transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
                                             Powered by Neulify
                                         </Link>
                                     </div>

@@ -295,11 +295,12 @@ export default function Index({ auth, messages, stats }: Props) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        Sending this SMS will cost 2 credits from your balance
+                                        Sending this SMS will cost 2 credits
+                                        from your balance
                                     </div>
                                     {canEdit && (
-                                        <Button 
-                                            type="submit" 
+                                        <Button
+                                            type="submit"
                                             disabled={processing}
                                             className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         >

@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { AlertTriangle, Package, AlertCircle } from 'lucide-react';
+import { CardContent } from '@/Components/ui/card';
+import { AlertCircle, AlertTriangle, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface LowStockItem {
@@ -27,16 +27,22 @@ export function ClinicLowStockAlertsWidget() {
     const fetchLowStockItems = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/clinic/inventory/low-stock-alerts?limit=5');
-            
+            const response = await fetch(
+                '/clinic/inventory/low-stock-alerts?limit=5',
+            );
+
             if (!response.ok) {
                 throw new Error('Failed to fetch low stock alerts');
             }
-            
+
             const data = await response.json();
             setItems(data.items || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load low stock alerts');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to load low stock alerts',
+            );
         } finally {
             setLoading(false);
         }
@@ -46,7 +52,7 @@ export function ClinicLowStockAlertsWidget() {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
-            year: 'numeric'
+            year: 'numeric',
         });
     };
 
@@ -68,15 +74,25 @@ export function ClinicLowStockAlertsWidget() {
     const getUrgencyIcon = (urgency: string) => {
         switch (urgency.toLowerCase()) {
             case 'critical':
-                return <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+                return (
+                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                );
             case 'high':
-                return <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />;
+                return (
+                    <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                );
             case 'medium':
-                return <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
+                return (
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                );
             case 'low':
-                return <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+                return (
+                    <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                );
             default:
-                return <Package className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+                return (
+                    <Package className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                );
         }
     };
 
@@ -88,8 +104,8 @@ export function ClinicLowStockAlertsWidget() {
     if (loading) {
         return (
             <CardContent className="p-6">
-                <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex h-32 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                 </div>
             </CardContent>
         );
@@ -110,7 +126,7 @@ export function ClinicLowStockAlertsWidget() {
         return (
             <CardContent className="p-6">
                 <div className="text-center text-gray-500 dark:text-gray-400">
-                    <Package className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                    <Package className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                     <p>No low stock alerts</p>
                 </div>
             </CardContent>
@@ -121,8 +137,11 @@ export function ClinicLowStockAlertsWidget() {
         <CardContent className="p-6">
             <div className="space-y-3">
                 {items.map((item) => (
-                    <div key={item.id} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                        <div className="flex items-center justify-between mb-2">
+                    <div
+                        key={item.id}
+                        className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+                    >
+                        <div className="mb-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 {getUrgencyIcon(item.urgency)}
                                 <span className="font-medium text-gray-900 dark:text-white">
@@ -134,15 +153,19 @@ export function ClinicLowStockAlertsWidget() {
                             </Badge>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div className="mb-3 grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Current Stock</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Current Stock
+                                </p>
                                 <p className="text-lg font-bold text-red-600 dark:text-red-400">
                                     {item.current_stock} {item.unit}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Minimum Required</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Minimum Required
+                                </p>
                                 <p className="text-lg font-bold text-gray-900 dark:text-white">
                                     {item.minimum_stock} {item.unit}
                                 </p>
@@ -150,35 +173,54 @@ export function ClinicLowStockAlertsWidget() {
                         </div>
 
                         <div className="mb-3">
-                            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                            <div className="mb-1 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                                 <span>Stock Level</span>
-                                <span>{getStockPercentage(item.current_stock, item.minimum_stock)}%</span>
+                                <span>
+                                    {getStockPercentage(
+                                        item.current_stock,
+                                        item.minimum_stock,
+                                    )}
+                                    %
+                                </span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div 
+                            <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                                <div
                                     className={`h-2 rounded-full ${
-                                        item.urgency === 'critical' ? 'bg-red-500' :
-                                        item.urgency === 'high' ? 'bg-orange-500' :
-                                        item.urgency === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
+                                        item.urgency === 'critical'
+                                            ? 'bg-red-500'
+                                            : item.urgency === 'high'
+                                              ? 'bg-orange-500'
+                                              : item.urgency === 'medium'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-blue-500'
                                     }`}
-                                    style={{ width: `${Math.min(getStockPercentage(item.current_stock, item.minimum_stock), 100)}%` }}
+                                    style={{
+                                        width: `${Math.min(getStockPercentage(item.current_stock, item.minimum_stock), 100)}%`,
+                                    }}
                                 ></div>
                             </div>
                         </div>
 
                         <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                             <div>
-                                <span className="font-medium">Category:</span> {item.category}
+                                <span className="font-medium">Category:</span>{' '}
+                                {item.category}
                             </div>
                             {item.supplier && (
                                 <div>
-                                    <span className="font-medium">Supplier:</span> {item.supplier}
+                                    <span className="font-medium">
+                                        Supplier:
+                                    </span>{' '}
+                                    {item.supplier}
                                 </div>
                             )}
                         </div>
 
                         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            Last restocked: {item.last_restocked === 'N/A' ? 'N/A' : formatDate(item.last_restocked)}
+                            Last restocked:{' '}
+                            {item.last_restocked === 'N/A'
+                                ? 'N/A'
+                                : formatDate(item.last_restocked)}
                         </div>
                     </div>
                 ))}

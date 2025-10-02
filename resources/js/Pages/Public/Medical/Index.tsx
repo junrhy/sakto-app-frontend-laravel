@@ -1,3 +1,4 @@
+import { getPricingForService } from '@/config/pricing';
 import {
     faBolt,
     faChartLine,
@@ -7,7 +8,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
 import React from 'react';
-import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -20,9 +20,9 @@ interface PageProps {
 
 export default function Medical({ auth }: PageProps) {
     const pricing = getPricingForService('medical');
-    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
-    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
-    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+    const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
+    const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
 
     return (
         <React.Fragment>
@@ -782,7 +782,10 @@ export default function Medical({ auth }: PageProps) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                        <Link
+                                            href={route('neulify')}
+                                            className="transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
                                             Powered by Neulify
                                         </Link>
                                     </div>

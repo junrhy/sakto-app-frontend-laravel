@@ -1045,7 +1045,6 @@ export default function Member({
                     {renderContent()}
                 </div>
             </div>
-
         </>
     );
 }

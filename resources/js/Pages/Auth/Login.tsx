@@ -30,14 +30,11 @@ const PROJECT_IMAGES = {
         'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     delivery:
         'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
-    jobs:
-        'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
-    shop:
-        'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    jobs: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    shop: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     enterprise:
         'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
-    travel:
-        'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    travel: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
 } as const;
 
 export default function Login({
@@ -50,7 +47,7 @@ export default function Login({
     const urlProject = new URLSearchParams(window.location.search).get(
         'project',
     );
-    
+
     // Check if project parameter exists and is valid
     if (!urlProject || !ALLOWED_PROJECTS.includes(urlProject as any)) {
         return (
@@ -58,15 +55,16 @@ export default function Login({
                 <Head title="404 - Project Not Found" />
                 <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
                     <div className="text-center">
-                        <h1 className="text-6xl font-bold text-gray-900 dark:text-white">404</h1>
+                        <h1 className="text-6xl font-bold text-gray-900 dark:text-white">
+                            404
+                        </h1>
                         <h2 className="mt-4 text-2xl font-semibold text-gray-700 dark:text-gray-300">
                             Project Not Found
                         </h2>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            {!urlProject 
-                                ? "Project parameter is required."
-                                : `The project "${urlProject}" is not valid.`
-                            }
+                            {!urlProject
+                                ? 'Project parameter is required.'
+                                : `The project "${urlProject}" is not valid.`}
                         </p>
                         <div className="mt-4">
                             <Link
@@ -81,8 +79,9 @@ export default function Login({
             </GuestLayout>
         );
     }
-    
-    const validProject: (typeof ALLOWED_PROJECTS)[number] = urlProject as (typeof ALLOWED_PROJECTS)[number];
+
+    const validProject: (typeof ALLOWED_PROJECTS)[number] =
+        urlProject as (typeof ALLOWED_PROJECTS)[number];
 
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',

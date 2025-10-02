@@ -491,7 +491,6 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                 </div>
             </div>
 
-
             {selectedMessage && (
                 <MessageDialog
                     message={selectedMessage}

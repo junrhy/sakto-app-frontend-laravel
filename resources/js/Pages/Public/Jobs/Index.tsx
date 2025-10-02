@@ -1,3 +1,4 @@
+import { getPricingForService } from '@/config/pricing';
 import {
     faBriefcase,
     faChartLine,
@@ -6,7 +7,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -19,9 +19,9 @@ interface PageProps {
 
 export default function JobsIndex({ auth }: PageProps) {
     const pricing = getPricingForService('jobs');
-    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
-    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
-    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+    const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
+    const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
 
     return (
         <>
@@ -303,13 +303,21 @@ export default function JobsIndex({ auth }: PageProps) {
                                         {basicPlan?.name || 'Job Seeker'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {basicPlan?.description || 'Perfect for finding your next opportunity'}
+                                        {basicPlan?.description ||
+                                            'Perfect for finding your next opportunity'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {basicPlan?.currency || ''}{basicPlan?.price === 0 ? 'Free' : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
+                                            {basicPlan?.currency || ''}
+                                            {basicPlan?.price === 0
+                                                ? 'Free'
+                                                : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
                                         </span>
-                                        {basicPlan?.period && <span className="text-sm text-slate-600">{basicPlan.period}</span>}
+                                        {basicPlan?.period && (
+                                            <span className="text-sm text-slate-600">
+                                                {basicPlan.period}
+                                            </span>
+                                        )}
                                     </p>
                                     {auth.user ? (
                                         <Link
@@ -326,7 +334,8 @@ export default function JobsIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            {basicPlan?.buttonText || 'Get Started'}
+                                            {basicPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -346,7 +355,8 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                {basicPlan?.features?.[0] || 'Job search & applications'}
+                                                {basicPlan?.features?.[0] ||
+                                                    'Job search & applications'}
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -363,7 +373,8 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                {basicPlan?.features?.[1] || 'Basic profile'}
+                                                {basicPlan?.features?.[1] ||
+                                                    'Basic profile'}
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -380,7 +391,8 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                {basicPlan?.features?.[2] || 'Email support'}
+                                                {basicPlan?.features?.[2] ||
+                                                    'Email support'}
                                             </span>
                                         </li>
                                     </ul>
@@ -402,11 +414,13 @@ export default function JobsIndex({ auth }: PageProps) {
                                         {proPlan?.name || 'Professional'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {proPlan?.description || 'Ideal for serious job seekers'}
+                                        {proPlan?.description ||
+                                            'Ideal for serious job seekers'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {proPlan?.currency || '₱'}{proPlan?.price || 199}
+                                            {proPlan?.currency || '₱'}
+                                            {proPlan?.price || 199}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {proPlan?.period || '/month'}
@@ -423,11 +437,14 @@ export default function JobsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'jobs',
-                                                plan: proPlan?.id || 'professional',
+                                                plan:
+                                                    proPlan?.id ||
+                                                    'professional',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-purple-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-purple-700"
                                         >
-                                            {proPlan?.buttonText || 'Get Started'}
+                                            {proPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -515,11 +532,13 @@ export default function JobsIndex({ auth }: PageProps) {
                                         {businessPlan?.name || 'Executive'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {businessPlan?.description || 'Perfect for senior professionals'}
+                                        {businessPlan?.description ||
+                                            'Perfect for senior professionals'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 399}
+                                            {businessPlan?.currency || '₱'}
+                                            {businessPlan?.price || 399}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {businessPlan?.period || '/month'}
@@ -536,11 +555,14 @@ export default function JobsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'jobs',
-                                                plan: businessPlan?.id || 'executive',
+                                                plan:
+                                                    businessPlan?.id ||
+                                                    'executive',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
                                         >
-                                            {businessPlan?.buttonText || 'Get Started'}
+                                            {businessPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -808,7 +830,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                        <Link
+                                            href={route('neulify')}
+                                            className="transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
                                             Powered by Neulify
                                         </Link>
                                     </div>

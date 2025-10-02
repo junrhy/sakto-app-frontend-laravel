@@ -1,8 +1,7 @@
-import { Card, CardContent } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { CardContent } from '@/Components/ui/card';
 import { PageProps } from '@/types';
+import { AlertCircle, TrendingDown, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface RevenueStats {
     total_revenue: number;
@@ -33,15 +32,19 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
         try {
             setLoading(true);
             const response = await fetch('/clinic/revenue-stats');
-            
+
             if (!response.ok) {
                 throw new Error('Failed to fetch revenue statistics');
             }
-            
+
             const data = await response.json();
             setStats(data);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load revenue statistics');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to load revenue statistics',
+            );
         } finally {
             setLoading(false);
         }
@@ -52,10 +55,10 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
         if (!appCurrency) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
-                currency: 'USD'
+                currency: 'USD',
             }).format(amount);
         }
-        
+
         // Parse the JSON currency settings if it's a string
         let currencySettings = appCurrency;
         if (typeof appCurrency === 'string') {
@@ -65,22 +68,26 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                 console.warn('Failed to parse app_currency JSON:', e);
                 return new Intl.NumberFormat('en-US', {
                     style: 'currency',
-                    currency: 'USD'
+                    currency: 'USD',
                 }).format(amount);
             }
         }
-        
+
         return `${currencySettings.symbol}${amount.toLocaleString('en-US', {
             minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            maximumFractionDigits: 2,
         })}`;
     };
 
     const getGrowthIcon = (growth: number) => {
         if (growth > 0) {
-            return <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />;
+            return (
+                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+            );
         } else if (growth < 0) {
-            return <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />;
+            return (
+                <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+            );
         }
         return null;
     };
@@ -97,8 +104,8 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
     if (loading) {
         return (
             <CardContent className="p-6">
-                <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex h-32 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                 </div>
             </CardContent>
         );
@@ -136,18 +143,21 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                         Total Revenue
                     </div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
+                    <div className="mt-1 flex items-center justify-center gap-1">
                         {getGrowthIcon(stats?.revenue_growth || 0)}
-                        <span className={`text-sm ${getGrowthColor(stats?.revenue_growth || 0)}`}>
-                            {(stats?.revenue_growth || 0) > 0 ? '+' : ''}{(stats?.revenue_growth || 0).toFixed(1)}%
+                        <span
+                            className={`text-sm ${getGrowthColor(stats?.revenue_growth || 0)}`}
+                        >
+                            {(stats?.revenue_growth || 0) > 0 ? '+' : ''}
+                            {(stats?.revenue_growth || 0).toFixed(1)}%
                         </span>
                     </div>
                 </div>
 
                 {/* Revenue Breakdown */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <div className="flex items-center gap-2 mb-1">
+                    <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                        <div className="mb-1 flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 Today
                             </span>
@@ -157,10 +167,13 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                         </div>
                     </div>
 
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <div className="flex items-center gap-2 mb-1">
+                    <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                        <div className="mb-1 flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                {new Date().toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    year: 'numeric',
+                                })}
                             </span>
                         </div>
                         <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -171,8 +184,8 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
 
                 {/* Outstanding Amount */}
                 {(stats?.outstanding_amount || 0) > 0 && (
-                    <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                        <div className="flex items-center gap-2 mb-1">
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                        <div className="mb-1 flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 Outstanding Amount
@@ -187,19 +200,29 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                 {/* Payment Methods Breakdown */}
                 <div className="space-y-2">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        Payment Methods ({new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})
+                        Payment Methods (
+                        {new Date().toLocaleDateString('en-US', {
+                            month: 'long',
+                            year: 'numeric',
+                        })}
+                        )
                     </div>
                     <div className="space-y-2">
-                        {Object.entries(stats?.payment_methods || {}).map(([method, amount]) => (
-                            <div key={method} className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                                    {method}
-                                </span>
-                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {formatCurrency(amount)}
-                                </span>
-                            </div>
-                        ))}
+                        {Object.entries(stats?.payment_methods || {}).map(
+                            ([method, amount]) => (
+                                <div
+                                    key={method}
+                                    className="flex items-center justify-between"
+                                >
+                                    <span className="text-sm capitalize text-gray-600 dark:text-gray-400">
+                                        {method}
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {formatCurrency(amount)}
+                                    </span>
+                                </div>
+                            ),
+                        )}
                     </div>
                 </div>
             </div>

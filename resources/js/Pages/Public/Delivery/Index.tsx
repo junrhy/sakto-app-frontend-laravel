@@ -1,3 +1,4 @@
+import { getPricingForService } from '@/config/pricing';
 import {
     faClock,
     faMapMarkerAlt,
@@ -6,7 +7,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -19,9 +19,9 @@ interface PageProps {
 
 export default function DeliveryIndex({ auth }: PageProps) {
     const pricing = getPricingForService('delivery');
-    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
-    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
-    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+    const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
+    const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
 
     return (
         <>
@@ -300,13 +300,21 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         {basicPlan?.name || 'Basic'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {basicPlan?.description || 'Perfect for occasional orders'}
+                                        {basicPlan?.description ||
+                                            'Perfect for occasional orders'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {basicPlan?.currency || ''}{basicPlan?.price === 0 ? 'Free' : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
+                                            {basicPlan?.currency || ''}
+                                            {basicPlan?.price === 0
+                                                ? 'Free'
+                                                : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
                                         </span>
-                                        {basicPlan?.period && <span className="text-sm text-slate-600">{basicPlan.period}</span>}
+                                        {basicPlan?.period && (
+                                            <span className="text-sm text-slate-600">
+                                                {basicPlan.period}
+                                            </span>
+                                        )}
                                     </p>
                                     {auth.user ? (
                                         <Link
@@ -323,7 +331,8 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            {basicPlan?.buttonText || 'Get Started'}
+                                            {basicPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -399,11 +408,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         {proPlan?.name || 'Premium'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {proPlan?.description || 'Ideal for frequent food lovers'}
+                                        {proPlan?.description ||
+                                            'Ideal for frequent food lovers'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {proPlan?.currency || '₱'}{proPlan?.price || 199}
+                                            {proPlan?.currency || '₱'}
+                                            {proPlan?.price || 199}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {proPlan?.period || '/month'}
@@ -424,7 +435,8 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-orange-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-orange-700"
                                         >
-                                            {proPlan?.buttonText || 'Get Started'}
+                                            {proPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -512,11 +524,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         {businessPlan?.name || 'VIP'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {businessPlan?.description || 'Perfect for food enthusiasts'}
+                                        {businessPlan?.description ||
+                                            'Perfect for food enthusiasts'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 399}
+                                            {businessPlan?.currency || '₱'}
+                                            {businessPlan?.price || 399}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {businessPlan?.period || '/month'}
@@ -537,7 +551,8 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-red-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-red-700"
                                         >
-                                            {businessPlan?.buttonText || 'Get Started'}
+                                            {businessPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -811,7 +826,10 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                        <Link
+                                            href={route('neulify')}
+                                            className="transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
                                             Powered by Neulify
                                         </Link>
                                     </div>

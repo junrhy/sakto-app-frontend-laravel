@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Clock, User, Phone, Calendar, AlertCircle } from 'lucide-react';
+import { CardContent } from '@/Components/ui/card';
+import { AlertCircle, Calendar, Clock, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface TodayAppointment {
@@ -28,15 +28,19 @@ export function ClinicTodayAppointmentsWidget() {
         try {
             setLoading(true);
             const response = await fetch('/clinic/appointments/today');
-            
+
             if (!response.ok) {
-                throw new Error('Failed to fetch today\'s appointments');
+                throw new Error("Failed to fetch today's appointments");
             }
-            
+
             const data = await response.json();
             setAppointments(data.appointments || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load today\'s appointments');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to load today's appointments",
+            );
         } finally {
             setLoading(false);
         }
@@ -46,7 +50,7 @@ export function ClinicTodayAppointmentsWidget() {
         return new Date(timeString).toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
         });
     };
 
@@ -81,15 +85,16 @@ export function ClinicTodayAppointmentsWidget() {
     const isUpcoming = (appointmentTime: string) => {
         const now = new Date();
         const appointment = new Date(appointmentTime);
-        const diffInHours = (appointment.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const diffInHours =
+            (appointment.getTime() - now.getTime()) / (1000 * 60 * 60);
         return diffInHours > 0 && diffInHours <= 2; // Next 2 hours
     };
 
     if (loading) {
         return (
             <CardContent className="p-6">
-                <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex h-32 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                 </div>
             </CardContent>
         );
@@ -110,7 +115,7 @@ export function ClinicTodayAppointmentsWidget() {
         return (
             <CardContent className="p-6">
                 <div className="text-center text-gray-500 dark:text-gray-400">
-                    <Calendar className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                    <Calendar className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                     <p>No appointments scheduled for today</p>
                 </div>
             </CardContent>
@@ -121,15 +126,15 @@ export function ClinicTodayAppointmentsWidget() {
         <CardContent className="p-6">
             <div className="space-y-3">
                 {appointments.map((appointment) => (
-                    <div 
-                        key={appointment.id} 
-                        className={`p-4 rounded-lg border ${
-                            isUpcoming(appointment.appointment_time) 
-                                ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' 
-                                : 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700'
+                    <div
+                        key={appointment.id}
+                        className={`rounded-lg border p-4 ${
+                            isUpcoming(appointment.appointment_time)
+                                ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
+                                : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
                         }`}
                     >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                 <span className="font-medium text-gray-900 dark:text-white">
@@ -142,17 +147,25 @@ export function ClinicTodayAppointmentsWidget() {
                                 )}
                             </div>
                             <div className="flex gap-2">
-                                <Badge className={getStatusColor(appointment.status)}>
+                                <Badge
+                                    className={getStatusColor(
+                                        appointment.status,
+                                    )}
+                                >
                                     {appointment.status}
                                 </Badge>
-                                <Badge className={getPaymentStatusColor(appointment.payment_status)}>
+                                <Badge
+                                    className={getPaymentStatusColor(
+                                        appointment.payment_status,
+                                    )}
+                                >
                                     {appointment.payment_status}
                                 </Badge>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                            <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
                                 <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div className="flex-1">
@@ -177,7 +190,7 @@ export function ClinicTodayAppointmentsWidget() {
                         </div>
 
                         {appointment.notes && (
-                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 p-2 rounded">
+                            <div className="mt-2 rounded bg-gray-100 p-2 text-sm text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                                 {appointment.notes}
                             </div>
                         )}

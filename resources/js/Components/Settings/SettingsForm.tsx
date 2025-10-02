@@ -130,7 +130,7 @@ export default function SettingsForm({
                 current = current[keys[i]];
             }
             current[keys[keys.length - 1]] = value;
-            
+
             // Handle company_name and clinic_name synchronization
             if (keys.length === 2 && keys[0] === 'general') {
                 const fieldName = keys[keys.length - 1];
@@ -140,7 +140,7 @@ export default function SettingsForm({
                     newData.general.company_name = value;
                 }
             }
-            
+
             form.setData(newData);
         }
     };

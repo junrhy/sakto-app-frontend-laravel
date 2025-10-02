@@ -1,3 +1,4 @@
+import { getPricingForService } from '@/config/pricing';
 import {
     faBolt,
     faChartLine,
@@ -6,7 +7,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -19,9 +19,9 @@ interface PageProps {
 
 export default function LogisticsIndex({ auth }: PageProps) {
     const pricing = getPricingForService('logistics');
-    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
-    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
-    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+    const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
+    const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
 
     return (
         <>
@@ -270,11 +270,13 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         {basicPlan?.name || 'Basic'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {basicPlan?.description || 'Perfect for small fleets and startups'}
+                                        {basicPlan?.description ||
+                                            'Perfect for small fleets and startups'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {basicPlan?.currency || '₱'}{basicPlan?.price || 299}
+                                            {basicPlan?.currency || '₱'}
+                                            {basicPlan?.price || 299}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {basicPlan?.period || '/month'}
@@ -291,18 +293,29 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: basicPlan?.id || 'starter',
+                                                plan:
+                                                    basicPlan?.id || 'starter',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            {basicPlan?.buttonText || 'Get Started'}
+                                            {basicPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
-                                        {(basicPlan?.features || ['Up to 10 vehicles', 'GPS tracking', 'Email support']).map((feature, index) => (
-                                            <li key={index} className="flex items-center text-sm">
+                                        {(
+                                            basicPlan?.features || [
+                                                'Up to 10 vehicles',
+                                                'GPS tracking',
+                                                'Email support',
+                                            ]
+                                        ).map((feature, index) => (
+                                            <li
+                                                key={index}
+                                                className="flex items-center text-sm"
+                                            >
                                                 <svg
                                                     className="mr-3 h-4 w-4 flex-shrink-0 text-slate-500"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -339,11 +352,13 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         {proPlan?.name || 'Pro'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {proPlan?.description || 'Ideal for growing logistics companies'}
+                                        {proPlan?.description ||
+                                            'Ideal for growing logistics companies'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {proPlan?.currency || '₱'}{proPlan?.price || 499}
+                                            {proPlan?.currency || '₱'}
+                                            {proPlan?.price || 499}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {proPlan?.period || '/month'}
@@ -360,18 +375,31 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: proPlan?.id || 'professional',
+                                                plan:
+                                                    proPlan?.id ||
+                                                    'professional',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-emerald-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-emerald-700"
                                         >
-                                            {proPlan?.buttonText || 'Get Started'}
+                                            {proPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
-                                        {(proPlan?.features || ['Up to 50 vehicles', 'GPS tracking', 'Analytics dashboard', 'Priority support']).map((feature, index) => (
-                                            <li key={index} className="flex items-center text-sm">
+                                        {(
+                                            proPlan?.features || [
+                                                'Up to 50 vehicles',
+                                                'GPS tracking',
+                                                'Analytics dashboard',
+                                                'Priority support',
+                                            ]
+                                        ).map((feature, index) => (
+                                            <li
+                                                key={index}
+                                                className="flex items-center text-sm"
+                                            >
                                                 <svg
                                                     className="mr-3 h-4 w-4 flex-shrink-0 text-emerald-500"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -403,11 +431,13 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         {businessPlan?.name || 'Business'}
                                     </h3>
                                     <p className="mb-6 text-sm text-slate-600">
-                                        {businessPlan?.description || 'Perfect for large-scale operations'}
+                                        {businessPlan?.description ||
+                                            'Perfect for large-scale operations'}
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {businessPlan?.currency || '₱'}{businessPlan?.price || 699}
+                                            {businessPlan?.currency || '₱'}
+                                            {businessPlan?.price || 699}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {businessPlan?.period || '/month'}
@@ -424,18 +454,30 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: businessPlan?.id || 'enterprise',
+                                                plan:
+                                                    businessPlan?.id ||
+                                                    'enterprise',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
                                         >
-                                            {businessPlan?.buttonText || 'Get Started'}
+                                            {businessPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
                                 <div className="mt-6 flex-grow">
                                     <ul className="space-y-3">
-                                        {(businessPlan?.features || ['Unlimited vehicles', 'GPS tracking', 'Advanced analytics']).map((feature, index) => (
-                                            <li key={index} className="flex items-center text-sm">
+                                        {(
+                                            businessPlan?.features || [
+                                                'Unlimited vehicles',
+                                                'GPS tracking',
+                                                'Advanced analytics',
+                                            ]
+                                        ).map((feature, index) => (
+                                            <li
+                                                key={index}
+                                                className="flex items-center text-sm"
+                                            >
                                                 <svg
                                                     className="mr-3 h-4 w-4 flex-shrink-0 text-blue-500"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -673,7 +715,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                        <Link
+                                            href={route('neulify')}
+                                            className="transition-colors duration-200 hover:text-[#14B8A6]"
+                                        >
                                             Powered by Neulify
                                         </Link>
                                     </div>

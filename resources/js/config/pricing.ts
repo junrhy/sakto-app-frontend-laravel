@@ -29,10 +29,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 10 vehicles',
                     'GPS tracking',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -45,7 +45,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 50 vehicles',
                     'Advanced analytics',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -62,12 +62,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited vehicles',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
+                buttonLink: 'contact',
+            },
+        ],
     },
     medical: {
         plans: [
@@ -81,10 +81,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 5 practitioners',
                     'Patient management',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -97,7 +97,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 20 practitioners',
                     'Advanced scheduling',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -114,12 +114,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited practitioners',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
+                buttonLink: 'contact',
+            },
+        ],
     },
     community: {
         plans: [
@@ -133,10 +133,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 100 members',
                     'Basic community features',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -149,7 +149,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 500 members',
                     'Advanced moderation tools',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -166,12 +166,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited members',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
+                buttonLink: 'contact',
+            },
+        ],
     },
     travel: {
         plans: [
@@ -185,10 +185,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 10 bookings',
                     'Basic itinerary management',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -201,7 +201,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 100 bookings',
                     'Advanced booking management',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -218,12 +218,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited bookings',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
+                buttonLink: 'contact',
+            },
+        ],
     },
     delivery: {
         plans: [
@@ -237,10 +237,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 50 deliveries',
                     'Basic tracking',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -253,7 +253,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 200 deliveries',
                     'Advanced tracking',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -270,12 +270,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited deliveries',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
+                buttonLink: 'contact',
+            },
+        ],
     },
     jobs: {
         plans: [
@@ -289,10 +289,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 50 job postings',
                     'Basic applicant management',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -305,7 +305,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 200 job postings',
                     'Advanced applicant management',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -322,12 +322,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited job postings',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
+                buttonLink: 'contact',
+            },
+        ],
     },
     shop: {
         plans: [
@@ -341,10 +341,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 features: [
                     'Up to 100 products',
                     'Basic inventory management',
-                    'Email support'
+                    'Email support',
                 ],
                 buttonText: 'Get Started',
-                buttonLink: 'register'
+                buttonLink: 'register',
             },
             {
                 id: 'pro',
@@ -357,7 +357,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Up to 500 products',
                     'Advanced inventory management',
                     'Priority support',
-                    'API access'
+                    'API access',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -374,15 +374,17 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     'Unlimited products',
                     'Custom integrations',
                     '24/7 phone support',
-                    'Dedicated account manager'
+                    'Dedicated account manager',
                 ],
                 buttonText: 'Contact Sales',
-                buttonLink: 'contact'
-            }
-        ]
-    }
+                buttonLink: 'contact',
+            },
+        ],
+    },
 };
 
-export const getPricingForService = (serviceName: string): ServicePricing | undefined => {
+export const getPricingForService = (
+    serviceName: string,
+): ServicePricing | undefined => {
     return pricingConfig[serviceName];
 };

@@ -1,7 +1,7 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { getPricingForService } from '@/config/pricing';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -25,9 +25,9 @@ export default function Community({
     totalContacts,
 }: PageProps) {
     const pricing = getPricingForService('community');
-    const basicPlan = pricing?.plans.find(plan => plan.id === 'basic');
-    const proPlan = pricing?.plans.find(plan => plan.id === 'pro');
-    const businessPlan = pricing?.plans.find(plan => plan.id === 'business');
+    const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
+    const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
+    const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Use totalContacts from backend instead of calculating from communityUsers
@@ -683,14 +683,17 @@ export default function Community({
                                                 {basicPlan?.name || 'Basic'}
                                             </h3>
                                             <p className="mb-6 text-sm text-slate-600">
-                                                {basicPlan?.description || 'Perfect for small communities and organizations'}
+                                                {basicPlan?.description ||
+                                                    'Perfect for small communities and organizations'}
                                             </p>
                                             <p className="mb-6">
                                                 <span className="text-3xl font-extrabold text-slate-900">
-                                                    {basicPlan?.currency || '₱'}{basicPlan?.price || 99}
+                                                    {basicPlan?.currency || '₱'}
+                                                    {basicPlan?.price || 99}
                                                 </span>
                                                 <span className="text-sm text-slate-600">
-                                                    {basicPlan?.period || '/month'}
+                                                    {basicPlan?.period ||
+                                                        '/month'}
                                                 </span>
                                             </p>
                                             {auth.user ? (
@@ -704,11 +707,14 @@ export default function Community({
                                                 <Link
                                                     href={route('register', {
                                                         project: 'community',
-                                                        plan: basicPlan?.id || 'basic',
+                                                        plan:
+                                                            basicPlan?.id ||
+                                                            'basic',
                                                     })}
                                                     className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
                                                 >
-                                                    {basicPlan?.buttonText || 'Get Started'}
+                                                    {basicPlan?.buttonText ||
+                                                        'Get Started'}
                                                 </Link>
                                             )}
                                         </div>
@@ -728,7 +734,9 @@ export default function Community({
                                                         />
                                                     </svg>
                                                     <span className="text-slate-600">
-                                                        {basicPlan?.features?.[0] || 'All Community Apps'}
+                                                        {basicPlan
+                                                            ?.features?.[0] ||
+                                                            'All Community Apps'}
                                                     </span>
                                                 </li>
                                                 <li className="flex items-center text-sm">
@@ -745,7 +753,9 @@ export default function Community({
                                                         />
                                                     </svg>
                                                     <span className="text-slate-600">
-                                                        {basicPlan?.features?.[1] || 'Basic Support'}
+                                                        {basicPlan
+                                                            ?.features?.[1] ||
+                                                            'Basic Support'}
                                                     </span>
                                                 </li>
                                                 <li className="flex items-center text-sm">
@@ -762,7 +772,9 @@ export default function Community({
                                                         />
                                                     </svg>
                                                     <span className="text-slate-600">
-                                                        {basicPlan?.features?.[2] || 'Email Support'}
+                                                        {basicPlan
+                                                            ?.features?.[2] ||
+                                                            'Email Support'}
                                                     </span>
                                                 </li>
                                             </ul>
@@ -784,14 +796,17 @@ export default function Community({
                                                 {proPlan?.name || 'Pro'}
                                             </h3>
                                             <p className="mb-6 text-sm text-slate-600">
-                                                {proPlan?.description || 'Ideal for growing communities'}
+                                                {proPlan?.description ||
+                                                    'Ideal for growing communities'}
                                             </p>
                                             <p className="mb-6">
                                                 <span className="text-3xl font-extrabold text-slate-900">
-                                                    {proPlan?.currency || '₱'}{proPlan?.price || 199}
+                                                    {proPlan?.currency || '₱'}
+                                                    {proPlan?.price || 199}
                                                 </span>
                                                 <span className="text-sm text-slate-600">
-                                                    {proPlan?.period || '/month'}
+                                                    {proPlan?.period ||
+                                                        '/month'}
                                                 </span>
                                             </p>
                                             {auth.user ? (
@@ -805,11 +820,14 @@ export default function Community({
                                                 <Link
                                                     href={route('register', {
                                                         project: 'community',
-                                                        plan: proPlan?.id || 'pro',
+                                                        plan:
+                                                            proPlan?.id ||
+                                                            'pro',
                                                     })}
                                                     className="block w-full rounded-lg border border-transparent bg-indigo-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-indigo-700"
                                                 >
-                                                    {proPlan?.buttonText || 'Get Started'}
+                                                    {proPlan?.buttonText ||
+                                                        'Get Started'}
                                                 </Link>
                                             )}
                                         </div>
@@ -894,17 +912,22 @@ export default function Community({
                                     <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                         <div>
                                             <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                                {businessPlan?.name || 'Business'}
+                                                {businessPlan?.name ||
+                                                    'Business'}
                                             </h3>
                                             <p className="mb-6 text-sm text-slate-600">
-                                                {businessPlan?.description || 'Perfect for established communities with advanced needs'}
+                                                {businessPlan?.description ||
+                                                    'Perfect for established communities with advanced needs'}
                                             </p>
                                             <p className="mb-6">
                                                 <span className="text-3xl font-extrabold text-slate-900">
-                                                    {businessPlan?.currency || '₱'}{businessPlan?.price || 299}
+                                                    {businessPlan?.currency ||
+                                                        '₱'}
+                                                    {businessPlan?.price || 299}
                                                 </span>
                                                 <span className="text-sm text-slate-600">
-                                                    {businessPlan?.period || '/month'}
+                                                    {businessPlan?.period ||
+                                                        '/month'}
                                                 </span>
                                             </p>
                                             {auth.user ? (
@@ -918,11 +941,14 @@ export default function Community({
                                                 <Link
                                                     href={route('register', {
                                                         project: 'community',
-                                                        plan: businessPlan?.id || 'business',
+                                                        plan:
+                                                            businessPlan?.id ||
+                                                            'business',
                                                     })}
                                                     className="block w-full rounded-lg border border-transparent bg-purple-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-purple-700"
                                                 >
-                                                    {businessPlan?.buttonText || 'Get Started'}
+                                                    {businessPlan?.buttonText ||
+                                                        'Get Started'}
                                                 </Link>
                                             )}
                                         </div>
@@ -1250,7 +1276,10 @@ export default function Community({
                                                     clipRule="evenodd"
                                                 />
                                             </svg>
-                                            <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                            <Link
+                                                href={route('neulify')}
+                                                className="transition-colors duration-200 hover:text-[#14B8A6]"
+                                            >
                                                 Powered by Neulify
                                             </Link>
                                         </div>

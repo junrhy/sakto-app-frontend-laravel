@@ -1,7 +1,13 @@
 import { Button } from '@/Components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Widget, PageProps } from '@/types';
+import { PageProps, Widget } from '@/types';
 import { ChevronLeft, ChevronRight, MoveDown, MoveUp, X } from 'lucide-react';
+import { ClinicLowStockAlertsWidget } from './ClinicLowStockAlertsWidget';
+import { ClinicPatientOverviewWidget } from './ClinicPatientOverviewWidget';
+import { ClinicRecentPatientsWidget } from './ClinicRecentPatientsWidget';
+import { ClinicRevenueOverviewWidget } from './ClinicRevenueOverviewWidget';
+import { ClinicTodayAppointmentsWidget } from './ClinicTodayAppointmentsWidget';
+import { ClinicUpcomingAppointmentsWidget } from './ClinicUpcomingAppointmentsWidget';
 import { ContactsWidget } from './ContactsWidget';
 import { EmailsSentWidget } from './EmailsSentWidget';
 import { FnbKitchenWidget } from './FnbKitchenWidget';
@@ -15,12 +21,6 @@ import { RetailInventoryWidget } from './RetailInventoryWidget';
 import { RetailOrdersWidget } from './RetailOrdersWidget';
 import { RetailSalesWidget } from './RetailSalesWidget';
 import { SmsStatsWidget } from './SmsStatsWidget';
-import { ClinicPatientOverviewWidget } from './ClinicPatientOverviewWidget';
-import { ClinicRecentPatientsWidget } from './ClinicRecentPatientsWidget';
-import { ClinicRevenueOverviewWidget } from './ClinicRevenueOverviewWidget';
-import { ClinicTodayAppointmentsWidget } from './ClinicTodayAppointmentsWidget';
-import { ClinicLowStockAlertsWidget } from './ClinicLowStockAlertsWidget';
-import { ClinicUpcomingAppointmentsWidget } from './ClinicUpcomingAppointmentsWidget';
 
 interface WidgetComponentProps extends PageProps {
     widget: Widget;
@@ -150,7 +150,8 @@ export function WidgetComponent({
                             Revenue Overview
                         </>
                     )}
-                    {(widget.type as string) === 'clinic_today_appointments' && (
+                    {(widget.type as string) ===
+                        'clinic_today_appointments' && (
                         <>
                             <span className="h-2 w-2 rounded-full bg-purple-500"></span>
                             Today's Appointments
@@ -162,7 +163,8 @@ export function WidgetComponent({
                             Low Stock Alerts
                         </>
                     )}
-                    {(widget.type as string) === 'clinic_upcoming_appointments' && (
+                    {(widget.type as string) ===
+                        'clinic_upcoming_appointments' && (
                         <>
                             <span className="h-2 w-2 rounded-full bg-blue-500"></span>
                             Upcoming Appointments

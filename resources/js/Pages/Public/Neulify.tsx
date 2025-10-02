@@ -259,9 +259,9 @@ export default function Neulify({ auth }: PageProps) {
                                         Global Technology Company
                                     </div>
                                 </div>
-                                <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl leading-tight">
+                                <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold leading-tight tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl lg:text-7xl">
                                     <span className="block">Neulify</span>
-                                    <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-transparent dark:text-[#14B8A6] leading-tight">
+                                    <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text leading-tight text-transparent dark:text-[#14B8A6]">
                                         Empowering Digital Innovation
                                     </span>
                                 </h1>

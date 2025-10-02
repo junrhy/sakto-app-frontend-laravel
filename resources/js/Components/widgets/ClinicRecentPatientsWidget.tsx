@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { User, Calendar, Phone, Mail } from 'lucide-react';
+import { CardContent } from '@/Components/ui/card';
+import { Calendar, Mail, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface RecentPatient {
@@ -27,15 +27,19 @@ export function ClinicRecentPatientsWidget() {
         try {
             setLoading(true);
             const response = await fetch('/clinic/recent-patients?limit=5');
-            
+
             if (!response.ok) {
                 throw new Error('Failed to fetch recent patients');
             }
-            
+
             const data = await response.json();
             setPatients(data.patients || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load recent patients');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to load recent patients',
+            );
         } finally {
             setLoading(false);
         }
@@ -45,7 +49,7 @@ export function ClinicRecentPatientsWidget() {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
-            year: 'numeric'
+            year: 'numeric',
         });
     };
 
@@ -78,8 +82,8 @@ export function ClinicRecentPatientsWidget() {
     if (loading) {
         return (
             <CardContent className="p-6">
-                <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex h-32 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                 </div>
             </CardContent>
         );
@@ -109,9 +113,12 @@ export function ClinicRecentPatientsWidget() {
         <CardContent className="p-6">
             <div className="space-y-4">
                 {patients.map((patient) => (
-                    <div key={patient.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div
+                        key={patient.id}
+                        className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800"
+                    >
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                            <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
                                 <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
@@ -120,7 +127,11 @@ export function ClinicRecentPatientsWidget() {
                                         {patient.name}
                                     </p>
                                     {patient.is_vip && (
-                                        <Badge className={getVipTierColor(patient.vip_tier)}>
+                                        <Badge
+                                            className={getVipTierColor(
+                                                patient.vip_tier,
+                                            )}
+                                        >
                                             {patient.vip_tier || 'VIP'}
                                         </Badge>
                                     )}

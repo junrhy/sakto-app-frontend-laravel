@@ -659,7 +659,7 @@ export default function Dashboard({
                                                                           ? 'Revenue Overview'
                                                                           : type ===
                                                                               'clinic_today_appointments'
-                                                                            ? 'Today\'s Appointments'
+                                                                            ? "Today's Appointments"
                                                                             : type ===
                                                                                 'clinic_low_stock_alerts'
                                                                               ? 'Low Stock Alerts'
@@ -667,19 +667,19 @@ export default function Dashboard({
                                                                                   'clinic_upcoming_appointments'
                                                                                 ? 'Upcoming Appointments'
                                                                                 : (
-                                                                                    type as string
-                                                                                )
-                                                                                    .replace(
-                                                                                        '_',
-                                                                                        ' ',
-                                                                                    )
-                                                                                    .replace(
-                                                                                        /\b\w/g,
-                                                                                        (
-                                                                                            char,
-                                                                                        ) =>
-                                                                                            char.toUpperCase(),
-                                                                                    )}
+                                                                                      type as string
+                                                                                  )
+                                                                                      .replace(
+                                                                                          '_',
+                                                                                          ' ',
+                                                                                      )
+                                                                                      .replace(
+                                                                                          /\b\w/g,
+                                                                                          (
+                                                                                              char,
+                                                                                          ) =>
+                                                                                              char.toUpperCase(),
+                                                                                      )}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -1095,7 +1095,8 @@ export default function Dashboard({
                                                             );
                                                         }
                                                         if (
-                                                            appParam === 'clinic'
+                                                            appParam ===
+                                                            'clinic'
                                                         ) {
                                                             return [
                                                                 'clinic_patient_overview',
@@ -1200,7 +1201,9 @@ export default function Dashboard({
                                                                         isEditMode={
                                                                             isEditMode
                                                                         }
-                                                                        auth={auth}
+                                                                        auth={
+                                                                            auth
+                                                                        }
                                                                     />
                                                                 </div>
                                                             )}

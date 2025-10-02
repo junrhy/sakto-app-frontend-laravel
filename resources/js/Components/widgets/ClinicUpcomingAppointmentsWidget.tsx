@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Calendar, Clock, User, Phone, AlertCircle } from 'lucide-react';
+import { CardContent } from '@/Components/ui/card';
+import { AlertCircle, Calendar, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface UpcomingAppointment {
@@ -28,16 +28,22 @@ export function ClinicUpcomingAppointmentsWidget() {
     const fetchUpcomingAppointments = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/clinic/appointments/upcoming?limit=5');
-            
+            const response = await fetch(
+                '/clinic/appointments/upcoming?limit=5',
+            );
+
             if (!response.ok) {
                 throw new Error('Failed to fetch upcoming appointments');
             }
-            
+
             const data = await response.json();
             setAppointments(data.appointments || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load upcoming appointments');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to load upcoming appointments',
+            );
         } finally {
             setLoading(false);
         }
@@ -47,16 +53,19 @@ export function ClinicUpcomingAppointmentsWidget() {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
-            year: 'numeric'
+            year: 'numeric',
         });
     };
 
     const formatTime = (timeString: string) => {
-        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
+        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString(
+            'en-US',
+            {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+            },
+        );
     };
 
     const getStatusColor = (status: string) => {
@@ -75,7 +84,7 @@ export function ClinicUpcomingAppointmentsWidget() {
     };
 
     const getUrgencyColor = (isUrgent: boolean) => {
-        return isUrgent 
+        return isUrgent
             ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
             : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     };
@@ -102,8 +111,8 @@ export function ClinicUpcomingAppointmentsWidget() {
     if (loading) {
         return (
             <CardContent className="p-6">
-                <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="flex h-32 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                 </div>
             </CardContent>
         );
@@ -124,7 +133,7 @@ export function ClinicUpcomingAppointmentsWidget() {
         return (
             <CardContent className="p-6">
                 <div className="text-center text-gray-500 dark:text-gray-400">
-                    <Calendar className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                    <Calendar className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                     <p>No upcoming appointments</p>
                 </div>
             </CardContent>
@@ -135,37 +144,50 @@ export function ClinicUpcomingAppointmentsWidget() {
         <CardContent className="p-6">
             <div className="space-y-3">
                 {appointments.map((appointment) => (
-                    <div key={appointment.id} className={`p-4 rounded-lg border ${
-                        appointment.is_urgent 
-                            ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                            : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                    }`}>
-                        <div className="flex items-center justify-between mb-2">
+                    <div
+                        key={appointment.id}
+                        className={`rounded-lg border p-4 ${
+                            appointment.is_urgent
+                                ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                                : 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
+                        }`}
+                    >
+                        <div className="mb-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 <span className="font-medium text-gray-900 dark:text-white">
                                     {appointment.patient_name}
                                 </span>
                                 {appointment.is_urgent && (
-                                    <Badge className={getUrgencyColor(appointment.is_urgent)}>
+                                    <Badge
+                                        className={getUrgencyColor(
+                                            appointment.is_urgent,
+                                        )}
+                                    >
                                         URGENT
                                     </Badge>
                                 )}
                             </div>
-                            <Badge className={getStatusColor(appointment.status)}>
+                            <Badge
+                                className={getStatusColor(appointment.status)}
+                            >
                                 {appointment.status.toUpperCase()}
                             </Badge>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div className="mb-3 grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Date</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Date
+                                </p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {getDateLabel(appointment.appointment_date)}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Time</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Time
+                                </p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {formatTime(appointment.appointment_time)}
                                 </p>
@@ -173,7 +195,9 @@ export function ClinicUpcomingAppointmentsWidget() {
                         </div>
 
                         <div className="mb-3">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Treatment</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Treatment
+                            </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {appointment.treatment_type}
                             </p>
@@ -192,7 +216,8 @@ export function ClinicUpcomingAppointmentsWidget() {
 
                         {appointment.notes && (
                             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                <span className="font-medium">Notes:</span> {appointment.notes}
+                                <span className="font-medium">Notes:</span>{' '}
+                                {appointment.notes}
                             </div>
                         )}
                     </div>

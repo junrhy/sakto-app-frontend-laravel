@@ -552,9 +552,7 @@ export default function Features({ auth }: PageProps) {
                                                         ? route('medical')
                                                         : project.project ===
                                                             'travel'
-                                                          ? route(
-                                                                'travel',
-                                                            )
+                                                          ? route('travel')
                                                           : project.project ===
                                                               'delivery'
                                                             ? route('delivery')

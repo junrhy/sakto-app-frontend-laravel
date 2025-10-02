@@ -814,9 +814,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                 />
                                                             </svg>
                                                         ),
-                                                        link: route(
-                                                            'travel',
-                                                        ),
+                                                        link: route('travel'),
                                                     },
                                                     {
                                                         name:

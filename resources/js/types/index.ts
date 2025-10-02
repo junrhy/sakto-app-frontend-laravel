@@ -20,7 +20,13 @@ export interface User {
     created_at: string;
     updated_at: string;
     identifier?: string;
-    app_currency?: string | { symbol: string; decimal_separator?: string; thousands_separator?: string };
+    app_currency?:
+        | string
+        | {
+              symbol: string;
+              decimal_separator?: string;
+              thousands_separator?: string;
+          };
     credits?: number;
     is_admin?: boolean;
     project_identifier?: string;

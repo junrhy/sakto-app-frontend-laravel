@@ -21,9 +21,7 @@ class PayrollController extends Controller
     public function index()
     {
         $jsonAppCurrency = json_decode(auth()->user()->app_currency);
-        $payrolls = $this->getList();
-        return Inertia::render('Payroll', [
-            'payrolls' => $payrolls,
+        return Inertia::render('Payroll/Index', [
             'currency_symbol' => $jsonAppCurrency->symbol
         ]);
     }
@@ -32,6 +30,8 @@ class PayrollController extends Controller
     {
         try {
             $client_identifier = auth()->user()->identifier;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/payroll", ['client_identifier' => $client_identifier]);
 
@@ -39,7 +39,12 @@ class PayrollController extends Controller
                 throw new Exception('Failed to fetch payroll records from API');
             }
 
-            return response()->json($response->json());
+            $data = $response->json();
+            
+            // Add currency information to the response
+            $data['currency'] = $jsonAppCurrency;
+
+            return response()->json($data);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch payroll records',
@@ -145,6 +150,8 @@ class PayrollController extends Controller
     public function getOverview(): JsonResponse
     {
         try {
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/payroll/overview");
 
@@ -152,7 +159,12 @@ class PayrollController extends Controller
                 throw new Exception('Failed to fetch payroll overview from API');
             }
 
-            return response()->json($response->json());
+            $data = $response->json();
+            
+            // Add currency information to the response
+            $data['currency'] = $jsonAppCurrency;
+
+            return response()->json($data);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch payroll overview',
@@ -201,6 +213,175 @@ class PayrollController extends Controller
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
+
+    // Salary History Methods
+    public function getSalaryHistory(): JsonResponse
+    {
+        try {
+            $client_identifier = auth()->user()->identifier;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/payroll/salary-history", ['client_identifier' => $client_identifier]);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to fetch salary history from API');
+            }
+
+            $data = $response->json();
+            $data['currency'] = $jsonAppCurrency;
+
+            return response()->json($data);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch salary history',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeSalaryHistory(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'employee_id' => 'required|string',
+                'previous_salary' => 'required|numeric|min:0',
+                'new_salary' => 'required|numeric|min:0',
+                'change_reason' => 'required|string|max:255',
+                'approved_by' => 'required|string|max:255',
+                'effective_date' => 'required|date',
+                'notes' => 'nullable|string'
+            ]);
+            
+            $validated['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/payroll/salary-history", $validated);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to store salary history in API');
+            }
+
+            return response()->json($response->json(), 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to create salary history record',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Payroll Periods Methods
+    public function getPayrollPeriods(): JsonResponse
+    {
+        try {
+            $client_identifier = auth()->user()->identifier;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/payroll/periods", ['client_identifier' => $client_identifier]);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to fetch payroll periods from API');
+            }
+
+            $data = $response->json();
+            $data['currency'] = $jsonAppCurrency;
+
+            return response()->json($data);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch payroll periods',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storePayrollPeriod(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'period_name' => 'required|string|max:255',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+                'created_by' => 'required|string|max:255',
+                'notes' => 'nullable|string'
+            ]);
+            
+            $validated['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/payroll/periods", $validated);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to store payroll period in API');
+            }
+
+            return response()->json($response->json(), 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to create payroll period',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Time Tracking Methods
+    public function getTimeTracking(): JsonResponse
+    {
+        try {
+            $client_identifier = auth()->user()->identifier;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/payroll/time-tracking", ['client_identifier' => $client_identifier]);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to fetch time tracking from API');
+            }
+
+            $data = $response->json();
+            $data['currency'] = $jsonAppCurrency;
+
+            return response()->json($data);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch time tracking',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeTimeTracking(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'employee_id' => 'required|string',
+                'work_date' => 'required|date',
+                'clock_in' => 'nullable|date_format:H:i:s',
+                'clock_out' => 'nullable|date_format:H:i:s',
+                'status' => 'required|in:present,absent,late,half_day,leave',
+                'notes' => 'nullable|string',
+                'location' => 'nullable|string|max:255'
+            ]);
+            
+            $validated['client_identifier'] = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/payroll/time-tracking", $validated);
+
+            if (!$response->successful()) {
+                throw new Exception('Failed to store time tracking in API');
+            }
+
+            return response()->json($response->json(), 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to create time tracking record',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

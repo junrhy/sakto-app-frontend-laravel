@@ -1437,7 +1437,6 @@ export default function Apps() {
                 userCredits={credits}
                 onRemoveApp={handleRemoveFromSelection}
             />
-
         </div>
     );
 }

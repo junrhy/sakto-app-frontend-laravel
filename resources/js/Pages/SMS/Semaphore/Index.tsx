@@ -251,8 +251,7 @@ export default function Index({ auth, messages, stats }: Props) {
                                         Send Message
                                     </CardTitle>
                                     <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                        Send SMS messages (Max
-                                        160 characters)
+                                        Send SMS messages (Max 160 characters)
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6 p-6">
@@ -333,7 +332,8 @@ export default function Index({ auth, messages, stats }: Props) {
                                                         clipRule="evenodd"
                                                     />
                                                 </svg>
-                                                Sending this SMS will cost 2 credits from your balance
+                                                Sending this SMS will cost 2
+                                                credits from your balance
                                             </div>
                                             {canEdit && (
                                                 <Button
@@ -357,7 +357,9 @@ export default function Index({ auth, messages, stats }: Props) {
                                                                 <path
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round"
-                                                                    strokeWidth={2}
+                                                                    strokeWidth={
+                                                                        2
+                                                                    }
                                                                     d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                                                                 />
                                                             </svg>
