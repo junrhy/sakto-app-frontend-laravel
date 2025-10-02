@@ -1097,7 +1097,7 @@ export default function Community({
                                     <div className="mb-4 flex items-center">
                                         <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                         <span className="ml-2 text-xl font-bold">
-                                            Komunidad
+                                            Community
                                         </span>
                                     </div>
                                     <p className="mb-4 max-w-md text-slate-300">
@@ -1250,7 +1250,9 @@ export default function Community({
                                                     clipRule="evenodd"
                                                 />
                                             </svg>
-                                            A subsidiary of Sakto Technologies
+                                            <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                                Powered by Neulify
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>

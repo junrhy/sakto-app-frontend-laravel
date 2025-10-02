@@ -673,7 +673,9 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        A subsidiary of Sakto Technologies
+                                        <Link href={route('neulify')} className="hover:text-[#14B8A6] transition-colors duration-200">
+                                            Powered by Neulify
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
