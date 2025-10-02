@@ -23,13 +23,11 @@ export const TimeTrackingTab = ({
     canEdit,
     onAddTimeTracking,
 }: TimeTrackingTabProps) => {
-    console.log('TimeTrackingTab received data:', timeTracking);
-    
     return (
         <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
             <CardHeader className="border-b border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/50">
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <Clock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                     Time Tracking
                 </CardTitle>
             </CardHeader>
@@ -39,7 +37,7 @@ export const TimeTrackingTab = ({
                         {canEdit && (
                             <Button
                                 onClick={onAddTimeTracking}
-                                className="bg-orange-600 text-white hover:bg-orange-700"
+                                className="bg-gray-600 text-white hover:bg-gray-700"
                             >
                                 <Plus className="mr-2 h-4 w-4" /> Add Time Entry
                             </Button>
@@ -87,13 +85,13 @@ export const TimeTrackingTab = ({
                                             {tracking.employee_id}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {tracking.work_date}
+                                            {new Date(tracking.work_date).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
                                             {tracking.clock_in ? (
                                                 <div className="flex items-center gap-1">
-                                                    <Clock className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                                    {tracking.clock_in}
+                                                    <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                                    {new Date(tracking.clock_in).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                                 </div>
                                             ) : (
                                                 <span className="text-gray-400 dark:text-gray-500">
@@ -104,8 +102,8 @@ export const TimeTrackingTab = ({
                                         <TableCell className="text-gray-700 dark:text-gray-300">
                                             {tracking.clock_out ? (
                                                 <div className="flex items-center gap-1">
-                                                    <Clock className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                                    {tracking.clock_out}
+                                                    <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                                    {new Date(tracking.clock_out).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                                 </div>
                                             ) : (
                                                 <span className="text-gray-400 dark:text-gray-500">
@@ -115,14 +113,14 @@ export const TimeTrackingTab = ({
                                         </TableCell>
                                         <TableCell className="font-semibold text-gray-900 dark:text-white">
                                             <div className="flex items-center gap-1">
-                                                <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                <Timer className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                                 {tracking.hours_worked}h
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
                                             {tracking.overtime_hours > 0 ? (
                                                 <div className="flex items-center gap-1">
-                                                    <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                                                    <AlertCircle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                                     {tracking.overtime_hours}h
                                                 </div>
                                             ) : (

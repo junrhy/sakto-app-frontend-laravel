@@ -34,7 +34,14 @@ export const SalaryHistoryDialog = ({
 
     useEffect(() => {
         if (currentSalaryHistory) {
-            setFormData(currentSalaryHistory);
+            // Format the date for HTML date input (YYYY-MM-DD)
+            const formattedData = {
+                ...currentSalaryHistory,
+                effective_date: currentSalaryHistory.effective_date 
+                    ? new Date(currentSalaryHistory.effective_date).toISOString().split('T')[0]
+                    : ''
+            };
+            setFormData(formattedData);
         } else {
             setFormData({
                 employee_id: '',

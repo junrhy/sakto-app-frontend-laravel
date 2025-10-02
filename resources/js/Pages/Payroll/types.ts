@@ -12,10 +12,10 @@ export interface Payroll {
 export interface SalaryHistory {
     id: number;
     employee_id: string;
-    previous_salary: number;
-    new_salary: number;
-    salary_change: number;
-    percentage_change: number;
+    previous_salary: number | string;
+    new_salary: number | string;
+    salary_change: number | string;
+    percentage_change: number | string;
     change_reason: string;
     approved_by: string;
     effective_date: string;

@@ -32,7 +32,17 @@ export const PayrollPeriodDialog = ({
 
     useEffect(() => {
         if (currentPayrollPeriod) {
-            setFormData(currentPayrollPeriod);
+            // Format the dates for HTML date input (YYYY-MM-DD)
+            const formattedData = {
+                ...currentPayrollPeriod,
+                start_date: currentPayrollPeriod.start_date 
+                    ? new Date(currentPayrollPeriod.start_date).toISOString().split('T')[0]
+                    : '',
+                end_date: currentPayrollPeriod.end_date 
+                    ? new Date(currentPayrollPeriod.end_date).toISOString().split('T')[0]
+                    : ''
+            };
+            setFormData(formattedData);
         } else {
             setFormData({
                 period_name: '',

@@ -68,7 +68,7 @@ export const EmployeesTab = ({
         <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
             <CardHeader className="border-b border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/50">
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                     Employee Management
                 </CardTitle>
             </CardHeader>
@@ -78,7 +78,7 @@ export const EmployeesTab = ({
                         {canEdit && (
                             <Button
                                 onClick={onAddPayroll}
-                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                className="bg-gray-600 text-white hover:bg-gray-700"
                             >
                                 <Plus className="mr-2 h-4 w-4" /> Add Employee
                             </Button>
@@ -204,7 +204,7 @@ export const EmployeesTab = ({
                                                     onClick={() =>
                                                         onEditPayroll(payroll)
                                                     }
-                                                    className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                                                    className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/20 dark:text-gray-300 dark:hover:bg-gray-900/30"
                                                 >
                                                     <Edit className="mr-1 h-3 w-3" />{' '}
                                                     Edit
@@ -279,7 +279,7 @@ export const EmployeesTab = ({
                                     size="sm"
                                     className={
                                         currentPage === page
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                            ? 'bg-gray-600 text-white hover:bg-gray-700'
                                             : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                                     }
                                 >

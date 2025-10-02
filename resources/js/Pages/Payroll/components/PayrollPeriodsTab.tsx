@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Calendar, DollarSign, Plus, Users } from 'lucide-react';
+import { Calendar, Plus, Users } from 'lucide-react';
 import { PayrollPeriod } from '../types';
 import { formatCurrency, getStatusBadgeClass } from '../utils/formatting';
 
@@ -25,13 +25,11 @@ export const PayrollPeriodsTab = ({
     currency_symbol,
     onAddPayrollPeriod,
 }: PayrollPeriodsTabProps) => {
-    console.log('PayrollPeriodsTab received data:', payrollPeriods);
-    
     return (
         <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
             <CardHeader className="border-b border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/50">
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                    <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                     Payroll Periods
                 </CardTitle>
             </CardHeader>
@@ -41,7 +39,7 @@ export const PayrollPeriodsTab = ({
                         {canEdit && (
                             <Button
                                 onClick={onAddPayrollPeriod}
-                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                className="bg-gray-600 text-white hover:bg-gray-700"
                             >
                                 <Plus className="mr-2 h-4 w-4" /> Add Period
                             </Button>
@@ -86,10 +84,10 @@ export const PayrollPeriodsTab = ({
                                             {period.period_name}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {period.start_date}
+                                            {new Date(period.start_date).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {period.end_date}
+                                            {new Date(period.end_date).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell>
                                             <span
@@ -99,13 +97,10 @@ export const PayrollPeriodsTab = ({
                                             </span>
                                         </TableCell>
                                         <TableCell className="font-semibold text-gray-900 dark:text-white">
-                                            <div className="flex items-center gap-1">
-                                                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                                {formatCurrency(
-                                                    period.total_amount,
-                                                    currency_symbol,
-                                                )}
-                                            </div>
+                                            {formatCurrency(
+                                                period.total_amount,
+                                                currency_symbol,
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
                                             <div className="flex items-center gap-1">

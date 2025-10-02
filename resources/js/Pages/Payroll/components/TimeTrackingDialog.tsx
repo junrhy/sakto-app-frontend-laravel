@@ -37,7 +37,20 @@ export const TimeTrackingDialog = ({
 
     useEffect(() => {
         if (currentTimeTracking) {
-            setFormData(currentTimeTracking);
+            // Format the dates and times for HTML inputs
+            const formattedData = {
+                ...currentTimeTracking,
+                work_date: currentTimeTracking.work_date 
+                    ? new Date(currentTimeTracking.work_date).toISOString().split('T')[0]
+                    : '',
+                clock_in: currentTimeTracking.clock_in 
+                    ? new Date(currentTimeTracking.clock_in).toTimeString().slice(0, 5)
+                    : '',
+                clock_out: currentTimeTracking.clock_out 
+                    ? new Date(currentTimeTracking.clock_out).toTimeString().slice(0, 5)
+                    : ''
+            };
+            setFormData(formattedData);
         } else {
             setFormData({
                 employee_id: '',
@@ -56,7 +69,15 @@ export const TimeTrackingDialog = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(formData);
+        
+        // Format time fields to include seconds (H:i:s format)
+        const formattedData = {
+            ...formData,
+            clock_in: formData.clock_in ? `${formData.clock_in}:00` : '',
+            clock_out: formData.clock_out ? `${formData.clock_out}:00` : ''
+        };
+        
+        onSave(formattedData);
     };
 
     const handleChange = (field: keyof TimeTracking, value: string | number) => {

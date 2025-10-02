@@ -23,12 +23,17 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
         salaryHistory,
         payrollPeriods,
         timeTracking,
+        currency,
         loading,
         loadPayrolls,
+        loadSalaryHistory,
+        loadPayrollPeriods,
+        loadTimeTracking,
     } = usePayrollData();
 
-    // Debug logging
-    console.log('Payroll data:', { payrolls, salaryHistory, payrollPeriods, timeTracking, loading });
+    // Use currency from API if available, otherwise fall back to prop or default
+    const displayCurrency = currency?.symbol || currency_symbol;
+
 
     // Dialog states
     const [isPayrollDialogOpen, setIsPayrollDialogOpen] = useState(false);
@@ -161,6 +166,7 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
         try {
             await axios.post('/payroll/salary-history', data);
             // Refresh data
+            await loadSalaryHistory();
             setIsSalaryHistoryDialogOpen(false);
             setCurrentSalaryHistory(null);
         } catch (error) {
@@ -172,6 +178,7 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
         try {
             await axios.post('/payroll/periods', data);
             // Refresh data
+            await loadPayrollPeriods();
             setIsPayrollPeriodDialogOpen(false);
             setCurrentPayrollPeriod(null);
         } catch (error) {
@@ -183,6 +190,7 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
         try {
             await axios.post('/payroll/time-tracking', data);
             // Refresh data
+            await loadTimeTracking();
             setIsTimeTrackingDialogOpen(false);
             setCurrentTimeTracking(null);
         } catch (error) {
@@ -208,35 +216,35 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
             <div className="space-y-6">
                 <PayrollOverview
                     payrolls={payrolls}
-                    currency_symbol={currency_symbol}
+                    currency_symbol={displayCurrency}
                 />
 
                 <Tabs defaultValue="employees" className="w-full">
                     <TabsList className="grid w-full grid-cols-4 border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
                         <TabsTrigger
                             value="employees"
-                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
+                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-gray-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
                         >
                             <Users className="h-4 w-4" />
                             Employees
                         </TabsTrigger>
                         <TabsTrigger
                             value="salary-history"
-                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-green-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
+                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-gray-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
                         >
                             <History className="h-4 w-4" />
                             Salary History
                         </TabsTrigger>
                         <TabsTrigger
                             value="periods"
-                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
+                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-gray-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
                         >
                             <Calendar className="h-4 w-4" />
                             Payroll Periods
                         </TabsTrigger>
                         <TabsTrigger
                             value="time-tracking"
-                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-orange-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
+                            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-gray-600 data-[state=active]:text-white dark:text-gray-300 dark:hover:text-white"
                         >
                             <Clock className="h-4 w-4" />
                             Time Tracking
@@ -252,7 +260,7 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
                             itemsPerPage={itemsPerPage}
                             canEdit={canEdit}
                             canDelete={canDelete}
-                            currency_symbol={currency_symbol}
+                            currency_symbol={displayCurrency}
                             onAddPayroll={handleAddPayroll}
                             onEditPayroll={handleEditPayroll}
                             onDeletePayroll={handleDeletePayroll}
@@ -270,7 +278,7 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
                         <SalaryHistoryTab
                             salaryHistory={salaryHistory}
                             canEdit={canEdit}
-                            currency_symbol={currency_symbol}
+                            currency_symbol={displayCurrency}
                             onAddSalaryHistory={handleAddSalaryHistory}
                         />
                     </TabsContent>
@@ -279,7 +287,7 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
                         <PayrollPeriodsTab
                             payrollPeriods={payrollPeriods}
                             canEdit={canEdit}
-                            currency_symbol={currency_symbol}
+                            currency_symbol={displayCurrency}
                             onAddPayrollPeriod={handleAddPayrollPeriod}
                         />
                     </TabsContent>
