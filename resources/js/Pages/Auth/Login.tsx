@@ -8,6 +8,38 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+const ALLOWED_PROJECTS = [
+    'trial',
+    'community',
+    'medical',
+    'logistics',
+    'delivery',
+    'jobs',
+    'shop',
+    'enterprise',
+    'travel',
+] as const;
+
+const PROJECT_IMAGES = {
+    trial: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    community:
+        'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    medical:
+        'https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    logistics:
+        'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    delivery:
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    jobs:
+        'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    shop:
+        'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    enterprise:
+        'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    travel:
+        'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+} as const;
+
 export default function Login({
     status,
     canResetPassword,
@@ -15,6 +47,14 @@ export default function Login({
     status?: string;
     canResetPassword: boolean;
 }) {
+    const urlProject = new URLSearchParams(window.location.search).get(
+        'project',
+    );
+    const validProject: (typeof ALLOWED_PROJECTS)[number] =
+        ALLOWED_PROJECTS.includes(urlProject as any)
+            ? (urlProject as (typeof ALLOWED_PROJECTS)[number])
+            : 'trial';
+
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -181,90 +221,17 @@ export default function Login({
                                 </div>
 
                                 <div className="text-center">
-                                    <div className="group relative inline-block">
-                                        <div className="invisible absolute bottom-full left-1/2 z-[100] mb-1 w-40 origin-bottom -translate-x-1/2 transform rounded-md bg-white opacity-0 shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 group-hover:visible group-hover:opacity-100 dark:bg-gray-800">
-                                            <div
-                                                className="py-0.5"
-                                                role="menu"
-                                                aria-orientation="vertical"
-                                            >
-                                                {[
-                                                    {
-                                                        name: 'Community',
-                                                        href: route(
-                                                            'register',
-                                                            {
-                                                                project:
-                                                                    'community',
-                                                            },
-                                                        ),
-                                                    },
-                                                    {
-                                                        name: 'Logistics',
-                                                        href: route(
-                                                            'register',
-                                                            {
-                                                                project:
-                                                                    'logistics',
-                                                            },
-                                                        ),
-                                                    },
-                                                    {
-                                                        name: 'Medical',
-                                                        href: route(
-                                                            'register',
-                                                            {
-                                                                project:
-                                                                    'medical',
-                                                            },
-                                                        ),
-                                                    },
-                                                    {
-                                                        name: 'Enterprise',
-                                                        href: route(
-                                                            'register',
-                                                            {
-                                                                project:
-                                                                    'enterprise',
-                                                            },
-                                                        ),
-                                                    },
-                                                ].map((option) => (
-                                                    <Link
-                                                        key={option.name}
-                                                        href={option.href}
-                                                        className="block px-3 py-1.5 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700"
-                                                        role="menuitem"
-                                                    >
-                                                        {option.name}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                                            Don't have an account?{' '}
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                            >
-                                                Sign up
-                                                <svg
-                                                    className="ml-1 h-4 w-4 transition-transform group-hover:translate-y-0.5"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M19 9l-7 7-7-7"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </div>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        Don't have an account?{' '}
+                                        <Link
+                                            href={route('register', {
+                                                project: validProject,
+                                            })}
+                                            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                        >
+                                            Sign up
+                                        </Link>
+                                    </span>
                                 </div>
                             </form>
                         </div>
@@ -275,14 +242,9 @@ export default function Login({
                 <div className="hidden md:block md:w-1/2">
                     <div className="h-full w-full">
                         <img
-                            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
-                            alt="Office workspace with laptop and coffee"
-                            className="block h-full w-full object-cover dark:hidden"
-                        />
-                        <img
-                            src="https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
-                            alt="Dark office workspace at night"
-                            className="hidden h-full w-full object-cover dark:block"
+                            src={PROJECT_IMAGES[validProject]}
+                            alt={`${validProject.charAt(0).toUpperCase() + validProject.slice(1)} workspace`}
+                            className="h-full w-full object-cover"
                         />
                     </div>
                 </div>

@@ -621,7 +621,7 @@ export default function Medical({ auth }: PageProps) {
                                         />
                                     </div>
                                     <span className="text-xl font-bold">
-                                        Medikal
+                                        Medical
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-teal-300">
