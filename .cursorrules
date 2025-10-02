@@ -953,6 +953,129 @@ docker-compose exec [service-name] bash
 4. **Port conflicts**: Check if ports 8000, 8001, 3308, 3309 are available
 5. **Permission issues**: Ensure Docker has proper permissions on your project directories
 
+## Widget Creation Guidelines
+
+### Widget Creation Steps
+When creating new widgets in the Sakto app, follow these steps:
+
+#### Step 1: Create Widget Component
+- **Location**: `/resources/js/Components/widgets/[WidgetName]Widget.tsx`
+- **Requirements**:
+  - Use TypeScript interfaces for props
+  - Include loading states with spinner animations
+  - Add proper error handling with user-friendly messages
+  - Follow Card-based styling pattern with `CardContent className="p-0"`
+  - Ensure dark mode support with consistent colors
+  - Use proper currency formatting with comma separators
+  - Include responsive design (mobile-first)
+
+#### Step 2: Update Type Definitions
+- **File**: `/resources/js/types/index.ts`
+- **Action**: Add new widget type to the `WidgetType` union
+- **Example**: `| 'new_widget_type'`
+
+#### Step 3: Update Dashboard Index
+- **File**: `/resources/js/Pages/Dashboard/Index.tsx`
+- **Actions**:
+  - Add app type to `AppType` union if new app
+  - Add widget types to `getAvailableWidgets()` function for appropriate app with proper type casting: `as unknown as WidgetTypeImport[]`
+  - Add widget display names to the dropdown labels section
+  - **CRITICAL**: Add widget filtering logic in the widget rendering section (around line 1000+) to filter widgets by app type
+
+#### Step 4: Update WidgetComponent
+- **File**: `/resources/js/Components/widgets/WidgetComponent.tsx`
+- **Actions**:
+  - Import the new widget component
+  - Add widget title with colored indicator in the header section
+  - Add widget component rendering in the content section
+
+#### Step 5: API Endpoints
+- **Backend**: Ensure corresponding API endpoints exist in the controller
+- **Frontend**: Widget should fetch data from appropriate endpoints
+- **Error Handling**: Graceful fallbacks when API calls fail
+
+#### Step 6: Styling Standards
+- **Table Styling**: Use Card wrapper with CardContent className="p-0"
+- **Header Rows**: `className="bg-gray-50 dark:bg-gray-700"`
+- **Header Cells**: `className="text-gray-900 dark:text-white"`
+- **Body Rows**: `className="hover:bg-gray-50 dark:hover:bg-gray-700"`
+- **Body Cells**: `className="text-gray-900 dark:text-white"`
+- **Consistent Spacing**: Use proper padding and margins
+- **Color Coding**: Use appropriate colors for different statuses
+
+#### Step 7: Testing
+- **Linting**: Run `npm run lint` to check for errors
+- **Functionality**: Test widget loading, error states, and data display
+- **Responsiveness**: Verify mobile and desktop layouts
+- **Dark Mode**: Test both light and dark themes
+
+### Common TypeScript Issues & Solutions
+
+#### TypeScript Casting Error
+**Error**: `Conversion of type 'widget_type[]' to type 'WidgetType[]' may be a mistake`
+
+**Solution**: Use proper type casting in `getAvailableWidgets()` function:
+```tsx
+if (type === 'new_app') {
+    return [
+        'new_widget_1',
+        'new_widget_2',
+    ] as unknown as WidgetTypeImport[];
+}
+```
+
+#### Widget Filtering Logic
+**CRITICAL**: After adding widgets to `getAvailableWidgets()`, you MUST also add the filtering logic in the widget rendering section (around line 1000+):
+
+```tsx
+if (appParam === 'new_app') {
+    return [
+        'new_widget_1',
+        'new_widget_2',
+    ].includes(widget.type);
+}
+```
+
+This ensures widgets are properly filtered by app type when rendering.
+
+#### Example Widget Structure:
+```tsx
+export function NewWidget() {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    if (loading) return <LoadingSpinner />;
+    if (error) return <ErrorMessage error={error} />;
+    if (!data) return <NoDataMessage />;
+
+    return (
+        <CardContent className="p-6">
+            {/* Widget content with consistent styling */}
+        </CardContent>
+    );
+}
+```
+
+### Widget Integration Checklist
+- [ ] Widget component created with proper TypeScript interfaces
+- [ ] Loading states and error handling implemented
+- [ ] Dark mode support included
+- [ ] Widget type added to WidgetType union
+- [ ] Widget added to getAvailableWidgets() function
+- [ ] Widget import added to WidgetComponent.tsx
+- [ ] Widget title and colored indicator added to header
+- [ ] Widget component rendering added to content section
+- [ ] Widget display name added to dropdown labels
+- [ ] API endpoints implemented in backend controller
+- [ ] Linting passes without errors
+- [ ] Responsive design tested
+- [ ] Dark mode tested
+
 ## Important Notes
 - Always test API connectivity before implementing frontend features
 - Ensure proper error messages are displayed to users

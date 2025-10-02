@@ -1310,4 +1310,259 @@ class ClinicController extends Controller
             ], 500);
         }
     }
+
+    // Widget API Endpoints
+
+    /**
+     * Get patient statistics for dashboard widget
+     */
+    public function getPatientStats()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->timeout(10)
+                ->get("{$this->apiUrl}/patients/stats", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            \Log::error('Patient stats API call failed', [
+                'error' => $e->getMessage(),
+                'api_url' => $this->apiUrl,
+                'client_identifier' => $clientIdentifier ?? 'unknown'
+            ]);
+            
+            return response()->json(['error' => 'Failed to fetch patient statistics'], 500);
+        }
+    }
+
+    /**
+     * Get recent patients for dashboard widget
+     */
+    public function getRecentPatients(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $limit = $request->get('limit', 5);
+
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patients/recent", [
+                    'client_identifier' => $clientIdentifier,
+                    'limit' => $limit
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch recent patients'], 500);
+        }
+    }
+
+    /**
+     * Get VIP patients for dashboard widget
+     */
+    public function getVipPatients(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $limit = $request->get('limit', 5);
+
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/patients/vip", [
+                    'client_identifier' => $clientIdentifier,
+                    'limit' => $limit
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch VIP patients'], 500);
+        }
+    }
+
+    /**
+     * Get revenue statistics for dashboard widget
+     */
+    public function getRevenueStats()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->timeout(10)
+                ->get("{$this->apiUrl}/patient-payments/stats", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            \Log::error('Revenue stats API call failed', [
+                'error' => $e->getMessage(),
+                'api_url' => $this->apiUrl,
+                'client_identifier' => $clientIdentifier ?? 'unknown'
+            ]);
+            
+            return response()->json(['error' => 'Failed to fetch revenue statistics'], 500);
+        }
+    }
+
+    /**
+     * Get appointment statistics for dashboard widget
+     */
+    public function getAppointmentStats()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->timeout(10)
+                ->get("{$this->apiUrl}/appointments/stats", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            \Log::error('Appointment stats API call failed', [
+                'error' => $e->getMessage(),
+                'api_url' => $this->apiUrl,
+                'client_identifier' => $clientIdentifier ?? 'unknown'
+            ]);
+            
+            return response()->json(['error' => 'Failed to fetch appointment statistics'], 500);
+        }
+    }
+
+    /**
+     * Get payment statistics for dashboard widget
+     */
+    public function getPaymentStats()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->timeout(10)
+                ->get("{$this->apiUrl}/patient-payments/payment-stats", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            \Log::error('Payment stats API call failed', [
+                'error' => $e->getMessage(),
+                'api_url' => $this->apiUrl,
+                'client_identifier' => $clientIdentifier ?? 'unknown'
+            ]);
+            
+            return response()->json(['error' => 'Failed to fetch payment statistics'], 500);
+        }
+    }
+
+    /**
+     * Get outstanding bills for dashboard widget
+     */
+    public function getOutstandingBills(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $limit = $request->get('limit', 5);
+            
+            $response = Http::withToken($this->apiToken)
+                ->timeout(10)
+                ->get("{$this->apiUrl}/patient-bills/outstanding", [
+                    'client_identifier' => $clientIdentifier,
+                    'limit' => $limit
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            \Log::error('Outstanding bills API call failed', [
+                'error' => $e->getMessage(),
+                'api_url' => $this->apiUrl,
+                'client_identifier' => $clientIdentifier ?? 'unknown'
+            ]);
+            
+            return response()->json(['error' => 'Failed to fetch outstanding bills'], 500);
+        }
+    }
+
+    /**
+     * Get low stock alerts for dashboard widget
+     */
+    public function getLowStockAlerts(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $limit = $request->get('limit', 5);
+            
+            $response = Http::withToken($this->apiToken)
+                ->timeout(10)
+                ->get("{$this->apiUrl}/clinic-inventory/low-stock-alerts", [
+                    'client_identifier' => $clientIdentifier,
+                    'limit' => $limit
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            // Format the response to match the expected structure
+            $items = $response->json();
+            $formattedItems = array_map(function ($item) {
+                return [
+                    'id' => $item['id'],
+                    'name' => $item['name'],
+                    'current_stock' => $item['current_stock'],
+                    'minimum_stock' => $item['minimum_stock'],
+                    'unit' => $item['unit'] ?? 'pieces',
+                    'urgency' => $item['current_stock'] <= $item['minimum_stock'] * 0.5 ? 'high' : 
+                                ($item['current_stock'] <= $item['minimum_stock'] * 0.75 ? 'medium' : 'low'),
+                    'supplier' => !empty($item['supplier']) ? $item['supplier'] : null,
+                    'last_restocked' => $item['last_restocked'] ?? 'N/A'
+                ];
+            }, $items);
+
+            return response()->json([
+                'items' => $formattedItems
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Low stock alerts API call failed', [
+                'error' => $e->getMessage(),
+                'api_url' => $this->apiUrl,
+                'client_identifier' => $clientIdentifier ?? 'unknown'
+            ]);
+            
+            return response()->json(['error' => 'Failed to fetch low stock alerts'], 500);
+        }
+    }
+
 }

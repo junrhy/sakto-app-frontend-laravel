@@ -1,6 +1,6 @@
 import { Button } from '@/Components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Widget } from '@/types';
+import { Widget, PageProps } from '@/types';
 import { ChevronLeft, ChevronRight, MoveDown, MoveUp, X } from 'lucide-react';
 import { ContactsWidget } from './ContactsWidget';
 import { EmailsSentWidget } from './EmailsSentWidget';
@@ -15,8 +15,14 @@ import { RetailInventoryWidget } from './RetailInventoryWidget';
 import { RetailOrdersWidget } from './RetailOrdersWidget';
 import { RetailSalesWidget } from './RetailSalesWidget';
 import { SmsStatsWidget } from './SmsStatsWidget';
+import { ClinicPatientOverviewWidget } from './ClinicPatientOverviewWidget';
+import { ClinicRecentPatientsWidget } from './ClinicRecentPatientsWidget';
+import { ClinicRevenueOverviewWidget } from './ClinicRevenueOverviewWidget';
+import { ClinicTodayAppointmentsWidget } from './ClinicTodayAppointmentsWidget';
+import { ClinicLowStockAlertsWidget } from './ClinicLowStockAlertsWidget';
+import { ClinicUpcomingAppointmentsWidget } from './ClinicUpcomingAppointmentsWidget';
 
-interface WidgetComponentProps {
+interface WidgetComponentProps extends PageProps {
     widget: Widget;
     onRemove: (id: number) => void;
     onMoveLeft: () => void;
@@ -42,6 +48,7 @@ export function WidgetComponent({
     isTopmost,
     isBottommost,
     isEditMode,
+    auth,
 }: WidgetComponentProps) {
     return (
         <Card className="relative mb-4 h-full border-2 border-gray-300 shadow-md transition-shadow duration-200 hover:shadow-lg dark:border-gray-600">
@@ -125,6 +132,42 @@ export function WidgetComponent({
                             SMS Statistics
                         </>
                     )}
+                    {(widget.type as string) === 'clinic_patient_overview' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                            Patient Overview
+                        </>
+                    )}
+                    {(widget.type as string) === 'clinic_recent_patients' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                            Recent Patients
+                        </>
+                    )}
+                    {(widget.type as string) === 'clinic_revenue_overview' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
+                            Revenue Overview
+                        </>
+                    )}
+                    {(widget.type as string) === 'clinic_today_appointments' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+                            Today's Appointments
+                        </>
+                    )}
+                    {(widget.type as string) === 'clinic_low_stock_alerts' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-red-500"></span>
+                            Low Stock Alerts
+                        </>
+                    )}
+                    {(widget.type as string) === 'clinic_upcoming_appointments' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                            Upcoming Appointments
+                        </>
+                    )}
                 </CardTitle>
                 {isEditMode && (
                     <Button
@@ -174,6 +217,24 @@ export function WidgetComponent({
                     <RentalItemStatsWidget />
                 )}
                 {(widget.type as string) === 'sms_stats' && <SmsStatsWidget />}
+                {(widget.type as string) === 'clinic_patient_overview' && (
+                    <ClinicPatientOverviewWidget />
+                )}
+                {(widget.type as string) === 'clinic_recent_patients' && (
+                    <ClinicRecentPatientsWidget />
+                )}
+                {(widget.type as string) === 'clinic_revenue_overview' && (
+                    <ClinicRevenueOverviewWidget auth={auth} />
+                )}
+                {(widget.type as string) === 'clinic_today_appointments' && (
+                    <ClinicTodayAppointmentsWidget />
+                )}
+                {(widget.type as string) === 'clinic_low_stock_alerts' && (
+                    <ClinicLowStockAlertsWidget />
+                )}
+                {(widget.type as string) === 'clinic_upcoming_appointments' && (
+                    <ClinicUpcomingAppointmentsWidget />
+                )}
             </div>
 
             {isEditMode && (

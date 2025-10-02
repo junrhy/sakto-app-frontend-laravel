@@ -20,7 +20,7 @@ export interface User {
     created_at: string;
     updated_at: string;
     identifier?: string;
-    app_currency?: { symbol: string };
+    app_currency?: string | { symbol: string; decimal_separator?: string; thousands_separator?: string };
     credits?: number;
     is_admin?: boolean;
     project_identifier?: string;
@@ -80,7 +80,13 @@ export type WidgetType =
     | 'loan_stats'
     | 'payroll_stats'
     | 'rental_item_stats'
-    | 'sms_stats';
+    | 'sms_stats'
+    | 'clinic_patient_overview'
+    | 'clinic_recent_patients'
+    | 'clinic_revenue_overview'
+    | 'clinic_today_appointments'
+    | 'clinic_low_stock_alerts'
+    | 'clinic_upcoming_appointments';
 
 export interface Widget {
     id: number;

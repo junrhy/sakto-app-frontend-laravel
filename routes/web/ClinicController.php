@@ -102,5 +102,16 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::post('/patient-medical-history', [ClinicController::class, 'createPatientMedicalHistory']);
         Route::put('/patient-medical-history/{id}', [ClinicController::class, 'updatePatientMedicalHistory']);
         Route::delete('/patient-medical-history/{id}', [ClinicController::class, 'deletePatientMedicalHistory']);
+        
+        // Widget API Endpoints
+        Route::get('/patient-stats', [ClinicController::class, 'getPatientStats']);
+        Route::get('/recent-patients', [ClinicController::class, 'getRecentPatients']);
+        Route::get('/vip-patients', [ClinicController::class, 'getVipPatients']);
+        Route::get('/revenue-stats', [ClinicController::class, 'getRevenueStats']);
+        Route::get('/appointment-stats', [ClinicController::class, 'getAppointmentStats']);
+        Route::get('/payment-stats', [ClinicController::class, 'getPaymentStats']);
+        Route::get('/outstanding-bills', [ClinicController::class, 'getOutstandingBills']);
+        Route::get('/inventory/low-stock-alerts', [ClinicController::class, 'getLowStockAlerts']);
+        Route::get('/appointments/upcoming', [ClinicController::class, 'getUpcomingAppointments']);
     });
 });

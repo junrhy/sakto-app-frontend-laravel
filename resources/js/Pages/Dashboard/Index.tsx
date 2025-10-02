@@ -83,6 +83,7 @@ type AppType =
     | 'payroll'
     | 'rental-item'
     | 'sms'
+    | 'clinic'
     | null;
 
 export default function Dashboard({
@@ -166,6 +167,16 @@ export default function Dashboard({
         }
         if (type === 'sms') {
             return ['sms_stats'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'clinic') {
+            return [
+                'clinic_patient_overview',
+                'clinic_recent_patients',
+                'clinic_revenue_overview',
+                'clinic_today_appointments',
+                'clinic_low_stock_alerts',
+                'clinic_upcoming_appointments',
+            ] as unknown as WidgetTypeImport[];
         }
         return [];
     };
@@ -637,20 +648,38 @@ export default function Dashboard({
                                                                   : type ===
                                                                       'genealogy_stats'
                                                                     ? 'Genealogy Stats'
-                                                                    : (
-                                                                          type as string
-                                                                      )
-                                                                          .replace(
-                                                                              '_',
-                                                                              ' ',
-                                                                          )
-                                                                          .replace(
-                                                                              /\b\w/g,
-                                                                              (
-                                                                                  char,
-                                                                              ) =>
-                                                                                  char.toUpperCase(),
-                                                                          )}
+                                                                    : type ===
+                                                                        'clinic_patient_overview'
+                                                                      ? 'Patient Overview'
+                                                                      : type ===
+                                                                          'clinic_recent_patients'
+                                                                        ? 'Recent Patients'
+                                                                        : type ===
+                                                                            'clinic_revenue_overview'
+                                                                          ? 'Revenue Overview'
+                                                                          : type ===
+                                                                              'clinic_today_appointments'
+                                                                            ? 'Today\'s Appointments'
+                                                                            : type ===
+                                                                                'clinic_low_stock_alerts'
+                                                                              ? 'Low Stock Alerts'
+                                                                              : type ===
+                                                                                  'clinic_upcoming_appointments'
+                                                                                ? 'Upcoming Appointments'
+                                                                                : (
+                                                                                    type as string
+                                                                                )
+                                                                                    .replace(
+                                                                                        '_',
+                                                                                        ' ',
+                                                                                    )
+                                                                                    .replace(
+                                                                                        /\b\w/g,
+                                                                                        (
+                                                                                            char,
+                                                                                        ) =>
+                                                                                            char.toUpperCase(),
+                                                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -1065,6 +1094,20 @@ export default function Dashboard({
                                                                 widget.type,
                                                             );
                                                         }
+                                                        if (
+                                                            appParam === 'clinic'
+                                                        ) {
+                                                            return [
+                                                                'clinic_patient_overview',
+                                                                'clinic_recent_patients',
+                                                                'clinic_revenue_overview',
+                                                                'clinic_today_appointments',
+                                                                'clinic_low_stock_alerts',
+                                                                'clinic_upcoming_appointments',
+                                                            ].includes(
+                                                                widget.type,
+                                                            );
+                                                        }
                                                         return false;
                                                     },
                                                 )
@@ -1157,6 +1200,7 @@ export default function Dashboard({
                                                                         isEditMode={
                                                                             isEditMode
                                                                         }
+                                                                        auth={auth}
                                                                     />
                                                                 </div>
                                                             )}

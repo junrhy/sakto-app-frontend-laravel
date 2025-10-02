@@ -1,0 +1,208 @@
+import { Card, CardContent } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { PageProps } from '@/types';
+
+interface RevenueStats {
+    total_revenue: number;
+    today_revenue: number;
+    monthly_revenue: number;
+    outstanding_amount: number;
+    revenue_growth: number;
+    payment_methods: {
+        cash: number;
+        card: number;
+        insurance: number;
+        other: number;
+    };
+}
+
+interface Props extends PageProps {}
+
+export function ClinicRevenueOverviewWidget({ auth }: Props) {
+    const [stats, setStats] = useState<RevenueStats | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchRevenueStats();
+    }, []);
+
+    const fetchRevenueStats = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/clinic/revenue-stats');
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch revenue statistics');
+            }
+            
+            const data = await response.json();
+            setStats(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load revenue statistics');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatCurrency = (amount: number) => {
+        const appCurrency = (auth.user as any).app_currency;
+        if (!appCurrency) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+        
+        // Parse the JSON currency settings if it's a string
+        let currencySettings = appCurrency;
+        if (typeof appCurrency === 'string') {
+            try {
+                currencySettings = JSON.parse(appCurrency);
+            } catch (e) {
+                console.warn('Failed to parse app_currency JSON:', e);
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(amount);
+            }
+        }
+        
+        return `${currencySettings.symbol}${amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}`;
+    };
+
+    const getGrowthIcon = (growth: number) => {
+        if (growth > 0) {
+            return <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />;
+        } else if (growth < 0) {
+            return <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />;
+        }
+        return null;
+    };
+
+    const getGrowthColor = (growth: number) => {
+        if (growth > 0) {
+            return 'text-green-600 dark:text-green-400';
+        } else if (growth < 0) {
+            return 'text-red-600 dark:text-red-400';
+        }
+        return 'text-gray-600 dark:text-gray-400';
+    };
+
+    if (loading) {
+        return (
+            <CardContent className="p-6">
+                <div className="flex items-center justify-center h-32">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            </CardContent>
+        );
+    }
+
+    if (error) {
+        return (
+            <CardContent className="p-6">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-sm">{error}</span>
+                </div>
+            </CardContent>
+        );
+    }
+
+    if (!stats) {
+        return (
+            <CardContent className="p-6">
+                <div className="text-center text-gray-500 dark:text-gray-400">
+                    No revenue data available
+                </div>
+            </CardContent>
+        );
+    }
+
+    return (
+        <CardContent className="p-6">
+            <div className="space-y-4">
+                {/* Main Revenue Display */}
+                <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                        {formatCurrency(stats?.total_revenue || 0)}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Total Revenue
+                    </div>
+                    <div className="flex items-center justify-center gap-1 mt-1">
+                        {getGrowthIcon(stats?.revenue_growth || 0)}
+                        <span className={`text-sm ${getGrowthColor(stats?.revenue_growth || 0)}`}>
+                            {(stats?.revenue_growth || 0) > 0 ? '+' : ''}{(stats?.revenue_growth || 0).toFixed(1)}%
+                        </span>
+                    </div>
+                </div>
+
+                {/* Revenue Breakdown */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                Today
+                            </span>
+                        </div>
+                        <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                            {formatCurrency(stats?.today_revenue || 0)}
+                        </div>
+                    </div>
+
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </span>
+                        </div>
+                        <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            {formatCurrency(stats?.monthly_revenue || 0)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Outstanding Amount */}
+                {(stats?.outstanding_amount || 0) > 0 && (
+                    <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                        <div className="flex items-center gap-2 mb-1">
+                            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                Outstanding Amount
+                            </span>
+                        </div>
+                        <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                            {formatCurrency(stats?.outstanding_amount || 0)}
+                        </div>
+                    </div>
+                )}
+
+                {/* Payment Methods Breakdown */}
+                <div className="space-y-2">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        Payment Methods ({new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})
+                    </div>
+                    <div className="space-y-2">
+                        {Object.entries(stats?.payment_methods || {}).map(([method, amount]) => (
+                            <div key={method} className="flex items-center justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                                    {method}
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {formatCurrency(amount)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </CardContent>
+    );
+}
