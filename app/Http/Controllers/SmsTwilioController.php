@@ -19,9 +19,12 @@ class SmsTwilioController extends Controller
 
     public function index()
     {
-        return Inertia::render('SMS/Twilio', [
-            'auth' => [
-                'user' => auth()->user()
+        return Inertia::render('SMS/Twilio/Index', [
+            'messages' => [], // TODO: Fetch messages from your database
+            'stats' => [
+                'sent' => 0,
+                'delivered' => 0,
+                'failed' => 0
             ]
         ]);
     }

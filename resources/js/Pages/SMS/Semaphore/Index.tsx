@@ -114,11 +114,29 @@ export default function Index({ auth, messages, stats }: Props) {
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validate required fields
+        if (!data.to || !data.to.trim()) {
+            toast.error('Phone number is required');
+            return;
+        }
+
+        if (!data.message || !data.message.trim()) {
+            toast.error('Message is required');
+            return;
+        }
+
+        // Philippine phone number validation
+        const philippinePhoneRegex = /^(\+63|0)?9\d{9}$/;
+        if (!philippinePhoneRegex.test(data.to.trim())) {
+            toast.error('Please enter a valid Philippine phone number (e.g., +639123456789 or 09123456789)');
+            return;
+        }
+
         try {
             // First, try to spend 2 credits
             const creditResponse = await axios.post('/credits/spend', {
                 amount: 2,
-                purpose: 'Semaphore SMS Sending',
+                purpose: 'Philippine SMS Sending',
                 reference_id: `sms_semaphore_${Date.now()}`,
             });
 
@@ -167,94 +185,148 @@ export default function Index({ auth, messages, stats }: Props) {
             }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Semaphore SMS
+                    Philippine SMS
                 </h2>
             }
         >
-            <Head title="Semaphore SMS" />
+            <Head title="Philippine SMS" />
 
-            <div className="bg-gray-50 py-12 dark:bg-gray-900">
-                <div className="mx-auto max-w-5xl space-y-6 sm:px-6 lg:px-8">
+            <div>
+                <div className="mx-auto sm:px-6 lg:px-8">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Total Sent
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                    {stats.sent}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Delivered
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                    {stats.delivered}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Failed
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                    {stats.failed}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Balance
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {balance ? (
-                                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                        {balance.balance} {balance.currency}
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                        {/* Total Sent Card */}
+                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Total Sent
+                                        </p>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                            {stats.sent}
+                                        </p>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                                            All messages sent
+                                        </p>
                                     </div>
-                                ) : (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={getBalance}
-                                        disabled={isLoadingBalance}
-                                        className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                                    >
-                                        {isLoadingBalance && (
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+                                        <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Delivered Card */}
+                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Delivered
+                                        </p>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                            {stats.delivered}
+                                        </p>
+                                        <p className="text-xs text-green-600 dark:text-green-400">
+                                            {stats.sent > 0 ? `${Math.round((stats.delivered / stats.sent) * 100)}% success rate` : '0% success rate'}
+                                        </p>
+                                    </div>
+                                    <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
+                                        <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Failed Card */}
+                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Failed
+                                        </p>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                            {stats.failed}
+                                        </p>
+                                        <p className="text-xs text-red-600 dark:text-red-400">
+                                            {stats.sent > 0 ? `${Math.round((stats.failed / stats.sent) * 100)}% failure rate` : '0% failure rate'}
+                                        </p>
+                                    </div>
+                                    <div className="rounded-full bg-red-100 p-3 dark:bg-red-900/30">
+                                        <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Balance Card */}
+                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                            <CardContent 
+                                className="relative bg-slate-50 p-6 dark:bg-slate-800/50 cursor-pointer"
+                                onClick={!balance ? getBalance : undefined}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            Account Balance
+                                        </p>
+                                        {balance ? (
+                                            <div>
+                                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                                    {balance.balance}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {balance.currency}
+                                                </p>
+                                                <p className="text-xs text-purple-600 dark:text-purple-400">
+                                                    Current balance
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                                    --
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    Not loaded
+                                                </p>
+                                                <p className="text-xs text-purple-600 dark:text-purple-400">
+                                                    Click button to check
+                                                </p>
+                                            </div>
                                         )}
-                                        Check Balance
-                                    </Button>
-                                )}
+                                    </div>
+                                    <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900/30">
+                                        <svg className="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
 
                     {/* Send Message Form */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <div className="md:col-span-2">
-                            <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                                <CardHeader className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        Send Message
-                                    </CardTitle>
+                    <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        <div className="lg:col-span-2">
+                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
+                            <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    Send Message
+                                </CardTitle>
                                     <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
                                         Send SMS messages (Max 160 characters)
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-6 p-6">
+                                <CardContent className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
                                     <form
                                         onSubmit={submit}
                                         className="space-y-6"
@@ -376,7 +448,7 @@ export default function Index({ auth, messages, stats }: Props) {
 
                         <div>
                             <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                                <CardHeader className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                                <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
                                     <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         Pricing
                                     </CardTitle>
@@ -384,7 +456,7 @@ export default function Index({ auth, messages, stats }: Props) {
                                         Current SMS rates
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-6">
+                                <CardContent className="bg-slate-50 p-6 dark:bg-slate-800/50">
                                     {pricing ? (
                                         <div className="space-y-3">
                                             {Object.entries(pricing).map(
@@ -394,7 +466,7 @@ export default function Index({ auth, messages, stats }: Props) {
                                                 ]) => (
                                                     <div
                                                         key={key}
-                                                        className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+                                                        className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-gray-600 dark:bg-gray-700"
                                                     >
                                                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                             {key}
@@ -426,16 +498,16 @@ export default function Index({ auth, messages, stats }: Props) {
                     </div>
 
                     {/* Message History */}
-                    <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                        <CardHeader className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <Card className="mt-8 overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
+                        <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
                             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 Message History
                             </CardTitle>
                             <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                Recent messages sent through Semaphore
+                                Recent messages sent through Philippine SMS
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="p-6">
+                        <CardContent className="bg-slate-50 p-6 dark:bg-slate-800/50">
                             <div className="space-y-4">
                                 {messages.length === 0 ? (
                                     <p className="text-sm text-gray-500 dark:text-gray-400">

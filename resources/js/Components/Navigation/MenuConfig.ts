@@ -98,7 +98,8 @@ export const menuCategories: MenuCategory[] = [
         id: 'communication',
         title: 'Communication',
         items: [
-            { id: 'sms', title: 'SMS', href: '/sms-semaphore?app=sms' },
+            { id: 'sms-semaphore', title: 'Philippine SMS', href: '/sms-semaphore?app=sms' },
+            { id: 'sms-twilio', title: 'International SMS', href: '/sms-twilio?app=sms' },
             { id: 'email', title: 'Email', href: '/email?app=email' },
             {
                 id: 'contacts',

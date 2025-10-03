@@ -345,8 +345,8 @@ export default function Index({ auth }: Props) {
         >
             <Head title="Email Sender" />
 
-            <div className="bg-gray-50 py-12 dark:bg-gray-900">
-                <div className="mx-auto max-w-5xl sm:px-6 lg:px-8">
+            <div className="bg-white dark:bg-gray-800">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Section */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between">
@@ -409,9 +409,13 @@ export default function Index({ auth }: Props) {
 
                     {canEdit ? (
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Recipients Section */}
-                            <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
-                                <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                            {/* Main Content Grid */}
+                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                                {/* Left Column - Recipients and Content */}
+                                <div className="lg:col-span-2 space-y-8">
+                                    {/* Recipients Section */}
+                                    <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
+                                <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
                                     <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         Recipients
                                     </h4>
@@ -420,7 +424,7 @@ export default function Index({ auth }: Props) {
                                         fields
                                     </p>
                                 </div>
-                                <div className="space-y-6 p-6">
+                                <div className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
                                     {/* To Field */}
                                     <div>
                                         <div className="mb-3 flex items-center justify-between">
@@ -668,154 +672,232 @@ export default function Index({ auth }: Props) {
                                 </div>
                             </div>
 
-                            {/* Email Content Section */}
-                            <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
-                                <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        Email Content
-                                    </h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Write your email subject and message
-                                    </p>
-                                </div>
-                                <div className="space-y-6 p-6">
-                                    <div>
-                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            Subject{' '}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.subject}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'subject',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className={`block w-full rounded-lg shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${
-                                                data._errors?.subject
-                                                    ? 'border-red-300 dark:border-red-600'
-                                                    : 'border-gray-300 dark:border-gray-600'
-                                            } dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400`}
-                                            placeholder="Email subject"
-                                        />
-                                        {data._errors?.subject && (
-                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                                {data._errors.subject}
+
+
+                                    {/* Subject and Message Section */}
+                                    <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
+                                        <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                Email Content
+                                            </h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                Compose your email subject and message
                                             </p>
-                                        )}
+                                        </div>
+                                        <div className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
+                                            <div>
+                                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                    Subject{' '}
+                                                    <span className="text-red-500">
+                                                        *
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={data.subject}
+                                                    onChange={(e) =>
+                                                        setData('subject', e.target.value)
+                                                    }
+                                                    className={`block w-full rounded-lg shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${
+                                                        data._errors?.subject
+                                                            ? 'border-red-300 dark:border-red-600'
+                                                            : 'border-gray-300 dark:border-gray-600'
+                                                    } dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400`}
+                                                    placeholder="Enter email subject"
+                                                />
+                                                {data._errors?.subject && (
+                                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                                                        {data._errors.subject}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                    Message{' '}
+                                                    <span className="text-red-500">
+                                                        *
+                                                    </span>
+                                                </label>
+                                                <textarea
+                                                    value={data.message}
+                                                    onChange={(e) =>
+                                                        setData('message', e.target.value)
+                                                    }
+                                                    rows={10}
+                                                    className={`block w-full rounded-lg shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${
+                                                        data._errors?.message
+                                                            ? 'border-red-300 dark:border-red-600'
+                                                            : 'border-gray-300 dark:border-gray-600'
+                                                    } dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400`}
+                                                    placeholder="Enter your message here..."
+                                                />
+                                                {data._errors?.message && (
+                                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                                                        {data._errors.message}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            Message{' '}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </label>
-                                        <textarea
-                                            value={data.message}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'message',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            rows={10}
-                                            className={`block w-full rounded-lg shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${
-                                                data._errors?.message
-                                                    ? 'border-red-300 dark:border-red-600'
-                                                    : 'border-gray-300 dark:border-gray-600'
-                                            } dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400`}
-                                            placeholder="Type your message here..."
-                                        />
-                                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                            HTML formatting is supported (e.g.
-                                            &lt;b&gt;bold&lt;/b&gt;,
-                                            &lt;i&gt;italic&lt;/i&gt;,
-                                            &lt;a&gt;links&lt;/a&gt;)
-                                        </p>
-                                        {data._errors?.message && (
-                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                                {data._errors.message}
+                                    {/* Attachments Section */}
+                                    <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
+                                        <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                Attachments
+                                            </h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                Add files to your email (optional)
                                             </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Attachments Section */}
-                            <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
-                                <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        Attachments
-                                    </h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Add files to your email (max 20MB per
-                                        file)
-                                    </p>
-                                </div>
-                                <div className="p-6">
-                                    <div className="mt-1">
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            onChange={handleFileChange}
-                                            multiple
-                                            className="block w-full cursor-pointer text-sm text-gray-500 transition-colors file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300 dark:hover:file:bg-indigo-800"
-                                        />
-                                    </div>
-                                    {data.attachments.length > 0 && (
-                                        <div className="mt-4 space-y-2">
-                                            {data.attachments.map(
-                                                (file, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
-                                                    >
-                                                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                                                            {file.name}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeAttachment(
-                                                                    index,
-                                                                )
-                                                            }
-                                                            className="text-gray-400 transition-colors hover:text-red-500 focus:outline-none dark:hover:text-red-400"
-                                                        >
-                                                            <svg
-                                                                className="h-5 w-5"
-                                                                fill="currentColor"
-                                                                viewBox="0 0 20 20"
-                                                            >
-                                                                <path
-                                                                    fillRule="evenodd"
-                                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                                    clipRule="evenodd"
-                                                                />
-                                                            </svg>
-                                                        </button>
+                                        </div>
+                                        <div className="bg-slate-50 p-6 dark:bg-slate-800/50">
+                                            <div>
+                                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                    Files
+                                                </label>
+                                                <input
+                                                    type="file"
+                                                    onChange={handleFileChange}
+                                                    multiple
+                                                    className="block w-full cursor-pointer text-sm text-gray-500 transition-colors file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300 dark:hover:file:bg-indigo-800"
+                                                />
+                                            </div>
+                                            {data.attachments && data.attachments.length > 0 && (
+                                                <div className="mt-4">
+                                                    <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Selected Files:
+                                                    </p>
+                                                    <div className="space-y-2">
+                                                        {Array.from(data.attachments).map(
+                                                            (file, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700"
+                                                                >
+                                                                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                                        {file.name}
+                                                                    </span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            removeAttachment(
+                                                                                index,
+                                                                            )
+                                                                        }
+                                                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                                    >
+                                                                        <svg
+                                                                            className="h-4 w-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M6 18L18 6M6 6l12 12"
+                                                                            />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            ),
+                                                        )}
                                                     </div>
-                                                ),
+                                                </div>
+                                            )}
+                                            {errors.attachments && (
+                                                <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                                                    {errors.attachments}
+                                                </p>
                                             )}
                                         </div>
-                                    )}
-                                    {errors.attachments && (
-                                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                            {errors.attachments}
-                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Right Column - Templates and Quick Actions */}
+                                <div className="space-y-6">
+                                    {/* Quick Stats */}
+                                    <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
+                                        <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                Quick Stats
+                                            </h4>
+                                        </div>
+                                        <div className="bg-slate-50 p-6 dark:bg-slate-800/50">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Recipients
+                                                    </span>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {data.to.length}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                        CC
+                                                    </span>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {data.cc.length}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                        BCC
+                                                    </span>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {data.bcc.length}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Attachments
+                                                    </span>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {data.attachments?.length || 0}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Recent Templates */}
+                                    {templates.length > 0 && (
+                                        <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
+                                            <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                    Recent Templates
+                                                </h4>
+                                            </div>
+                                            <div className="bg-slate-50 p-6 dark:bg-slate-800/50">
+                                                <div className="space-y-3">
+                                                    {templates.slice(0, 3).map((template) => (
+                                                        <button
+                                                            key={template.id}
+                                                            type="button"
+                                                            onClick={() => loadTemplate(template)}
+                                                            className="w-full rounded-lg border border-gray-200 p-3 text-left transition-colors hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                        >
+                                                            <div className="font-medium text-gray-900 dark:text-white">
+                                                                {template.name}
+                                                            </div>
+                                                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                {template.subject}
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
 
                             {/* Submit Section */}
                             <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
-                                <div className="p-6">
+                                <div className="bg-slate-50 p-6 dark:bg-slate-800/50">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                                             <svg
