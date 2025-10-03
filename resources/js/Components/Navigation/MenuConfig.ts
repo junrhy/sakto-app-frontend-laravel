@@ -100,6 +100,7 @@ export const menuCategories: MenuCategory[] = [
         items: [
             { id: 'sms-semaphore', title: 'Philippine SMS', href: '/sms-semaphore?app=sms' },
             { id: 'sms-twilio', title: 'International SMS', href: '/sms-twilio?app=sms' },
+            { id: 'sms-whatsapp', title: 'WhatsApp', href: '/sms-whatsapp?app=sms' },
             { id: 'email', title: 'Email', href: '/email?app=email' },
             {
                 id: 'contacts',

@@ -69,6 +69,7 @@ require __DIR__.'/web/PayrollController.php';
 require __DIR__.'/web/TravelController.php';
 require __DIR__.'/web/FlightController.php';
 require __DIR__.'/web/SmsTwilioController.php';
+require __DIR__.'/web/SmsWhatsAppController.php';
 require __DIR__.'/web/EmailController.php';
 require __DIR__.'/web/GenealogyController.php';
 require __DIR__.'/web/InboxController.php';
