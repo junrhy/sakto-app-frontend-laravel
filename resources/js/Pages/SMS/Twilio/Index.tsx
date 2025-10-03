@@ -15,7 +15,7 @@ import { Project, User } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface Message {
@@ -24,6 +24,15 @@ interface Message {
     body: string;
     status: string;
     created_at: string;
+}
+
+interface Contact {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    sms_number?: string;
+    group?: string[];
 }
 
 interface Stats {
@@ -75,6 +84,158 @@ export default function Index({ auth, messages, stats }: Props) {
         message: '',
     });
 
+    const [recipients, setRecipients] = useState<string[]>([]);
+    const [newRecipient, setNewRecipient] = useState<string>('');
+    const [showContactSelector, setShowContactSelector] = useState(false);
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [groupFilter, setGroupFilter] = useState<string>('all');
+
+    const addRecipient = () => {
+        if (!newRecipient.trim()) {
+            toast.error('Please enter a phone number');
+            return;
+        }
+
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(newRecipient.trim())) {
+            toast.error('Please enter a valid phone number (e.g., +1234567890)');
+            return;
+        }
+
+        if (recipients.includes(newRecipient.trim())) {
+            toast.error('This phone number is already added');
+            return;
+        }
+
+        setRecipients([...recipients, newRecipient.trim()]);
+        setNewRecipient('');
+        toast.success('Phone number added successfully');
+    };
+
+    const removeRecipient = (index: number) => {
+        setRecipients(recipients.filter((_, i) => i !== index));
+    };
+
+    // Load contacts on component mount
+    useEffect(() => {
+        const fetchContacts = async () => {
+            try {
+                const response = await axios.get('/contacts/list');
+                if (response.data.success) {
+                    setContacts(response.data.data || []);
+                } else {
+                    toast.error('Failed to fetch contacts');
+                }
+            } catch (error) {
+                toast.error('Failed to fetch contacts');
+            }
+        };
+
+        fetchContacts();
+    }, []);
+
+    const toggleContactSelection = (contact: Contact) => {
+        setSelectedContacts((prev) => {
+            const isSelected = prev.some((c) => c.id === contact.id);
+            if (isSelected) {
+                return prev.filter((c) => c.id !== contact.id);
+            } else {
+                return [...prev, contact];
+            }
+        });
+    };
+
+    const addSelectedContactsToRecipients = () => {
+        const phoneNumbers = selectedContacts
+            .filter(contact => contact.sms_number)
+            .map(contact => contact.sms_number!);
+        
+        if (phoneNumbers.length === 0) {
+            toast.error('Selected contacts do not have phone numbers');
+            return;
+        }
+
+        // Validate phone numbers before adding
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        const validNumbers = phoneNumbers.filter(num => phoneRegex.test(num));
+        
+        if (validNumbers.length === 0) {
+            toast.error('Selected contacts do not have valid phone numbers');
+            return;
+        }
+
+        // Add only new numbers (avoid duplicates)
+        const newRecipients = validNumbers.filter(num => !recipients.includes(num));
+        setRecipients([...recipients, ...newRecipients]);
+        setSelectedContacts([]);
+        setShowContactSelector(false);
+        toast.success(`${newRecipients.length} phone numbers added from contacts`);
+    };
+
+    const addAllContactsToRecipients = () => {
+        const phoneNumbers = contacts
+            .filter(contact => contact.sms_number)
+            .map(contact => contact.sms_number!);
+        
+        if (phoneNumbers.length === 0) {
+            toast.error('No contacts have phone numbers');
+            return;
+        }
+
+        // Validate phone numbers before adding
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        const validNumbers = phoneNumbers.filter(num => phoneRegex.test(num));
+        
+        if (validNumbers.length === 0) {
+            toast.error('No contacts have valid phone numbers');
+            return;
+        }
+
+        // Add only new numbers (avoid duplicates)
+        const newRecipients = validNumbers.filter(num => !recipients.includes(num));
+        setRecipients([...recipients, ...newRecipients]);
+        setShowContactSelector(false);
+        toast.success(`${newRecipients.length} phone numbers added from contacts`);
+    };
+
+    const selectContactsByGroup = (group: string) => {
+        if (group === 'all') {
+            setSelectedContacts(contacts);
+            toast.success('All contacts selected');
+        } else {
+            const groupContacts = contacts.filter((contact) =>
+                contact.group?.includes(group),
+            );
+            setSelectedContacts(groupContacts);
+            toast.success(
+                `${groupContacts.length} contacts from group "${group}" selected`,
+            );
+        }
+    };
+
+    const filteredContacts = contacts.filter((contact) => {
+        const matchesSearch =
+            contact.first_name
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()) ||
+            contact.last_name
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()) ||
+            contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (contact.sms_number || '').includes(searchQuery) ||
+            (contact.group || []).some((g) =>
+                g.toLowerCase().includes(searchQuery.toLowerCase()),
+            );
+
+        const matchesGroup =
+            groupFilter === 'all' ||
+            (contact.group && contact.group.includes(groupFilter));
+
+        return matchesSearch && matchesGroup;
+    });
+
     const getBalance = async () => {
         setIsLoadingBalance(true);
         try {
@@ -96,8 +257,8 @@ export default function Index({ auth, messages, stats }: Props) {
         e.preventDefault();
 
         // Validate required fields
-        if (!data.to || !data.to.trim()) {
-            toast.error('Phone number is required');
+        if (recipients.length === 0) {
+            toast.error('Please add at least one phone number');
             return;
         }
 
@@ -106,17 +267,13 @@ export default function Index({ auth, messages, stats }: Props) {
             return;
         }
 
-        // Basic phone number validation
-        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-        if (!phoneRegex.test(data.to.trim())) {
-            toast.error('Please enter a valid phone number (e.g., +1234567890)');
-            return;
-        }
-
         try {
-            // First, try to spend 4 credits
+            // Calculate total credits needed (4 credits per recipient)
+            const totalCredits = recipients.length * 4;
+            
+            // First, try to spend credits
             const creditResponse = await axios.post('/credits/spend', {
-                amount: 4,
+                amount: totalCredits,
                 purpose: 'International SMS Sending',
                 reference_id: `sms_twilio_${Date.now()}`,
             });
@@ -129,9 +286,15 @@ export default function Index({ auth, messages, stats }: Props) {
             }
 
             post('/sms-twilio/send', {
+                data: {
+                    ...data,
+                    to: recipients.join(','),
+                },
                 onSuccess: () => {
                     toast.success('Message sent successfully!');
                     reset();
+                    setRecipients([]);
+                    setNewRecipient('');
                 },
                 onError: (errors) => {
                     toast.error('Failed to send message');
@@ -309,23 +472,75 @@ export default function Index({ auth, messages, stats }: Props) {
                         </CardHeader>
                         <CardContent className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
                             <form onSubmit={submit} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label
-                                        htmlFor="to"
-                                        className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
-                                    >
-                                        To
-                                    </label>
-                                    <Input
-                                        id="to"
-                                        type="text"
-                                        value={data.to}
-                                        onChange={(e) =>
-                                            setData('to', e.target.value)
-                                        }
-                                        placeholder="+1234567890"
-                                        className="max-w-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                    />
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label
+                                            htmlFor="newRecipient"
+                                            className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                        >
+                                            Add Phone Number
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                id="newRecipient"
+                                                type="text"
+                                                value={newRecipient}
+                                                onChange={(e) => setNewRecipient(e.target.value)}
+                                                placeholder="+1234567890"
+                                                className="flex-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        addRecipient();
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                type="button"
+                                                onClick={addRecipient}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                            >
+                                                Add
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                onClick={() => setShowContactSelector(true)}
+                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                            >
+                                                Select from Contacts
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {recipients.length > 0 && (
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                Recipients ({recipients.length})
+                                            </label>
+                                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                                                {recipients.map((recipient, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2"
+                                                    >
+                                                        <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {recipient}
+                                                        </span>
+                                                        <Button
+                                                            type="button"
+                                                            onClick={() => removeRecipient(index)}
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {errors.to && (
                                         <p className="text-sm text-red-600 dark:text-red-400">
                                             {errors.to}
@@ -369,7 +584,7 @@ export default function Index({ auth, messages, stats }: Props) {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        Sending this SMS will cost 4 credits
+                                        Sending this SMS will cost {recipients.length > 0 ? recipients.length * 4 : 4} credits per recipient
                                         from your balance
                                     </div>
                                     {canEdit && (
@@ -546,6 +761,180 @@ export default function Index({ auth, messages, stats }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Contact Selector Modal */}
+            {showContactSelector && (
+                <div className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50">
+                    <div className="relative top-20 mx-auto w-3/4 rounded-md border bg-white p-5 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                Select Contacts
+                            </h3>
+                            <button
+                                onClick={() => setShowContactSelector(false)}
+                                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                            >
+                                <svg
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="mb-4 space-y-4">
+                            <div>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
+                                    placeholder="Search contacts..."
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div>
+                                    <select
+                                        value={groupFilter}
+                                        onChange={(e) =>
+                                            setGroupFilter(e.target.value)
+                                        }
+                                        className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    >
+                                        <option value="all">All Groups</option>
+                                        {Array.from(
+                                            new Set(
+                                                contacts.flatMap(
+                                                    (contact) =>
+                                                        contact.group || [],
+                                                ),
+                                            ),
+                                        ).map((group) => (
+                                            <option key={group} value={group}>
+                                                {group}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <button
+                                    onClick={() =>
+                                        selectContactsByGroup(groupFilter)
+                                    }
+                                    className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                >
+                                    Select Group
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mb-4 flex justify-between">
+                            <button
+                                onClick={addSelectedContactsToRecipients}
+                                disabled={selectedContacts.length === 0}
+                                className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Add Selected ({selectedContacts.length})
+                            </button>
+                            <button
+                                onClick={addAllContactsToRecipients}
+                                disabled={contacts.length === 0}
+                                className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Add All ({contacts.length})
+                            </button>
+                        </div>
+
+                        <div className="max-h-96 overflow-y-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                                            Select
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                                            Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                                            Phone Number
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                                    {filteredContacts.map((contact) => (
+                                        <tr
+                                            key={contact.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            <td className="whitespace-nowrap px-6 py-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedContacts.some(
+                                                        (c) =>
+                                                            c.id === contact.id,
+                                                    )}
+                                                    onChange={() =>
+                                                        toggleContactSelection(
+                                                            contact,
+                                                        )
+                                                    }
+                                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
+                                                />
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-4">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    {contact.first_name}{' '}
+                                                    {contact.last_name}
+                                                </div>
+                                                {contact.group &&
+                                                    contact.group.length >
+                                                        0 && (
+                                                        <div className="mt-1 flex flex-wrap gap-1">
+                                                            {contact.group.map(
+                                                                (
+                                                                    group,
+                                                                    index,
+                                                                ) => (
+                                                                    <span
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                                    >
+                                                                        {
+                                                                            group
+                                                                        }
+                                                                    </span>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    )}
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                                {contact.sms_number || (
+                                                    <span className="text-gray-400 dark:text-gray-500">
+                                                        No phone number
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }
