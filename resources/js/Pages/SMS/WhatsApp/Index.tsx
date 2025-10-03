@@ -389,63 +389,66 @@ export default function Index({ auth, messages, stats }: Props) {
                                 <form onSubmit={submit} className="space-y-6">
                                     {/* Recipients Section */}
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                WhatsApp Numbers
+                                        <div className="space-y-2">
+                                            <label
+                                                htmlFor="newRecipient"
+                                                className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                            >
+                                                Add WhatsApp Number
                                             </label>
-                                            <Button
-                                                type="button"
-                                                onClick={() => setShowContactSelector(true)}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                                            >
-                                                Select from Contacts
-                                            </Button>
-                                        </div>
-
-                                        {/* Add Recipient Input */}
-                                        <div className="flex gap-2">
-                                            <Input
-                                                type="text"
-                                                placeholder="Enter WhatsApp number (e.g., +639260049848 or 09260049848)"
-                                                value={newRecipient}
-                                                onChange={(e) => setNewRecipient(e.target.value)}
-                                                onKeyPress={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        e.preventDefault();
-                                                        addRecipient();
-                                                    }
-                                                }}
-                                                className="flex-1"
-                                            />
-                                            <Button
-                                                type="button"
-                                                onClick={addRecipient}
-                                                className="bg-green-600 hover:bg-green-700 text-white"
-                                            >
-                                                Add
-                                            </Button>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="newRecipient"
+                                                    type="text"
+                                                    value={newRecipient}
+                                                    onChange={(e) => setNewRecipient(e.target.value)}
+                                                    placeholder="Enter WhatsApp number (e.g., +639260049848 or 09260049848)"
+                                                    className="flex-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addRecipient();
+                                                        }
+                                                    }}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={addRecipient}
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                >
+                                                    Add
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => setShowContactSelector(true)}
+                                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                    Select from Contacts
+                                                </Button>
+                                            </div>
                                         </div>
 
                                         {/* Recipients List */}
                                         {recipients.length > 0 && (
                                             <div className="space-y-2">
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                                     Recipients ({recipients.length})
-                                                </p>
-                                                <div className="space-y-2">
+                                                </label>
+                                                <div className="space-y-2 max-h-32 overflow-y-auto">
                                                     {recipients.map((recipient, index) => (
                                                         <div
                                                             key={index}
-                                                            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+                                                            className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2"
                                                         >
-                                                            <span className="text-sm text-gray-900 dark:text-white">
+                                                            <span className="text-sm text-gray-900 dark:text-gray-100">
                                                                 {recipient}
                                                             </span>
                                                             <Button
                                                                 type="button"
                                                                 onClick={() => removeRecipient(index)}
-                                                                className="bg-red-600 hover:bg-red-700 text-white"
+                                                                variant="ghost"
                                                                 size="sm"
+                                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                                                             >
                                                                 Remove
                                                             </Button>
@@ -455,58 +458,84 @@ export default function Index({ auth, messages, stats }: Props) {
                                             </div>
                                         )}
 
+                                        {errors.to && (
+                                            <p className="text-sm text-red-600 dark:text-red-400">
+                                                {errors.to}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Message Input */}
                                     <div className="space-y-2">
-                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        <label
+                                            htmlFor="message"
+                                            className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                        >
                                             Message
                                         </label>
-                                        <Textarea
-                                            value={data.message}
-                                            onChange={(e) => setData('message', e.target.value)}
-                                            placeholder="Enter your WhatsApp message..."
-                                            rows={4}
-                                            className="w-full"
-                                        />
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {data.message.length}/1000 characters
-                                        </p>
+                                        <div className="space-y-2">
+                                            <Textarea
+                                                id="message"
+                                                value={data.message}
+                                                onChange={(e) => setData('message', e.target.value)}
+                                                placeholder="Enter your WhatsApp message..."
+                                                className="min-h-[100px] border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                maxLength={1000}
+                                            />
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {data.message.length}/1000 characters
+                                            </p>
+                                        </div>
+                                        {errors.message && (
+                                            <p className="text-sm text-red-600 dark:text-red-400">
+                                                {errors.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Credit Cost Info and Send Button */}
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                            <svg
-                                                className="mr-2 h-5 w-5 text-yellow-500"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            {recipients.length > 0 ? (
-                                                <>Sending this message will cost {recipients.length * 5} credits per recipient from your balance</>
-                                            ) : (
-                                                <>Sending this message will cost 5 credits per recipient from your balance</>
+                                        <div className="flex flex-col space-y-1">
+                                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                                <svg
+                                                    className="mr-2 h-5 w-5 text-yellow-500"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                {recipients.length > 0 ? (
+                                                    <>Sending this message will cost {recipients.length * 5} credits per recipient from your balance</>
+                                                ) : (
+                                                    <>Sending this message will cost 5 credits per recipient from your balance</>
+                                                )}
+                                            </div>
+                                            {recipients.length > 0 && credits < (recipients.length * 5) && (
+                                                <div className="flex items-center text-sm text-red-600 dark:text-red-400">
+                                                    <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Insufficient credits. You need {recipients.length * 5} credits but only have {credits}.
+                                                </div>
                                             )}
                                         </div>
                                         <Button
                                             type="submit"
-                                            disabled={processing || recipients.length === 0}
+                                            disabled={processing || recipients.length === 0 || credits < (recipients.length * 5)}
                                             className="inline-flex items-center rounded-lg border border-transparent bg-green-600 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {processing ? (
                                                 <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    <Loader2 className="-ml-1 mr-3 h-5 w-5 animate-spin text-white" />
                                                     Sending...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Send className="mr-2 h-4 w-4" />
+                                                    <Send className="mr-2 h-5 w-5" />
                                                     Send Message
                                                 </>
                                             )}
