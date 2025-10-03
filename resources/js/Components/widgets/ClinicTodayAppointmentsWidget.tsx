@@ -50,7 +50,7 @@ export function ClinicTodayAppointmentsWidget() {
         try {
             // Handle different time formats
             let date;
-            
+
             // If it's already a full datetime string
             if (timeString.includes('T') || timeString.includes(' ')) {
                 date = new Date(timeString);
@@ -58,14 +58,20 @@ export function ClinicTodayAppointmentsWidget() {
                 // If it's just a time string (HH:MM), create a date for today
                 const today = new Date();
                 const [hours, minutes] = timeString.split(':');
-                date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+                date = new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate(),
+                    parseInt(hours),
+                    parseInt(minutes),
+                );
             }
-            
+
             // Check if date is valid
             if (isNaN(date.getTime())) {
                 return timeString; // Return original string if invalid
             }
-            
+
             return date.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -109,27 +115,40 @@ export function ClinicTodayAppointmentsWidget() {
         try {
             const now = new Date();
             let appointment;
-            
+
             // Handle different time formats
-            if (appointmentTime.includes('T') || appointmentTime.includes(' ')) {
+            if (
+                appointmentTime.includes('T') ||
+                appointmentTime.includes(' ')
+            ) {
                 appointment = new Date(appointmentTime);
             } else {
                 // If it's just a time string (HH:MM), create a date for today
                 const today = new Date();
                 const [hours, minutes] = appointmentTime.split(':');
-                appointment = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+                appointment = new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate(),
+                    parseInt(hours),
+                    parseInt(minutes),
+                );
             }
-            
+
             // Check if appointment date is valid
             if (isNaN(appointment.getTime())) {
                 return false;
             }
-            
+
             const diffInHours =
                 (appointment.getTime() - now.getTime()) / (1000 * 60 * 60);
             return diffInHours > 0 && diffInHours <= 2; // Next 2 hours
         } catch (error) {
-            console.warn('Error checking if appointment is upcoming:', appointmentTime, error);
+            console.warn(
+                'Error checking if appointment is upcoming:',
+                appointmentTime,
+                error,
+            );
             return false;
         }
     };

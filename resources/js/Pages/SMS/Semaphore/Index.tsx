@@ -98,7 +98,9 @@ export default function Index({ auth, messages, stats }: Props) {
 
         const philippinePhoneRegex = /^(\+63|0)?9\d{9}$/;
         if (!philippinePhoneRegex.test(newRecipient.trim())) {
-            toast.error('Please enter a valid Philippine phone number (e.g., +639123456789 or 09123456789)');
+            toast.error(
+                'Please enter a valid Philippine phone number (e.g., +639123456789 or 09123456789)',
+            );
             return;
         }
 
@@ -148,9 +150,9 @@ export default function Index({ auth, messages, stats }: Props) {
 
     const addSelectedContactsToRecipients = () => {
         const phoneNumbers = selectedContacts
-            .filter(contact => contact.sms_number)
-            .map(contact => contact.sms_number!);
-        
+            .filter((contact) => contact.sms_number)
+            .map((contact) => contact.sms_number!);
+
         if (phoneNumbers.length === 0) {
             toast.error('Selected contacts do not have phone numbers');
             return;
@@ -158,26 +160,34 @@ export default function Index({ auth, messages, stats }: Props) {
 
         // Validate Philippine phone numbers before adding
         const philippinePhoneRegex = /^(\+63|0)?9\d{9}$/;
-        const validNumbers = phoneNumbers.filter(num => philippinePhoneRegex.test(num));
-        
+        const validNumbers = phoneNumbers.filter((num) =>
+            philippinePhoneRegex.test(num),
+        );
+
         if (validNumbers.length === 0) {
-            toast.error('Selected contacts do not have valid Philippine phone numbers');
+            toast.error(
+                'Selected contacts do not have valid Philippine phone numbers',
+            );
             return;
         }
 
         // Add only new numbers (avoid duplicates)
-        const newRecipients = validNumbers.filter(num => !recipients.includes(num));
+        const newRecipients = validNumbers.filter(
+            (num) => !recipients.includes(num),
+        );
         setRecipients([...recipients, ...newRecipients]);
         setSelectedContacts([]);
         setShowContactSelector(false);
-        toast.success(`${newRecipients.length} Philippine phone numbers added from contacts`);
+        toast.success(
+            `${newRecipients.length} Philippine phone numbers added from contacts`,
+        );
     };
 
     const addAllContactsToRecipients = () => {
         const phoneNumbers = contacts
-            .filter(contact => contact.sms_number)
-            .map(contact => contact.sms_number!);
-        
+            .filter((contact) => contact.sms_number)
+            .map((contact) => contact.sms_number!);
+
         if (phoneNumbers.length === 0) {
             toast.error('No contacts have phone numbers');
             return;
@@ -185,32 +195,43 @@ export default function Index({ auth, messages, stats }: Props) {
 
         // Validate Philippine phone numbers before adding
         const philippinePhoneRegex = /^(\+63|0)?9\d{9}$/;
-        const validNumbers = phoneNumbers.filter(num => philippinePhoneRegex.test(num));
-        
+        const validNumbers = phoneNumbers.filter((num) =>
+            philippinePhoneRegex.test(num),
+        );
+
         if (validNumbers.length === 0) {
             toast.error('No contacts have valid Philippine phone numbers');
             return;
         }
 
         // Add only new numbers (avoid duplicates)
-        const newRecipients = validNumbers.filter(num => !recipients.includes(num));
+        const newRecipients = validNumbers.filter(
+            (num) => !recipients.includes(num),
+        );
         setRecipients([...recipients, ...newRecipients]);
         setShowContactSelector(false);
-        toast.success(`${newRecipients.length} Philippine phone numbers added from contacts`);
+        toast.success(
+            `${newRecipients.length} Philippine phone numbers added from contacts`,
+        );
     };
 
     const selectContactsByGroup = (group: string) => {
         if (group === 'all') {
-            const validContacts = contacts.filter(contact => 
-                contact.sms_number && /^(\+63|0)?9\d{9}$/.test(contact.sms_number)
+            const validContacts = contacts.filter(
+                (contact) =>
+                    contact.sms_number &&
+                    /^(\+63|0)?9\d{9}$/.test(contact.sms_number),
             );
             setSelectedContacts(validContacts);
-            toast.success(`${validContacts.length} contacts with valid Philippine numbers selected`);
+            toast.success(
+                `${validContacts.length} contacts with valid Philippine numbers selected`,
+            );
         } else {
-            const groupContacts = contacts.filter((contact) =>
-                contact.group?.includes(group) &&
-                contact.sms_number && 
-                /^(\+63|0)?9\d{9}$/.test(contact.sms_number)
+            const groupContacts = contacts.filter(
+                (contact) =>
+                    contact.group?.includes(group) &&
+                    contact.sms_number &&
+                    /^(\+63|0)?9\d{9}$/.test(contact.sms_number),
             );
             setSelectedContacts(groupContacts);
             toast.success(
@@ -240,8 +261,6 @@ export default function Index({ auth, messages, stats }: Props) {
         return matchesSearch && matchesGroup;
     });
 
-
-
     const getPricing = async () => {
         setIsLoadingPricing(true);
         try {
@@ -262,7 +281,9 @@ export default function Index({ auth, messages, stats }: Props) {
     const fetchCredits = async () => {
         try {
             if (auth.user.identifier) {
-                const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                const response = await fetch(
+                    `/credits/${auth.user.identifier}/balance`,
+                );
                 if (response.ok) {
                     const data = await response.json();
                     setCredits(data.balance || 0);
@@ -290,7 +311,7 @@ export default function Index({ auth, messages, stats }: Props) {
         try {
             // Calculate total credits needed (2 credits per recipient)
             const totalCredits = recipients.length * 2;
-            
+
             // First, try to spend credits
             const creditResponse = await axios.post('/credits/spend', {
                 amount: totalCredits,
@@ -360,7 +381,7 @@ export default function Index({ auth, messages, stats }: Props) {
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                         {/* Total Sent Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
                             <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -375,8 +396,18 @@ export default function Index({ auth, messages, stats }: Props) {
                                         </p>
                                     </div>
                                     <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
-                                        <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        <svg
+                                            className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -384,7 +415,7 @@ export default function Index({ auth, messages, stats }: Props) {
                         </Card>
 
                         {/* Delivered Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
                             <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -395,12 +426,24 @@ export default function Index({ auth, messages, stats }: Props) {
                                             {stats.delivered}
                                         </p>
                                         <p className="text-xs text-green-600 dark:text-green-400">
-                                            {stats.sent > 0 ? `${Math.round((stats.delivered / stats.sent) * 100)}% success rate` : '0% success rate'}
+                                            {stats.sent > 0
+                                                ? `${Math.round((stats.delivered / stats.sent) * 100)}% success rate`
+                                                : '0% success rate'}
                                         </p>
                                     </div>
                                     <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
-                                        <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            className="h-6 w-6 text-green-600 dark:text-green-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -408,7 +451,7 @@ export default function Index({ auth, messages, stats }: Props) {
                         </Card>
 
                         {/* Failed Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
                             <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -419,12 +462,24 @@ export default function Index({ auth, messages, stats }: Props) {
                                             {stats.failed}
                                         </p>
                                         <p className="text-xs text-red-600 dark:text-red-400">
-                                            {stats.sent > 0 ? `${Math.round((stats.failed / stats.sent) * 100)}% failure rate` : '0% failure rate'}
+                                            {stats.sent > 0
+                                                ? `${Math.round((stats.failed / stats.sent) * 100)}% failure rate`
+                                                : '0% failure rate'}
                                         </p>
                                     </div>
                                     <div className="rounded-full bg-red-100 p-3 dark:bg-red-900/30">
-                                        <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            className="h-6 w-6 text-red-600 dark:text-red-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -432,7 +487,7 @@ export default function Index({ auth, messages, stats }: Props) {
                         </Card>
 
                         {/* Credits Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
+                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
                             <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -447,8 +502,18 @@ export default function Index({ auth, messages, stats }: Props) {
                                         </p>
                                     </div>
                                     <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
-                                        <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        <svg
+                                            className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -459,11 +524,11 @@ export default function Index({ auth, messages, stats }: Props) {
                     {/* Send Message Form */}
                     <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <div className="lg:col-span-2">
-                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                            <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
-                                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    Send Message
-                                </CardTitle>
+                            <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
+                                <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        Send Message
+                                    </CardTitle>
                                     <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
                                         Send SMS messages (Max 160 characters)
                                     </CardDescription>
@@ -486,11 +551,18 @@ export default function Index({ auth, messages, stats }: Props) {
                                                         id="newRecipient"
                                                         type="text"
                                                         value={newRecipient}
-                                                        onChange={(e) => setNewRecipient(e.target.value)}
+                                                        onChange={(e) =>
+                                                            setNewRecipient(
+                                                                e.target.value,
+                                                            )
+                                                        }
                                                         placeholder="+639123456789"
                                                         className="flex-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                                         onKeyPress={(e) => {
-                                                            if (e.key === 'Enter') {
+                                                            if (
+                                                                e.key ===
+                                                                'Enter'
+                                                            ) {
                                                                 e.preventDefault();
                                                                 addRecipient();
                                                             }
@@ -499,14 +571,18 @@ export default function Index({ auth, messages, stats }: Props) {
                                                     <Button
                                                         type="button"
                                                         onClick={addRecipient}
-                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                        className="bg-indigo-600 text-white hover:bg-indigo-700"
                                                     >
                                                         Add
                                                     </Button>
                                                     <Button
                                                         type="button"
-                                                        onClick={() => setShowContactSelector(true)}
-                                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                                        onClick={() =>
+                                                            setShowContactSelector(
+                                                                true,
+                                                            )
+                                                        }
+                                                        className="bg-green-600 text-white hover:bg-green-700"
                                                     >
                                                         Select from Contacts
                                                     </Button>
@@ -516,28 +592,40 @@ export default function Index({ auth, messages, stats }: Props) {
                                             {recipients.length > 0 && (
                                                 <div className="space-y-2">
                                                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                        Recipients ({recipients.length})
+                                                        Recipients (
+                                                        {recipients.length})
                                                     </label>
-                                                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                                                        {recipients.map((recipient, index) => (
-                                                            <div
-                                                                key={index}
-                                                                className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2"
-                                                            >
-                                                                <span className="text-sm text-gray-900 dark:text-gray-100">
-                                                                    {recipient}
-                                                                </span>
-                                                                <Button
-                                                                    type="button"
-                                                                    onClick={() => removeRecipient(index)}
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                                    <div className="max-h-32 space-y-2 overflow-y-auto">
+                                                        {recipients.map(
+                                                            (
+                                                                recipient,
+                                                                index,
+                                                            ) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700"
                                                                 >
-                                                                    Remove
-                                                                </Button>
-                                                            </div>
-                                                        ))}
+                                                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                                        {
+                                                                            recipient
+                                                                        }
+                                                                    </span>
+                                                                    <Button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            removeRecipient(
+                                                                                index,
+                                                                            )
+                                                                        }
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                                                    >
+                                                                        Remove
+                                                                    </Button>
+                                                                </div>
+                                                            ),
+                                                        )}
                                                     </div>
                                                 </div>
                                             )}
@@ -596,22 +684,49 @@ export default function Index({ auth, messages, stats }: Props) {
                                                             clipRule="evenodd"
                                                         />
                                                     </svg>
-                                                    Sending this SMS will cost {recipients.length > 0 ? recipients.length * 2 : 2} credits per recipient
-                                                    from your balance
+                                                    Sending this SMS will cost{' '}
+                                                    {recipients.length > 0
+                                                        ? recipients.length * 2
+                                                        : 2}{' '}
+                                                    credits per recipient from
+                                                    your balance
                                                 </div>
-                                                {recipients.length > 0 && credits < (recipients.length * 2) && (
-                                                    <div className="flex items-center text-sm text-red-600 dark:text-red-400">
-                                                        <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                        </svg>
-                                                        Insufficient credits. You need {recipients.length * 2} credits but only have {credits}.
-                                                    </div>
-                                                )}
+                                                {recipients.length > 0 &&
+                                                    credits <
+                                                        recipients.length *
+                                                            2 && (
+                                                        <div className="flex items-center text-sm text-red-600 dark:text-red-400">
+                                                            <svg
+                                                                className="mr-2 h-4 w-4"
+                                                                fill="currentColor"
+                                                                viewBox="0 0 20 20"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                            Insufficient
+                                                            credits. You need{' '}
+                                                            {recipients.length *
+                                                                2}{' '}
+                                                            credits but only
+                                                            have {credits}.
+                                                        </div>
+                                                    )}
                                             </div>
                                             {canEdit && (
                                                 <Button
                                                     type="submit"
-                                                    disabled={processing || recipients.length === 0 || credits < (recipients.length * 2)}
+                                                    disabled={
+                                                        processing ||
+                                                        recipients.length ===
+                                                            0 ||
+                                                        credits <
+                                                            recipients.length *
+                                                                2
+                                                    }
                                                     className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
                                                     {processing ? (
@@ -788,14 +903,28 @@ export default function Index({ auth, messages, stats }: Props) {
                             </button>
                             <button
                                 onClick={addAllContactsToRecipients}
-                                disabled={filteredContacts.filter(contact => 
-                                    contact.sms_number && /^(\+63|0)?9\d{9}$/.test(contact.sms_number)
-                                ).length === 0}
+                                disabled={
+                                    filteredContacts.filter(
+                                        (contact) =>
+                                            contact.sms_number &&
+                                            /^(\+63|0)?9\d{9}$/.test(
+                                                contact.sms_number,
+                                            ),
+                                    ).length === 0
+                                }
                                 className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                Add All ({filteredContacts.filter(contact => 
-                                    contact.sms_number && /^(\+63|0)?9\d{9}$/.test(contact.sms_number)
-                                ).length})
+                                Add All (
+                                {
+                                    filteredContacts.filter(
+                                        (contact) =>
+                                            contact.sms_number &&
+                                            /^(\+63|0)?9\d{9}$/.test(
+                                                contact.sms_number,
+                                            ),
+                                    ).length
+                                }
+                                )
                             </button>
                         </div>
 
@@ -816,14 +945,19 @@ export default function Index({ auth, messages, stats }: Props) {
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                                     {filteredContacts.map((contact) => {
-                                        const hasValidPhilippineNumber = contact.sms_number && 
-                                            /^(\+63|0)?9\d{9}$/.test(contact.sms_number);
-                                        
+                                        const hasValidPhilippineNumber =
+                                            contact.sms_number &&
+                                            /^(\+63|0)?9\d{9}$/.test(
+                                                contact.sms_number,
+                                            );
+
                                         return (
                                             <tr
                                                 key={contact.id}
                                                 className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                                                    !hasValidPhilippineNumber ? 'opacity-50 bg-gray-100 dark:bg-gray-600' : ''
+                                                    !hasValidPhilippineNumber
+                                                        ? 'bg-gray-100 opacity-50 dark:bg-gray-600'
+                                                        : ''
                                                 }`}
                                             >
                                                 <td className="whitespace-nowrap px-6 py-4">
@@ -831,69 +965,78 @@ export default function Index({ auth, messages, stats }: Props) {
                                                         type="checkbox"
                                                         checked={selectedContacts.some(
                                                             (c) =>
-                                                                c.id === contact.id,
+                                                                c.id ===
+                                                                contact.id,
                                                         )}
                                                         onChange={() =>
                                                             toggleContactSelection(
                                                                 contact,
                                                             )
                                                         }
-                                                        disabled={!hasValidPhilippineNumber}
-                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        disabled={
+                                                            !hasValidPhilippineNumber
+                                                        }
+                                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600"
                                                     />
                                                 </td>
-                                            <td className="whitespace-nowrap px-6 py-4">
-                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {contact.first_name}{' '}
-                                                    {contact.last_name}
-                                                </div>
-                                                {contact.group &&
-                                                    contact.group.length >
-                                                        0 && (
-                                                        <div className="mt-1 flex flex-wrap gap-1">
-                                                            {contact.group.map(
-                                                                (
-                                                                    group,
-                                                                    index,
-                                                                ) => (
-                                                                    <span
-                                                                        key={
-                                                                            index
-                                                                        }
-                                                                        className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                                                    >
-                                                                        {
-                                                                            group
-                                                                        }
-                                                                    </span>
-                                                                ),
-                                                            )}
-                                                        </div>
-                                                    )}
-                                            </td>
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                                                {contact.sms_number ? (
-                                                    hasValidPhilippineNumber ? (
-                                                        <span className="text-green-600 dark:text-green-400">
-                                                            {contact.sms_number}
-                                                        </span>
-                                                    ) : (
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-red-600 dark:text-red-400">
-                                                                {contact.sms_number}
+                                                <td className="whitespace-nowrap px-6 py-4">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {contact.first_name}{' '}
+                                                        {contact.last_name}
+                                                    </div>
+                                                    {contact.group &&
+                                                        contact.group.length >
+                                                            0 && (
+                                                            <div className="mt-1 flex flex-wrap gap-1">
+                                                                {contact.group.map(
+                                                                    (
+                                                                        group,
+                                                                        index,
+                                                                    ) => (
+                                                                        <span
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                                        >
+                                                                            {
+                                                                                group
+                                                                            }
+                                                                        </span>
+                                                                    ),
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                </td>
+                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                                    {contact.sms_number ? (
+                                                        hasValidPhilippineNumber ? (
+                                                            <span className="text-green-600 dark:text-green-400">
+                                                                {
+                                                                    contact.sms_number
+                                                                }
                                                             </span>
-                             <span className="text-xs text-red-500 dark:text-red-400">
-                                 (Not a valid Philippine number)
-                             </span>
-                                                        </div>
-                                                    )
-                                                ) : (
-                                                    <span className="text-gray-400 dark:text-gray-500">
-                                                        No phone number
-                                                    </span>
-                                                )}
-                                            </td>
-                                        </tr>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-red-600 dark:text-red-400">
+                                                                    {
+                                                                        contact.sms_number
+                                                                    }
+                                                                </span>
+                                                                <span className="text-xs text-red-500 dark:text-red-400">
+                                                                    (Not a valid
+                                                                    Philippine
+                                                                    number)
+                                                                </span>
+                                                            </div>
+                                                        )
+                                                    ) : (
+                                                        <span className="text-gray-400 dark:text-gray-500">
+                                                            No phone number
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
                                         );
                                     })}
                                 </tbody>

@@ -60,7 +60,7 @@ export function ClinicUpcomingAppointmentsWidget() {
     const formatTime = (timeString: string) => {
         try {
             let date;
-            
+
             // If it's already a full datetime string
             if (timeString.includes('T') || timeString.includes(' ')) {
                 date = new Date(timeString);
@@ -68,14 +68,20 @@ export function ClinicUpcomingAppointmentsWidget() {
                 // If it's just a time string (HH:MM), create a date for today
                 const today = new Date();
                 const [hours, minutes] = timeString.split(':');
-                date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+                date = new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate(),
+                    parseInt(hours),
+                    parseInt(minutes),
+                );
             }
-            
+
             // Check if date is valid
             if (isNaN(date.getTime())) {
                 return timeString; // Return original string if invalid
             }
-            
+
             return date.toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',

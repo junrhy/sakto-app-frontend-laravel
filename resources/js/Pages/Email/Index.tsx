@@ -412,267 +412,295 @@ export default function Index({ auth }: Props) {
                             {/* Main Content Grid */}
                             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                                 {/* Left Column - Recipients and Content */}
-                                <div className="lg:col-span-2 space-y-8">
+                                <div className="space-y-8 lg:col-span-2">
                                     {/* Recipients Section */}
                                     <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
-                                <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
-                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        Recipients
-                                    </h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Add email addresses for To, CC, and BCC
-                                        fields
-                                    </p>
-                                </div>
-                                <div className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
-                                    {/* To Field */}
-                                    <div>
-                                        <div className="mb-3 flex items-center justify-between">
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                To{' '}
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setShowContactSelector(true)
-                                                }
-                                                className="inline-flex items-center px-3 py-1.5 text-sm text-indigo-600 transition-colors hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
-                                            >
-                                                <svg
-                                                    className="mr-1 h-4 w-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                                    />
-                                                </svg>
-                                                Select from Contacts
-                                            </button>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="email"
-                                                value={toInput}
-                                                onChange={(e) =>
-                                                    setToInput(e.target.value)
-                                                }
-                                                onKeyPress={(e) =>
-                                                    e.key === 'Enter' &&
-                                                    (e.preventDefault(),
-                                                    addRecipient('to', toInput))
-                                                }
-                                                className="block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                                placeholder="recipient@example.com"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    addRecipient('to', toInput)
-                                                }
-                                                className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                            >
-                                                Add
-                                            </button>
-                                        </div>
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            {data.to.map((email, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
-                                                >
-                                                    {email}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            removeRecipient(
-                                                                'to',
-                                                                index,
-                                                            )
-                                                        }
-                                                        className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {data._errors?.to && (
-                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                                {data._errors.to}
+                                        <div className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                Recipients
+                                            </h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                Add email addresses for To, CC,
+                                                and BCC fields
                                             </p>
-                                        )}
-                                    </div>
-
-                                    {/* CC/BCC Toggle */}
-                                    <div className="flex justify-end">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setShowCcBcc(!showCcBcc)
-                                            }
-                                            className="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 transition-colors hover:text-gray-800 focus:outline-none dark:text-gray-400 dark:hover:text-gray-300"
-                                        >
-                                            <svg
-                                                className={`mr-1 h-4 w-4 transition-transform ${showCcBcc ? 'rotate-180' : ''}`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M19 9l-7 7-7-7"
-                                                />
-                                            </svg>
-                                            {showCcBcc
-                                                ? 'Hide CC/BCC'
-                                                : 'Add CC/BCC'}
-                                        </button>
-                                    </div>
-
-                                    {/* CC/BCC Fields */}
-                                    {showCcBcc && (
-                                        <div className="space-y-4 border-t border-gray-200 pt-4 dark:border-gray-600">
-                                            <div>
-                                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                    CC
-                                                </label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="email"
-                                                        value={ccInput}
-                                                        onChange={(e) =>
-                                                            setCcInput(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        onKeyPress={(e) =>
-                                                            e.key === 'Enter' &&
-                                                            (e.preventDefault(),
-                                                            addRecipient(
-                                                                'cc',
-                                                                ccInput,
-                                                            ))
-                                                        }
-                                                        className="block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                                        placeholder="cc@example.com"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            addRecipient(
-                                                                'cc',
-                                                                ccInput,
-                                                            )
-                                                        }
-                                                        className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                                    >
-                                                        Add
-                                                    </button>
-                                                </div>
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                    {data.cc.map(
-                                                        (email, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
-                                                            >
-                                                                {email}
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        removeRecipient(
-                                                                            'cc',
-                                                                            index,
-                                                                        )
-                                                                    }
-                                                                    className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </span>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                    BCC
-                                                </label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="email"
-                                                        value={bccInput}
-                                                        onChange={(e) =>
-                                                            setBccInput(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        onKeyPress={(e) =>
-                                                            e.key === 'Enter' &&
-                                                            (e.preventDefault(),
-                                                            addRecipient(
-                                                                'bcc',
-                                                                bccInput,
-                                                            ))
-                                                        }
-                                                        className="block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                                        placeholder="bcc@example.com"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            addRecipient(
-                                                                'bcc',
-                                                                bccInput,
-                                                            )
-                                                        }
-                                                        className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                                    >
-                                                        Add
-                                                    </button>
-                                                </div>
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                    {data.bcc.map(
-                                                        (email, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
-                                                            >
-                                                                {email}
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        removeRecipient(
-                                                                            'bcc',
-                                                                            index,
-                                                                        )
-                                                                    }
-                                                                    className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </span>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
+                                        <div className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
+                                            {/* To Field */}
+                                            <div>
+                                                <div className="mb-3 flex items-center justify-between">
+                                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                        To{' '}
+                                                        <span className="text-red-500">
+                                                            *
+                                                        </span>
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setShowContactSelector(
+                                                                true,
+                                                            )
+                                                        }
+                                                        className="inline-flex items-center px-3 py-1.5 text-sm text-indigo-600 transition-colors hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                    >
+                                                        <svg
+                                                            className="mr-1 h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                                            />
+                                                        </svg>
+                                                        Select from Contacts
+                                                    </button>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="email"
+                                                        value={toInput}
+                                                        onChange={(e) =>
+                                                            setToInput(
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        onKeyPress={(e) =>
+                                                            e.key === 'Enter' &&
+                                                            (e.preventDefault(),
+                                                            addRecipient(
+                                                                'to',
+                                                                toInput,
+                                                            ))
+                                                        }
+                                                        className="block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                        placeholder="recipient@example.com"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            addRecipient(
+                                                                'to',
+                                                                toInput,
+                                                            )
+                                                        }
+                                                        className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                    >
+                                                        Add
+                                                    </button>
+                                                </div>
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {data.to.map(
+                                                        (email, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+                                                            >
+                                                                {email}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        removeRecipient(
+                                                                            'to',
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                    className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </span>
+                                                        ),
+                                                    )}
+                                                </div>
+                                                {data._errors?.to && (
+                                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                                                        {data._errors.to}
+                                                    </p>
+                                                )}
+                                            </div>
 
+                                            {/* CC/BCC Toggle */}
+                                            <div className="flex justify-end">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setShowCcBcc(!showCcBcc)
+                                                    }
+                                                    className="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 transition-colors hover:text-gray-800 focus:outline-none dark:text-gray-400 dark:hover:text-gray-300"
+                                                >
+                                                    <svg
+                                                        className={`mr-1 h-4 w-4 transition-transform ${showCcBcc ? 'rotate-180' : ''}`}
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M19 9l-7 7-7-7"
+                                                        />
+                                                    </svg>
+                                                    {showCcBcc
+                                                        ? 'Hide CC/BCC'
+                                                        : 'Add CC/BCC'}
+                                                </button>
+                                            </div>
 
+                                            {/* CC/BCC Fields */}
+                                            {showCcBcc && (
+                                                <div className="space-y-4 border-t border-gray-200 pt-4 dark:border-gray-600">
+                                                    <div>
+                                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                            CC
+                                                        </label>
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="email"
+                                                                value={ccInput}
+                                                                onChange={(e) =>
+                                                                    setCcInput(
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                onKeyPress={(
+                                                                    e,
+                                                                ) =>
+                                                                    e.key ===
+                                                                        'Enter' &&
+                                                                    (e.preventDefault(),
+                                                                    addRecipient(
+                                                                        'cc',
+                                                                        ccInput,
+                                                                    ))
+                                                                }
+                                                                className="block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                                placeholder="cc@example.com"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    addRecipient(
+                                                                        'cc',
+                                                                        ccInput,
+                                                                    )
+                                                                }
+                                                                className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                            >
+                                                                Add
+                                                            </button>
+                                                        </div>
+                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                            {data.cc.map(
+                                                                (
+                                                                    email,
+                                                                    index,
+                                                                ) => (
+                                                                    <span
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+                                                                    >
+                                                                        {email}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                removeRecipient(
+                                                                                    'cc',
+                                                                                    index,
+                                                                                )
+                                                                            }
+                                                                            className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    </span>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                            BCC
+                                                        </label>
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="email"
+                                                                value={bccInput}
+                                                                onChange={(e) =>
+                                                                    setBccInput(
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                onKeyPress={(
+                                                                    e,
+                                                                ) =>
+                                                                    e.key ===
+                                                                        'Enter' &&
+                                                                    (e.preventDefault(),
+                                                                    addRecipient(
+                                                                        'bcc',
+                                                                        bccInput,
+                                                                    ))
+                                                                }
+                                                                className="block w-full rounded-lg border-gray-300 shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                                placeholder="bcc@example.com"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    addRecipient(
+                                                                        'bcc',
+                                                                        bccInput,
+                                                                    )
+                                                                }
+                                                                className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                            >
+                                                                Add
+                                                            </button>
+                                                        </div>
+                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                            {data.bcc.map(
+                                                                (
+                                                                    email,
+                                                                    index,
+                                                                ) => (
+                                                                    <span
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200 dark:hover:bg-indigo-800"
+                                                                    >
+                                                                        {email}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                removeRecipient(
+                                                                                    'bcc',
+                                                                                    index,
+                                                                                )
+                                                                            }
+                                                                            className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    </span>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
 
                                     {/* Subject and Message Section */}
                                     <div className="overflow-hidden border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
@@ -681,7 +709,8 @@ export default function Index({ auth }: Props) {
                                                 Email Content
                                             </h4>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Compose your email subject and message
+                                                Compose your email subject and
+                                                message
                                             </p>
                                         </div>
                                         <div className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
@@ -696,7 +725,10 @@ export default function Index({ auth }: Props) {
                                                     type="text"
                                                     value={data.subject}
                                                     onChange={(e) =>
-                                                        setData('subject', e.target.value)
+                                                        setData(
+                                                            'subject',
+                                                            e.target.value,
+                                                        )
                                                     }
                                                     className={`block w-full rounded-lg shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${
                                                         data._errors?.subject
@@ -722,7 +754,10 @@ export default function Index({ auth }: Props) {
                                                 <textarea
                                                     value={data.message}
                                                     onChange={(e) =>
-                                                        setData('message', e.target.value)
+                                                        setData(
+                                                            'message',
+                                                            e.target.value,
+                                                        )
                                                     }
                                                     rows={10}
                                                     className={`block w-full rounded-lg shadow-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${
@@ -748,7 +783,8 @@ export default function Index({ auth }: Props) {
                                                 Attachments
                                             </h4>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Add files to your email (optional)
+                                                Add files to your email
+                                                (optional)
                                             </p>
                                         </div>
                                         <div className="bg-slate-50 p-6 dark:bg-slate-800/50">
@@ -763,50 +799,62 @@ export default function Index({ auth }: Props) {
                                                     className="block w-full cursor-pointer text-sm text-gray-500 transition-colors file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:text-gray-400 dark:file:bg-indigo-900 dark:file:text-indigo-300 dark:hover:file:bg-indigo-800"
                                                 />
                                             </div>
-                                            {data.attachments && data.attachments.length > 0 && (
-                                                <div className="mt-4">
-                                                    <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        Selected Files:
-                                                    </p>
-                                                    <div className="space-y-2">
-                                                        {Array.from(data.attachments).map(
-                                                            (file, index) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700"
-                                                                >
-                                                                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                                        {file.name}
-                                                                    </span>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            removeAttachment(
-                                                                                index,
-                                                                            )
+                                            {data.attachments &&
+                                                data.attachments.length > 0 && (
+                                                    <div className="mt-4">
+                                                        <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Selected Files:
+                                                        </p>
+                                                        <div className="space-y-2">
+                                                            {Array.from(
+                                                                data.attachments,
+                                                            ).map(
+                                                                (
+                                                                    file,
+                                                                    index,
+                                                                ) => (
+                                                                    <div
+                                                                        key={
+                                                                            index
                                                                         }
-                                                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                                        className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700"
                                                                     >
-                                                                        <svg
-                                                                            className="h-4 w-4"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            viewBox="0 0 24 24"
+                                                                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                                            {
+                                                                                file.name
+                                                                            }
+                                                                        </span>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                removeAttachment(
+                                                                                    index,
+                                                                                )
+                                                                            }
+                                                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                                                         >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                strokeWidth={2}
-                                                                                d="M6 18L18 6M6 6l12 12"
-                                                                            />
-                                                                        </svg>
-                                                                    </button>
-                                                                </div>
-                                                            ),
-                                                        )}
+                                                                            <svg
+                                                                                className="h-4 w-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={
+                                                                                        2
+                                                                                    }
+                                                                                    d="M6 18L18 6M6 6l12 12"
+                                                                                />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
                                             {errors.attachments && (
                                                 <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                                                     {errors.attachments}
@@ -856,7 +904,8 @@ export default function Index({ auth }: Props) {
                                                         Attachments
                                                     </span>
                                                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {data.attachments?.length || 0}
+                                                        {data.attachments
+                                                            ?.length || 0}
                                                     </span>
                                                 </div>
                                             </div>
@@ -873,21 +922,33 @@ export default function Index({ auth }: Props) {
                                             </div>
                                             <div className="bg-slate-50 p-6 dark:bg-slate-800/50">
                                                 <div className="space-y-3">
-                                                    {templates.slice(0, 3).map((template) => (
-                                                        <button
-                                                            key={template.id}
-                                                            type="button"
-                                                            onClick={() => loadTemplate(template)}
-                                                            className="w-full rounded-lg border border-gray-200 p-3 text-left transition-colors hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
-                                                        >
-                                                            <div className="font-medium text-gray-900 dark:text-white">
-                                                                {template.name}
-                                                            </div>
-                                                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                                {template.subject}
-                                                            </div>
-                                                        </button>
-                                                    ))}
+                                                    {templates
+                                                        .slice(0, 3)
+                                                        .map((template) => (
+                                                            <button
+                                                                key={
+                                                                    template.id
+                                                                }
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    loadTemplate(
+                                                                        template,
+                                                                    )
+                                                                }
+                                                                className="w-full rounded-lg border border-gray-200 p-3 text-left transition-colors hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                            >
+                                                                <div className="font-medium text-gray-900 dark:text-white">
+                                                                    {
+                                                                        template.name
+                                                                    }
+                                                                </div>
+                                                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                    {
+                                                                        template.subject
+                                                                    }
+                                                                </div>
+                                                            </button>
+                                                        ))}
                                                 </div>
                                             </div>
                                         </div>

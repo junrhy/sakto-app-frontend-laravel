@@ -8,12 +8,12 @@ import React, { useMemo, useState } from 'react';
 import { EmployeesTab } from './components/EmployeesTab';
 import { PayrollDialog } from './components/PayrollDialog';
 import { PayrollOverview } from './components/PayrollOverview';
-import { PayrollPeriodsTab } from './components/PayrollPeriodsTab';
 import { PayrollPeriodDialog } from './components/PayrollPeriodDialog';
-import { SalaryHistoryTab } from './components/SalaryHistoryTab';
+import { PayrollPeriodsTab } from './components/PayrollPeriodsTab';
 import { SalaryHistoryDialog } from './components/SalaryHistoryDialog';
-import { TimeTrackingTab } from './components/TimeTrackingTab';
+import { SalaryHistoryTab } from './components/SalaryHistoryTab';
 import { TimeTrackingDialog } from './components/TimeTrackingDialog';
+import { TimeTrackingTab } from './components/TimeTrackingTab';
 import { usePayrollData } from './hooks/usePayrollData';
 import { PayrollProps } from './types';
 
@@ -33,7 +33,6 @@ function PayrollContent({ currency_symbol = '$', auth }: PayrollProps) {
 
     // Use currency from API if available, otherwise fall back to prop or default
     const displayCurrency = currency?.symbol || currency_symbol;
-
 
     // Dialog states
     const [isPayrollDialogOpen, setIsPayrollDialogOpen] = useState(false);

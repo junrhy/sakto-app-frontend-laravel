@@ -84,10 +84,14 @@ export const PayrollPeriodsTab = ({
                                             {period.period_name}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {new Date(period.start_date).toLocaleDateString()}
+                                            {new Date(
+                                                period.start_date,
+                                            ).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {new Date(period.end_date).toLocaleDateString()}
+                                            {new Date(
+                                                period.end_date,
+                                            ).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell>
                                             <span

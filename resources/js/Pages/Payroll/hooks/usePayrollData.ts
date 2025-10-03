@@ -7,7 +7,11 @@ export const usePayrollData = () => {
     const [salaryHistory, setSalaryHistory] = useState<SalaryHistory[]>([]);
     const [payrollPeriods, setPayrollPeriods] = useState<PayrollPeriod[]>([]);
     const [timeTracking, setTimeTracking] = useState<TimeTracking[]>([]);
-    const [currency, setCurrency] = useState<{symbol: string, decimal_separator: string, thousands_separator: string} | null>(null);
+    const [currency, setCurrency] = useState<{
+        symbol: string;
+        decimal_separator: string;
+        thousands_separator: string;
+    } | null>(null);
     const [loading, setLoading] = useState(true);
 
     const loadPayrolls = async () => {
@@ -49,11 +53,15 @@ export const usePayrollData = () => {
                 setSalaryHistory(data.data);
             } else if (data && typeof data === 'object') {
                 // Handle object with numeric keys (like {0: {...}, 1: {...}, currency: {...}})
-                const salaryHistoryData = Object.values(data).filter(item => 
-                    item && typeof item === 'object' && 'id' in item && 'employee_id' in item
+                const salaryHistoryData = Object.values(data).filter(
+                    (item) =>
+                        item &&
+                        typeof item === 'object' &&
+                        'id' in item &&
+                        'employee_id' in item,
                 ) as SalaryHistory[];
                 setSalaryHistory(salaryHistoryData);
-                
+
                 // Extract currency data if present
                 if (data.currency && typeof data.currency === 'object') {
                     setCurrency(data.currency);
@@ -78,8 +86,12 @@ export const usePayrollData = () => {
                 setPayrollPeriods(data.data);
             } else if (data && typeof data === 'object') {
                 // Handle object with numeric keys (like {0: {...}, 1: {...}, currency: {...}})
-                const payrollPeriodsData = Object.values(data).filter(item => 
-                    item && typeof item === 'object' && 'id' in item && 'period_name' in item
+                const payrollPeriodsData = Object.values(data).filter(
+                    (item) =>
+                        item &&
+                        typeof item === 'object' &&
+                        'id' in item &&
+                        'period_name' in item,
                 ) as PayrollPeriod[];
                 setPayrollPeriods(payrollPeriodsData);
             } else {
@@ -102,8 +114,12 @@ export const usePayrollData = () => {
                 setTimeTracking(data.data);
             } else if (data && typeof data === 'object') {
                 // Handle object with numeric keys (like {0: {...}, 1: {...}, currency: {...}})
-                const timeTrackingData = Object.values(data).filter(item => 
-                    item && typeof item === 'object' && 'id' in item && 'employee_id' in item
+                const timeTrackingData = Object.values(data).filter(
+                    (item) =>
+                        item &&
+                        typeof item === 'object' &&
+                        'id' in item &&
+                        'employee_id' in item,
                 ) as TimeTracking[];
                 setTimeTracking(timeTrackingData);
             } else {

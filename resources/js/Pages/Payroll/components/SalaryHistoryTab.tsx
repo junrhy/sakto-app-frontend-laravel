@@ -99,12 +99,20 @@ export const SalaryHistoryTab = ({
                                         <TableCell>
                                             <div
                                                 className={`flex items-center gap-1 ${
-                                                    parseFloat(String(history.salary_change)) >= 0
+                                                    parseFloat(
+                                                        String(
+                                                            history.salary_change,
+                                                        ),
+                                                    ) >= 0
                                                         ? 'text-green-600 dark:text-green-400'
                                                         : 'text-red-600 dark:text-red-400'
                                                 }`}
                                             >
-                                                {parseFloat(String(history.salary_change)) >= 0 ? (
+                                                {parseFloat(
+                                                    String(
+                                                        history.salary_change,
+                                                    ),
+                                                ) >= 0 ? (
                                                     <TrendingUp className="h-4 w-4" />
                                                 ) : (
                                                     <TrendingDown className="h-4 w-4" />
@@ -120,18 +128,27 @@ export const SalaryHistoryTab = ({
                                         <TableCell>
                                             <span
                                                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                    parseFloat(String(history.percentage_change)) >=
-                                                    0
+                                                    parseFloat(
+                                                        String(
+                                                            history.percentage_change,
+                                                        ),
+                                                    ) >= 0
                                                         ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
                                                         : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
                                                 }`}
                                             >
-                                                {parseFloat(String(history.percentage_change)) >= 0
+                                                {parseFloat(
+                                                    String(
+                                                        history.percentage_change,
+                                                    ),
+                                                ) >= 0
                                                     ? '+'
                                                     : ''}
-                                                {parseFloat(String(history.percentage_change)).toFixed(
-                                                    2,
-                                                )}
+                                                {parseFloat(
+                                                    String(
+                                                        history.percentage_change,
+                                                    ),
+                                                ).toFixed(2)}
                                                 %
                                             </span>
                                         </TableCell>
@@ -139,7 +156,9 @@ export const SalaryHistoryTab = ({
                                             {history.change_reason}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {new Date(history.effective_date).toLocaleDateString()}
+                                            {new Date(
+                                                history.effective_date,
+                                            ).toLocaleDateString()}
                                         </TableCell>
                                     </TableRow>
                                 ))}

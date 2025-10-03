@@ -2,11 +2,11 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import {
     AlertCircle,
+    Banknote,
     Calendar,
     Loader2,
-    Users,
-    Banknote,
     TrendingUp,
+    Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 

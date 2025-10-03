@@ -98,9 +98,26 @@ export const menuCategories: MenuCategory[] = [
         id: 'communication',
         title: 'Communication',
         items: [
-            { id: 'sms-semaphore', title: 'Philippine SMS', href: '/sms-semaphore?app=sms' },
-            { id: 'sms-twilio', title: 'International SMS', href: '/sms-twilio?app=sms' },
-            { id: 'sms-whatsapp', title: 'WhatsApp', href: '/sms-whatsapp?app=sms' },
+            {
+                id: 'sms-semaphore',
+                title: 'Philippine SMS',
+                href: '/sms-semaphore?app=sms',
+            },
+            {
+                id: 'sms-twilio',
+                title: 'International SMS',
+                href: '/sms-twilio?app=sms',
+            },
+            {
+                id: 'sms-whatsapp',
+                title: 'WhatsApp',
+                href: '/sms-whatsapp?app=sms',
+            },
+            {
+                id: 'whatsapp-setup',
+                title: 'WhatsApp Setup',
+                href: '/whatsapp-accounts?app=sms',
+            },
             { id: 'email', title: 'Email', href: '/email?app=email' },
             {
                 id: 'contacts',

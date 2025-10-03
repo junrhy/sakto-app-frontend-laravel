@@ -85,13 +85,20 @@ export const TimeTrackingTab = ({
                                             {tracking.employee_id}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
-                                            {new Date(tracking.work_date).toLocaleDateString()}
+                                            {new Date(
+                                                tracking.work_date,
+                                            ).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="text-gray-700 dark:text-gray-300">
                                             {tracking.clock_in ? (
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                                    {new Date(tracking.clock_in).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                    {new Date(
+                                                        tracking.clock_in,
+                                                    ).toLocaleTimeString([], {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
                                                 </div>
                                             ) : (
                                                 <span className="text-gray-400 dark:text-gray-500">
@@ -103,7 +110,12 @@ export const TimeTrackingTab = ({
                                             {tracking.clock_out ? (
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                                    {new Date(tracking.clock_out).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                    {new Date(
+                                                        tracking.clock_out,
+                                                    ).toLocaleTimeString([], {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
                                                 </div>
                                             ) : (
                                                 <span className="text-gray-400 dark:text-gray-500">
