@@ -14,7 +14,7 @@ import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { Loader2, MessageSquare, Send, Users } from 'lucide-react';
+import { CreditCard, Loader2, MessageSquare, Send, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -86,6 +86,7 @@ export default function Index({ auth, messages, stats }: Props) {
     const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [groupFilter, setGroupFilter] = useState<string>('all');
+    const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
 
     // WhatsApp number validation (international format or local format)
     const whatsappRegex = /^(\+[1-9]\d{1,14}|0\d{9,10})$/;
@@ -122,6 +123,20 @@ export default function Index({ auth, messages, stats }: Props) {
         } catch (error) {
             console.error('Error fetching contacts:', error);
             toast.error('Failed to load contacts');
+        }
+    };
+
+    const fetchCredits = async () => {
+        try {
+            if (auth.user.identifier) {
+                const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setCredits(data.balance || 0);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching credits:', error);
         }
     };
 
@@ -202,6 +217,7 @@ export default function Index({ auth, messages, stats }: Props) {
 
     useEffect(() => {
         fetchContacts();
+        fetchCredits();
     }, []);
 
     const totalCredits = recipients.length * 5; // 5 credits per WhatsApp message
@@ -338,17 +354,17 @@ export default function Index({ auth, messages, stats }: Props) {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                        API Status
+                                        Available Credits
                                     </p>
                                     <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                        Active
+                                        {credits.toLocaleString()}
                                     </p>
-                                    <p className="text-xs text-green-600 dark:text-green-400">
-                                        WhatsApp Business API connected
+                                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                                        Credits available
                                     </p>
                                 </div>
-                                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
-                                    <MessageSquare className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+                                    <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                             </div>
                         </CardContent>

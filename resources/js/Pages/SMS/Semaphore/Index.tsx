@@ -62,11 +62,7 @@ interface Props extends PageProps {
 }
 
 export default function Index({ auth, messages, stats }: Props) {
-    const [isLoadingBalance, setIsLoadingBalance] = useState(false);
-    const [balance, setBalance] = useState<{
-        balance: number;
-        currency: string;
-    } | null>(null);
+    const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [isLoadingPricing, setIsLoadingPricing] = useState(false);
     const [pricing, setPricing] = useState<any>(null);
 
@@ -136,6 +132,7 @@ export default function Index({ auth, messages, stats }: Props) {
         };
 
         fetchContacts();
+        fetchCredits();
     }, []);
 
     const toggleContactSelection = (contact: Contact) => {
@@ -243,22 +240,7 @@ export default function Index({ auth, messages, stats }: Props) {
         return matchesSearch && matchesGroup;
     });
 
-    const getBalance = async () => {
-        setIsLoadingBalance(true);
-        try {
-            const response = await fetch('/sms-semaphore/balance');
-            const data = await response.json();
-            if (data.error) {
-                toast.error('Failed to fetch balance: ' + data.error);
-            } else {
-                setBalance(data);
-            }
-        } catch (error) {
-            toast.error('Failed to fetch balance');
-        } finally {
-            setIsLoadingBalance(false);
-        }
-    };
+
 
     const getPricing = async () => {
         setIsLoadingPricing(true);
@@ -274,6 +256,20 @@ export default function Index({ auth, messages, stats }: Props) {
             toast.error('Failed to fetch pricing');
         } finally {
             setIsLoadingPricing(false);
+        }
+    };
+
+    const fetchCredits = async () => {
+        try {
+            if (auth.user.identifier) {
+                const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setCredits(data.balance || 0);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching credits:', error);
         }
     };
 
@@ -360,7 +356,7 @@ export default function Index({ auth, messages, stats }: Props) {
             <Head title="Philippine SMS" />
 
             <div>
-                <div className="mx-auto sm:px-6 lg:px-8">
+                <div>
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                         {/* Total Sent Card */}
@@ -435,46 +431,24 @@ export default function Index({ auth, messages, stats }: Props) {
                             </CardContent>
                         </Card>
 
-                        {/* Balance Card */}
+                        {/* Credits Card */}
                         <Card className="relative overflow-hidden border border-gray-200 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 bg-slate-50 dark:bg-slate-800/50">
-                            <CardContent 
-                                className="relative bg-slate-50 p-6 dark:bg-slate-800/50 cursor-pointer"
-                                onClick={!balance ? getBalance : undefined}
-                            >
+                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Account Balance
+                                            Available Credits
                                         </p>
-                                        {balance ? (
-                                            <div>
-                                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                                    {balance.balance}
-                                                </p>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {balance.currency}
-                                                </p>
-                                                <p className="text-xs text-purple-600 dark:text-purple-400">
-                                                    Current balance
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                                    --
-                                                </p>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                    Not loaded
-                                                </p>
-                                                <p className="text-xs text-purple-600 dark:text-purple-400">
-                                                    Click button to check
-                                                </p>
-                                            </div>
-                                        )}
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                            {credits.toLocaleString()}
+                                        </p>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                                            Credits available
+                                        </p>
                                     </div>
-                                    <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900/30">
-                                        <svg className="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                    <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+                                        <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                         </svg>
                                     </div>
                                 </div>
@@ -659,56 +633,6 @@ export default function Index({ auth, messages, stats }: Props) {
                                             )}
                                         </div>
                                     </form>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        <div>
-                            <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                                <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
-                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        Pricing
-                                    </CardTitle>
-                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                        Current SMS rates
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="bg-slate-50 p-6 dark:bg-slate-800/50">
-                                    {pricing ? (
-                                        <div className="space-y-3">
-                                            {Object.entries(pricing).map(
-                                                ([key, value]: [
-                                                    string,
-                                                    any,
-                                                ]) => (
-                                                    <div
-                                                        key={key}
-                                                        className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-gray-600 dark:bg-gray-700"
-                                                    >
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            {key}
-                                                        </span>
-                                                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                            ₱{value}
-                                                        </span>
-                                                    </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={getPricing}
-                                            disabled={isLoadingPricing}
-                                            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                                        >
-                                            {isLoadingPricing && (
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            )}
-                                            View Pricing
-                                        </Button>
-                                    )}
                                 </CardContent>
                             </Card>
                         </div>
