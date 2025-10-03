@@ -14,7 +14,7 @@ import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { Loader2, MessageSquare, Send, Users, DollarSign } from 'lucide-react';
+import { Loader2, MessageSquare, Send, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -31,7 +31,7 @@ interface Contact {
     first_name: string;
     last_name: string;
     email: string;
-    whatsapp_number?: string;
+    whatsapp?: string;
     group?: string[];
 }
 
@@ -62,13 +62,6 @@ interface Props extends PageProps {
 }
 
 export default function Index({ auth, messages, stats }: Props) {
-    const [isLoadingBalance, setIsLoadingBalance] = useState(false);
-    const [balance, setBalance] = useState<{
-        balance: number;
-        currency: string;
-    } | null>(null);
-    const [isLoadingPricing, setIsLoadingPricing] = useState(false);
-    const [pricing, setPricing] = useState<any>(null);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -94,8 +87,8 @@ export default function Index({ auth, messages, stats }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [groupFilter, setGroupFilter] = useState<string>('all');
 
-    // WhatsApp number validation (international format)
-    const whatsappRegex = /^\+[1-9]\d{1,14}$/;
+    // WhatsApp number validation (international format or local format)
+    const whatsappRegex = /^(\+[1-9]\d{1,14}|0\d{9,10})$/;
 
     const addRecipient = () => {
         if (!newRecipient.trim()) {
@@ -104,7 +97,7 @@ export default function Index({ auth, messages, stats }: Props) {
         }
 
         if (!whatsappRegex.test(newRecipient.trim())) {
-            toast.error('Please enter a valid international WhatsApp number (e.g., +1234567890)');
+            toast.error('Please enter a valid WhatsApp number (e.g., +639260049848 or 09260049848)');
             return;
         }
 
@@ -125,7 +118,7 @@ export default function Index({ auth, messages, stats }: Props) {
     const fetchContacts = async () => {
         try {
             const response = await axios.get('/contacts/list');
-            setContacts(response.data.contacts || []);
+            setContacts(response.data.data || []);
         } catch (error) {
             console.error('Error fetching contacts:', error);
             toast.error('Failed to load contacts');
@@ -142,10 +135,10 @@ export default function Index({ auth, messages, stats }: Props) {
 
     const addSelectedContactsToRecipients = () => {
         const validContacts = selectedContacts.filter(contact => 
-            contact.whatsapp_number && whatsappRegex.test(contact.whatsapp_number)
+            contact.whatsapp && whatsappRegex.test(contact.whatsapp)
         );
         
-        const newRecipients = validContacts.map(contact => contact.whatsapp_number!);
+        const newRecipients = validContacts.map(contact => contact.whatsapp!);
         const uniqueRecipients = [...new Set([...recipients, ...newRecipients])];
         
         setRecipients(uniqueRecipients);
@@ -157,10 +150,10 @@ export default function Index({ auth, messages, stats }: Props) {
 
     const addAllContactsToRecipients = () => {
         const validContacts = contacts.filter(contact => 
-            contact.whatsapp_number && whatsappRegex.test(contact.whatsapp_number)
+            contact.whatsapp && whatsappRegex.test(contact.whatsapp)
         );
         
-        const newRecipients = validContacts.map(contact => contact.whatsapp_number!);
+        const newRecipients = validContacts.map(contact => contact.whatsapp!);
         const uniqueRecipients = [...new Set([...recipients, ...newRecipients])];
         
         setRecipients(uniqueRecipients);
@@ -172,7 +165,7 @@ export default function Index({ auth, messages, stats }: Props) {
     const selectContactsByGroup = (group: string) => {
         const groupContacts = contacts.filter(contact => 
             contact.group && contact.group.includes(group) &&
-            contact.whatsapp_number && whatsappRegex.test(contact.whatsapp_number)
+            contact.whatsapp && whatsappRegex.test(contact.whatsapp)
         );
         
         setSelectedContacts(groupContacts);
@@ -193,7 +186,7 @@ export default function Index({ auth, messages, stats }: Props) {
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase()) ||
             contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (contact.whatsapp_number || '').includes(searchQuery) ||
+            (contact.whatsapp || '').includes(searchQuery) ||
             (contact.group || []).some((g) =>
                 g.toLowerCase().includes(searchQuery.toLowerCase()),
             );
@@ -205,41 +198,15 @@ export default function Index({ auth, messages, stats }: Props) {
         return matchesSearch && matchesGroup;
     });
 
-    const getBalance = async () => {
-        setIsLoadingBalance(true);
-        try {
-            const response = await fetch('/sms-whatsapp/balance');
-            const data = await response.json();
-            setBalance(data);
-        } catch (error) {
-            console.error('Error fetching balance:', error);
-            toast.error('Failed to fetch balance');
-        } finally {
-            setIsLoadingBalance(false);
-        }
-    };
 
-    const getPricing = async () => {
-        setIsLoadingPricing(true);
-        try {
-            const response = await fetch('/sms-whatsapp/pricing');
-            const data = await response.json();
-            setPricing(data);
-        } catch (error) {
-            console.error('Error fetching pricing:', error);
-            toast.error('Failed to fetch pricing');
-        } finally {
-            setIsLoadingPricing(false);
-        }
-    };
 
     useEffect(() => {
-        getPricing();
+        fetchContacts();
     }, []);
 
     const totalCredits = recipients.length * 5; // 5 credits per WhatsApp message
 
-    const submit = (e: React.FormEvent) => {
+    const submit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (recipients.length === 0) {
@@ -254,6 +221,17 @@ export default function Index({ auth, messages, stats }: Props) {
 
         if (data.message.length > 1000) {
             toast.error('Message is too long (max 1000 characters)');
+            return;
+        }
+
+        // Spend credits
+        try {
+            await axios.post('/credits/spend', {
+                amount: totalCredits,
+                description: `WhatsApp message to ${recipients.length} recipient(s)`
+            });
+        } catch (error: any) {
+            toast.error('Insufficient credits or failed to deduct credits');
             return;
         }
 
@@ -360,68 +338,24 @@ export default function Index({ auth, messages, stats }: Props) {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                        Account Balance
+                                        API Status
                                     </p>
                                     <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                        {balance ? `$${balance.balance.toFixed(2)}` : '--'}
+                                        Active
                                     </p>
-                                    <p className="text-xs text-purple-600 dark:text-purple-400">
-                                        {balance ? 'Current balance' : 'Click to check balance'}
+                                    <p className="text-xs text-green-600 dark:text-green-400">
+                                        WhatsApp Business API connected
                                     </p>
                                 </div>
-                                <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900/30">
-                                    <DollarSign className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
+                                    <MessageSquare className="h-6 w-6 text-green-600 dark:text-green-400" />
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Check Balance Button */}
-                {!balance && (
-                    <div className="flex justify-center">
-                        <Button
-                            onClick={getBalance}
-                            disabled={isLoadingBalance}
-                            className="bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                            {isLoadingBalance ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Checking...
-                                </>
-                            ) : (
-                                'Check Balance'
-                            )}
-                        </Button>
-                    </div>
-                )}
 
-                {/* Pricing Section */}
-                {pricing && (
-                    <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                        <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
-                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                WhatsApp Pricing
-                            </CardTitle>
-                            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                Current pricing for WhatsApp messages
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="bg-slate-50 p-6 dark:bg-slate-800/50">
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-gray-600 dark:bg-gray-700">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        WhatsApp Message
-                                    </span>
-                                    <span className="text-sm font-bold text-gray-900 dark:text-white">
-                                        ${pricing.cost_per_message} {pricing.currency}
-                                    </span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
 
                 {/* Send Message Form */}
                 <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -456,7 +390,7 @@ export default function Index({ auth, messages, stats }: Props) {
                                         <div className="flex gap-2">
                                             <Input
                                                 type="text"
-                                                placeholder="Enter WhatsApp number (e.g., +1234567890)"
+                                                placeholder="Enter WhatsApp number (e.g., +639260049848 or 09260049848)"
                                                 value={newRecipient}
                                                 onChange={(e) => setNewRecipient(e.target.value)}
                                                 onKeyPress={(e) => {
@@ -505,14 +439,6 @@ export default function Index({ auth, messages, stats }: Props) {
                                             </div>
                                         )}
 
-                                        {/* Credit Cost Info */}
-                                        {recipients.length > 0 && (
-                                            <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                                                <p className="text-sm text-blue-800 dark:text-blue-200">
-                                                    Sending this WhatsApp message will cost {totalCredits} credits per recipient.
-                                                </p>
-                                            </div>
-                                        )}
                                     </div>
 
                                     {/* Message Input */}
@@ -532,24 +458,44 @@ export default function Index({ auth, messages, stats }: Props) {
                                         </p>
                                     </div>
 
-                                    {/* Send Button */}
-                                    <Button
-                                        type="submit"
-                                        disabled={processing || recipients.length === 0}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                        {processing ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send WhatsApp Message
-                                            </>
-                                        )}
-                                    </Button>
+                                    {/* Credit Cost Info and Send Button */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                            <svg
+                                                className="mr-2 h-5 w-5 text-yellow-500"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            {recipients.length > 0 ? (
+                                                <>Sending this message will cost {recipients.length * 5} credits per recipient from your balance</>
+                                            ) : (
+                                                <>Sending this message will cost 5 credits per recipient from your balance</>
+                                            )}
+                                        </div>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing || recipients.length === 0}
+                                            className="inline-flex items-center rounded-lg border border-transparent bg-green-600 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            {processing ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    Sending...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Send className="mr-2 h-4 w-4" />
+                                                    Send Message
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
                                 </form>
                             </CardContent>
                         </Card>
@@ -616,34 +562,49 @@ export default function Index({ auth, messages, stats }: Props) {
 
             {/* Contact Selector Modal */}
             {showContactSelector && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="w-full max-w-4xl max-h-[80vh] overflow-y-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Select Contacts
-                                </h3>
-                                <Button
-                                    onClick={() => setShowContactSelector(false)}
-                                    className="bg-gray-600 hover:bg-gray-700 text-white"
+                <div className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50">
+                    <div className="relative top-20 mx-auto w-3/4 rounded-md border bg-white p-5 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                Select Contacts
+                            </h3>
+                            <button
+                                onClick={() => setShowContactSelector(false)}
+                                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                            >
+                                <svg
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
                                 >
-                                    Close
-                                </Button>
-                            </div>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
 
-                            {/* Search and Filter */}
-                            <div className="mb-4 space-y-4">
-                                <Input
-                                    placeholder="Search contacts..."
+                        <div className="mb-4 space-y-4">
+                            <div>
+                                <input
+                                    type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full"
+                                    placeholder="Search contacts..."
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
-                                <div className="flex gap-2">
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div>
                                     <select
                                         value={groupFilter}
                                         onChange={(e) => setGroupFilter(e.target.value)}
-                                        className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     >
                                         <option value="all">All Groups</option>
                                         {uniqueGroups.map((group) => (
@@ -654,55 +615,55 @@ export default function Index({ auth, messages, stats }: Props) {
                                     </select>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Action Buttons */}
-                            <div className="mb-4 flex gap-2">
-                                <Button
-                                    onClick={addSelectedContactsToRecipients}
-                                    disabled={selectedContacts.length === 0}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                                >
-                                    Add Selected ({selectedContacts.length})
-                                </Button>
-                                <Button
-                                    onClick={addAllContactsToRecipients}
-                                    disabled={filteredContacts.filter(contact => 
-                                        contact.whatsapp_number && whatsappRegex.test(contact.whatsapp_number)
-                                    ).length === 0}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                    Add All ({filteredContacts.filter(contact => 
-                                        contact.whatsapp_number && whatsappRegex.test(contact.whatsapp_number)
-                                    ).length})
-                                </Button>
-                            </div>
+                        <div className="mb-4 flex gap-2">
+                            <Button
+                                onClick={addSelectedContactsToRecipients}
+                                disabled={selectedContacts.length === 0}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            >
+                                Add Selected ({selectedContacts.length})
+                            </Button>
+                            <Button
+                                onClick={addAllContactsToRecipients}
+                                disabled={filteredContacts.filter(contact => 
+                                    contact.whatsapp && whatsappRegex.test(contact.whatsapp)
+                                ).length === 0}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                                Add All ({filteredContacts.filter(contact => 
+                                    contact.whatsapp && whatsappRegex.test(contact.whatsapp)
+                                ).length})
+                            </Button>
+                        </div>
 
-                            {/* Contacts Table */}
-                            <div className="max-h-96 overflow-y-auto">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Select
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Name
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Email
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                WhatsApp Number
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                                                Group
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        {/* Contacts Table */}
+                        <div className="max-h-96 overflow-y-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Select
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Email
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            WhatsApp Number
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Group
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                         {filteredContacts.map((contact) => {
-                                            const hasValidWhatsAppNumber = contact.whatsapp_number && 
-                                                whatsappRegex.test(contact.whatsapp_number);
+                                            const hasValidWhatsAppNumber = contact.whatsapp && 
+                                                whatsappRegex.test(contact.whatsapp);
                                             
                                             return (
                                                 <tr
@@ -727,15 +688,15 @@ export default function Index({ auth, messages, stats }: Props) {
                                                         {contact.email}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                        {contact.whatsapp_number ? (
+                                                        {contact.whatsapp ? (
                                                             hasValidWhatsAppNumber ? (
                                                                 <span className="text-green-600 dark:text-green-400">
-                                                                    {contact.whatsapp_number}
+                                                                    {contact.whatsapp}
                                                                 </span>
                                                             ) : (
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-red-600 dark:text-red-400">
-                                                                        {contact.whatsapp_number}
+                                                                        {contact.whatsapp}
                                                                     </span>
                                                                     <span className="text-xs text-red-500 dark:text-red-400">
                                                                         (Not a valid WhatsApp number)
@@ -756,9 +717,8 @@ export default function Index({ auth, messages, stats }: Props) {
                                                 </tr>
                                             );
                                         })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
