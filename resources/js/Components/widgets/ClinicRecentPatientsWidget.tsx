@@ -115,14 +115,14 @@ export function ClinicRecentPatientsWidget() {
                 {patients.map((patient) => (
                     <div
                         key={patient.id}
-                        className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800"
+                        className="flex flex-col gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div className="flex items-center gap-3">
                             <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
                                 <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <div>
-                                <div className="flex items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
                                     <p className="font-medium text-gray-900 dark:text-white">
                                         {patient.name}
                                     </p>
@@ -136,7 +136,7 @@ export function ClinicRecentPatientsWidget() {
                                         </Badge>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <div className="flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:gap-4">
                                     <div className="flex items-center gap-1">
                                         <Phone className="h-3 w-3" />
                                         {patient.phone}
@@ -148,7 +148,7 @@ export function ClinicRecentPatientsWidget() {
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right">
+                        <div className="flex flex-col gap-2 text-right sm:items-end">
                             <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                                 <Calendar className="h-3 w-3" />
                                 {formatDate(patient.created_at)}

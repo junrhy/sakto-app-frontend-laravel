@@ -137,7 +137,7 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
             <div className="space-y-4">
                 {/* Main Revenue Display */}
                 <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
                         {formatCurrency(stats?.total_revenue || 0)}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -155,14 +155,14 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                 </div>
 
                 {/* Revenue Breakdown */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                         <div className="mb-1 flex items-center gap-2">
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 Today
                             </span>
                         </div>
-                        <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                        <div className="text-base font-bold text-green-600 dark:text-green-400 sm:text-lg">
                             {formatCurrency(stats?.today_revenue || 0)}
                         </div>
                     </div>
@@ -176,7 +176,7 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                                 })}
                             </span>
                         </div>
-                        <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        <div className="text-base font-bold text-blue-600 dark:text-blue-400 sm:text-lg">
                             {formatCurrency(stats?.monthly_revenue || 0)}
                         </div>
                     </div>
@@ -191,7 +191,7 @@ export function ClinicRevenueOverviewWidget({ auth }: Props) {
                                 Outstanding Amount
                             </span>
                         </div>
-                        <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                        <div className="text-base font-bold text-red-600 dark:text-red-400 sm:text-lg">
                             {formatCurrency(stats?.outstanding_amount || 0)}
                         </div>
                     </div>

@@ -153,7 +153,7 @@ export function ClinicLowStockAlertsWidget() {
                             </Badge>
                         </div>
 
-                        <div className="mb-3 grid grid-cols-2 gap-4">
+                        <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                     Current Stock
@@ -201,7 +201,7 @@ export function ClinicLowStockAlertsWidget() {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <span className="font-medium">Category:</span>{' '}
                                 {item.category}

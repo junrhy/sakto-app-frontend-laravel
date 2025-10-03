@@ -73,16 +73,16 @@ export function ClinicPatientOverviewWidget() {
 
     return (
         <CardContent className="p-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                         <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             Total Patients
                         </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <p className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                             {(stats?.total_patients || 0).toLocaleString()}
                         </p>
                     </div>
@@ -92,11 +92,11 @@ export function ClinicPatientOverviewWidget() {
                     <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
                         <UserPlus className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             New This Month
                         </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <p className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                             {(
                                 stats?.new_patients_this_month || 0
                             ).toLocaleString()}
@@ -108,11 +108,11 @@ export function ClinicPatientOverviewWidget() {
                     <div className="rounded-lg bg-yellow-100 p-2 dark:bg-yellow-900/30">
                         <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             VIP Patients
                         </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <p className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                             {(stats?.vip_patients || 0).toLocaleString()}
                         </p>
                     </div>
@@ -122,11 +122,11 @@ export function ClinicPatientOverviewWidget() {
                     <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
                         <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             Outstanding Bills
                         </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <p className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                             {(
                                 stats?.patients_with_outstanding_bills || 0
                             ).toLocaleString()}

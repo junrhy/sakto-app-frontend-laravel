@@ -3,9 +3,10 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import {
     AlertCircle,
     Calendar,
-    DollarSign,
     Loader2,
     Users,
+    Banknote,
+    TrendingUp,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -240,11 +241,11 @@ export function PayrollStatsWidget() {
 
     return (
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Payroll Overview
                 </h3>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                         Next Payroll:
                     </span>
@@ -259,17 +260,17 @@ export function PayrollStatsWidget() {
             </div>
 
             {/* Statistics Cards */}
-            <div className="mb-6 grid grid-cols-2 gap-4">
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Card className="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                     <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-blue-500" />
                                 <span className="text-sm text-gray-900 dark:text-white">
                                     Active Employees
                                 </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            <span className="text-lg font-bold text-gray-900 dark:text-white sm:text-sm sm:font-medium">
                                 {derivedData.activeEmployees}
                             </span>
                         </div>
@@ -277,14 +278,14 @@ export function PayrollStatsWidget() {
                 </Card>
                 <Card className="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                     <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-green-500" />
+                                <Banknote className="h-4 w-4 text-green-500" />
                                 <span className="text-sm text-gray-900 dark:text-white">
                                     Total Salary
                                 </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            <span className="text-lg font-bold text-gray-900 dark:text-white sm:text-sm sm:font-medium">
                                 {currency
                                     ? `${currency.symbol}${derivedData.totalPayroll.toLocaleString(
                                           undefined,
@@ -300,14 +301,14 @@ export function PayrollStatsWidget() {
                 </Card>
                 <Card className="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                     <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4 text-blue-500" />
+                                <TrendingUp className="h-4 w-4 text-blue-500" />
                                 <span className="text-sm text-gray-900 dark:text-white">
                                     Average Salary
                                 </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            <span className="text-lg font-bold text-gray-900 dark:text-white sm:text-sm sm:font-medium">
                                 {currency
                                     ? `${currency.symbol}${derivedData.averageSalary.toLocaleString(
                                           undefined,
@@ -323,14 +324,14 @@ export function PayrollStatsWidget() {
                 </Card>
                 <Card className="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                     <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-orange-500" />
                                 <span className="text-sm text-gray-900 dark:text-white">
                                     Next Payroll
                                 </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            <span className="text-lg font-bold text-gray-900 dark:text-white sm:text-sm sm:font-medium">
                                 {currency
                                     ? `${currency.symbol}${(
                                           derivedData.upcomingPayroll?.amount ||
@@ -360,7 +361,7 @@ export function PayrollStatsWidget() {
                                         <Users className="h-4 w-4 text-blue-500" />
                                     </div>
                                     <div className="min-w-0 flex-grow">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <span className="truncate font-medium text-gray-900 dark:text-white">
                                                 {employee.name}
                                             </span>

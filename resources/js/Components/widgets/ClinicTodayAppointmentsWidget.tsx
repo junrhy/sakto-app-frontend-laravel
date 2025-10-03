@@ -47,11 +47,34 @@ export function ClinicTodayAppointmentsWidget() {
     };
 
     const formatTime = (timeString: string) => {
-        return new Date(timeString).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        });
+        try {
+            // Handle different time formats
+            let date;
+            
+            // If it's already a full datetime string
+            if (timeString.includes('T') || timeString.includes(' ')) {
+                date = new Date(timeString);
+            } else {
+                // If it's just a time string (HH:MM), create a date for today
+                const today = new Date();
+                const [hours, minutes] = timeString.split(':');
+                date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+            }
+            
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                return timeString; // Return original string if invalid
+            }
+            
+            return date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+            });
+        } catch (error) {
+            console.warn('Error formatting time:', timeString, error);
+            return timeString; // Return original string if error
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -83,11 +106,32 @@ export function ClinicTodayAppointmentsWidget() {
     };
 
     const isUpcoming = (appointmentTime: string) => {
-        const now = new Date();
-        const appointment = new Date(appointmentTime);
-        const diffInHours =
-            (appointment.getTime() - now.getTime()) / (1000 * 60 * 60);
-        return diffInHours > 0 && diffInHours <= 2; // Next 2 hours
+        try {
+            const now = new Date();
+            let appointment;
+            
+            // Handle different time formats
+            if (appointmentTime.includes('T') || appointmentTime.includes(' ')) {
+                appointment = new Date(appointmentTime);
+            } else {
+                // If it's just a time string (HH:MM), create a date for today
+                const today = new Date();
+                const [hours, minutes] = appointmentTime.split(':');
+                appointment = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+            }
+            
+            // Check if appointment date is valid
+            if (isNaN(appointment.getTime())) {
+                return false;
+            }
+            
+            const diffInHours =
+                (appointment.getTime() - now.getTime()) / (1000 * 60 * 60);
+            return diffInHours > 0 && diffInHours <= 2; // Next 2 hours
+        } catch (error) {
+            console.warn('Error checking if appointment is upcoming:', appointmentTime, error);
+            return false;
+        }
     };
 
     if (loading) {
@@ -134,7 +178,7 @@ export function ClinicTodayAppointmentsWidget() {
                                 : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
                         }`}
                     >
-                        <div className="mb-2 flex items-center justify-between">
+                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                 <span className="font-medium text-gray-900 dark:text-white">
@@ -146,7 +190,7 @@ export function ClinicTodayAppointmentsWidget() {
                                     </Badge>
                                 )}
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Badge
                                     className={getStatusColor(
                                         appointment.status,
@@ -168,8 +212,8 @@ export function ClinicTodayAppointmentsWidget() {
                             <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
                                 <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
                                     <span className="font-medium text-gray-900 dark:text-white">
                                         {appointment.patient_name}
                                     </span>
@@ -179,7 +223,7 @@ export function ClinicTodayAppointmentsWidget() {
                                         </Badge>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <div className="flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:gap-4">
                                     <div className="flex items-center gap-1">
                                         <Phone className="h-3 w-3" />
                                         {appointment.patient_phone}

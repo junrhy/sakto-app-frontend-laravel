@@ -58,14 +58,33 @@ export function ClinicUpcomingAppointmentsWidget() {
     };
 
     const formatTime = (timeString: string) => {
-        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString(
-            'en-US',
-            {
+        try {
+            let date;
+            
+            // If it's already a full datetime string
+            if (timeString.includes('T') || timeString.includes(' ')) {
+                date = new Date(timeString);
+            } else {
+                // If it's just a time string (HH:MM), create a date for today
+                const today = new Date();
+                const [hours, minutes] = timeString.split(':');
+                date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
+            }
+            
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                return timeString; // Return original string if invalid
+            }
+            
+            return date.toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true,
-            },
-        );
+            });
+        } catch (error) {
+            console.warn('Error formatting time:', timeString, error);
+            return timeString; // Return original string if error
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -152,7 +171,7 @@ export function ClinicUpcomingAppointmentsWidget() {
                                 : 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
                         }`}
                     >
-                        <div className="mb-2 flex items-center justify-between">
+                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 <span className="font-medium text-gray-900 dark:text-white">
@@ -175,7 +194,7 @@ export function ClinicUpcomingAppointmentsWidget() {
                             </Badge>
                         </div>
 
-                        <div className="mb-3 grid grid-cols-2 gap-4">
+                        <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                     Date
@@ -203,7 +222,7 @@ export function ClinicUpcomingAppointmentsWidget() {
                             </p>
                         </div>
 
-                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-1">
                                 <User className="h-3 w-3" />
                                 <span>{appointment.doctor_name}</span>
