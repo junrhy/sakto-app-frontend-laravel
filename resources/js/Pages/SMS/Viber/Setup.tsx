@@ -182,23 +182,22 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
             <div className="space-y-6">
                 {/* Setup Instructions */}
-                <Card>
+                <Card className="border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
                     <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                            <Settings className="h-5 w-5" />
-                            <span>Viber Public Account Setup</span>
+                        <CardTitle className="flex items-center text-blue-900 dark:text-blue-100">
+                            <MessageSquare className="mr-2 h-5 w-5" />
+                            Viber Public Account Setup
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-blue-700 dark:text-blue-300">
                             Connect your Viber Public Account to send messages
                             to your customers
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                                <h4 className="mb-2 font-medium text-blue-900 dark:text-blue-100">
-                                    How to get your Viber Public Account
-                                    credentials:
+                            <div className="rounded-lg bg-blue-100 p-4 dark:bg-blue-800/30">
+                                <h4 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">
+                                    How to get your Viber Public Account credentials:
                                 </h4>
                                 <ol className="list-inside list-decimal space-y-2 text-sm text-blue-800 dark:text-blue-200">
                                     <li>
@@ -207,43 +206,50 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                             href="https://partners.viber.com"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="underline"
+                                            className="text-blue-600 hover:underline dark:text-blue-400"
                                         >
                                             partners.viber.com
                                         </a>
                                     </li>
                                     <li>
-                                        Complete the verification process for
-                                        your business
+                                        Complete the verification process for your business
                                     </li>
                                     <li>
-                                        Get your Auth Token from the Viber
-                                        Partners dashboard
+                                        Get your Auth Token from the Viber Partners dashboard
                                     </li>
                                     <li>
-                                        Configure webhook URL to receive message
-                                        status updates
+                                        Configure webhook URL to receive message status updates
                                     </li>
                                 </ol>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    {hasActiveAccount ? (
+                                        <>
+                                            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                            <span className="text-sm text-green-700 dark:text-green-300">
+                                                You have an active Viber account
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                            <span className="text-sm text-amber-700 dark:text-amber-300">
+                                                No active Viber account found
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                                <Button onClick={() => setShowAddForm(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Account
+                                </Button>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Add Account Button */}
-                <div className="flex justify-end">
-                    <Button
-                        onClick={() => {
-                            setShowAddForm(true);
-                            setEditingAccount(null);
-                            reset();
-                        }}
-                        className="bg-green-600 text-white hover:bg-green-700"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Viber Account
-                    </Button>
-                </div>
 
                 {/* Add/Edit Account Form */}
                 {showAddForm && (
@@ -405,108 +411,107 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 )}
 
                 {/* Existing Accounts */}
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Your Viber Accounts
-                    </h3>
-
-                    {accounts.length === 0 ? (
-                        <Card>
-                            <CardContent className="p-6 text-center">
-                                <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                                <p className="text-gray-500 dark:text-gray-400">
-                                    No Viber accounts configured yet
-                                </p>
-                            </CardContent>
-                        </Card>
-                    ) : (
+                {accounts.length > 0 && (
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Your Viber Accounts
+                        </h3>
                         <div className="grid gap-4">
                             {accounts.map((account) => (
-                                <Card key={account.id}>
+                                <Card
+                                    key={account.id}
+                                    className="border border-gray-200 dark:border-gray-700"
+                                >
                                     <CardContent className="p-6">
                                         <div className="flex items-center justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center space-x-3">
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900 dark:text-white">
-                                                            {
-                                                                account.account_name
+                                                <div className="mb-2 flex items-center space-x-3">
+                                                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                        {account.account_name}
+                                                    </h4>
+                                                    <div className="flex space-x-2">
+                                                        <Badge
+                                                            variant={
+                                                                account.is_verified
+                                                                    ? 'default'
+                                                                    : 'secondary'
                                                             }
-                                                        </h4>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                            {account.uri}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-500">
-                                                            Created:{' '}
-                                                            {new Date(
-                                                                account.created_at,
-                                                            ).toLocaleDateString()}
-                                                        </p>
+                                                            className={
+                                                                account.is_verified
+                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                    : ''
+                                                            }
+                                                        >
+                                                            {account.is_verified ? (
+                                                                <>
+                                                                    <CheckCircle className="mr-1 h-3 w-3" />
+                                                                    Verified
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <AlertCircle className="mr-1 h-3 w-3" />
+                                                                    Unverified
+                                                                </>
+                                                            )}
+                                                        </Badge>
+                                                        <Badge
+                                                            variant={
+                                                                account.is_active
+                                                                    ? 'default'
+                                                                    : 'secondary'
+                                                            }
+                                                            className={
+                                                                account.is_active
+                                                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                            }
+                                                        >
+                                                            {account.is_active ? 'Active' : 'Inactive'}
+                                                        </Badge>
                                                     </div>
                                                 </div>
-                                            </div>
-
-                                            <div className="flex items-center space-x-2">
-                                                <Badge
-                                                    variant={
-                                                        account.is_verified
-                                                            ? 'default'
-                                                            : 'secondary'
-                                                    }
-                                                >
-                                                    {account.is_verified ? (
-                                                        <div className="flex items-center space-x-1">
-                                                            <CheckCircle className="h-3 w-3" />
-                                                            <span>
-                                                                Verified
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center space-x-1">
-                                                            <AlertCircle className="h-3 w-3" />
-                                                            <span>
-                                                                Unverified
-                                                            </span>
-                                                        </div>
+                                                <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                                    <p>
+                                                        URI: {account.uri}
+                                                    </p>
+                                                    <p>
+                                                        Public Account ID: {account.public_account_id}
+                                                    </p>
+                                                    <p>
+                                                        Created: {new Date(account.created_at).toLocaleDateString()}
+                                                    </p>
+                                                    {account.last_verified_at && (
+                                                        <p>
+                                                            Last verified: {new Date(account.last_verified_at).toLocaleDateString()}
+                                                        </p>
                                                     )}
-                                                </Badge>
-
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
                                                 <Button
-                                                    size="sm"
+                                                    onClick={() => handleTest(account.id)}
+                                                    disabled={testingAccount === account.id}
                                                     variant="outline"
-                                                    onClick={() =>
-                                                        handleTest(account.id)
-                                                    }
-                                                    disabled={
-                                                        testingAccount ===
-                                                        account.id
-                                                    }
+                                                    size="sm"
                                                 >
-                                                    {testingAccount ===
-                                                    account.id ? (
+                                                    {testingAccount === account.id ? (
                                                         <Loader2 className="h-4 w-4 animate-spin" />
                                                     ) : (
                                                         <Wifi className="h-4 w-4" />
                                                     )}
                                                 </Button>
-
                                                 <Button
-                                                    size="sm"
+                                                    onClick={() => handleEdit(account)}
                                                     variant="outline"
-                                                    onClick={() =>
-                                                        handleEdit(account)
-                                                    }
+                                                    size="sm"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
-
                                                 <Button
-                                                    size="sm"
+                                                    onClick={() => handleDelete(account.id)}
                                                     variant="outline"
-                                                    onClick={() =>
-                                                        handleDelete(account.id)
-                                                    }
-                                                    className="text-red-600 hover:text-red-700"
+                                                    size="sm"
+                                                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -516,8 +521,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                 </Card>
                             ))}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </AuthenticatedLayout>
     );

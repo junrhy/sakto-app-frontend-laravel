@@ -343,10 +343,22 @@ export default function Index({
                 {accounts.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center space-x-2">
-                                <MessageSquare className="h-5 w-5" />
-                                <span>Select Viber Account</span>
-                            </CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center space-x-2">
+                                    <MessageSquare className="h-5 w-5" />
+                                    <span>Select Viber Account</span>
+                                </CardTitle>
+                                <Button
+                                    onClick={() =>
+                                        (window.location.href =
+                                            '/viber-accounts?app=sms')
+                                    }
+                                    variant="outline"
+                                    className="border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
+                                >
+                                    Manage Accounts
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-4">

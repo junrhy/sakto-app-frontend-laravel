@@ -12,13 +12,32 @@ class SmsSemaphoreController extends Controller
 
     public function index()
     {
+        $clientIdentifier = auth()->user()->identifier;
+        
+        $accounts = \App\Models\SemaphoreAccount::where('client_identifier', $clientIdentifier)
+            ->orderBy('is_verified', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Debug logging
+        \Log::info('Semaphore Index Debug', [
+            'client_identifier' => $clientIdentifier,
+            'accounts_count' => $accounts->count(),
+            'accounts' => $accounts->toArray()
+        ]);
+
+        // Simple debug output
+        error_log('Semaphore Controller Called - Accounts: ' . $accounts->count());
+
         return Inertia::render('SMS/Semaphore/Index', [
             'messages' => [], // TODO: Fetch messages from your database
             'stats' => [
                 'sent' => 0,
                 'delivered' => 0,
                 'failed' => 0
-            ]
+            ],
+            'accounts' => $accounts,
+            'hasActiveAccount' => $accounts->where('is_active', true)->where('is_verified', true)->count() > 0
         ]);
     }
 
@@ -27,21 +46,32 @@ class SmsSemaphoreController extends Controller
         $request->validate([
             'to' => 'required|string',
             'message' => 'required|string|max:160', // Semaphore has a 160 character limit per message
+            'account_id' => 'required|integer|exists:semaphore_accounts,id',
         ]);
 
         try {
-            $apiKey = config('services.semaphore.key');
-            $sender = config('services.semaphore.sender_name');
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Semaphore account
+            $semaphoreAccount = \App\Models\SemaphoreAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
+
+            if (!$semaphoreAccount) {
+                return back()->with('error', 'Semaphore account not found or not verified');
+            }
 
             $response = Http::post($this->apiEndpoint . '/messages', [
-                'apikey' => $apiKey,
+                'apikey' => $semaphoreAccount->api_key,
                 'number' => $request->to,
                 'message' => $request->message,
-                'sendername' => $sender,
+                'sendername' => $semaphoreAccount->sender_name,
             ]);
 
             if ($response->successful()) {
-                // TODO: Save message to database
+                // TODO: Save message to database with account reference
                 return back()->with('success', 'Message sent successfully!');
             }
 
@@ -51,13 +81,28 @@ class SmsSemaphoreController extends Controller
         }
     }
 
-    public function getBalance()
+    public function getBalance(Request $request)
     {
+        $request->validate([
+            'account_id' => 'required|integer|exists:semaphore_accounts,id',
+        ]);
+
         try {
-            $apiKey = config('services.semaphore.key');
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Semaphore account
+            $semaphoreAccount = \App\Models\SemaphoreAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
+
+            if (!$semaphoreAccount) {
+                return response()->json(['error' => 'Semaphore account not found or not verified'], 404);
+            }
             
             $response = Http::get($this->apiEndpoint . '/account', [
-                'apikey' => $apiKey
+                'apikey' => $semaphoreAccount->api_key
             ]);
 
             if ($response->successful()) {
@@ -74,13 +119,28 @@ class SmsSemaphoreController extends Controller
         }
     }
 
-    public function getMessageStatus($messageId)
+    public function getMessageStatus(Request $request, $messageId)
     {
+        $request->validate([
+            'account_id' => 'required|integer|exists:semaphore_accounts,id',
+        ]);
+
         try {
-            $apiKey = config('services.semaphore.key');
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Semaphore account
+            $semaphoreAccount = \App\Models\SemaphoreAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
+
+            if (!$semaphoreAccount) {
+                return response()->json(['error' => 'Semaphore account not found or not verified'], 404);
+            }
             
             $response = Http::get($this->apiEndpoint . '/messages/' . $messageId, [
-                'apikey' => $apiKey
+                'apikey' => $semaphoreAccount->api_key
             ]);
 
             if ($response->successful()) {
@@ -98,13 +158,28 @@ class SmsSemaphoreController extends Controller
         }
     }
 
-    public function getPricing()
+    public function getPricing(Request $request)
     {
+        $request->validate([
+            'account_id' => 'required|integer|exists:semaphore_accounts,id',
+        ]);
+
         try {
-            $apiKey = config('services.semaphore.key');
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Semaphore account
+            $semaphoreAccount = \App\Models\SemaphoreAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
+
+            if (!$semaphoreAccount) {
+                return response()->json(['error' => 'Semaphore account not found or not verified'], 404);
+            }
             
             $response = Http::get($this->apiEndpoint . '/pricing', [
-                'apikey' => $apiKey
+                'apikey' => $semaphoreAccount->api_key
             ]);
 
             if ($response->successful()) {

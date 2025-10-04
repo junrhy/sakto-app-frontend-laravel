@@ -48,10 +48,6 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
-    'semaphore' => [
-        'key' => env('SEMAPHORE_API_KEY'),
-        'sender_name' => env('SEMAPHORE_SENDER_NAME'),
-    ],
 
     'whatsapp' => [
         'api_url' => env('WHATSAPP_API_URL', 'https://graph.facebook.com/v18.0'),

@@ -34,7 +34,7 @@ class SmsTwilioController extends Controller
                 'failed' => 0
             ],
             'accounts' => $accounts,
-            'hasActiveAccount' => $accounts->where('is_active', true)->where('is_verified', true)->count() > 0
+            'hasActiveAccount' => $accounts->where('is_active', true)->count() > 0
         ]);
     }
 

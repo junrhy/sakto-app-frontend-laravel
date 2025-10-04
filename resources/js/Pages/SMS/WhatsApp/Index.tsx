@@ -362,7 +362,7 @@ export default function Index({
                 )}
 
                 {/* Account Selection */}
-                {hasActiveAccount && accounts.length > 1 && (
+                {accounts.length > 0 && (
                     <Card className="border border-gray-200 dark:border-gray-700">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
@@ -375,25 +375,38 @@ export default function Index({
                                         sending messages
                                     </p>
                                 </div>
-                                <select
-                                    value={selectedAccount || ''}
-                                    onChange={(e) =>
-                                        setSelectedAccount(
-                                            Number(e.target.value),
-                                        )
-                                    }
-                                    className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                >
-                                    {accounts.map((account) => (
-                                        <option
-                                            key={account.id}
-                                            value={account.id}
-                                        >
-                                            {account.account_name} (
-                                            {account.phone_number})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex items-center gap-3">
+                                    <select
+                                        value={selectedAccount || ''}
+                                        onChange={(e) =>
+                                            setSelectedAccount(
+                                                Number(e.target.value),
+                                            )
+                                        }
+                                        className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    >
+                                        {accounts.map((account) => (
+                                            <option
+                                                key={account.id}
+                                                value={account.id}
+                                            >
+                                                {account.account_name} (
+                                                {account.phone_number})
+                                                {!account.is_verified && ' - Not Verified'}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <Button
+                                        onClick={() =>
+                                            (window.location.href =
+                                                '/whatsapp-accounts?app=sms')
+                                        }
+                                        variant="outline"
+                                        className="border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
+                                    >
+                                        Manage Accounts
+                                    </Button>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

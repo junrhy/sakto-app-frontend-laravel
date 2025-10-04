@@ -78,6 +78,12 @@ interface Props extends PageProps {
 export default function Index({ auth, messages, stats, accounts, hasActiveAccount }: Props) {
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
 
+    // Console log accounts for debugging
+    console.log('Twilio Accounts:', accounts);
+    console.log('Has Active Account:', hasActiveAccount);
+    console.log('Accounts Length:', accounts.length);
+    console.log('Account Selection Condition:', { hasActiveAccount, accountsLength: accounts.length, shouldShow: hasActiveAccount && accounts.length > 0 });
+
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
             return (
@@ -392,37 +398,50 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
                 )}
 
                 {/* Account Selection */}
-                {hasActiveAccount && accounts.length > 1 && (
+                {accounts.length > 0 && (
                     <Card className="border border-gray-200 dark:border-gray-700">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white">
-                                        Select Twilio Account
+                                        Select Account
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Choose which Twilio account to use for sending messages
+                                        Choose which account to use for sending messages
                                     </p>
                                 </div>
-                                <select
-                                    value={selectedAccount || ''}
-                                    onChange={(e) =>
-                                        setSelectedAccount(
-                                            Number(e.target.value),
-                                        )
-                                    }
-                                    className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                >
-                                    {accounts.map((account) => (
-                                        <option
-                                            key={account.id}
-                                            value={account.id}
-                                        >
-                                            {account.account_name} (
-                                            {account.phone_number || 'No phone number'})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex items-center gap-3">
+                                    <select
+                                        value={selectedAccount || ''}
+                                        onChange={(e) =>
+                                            setSelectedAccount(
+                                                Number(e.target.value),
+                                            )
+                                        }
+                                        className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    >
+                                        {accounts.map((account) => (
+                                            <option
+                                                key={account.id}
+                                                value={account.id}
+                                            >
+                                                {account.account_name} (
+                                                {account.phone_number || 'No phone number'}) 
+                                                {!account.is_verified && ' - Not Verified'}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <Button
+                                        onClick={() =>
+                                            (window.location.href =
+                                                '/twilio-accounts?app=sms')
+                                        }
+                                        variant="outline"
+                                        className="border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
+                                    >
+                                        Manage Accounts
+                                    </Button>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
