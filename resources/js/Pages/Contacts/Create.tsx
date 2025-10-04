@@ -39,6 +39,7 @@ interface FormData {
     call_number: string;
     sms_number: string;
     whatsapp: string;
+    viber: string;
     facebook: string;
     instagram: string;
     twitter: string;
@@ -63,6 +64,7 @@ export default function Create({ auth, client_identifier }: Props) {
         call_number: '',
         sms_number: '',
         whatsapp: '',
+        viber: '',
         facebook: '',
         instagram: '',
         twitter: '',
@@ -568,6 +570,32 @@ export default function Create({ auth, client_identifier }: Props) {
                                             {errors.whatsapp && (
                                                 <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                                                     {errors.whatsapp}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label
+                                                htmlFor="viber"
+                                                className="font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Viber
+                                            </Label>
+                                            <Input
+                                                id="viber"
+                                                value={data.viber}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'viber',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. +1234567890"
+                                                className="border-gray-300 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/80 dark:focus:ring-indigo-400"
+                                            />
+                                            {errors.viber && (
+                                                <p className="rounded border border-red-200 bg-red-50 px-2 py-1 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                                                    {errors.viber}
                                                 </p>
                                             )}
                                         </div>

@@ -12,6 +12,7 @@ import {
     FaTwitter,
     FaWhatsapp,
 } from 'react-icons/fa';
+import { FaViber } from 'react-icons/fa';
 
 interface IdNumber {
     id: number;
@@ -32,6 +33,7 @@ interface Contact {
     call_number?: string;
     sms_number?: string;
     whatsapp?: string;
+    viber?: string;
     facebook?: string;
     instagram?: string;
     twitter?: string;
@@ -118,6 +120,7 @@ export default function PublicProfile({ contact }: Props) {
             contact.call_number && `TEL;TYPE=CELL:${contact.call_number}`,
             contact.sms_number && `TEL;TYPE=MSG:${contact.sms_number}`,
             contact.whatsapp && `TEL;TYPE=WHATSAPP:${contact.whatsapp}`,
+            contact.viber && `TEL;TYPE=VIBER:${contact.viber}`,
             contact.address && `ADR;TYPE=HOME:;;${contact.address};;;;`,
             contact.facebook && `URL;TYPE=facebook:${contact.facebook}`,
             contact.instagram &&
@@ -302,6 +305,17 @@ export default function PublicProfile({ contact }: Props) {
                                         '$1 $2 $3 $4',
                                     )}
                                     colorClass="bg-green-600/20"
+                                />
+                                <ContactItem
+                                    icon={FaViber}
+                                    label="Viber"
+                                    value={contact.viber}
+                                    link={`viber://chat?number=${contact.viber?.replace(/[^0-9]/g, '')}`}
+                                    displayValue={contact.viber?.replace(
+                                        /^(\+\d{1,3})?(\d{3})(\d{3})(\d{4})$/,
+                                        '$1 $2 $3 $4',
+                                    )}
+                                    colorClass="bg-purple-600/20"
                                 />
                             </div>
 

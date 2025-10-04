@@ -71,6 +71,8 @@ require __DIR__.'/web/FlightController.php';
 require __DIR__.'/web/SmsTwilioController.php';
 require __DIR__.'/web/SmsWhatsAppController.php';
 require __DIR__.'/web/WhatsAppAccountController.php';
+require __DIR__.'/web/SmsViberController.php';
+require __DIR__.'/web/ViberAccountController.php';
 require __DIR__.'/web/EmailController.php';
 require __DIR__.'/web/GenealogyController.php';
 require __DIR__.'/web/InboxController.php';

@@ -118,6 +118,16 @@ export const menuCategories: MenuCategory[] = [
                 title: 'WhatsApp Setup',
                 href: '/whatsapp-accounts?app=sms',
             },
+            {
+                id: 'sms-viber',
+                title: 'Viber',
+                href: '/sms-viber?app=sms',
+            },
+            {
+                id: 'viber-setup',
+                title: 'Viber Setup',
+                href: '/viber-accounts?app=sms',
+            },
             { id: 'email', title: 'Email', href: '/email?app=email' },
             {
                 id: 'contacts',

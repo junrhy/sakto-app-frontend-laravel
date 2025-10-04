@@ -237,6 +237,7 @@ const filteredData = selectedValue && selectedValue !== 'all'
 - **Landing pages** in `resources/js/Pages/Landing/`
 - Types in `resources/js/types/`
 - Layouts in `resources/js/Layouts/`
+- **Documentation files** in `docs/` (all .md files except README.md)
 
 ### Landing Pages Structure
 Landing pages are located in `resources/js/Pages/Landing/` and should have their own dedicated controllers:
@@ -287,6 +288,36 @@ public function member($identifier)
 ```
 
 **Note**: This separation ensures clean code organization and allows each landing page to have its own specific logic and API integrations.
+
+### Documentation File Organization
+**CRITICAL**: All markdown files (.md) must be organized in the `docs/` folder, with the following exceptions:
+
+#### Documentation Rules:
+- **All .md files** (except README.md) must be placed in the `docs/` folder
+- **README.md files** stay in their respective project root directories
+- **Documentation structure**:
+  ```
+  docs/
+  ├── EMBED_APPOINTMENT_FORM.md
+  ├── API_DOCUMENTATION.md
+  ├── DEPLOYMENT_GUIDE.md
+  └── [other-documentation].md
+  ```
+
+#### When Creating New Documentation:
+1. **Check if it's a README**: If the file is named `README.md`, place it in the project root
+2. **All other .md files**: Place in the `docs/` folder
+3. **Use descriptive names**: Use clear, descriptive filenames for documentation
+4. **Maintain organization**: Keep related documentation grouped logically
+
+#### Examples:
+- ✅ `README.md` → Project root (both frontend and backend)
+- ✅ `EMBED_APPOINTMENT_FORM.md` → `docs/`
+- ✅ `API_DOCUMENTATION.md` → `docs/`
+- ✅ `DEPLOYMENT_GUIDE.md` → `docs/`
+- ✅ `TROUBLESHOOTING.md` → `docs/`
+
+**Note**: This organization keeps the project root clean while maintaining easy access to documentation files.
 
 ### File Upload Handling
 File uploads should be handled using Laravel's storage system and saved to the public disk:

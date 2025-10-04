@@ -67,6 +67,7 @@ interface Contact {
     call_number?: string;
     sms_number?: string;
     whatsapp?: string;
+    viber?: string;
     facebook?: string;
     instagram?: string;
     twitter?: string;
@@ -188,6 +189,7 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                     .toLowerCase()
                     .includes(searchLower) ||
                 (contact.whatsapp || '').toLowerCase().includes(searchLower) ||
+                (contact.viber || '').toLowerCase().includes(searchLower) ||
                 (contact.facebook || '').toLowerCase().includes(searchLower) ||
                 (contact.instagram || '').toLowerCase().includes(searchLower) ||
                 (contact.twitter || '').toLowerCase().includes(searchLower) ||
@@ -266,6 +268,7 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
             contact.call_number || '',
             contact.sms_number || '',
             contact.whatsapp || '',
+            contact.viber || '',
             contact.facebook || '',
             contact.instagram || '',
             contact.twitter || '',
@@ -678,6 +681,7 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                             {contact.call_number ||
                                                                 contact.sms_number ||
                                                                 contact.whatsapp ||
+                                                                contact.viber ||
                                                                 '-'}
                                                         </div>
                                                         {contact.group &&
@@ -717,10 +721,11 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                         <div className="flex items-center space-x-2">
                                                             <span className="h-2 w-2 rounded-full bg-blue-500"></span>
                                                             <span className="font-medium">
-                                                                {contact.call_number ||
-                                                                    contact.sms_number ||
-                                                                    contact.whatsapp ||
-                                                                    '-'}
+                                                            {contact.call_number ||
+                                                                contact.sms_number ||
+                                                                contact.whatsapp ||
+                                                                contact.viber ||
+                                                                '-'}
                                                             </span>
                                                         </div>
                                                     </TableCell>
@@ -1208,6 +1213,18 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                             </p>
                                                         </div>
                                                     </div>
+                                                    <div className="flex items-center space-x-3 rounded-lg border border-purple-200 bg-white/50 p-3 dark:border-purple-600 dark:bg-gray-900/50">
+                                                        <div className="h-3 w-3 rounded-full bg-purple-500"></div>
+                                                        <div>
+                                                            <span className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+                                                                Viber:
+                                                            </span>
+                                                            <p className="text-sm text-purple-700 dark:text-purple-300">
+                                                                {selectedContact.viber ||
+                                                                    '-'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -1417,6 +1434,7 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                                     {selectedContact.call_number ||
                                                                         selectedContact.sms_number ||
                                                                         selectedContact.whatsapp ||
+                                                                        selectedContact.viber ||
                                                                         'N/A'}
                                                                 </span>
                                                             </div>

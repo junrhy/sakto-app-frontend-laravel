@@ -56,6 +56,7 @@ export default function SelfRegistration({
         call_number: '',
         sms_number: '',
         whatsapp: '',
+        viber: '',
         facebook: '',
         instagram: '',
         twitter: '',
@@ -638,6 +639,32 @@ export default function SelfRegistration({
                                                 </p>
                                             )}
                                         </div>
+
+                                        <div className="space-y-2">
+                                            <Label
+                                                htmlFor="viber"
+                                                className="text-gray-700 dark:text-gray-300"
+                                            >
+                                                Viber
+                                            </Label>
+                                            <Input
+                                                id="viber"
+                                                value={data.viber}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'viber',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. +1234567890"
+                                                className="border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900"
+                                            />
+                                            {errors.viber && (
+                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                    {errors.viber}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -963,6 +990,7 @@ export default function SelfRegistration({
                                                 call_number: '',
                                                 sms_number: '',
                                                 whatsapp: '',
+                                                viber: '',
                                                 facebook: '',
                                                 instagram: '',
                                                 twitter: '',
