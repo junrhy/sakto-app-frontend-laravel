@@ -14,7 +14,14 @@ import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { AlertCircle, CheckCircle, CreditCard, Loader2, MessageSquare, Send, Users } from 'lucide-react';
+import {
+    AlertCircle,
+    CreditCard,
+    Loader2,
+    MessageSquare,
+    Send,
+    Users,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -116,7 +123,9 @@ export default function Index({
 
         // Validate Viber number format
         if (!viberRegex.test(newRecipient.trim())) {
-            toast.error('Please enter a valid phone number (e.g., +1234567890 or 0123456789)');
+            toast.error(
+                'Please enter a valid phone number (e.g., +1234567890 or 0123456789)',
+            );
             return;
         }
 
@@ -134,7 +143,11 @@ export default function Index({
 
     const addContactToRecipients = (contact: Contact) => {
         const viberNumber = contact.viber || contact.contact_number;
-        if (viberNumber && viberRegex.test(viberNumber) && !recipients.includes(viberNumber)) {
+        if (
+            viberNumber &&
+            viberRegex.test(viberNumber) &&
+            !recipients.includes(viberNumber)
+        ) {
             setRecipients([...recipients, viberNumber]);
             toast.success('Contact added to recipients');
         } else if (!viberNumber) {
@@ -154,14 +167,14 @@ export default function Index({
     };
 
     const addSelectedContactsToRecipients = () => {
-        const validContacts = selectedContacts.filter(
-            (contact) => {
-                const viberNumber = contact.viber || contact.contact_number;
-                return viberNumber && viberRegex.test(viberNumber);
-            }
-        );
+        const validContacts = selectedContacts.filter((contact) => {
+            const viberNumber = contact.viber || contact.contact_number;
+            return viberNumber && viberRegex.test(viberNumber);
+        });
 
-        const newRecipients = validContacts.map((contact) => contact.viber || contact.contact_number!);
+        const newRecipients = validContacts.map(
+            (contact) => contact.viber || contact.contact_number!,
+        );
         const uniqueRecipients = [
             ...new Set([...recipients, ...newRecipients]),
         ];
@@ -176,14 +189,14 @@ export default function Index({
     };
 
     const addAllContactsToRecipients = () => {
-        const validContacts = contacts.filter(
-            (contact) => {
-                const viberNumber = contact.viber || contact.contact_number;
-                return viberNumber && viberRegex.test(viberNumber);
-            }
-        );
+        const validContacts = contacts.filter((contact) => {
+            const viberNumber = contact.viber || contact.contact_number;
+            return viberNumber && viberRegex.test(viberNumber);
+        });
 
-        const newRecipients = validContacts.map((contact) => contact.viber || contact.contact_number!);
+        const newRecipients = validContacts.map(
+            (contact) => contact.viber || contact.contact_number!,
+        );
         const uniqueRecipients = [
             ...new Set([...recipients, ...newRecipients]),
         ];
@@ -197,15 +210,15 @@ export default function Index({
     };
 
     const selectContactsByGroup = (group: string) => {
-        const groupContacts = contacts.filter(
-            (contact) => {
-                const viberNumber = contact.viber || contact.contact_number;
-                return contact.group &&
-                    contact.group.includes(group) &&
-                    viberNumber &&
-                    viberRegex.test(viberNumber);
-            }
-        );
+        const groupContacts = contacts.filter((contact) => {
+            const viberNumber = contact.viber || contact.contact_number;
+            return (
+                contact.group &&
+                contact.group.includes(group) &&
+                viberNumber &&
+                viberRegex.test(viberNumber)
+            );
+        });
 
         setSelectedContacts(groupContacts);
     };
@@ -232,7 +245,7 @@ export default function Index({
                 message: data.message,
                 account_id: selectedAccount,
             });
-            
+
             if (response.data.success) {
                 toast.success('Viber messages sent successfully!');
                 setData('message', '');
@@ -262,13 +275,18 @@ export default function Index({
 
     const filteredContacts = contacts.filter((contact) => {
         const viberNumber = contact.viber || contact.contact_number;
-        const matchesSearch = 
-            contact.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            contact.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch =
+            contact.first_name
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()) ||
+            contact.last_name
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()) ||
             (viberNumber && viberNumber.includes(searchQuery)) ||
             contact.email.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesGroup = groupFilter === 'all' || 
+        const matchesGroup =
+            groupFilter === 'all' ||
             (contact.group && contact.group.includes(groupFilter));
 
         return matchesSearch && matchesGroup;
@@ -335,12 +353,14 @@ export default function Index({
                                 {accounts.map((account) => (
                                     <div
                                         key={account.id}
-                                        className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                        className={`cursor-pointer rounded-lg border p-4 transition-colors ${
                                             selectedAccount === account.id
                                                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                                : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                                : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
                                         }`}
-                                        onClick={() => setSelectedAccount(account.id)}
+                                        onClick={() =>
+                                            setSelectedAccount(account.id)
+                                        }
                                     >
                                         <div className="flex items-center justify-between">
                                             <div>
@@ -486,7 +506,11 @@ export default function Index({
                                                 id="newRecipient"
                                                 type="text"
                                                 value={newRecipient}
-                                                onChange={(e) => setNewRecipient(e.target.value)}
+                                                onChange={(e) =>
+                                                    setNewRecipient(
+                                                        e.target.value,
+                                                    )
+                                                }
                                                 placeholder="Enter Viber number (e.g., +639260049848 or 09260049848)"
                                                 className="flex-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                                 onKeyPress={(e) => {
@@ -505,7 +529,9 @@ export default function Index({
                                             </Button>
                                             <Button
                                                 type="button"
-                                                onClick={() => setShowContactSelector(true)}
+                                                onClick={() =>
+                                                    setShowContactSelector(true)
+                                                }
                                                 className="bg-green-600 text-white hover:bg-green-700"
                                             >
                                                 Select from Contacts
@@ -519,25 +545,31 @@ export default function Index({
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                                 Recipients ({recipients.length})
                                             </label>
-                                            {recipients.map((recipient, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-700"
-                                                >
-                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {recipient}
-                                                    </span>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => removeRecipient(index)}
-                                                        className="text-red-600 hover:text-red-700"
+                                            {recipients.map(
+                                                (recipient, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-700"
                                                     >
-                                                        Remove
-                                                    </Button>
-                                                </div>
-                                            ))}
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {recipient}
+                                                        </span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                removeRecipient(
+                                                                    index,
+                                                                )
+                                                            }
+                                                            className="text-red-600 hover:text-red-700"
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                ),
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -550,12 +582,17 @@ export default function Index({
                                     <Textarea
                                         placeholder="Enter your message here..."
                                         value={data.message}
-                                        onChange={(e) => setData('message', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('message', e.target.value)
+                                        }
                                         rows={4}
                                         className="resize-none border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                     />
                                     <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                                        <span>{data.message.length}/1000 characters</span>
+                                        <span>
+                                            {data.message.length}/1000
+                                            characters
+                                        </span>
                                         <span>Credits: {credits}</span>
                                     </div>
                                 </div>
@@ -570,17 +607,18 @@ export default function Index({
                                             !data.message.trim() ||
                                             !selectedAccount
                                         }
-                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                        className="bg-green-600 text-white hover:bg-green-700"
                                     >
                                         {processing ? (
                                             <>
-                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                                 Sending...
                                             </>
                                         ) : (
                                             <>
-                                                <Send className="h-4 w-4 mr-2" />
-                                                Send Messages ({recipients.length})
+                                                <Send className="mr-2 h-4 w-4" />
+                                                Send Messages (
+                                                {recipients.length})
                                             </>
                                         )}
                                     </Button>
@@ -625,9 +663,11 @@ export default function Index({
                                                 <div className="flex items-center space-x-2">
                                                     <Badge
                                                         variant={
-                                                            message.status === 'delivered'
+                                                            message.status ===
+                                                            'delivered'
                                                                 ? 'default'
-                                                                : message.status === 'failed'
+                                                                : message.status ===
+                                                                    'failed'
                                                                   ? 'destructive'
                                                                   : 'secondary'
                                                         }
@@ -635,7 +675,9 @@ export default function Index({
                                                         {message.status}
                                                     </Badge>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {new Date(message.created_at).toLocaleString()}
+                                                        {new Date(
+                                                            message.created_at,
+                                                        ).toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>
@@ -681,7 +723,9 @@ export default function Index({
                                 <input
                                     type="text"
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
                                     placeholder="Search contacts..."
                                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
@@ -691,7 +735,9 @@ export default function Index({
                                 <div>
                                     <select
                                         value={groupFilter}
-                                        onChange={(e) => setGroupFilter(e.target.value)}
+                                        onChange={(e) =>
+                                            setGroupFilter(e.target.value)
+                                        }
                                         className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     >
                                         <option value="all">All Groups</option>
@@ -716,23 +762,29 @@ export default function Index({
                             <Button
                                 onClick={addAllContactsToRecipients}
                                 disabled={
-                                    filteredContacts.filter(
-                                        (contact) => {
-                                            const viberNumber = contact.viber || contact.contact_number;
-                                            return viberNumber && viberRegex.test(viberNumber);
-                                        }
-                                    ).length === 0
+                                    filteredContacts.filter((contact) => {
+                                        const viberNumber =
+                                            contact.viber ||
+                                            contact.contact_number;
+                                        return (
+                                            viberNumber &&
+                                            viberRegex.test(viberNumber)
+                                        );
+                                    }).length === 0
                                 }
                                 className="bg-green-600 text-white hover:bg-green-700"
                             >
                                 Add All (
                                 {
-                                    filteredContacts.filter(
-                                        (contact) => {
-                                            const viberNumber = contact.viber || contact.contact_number;
-                                            return viberNumber && viberRegex.test(viberNumber);
-                                        }
-                                    ).length
+                                    filteredContacts.filter((contact) => {
+                                        const viberNumber =
+                                            contact.viber ||
+                                            contact.contact_number;
+                                        return (
+                                            viberNumber &&
+                                            viberRegex.test(viberNumber)
+                                        );
+                                    }).length
                                 }
                                 )
                             </Button>
@@ -762,7 +814,9 @@ export default function Index({
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                                     {filteredContacts.map((contact) => {
-                                        const viberNumber = contact.viber || contact.contact_number;
+                                        const viberNumber =
+                                            contact.viber ||
+                                            contact.contact_number;
                                         const hasValidViberNumber =
                                             viberNumber &&
                                             viberRegex.test(viberNumber);
@@ -780,21 +834,43 @@ export default function Index({
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedContacts.some(
-                                                            (c) => c.id === contact.id,
+                                                            (c) =>
+                                                                c.id ===
+                                                                contact.id,
                                                         )}
                                                         onChange={() => {
-                                                            if (selectedContacts.some(c => c.id === contact.id)) {
-                                                                setSelectedContacts(selectedContacts.filter(c => c.id !== contact.id));
+                                                            if (
+                                                                selectedContacts.some(
+                                                                    (c) =>
+                                                                        c.id ===
+                                                                        contact.id,
+                                                                )
+                                                            ) {
+                                                                setSelectedContacts(
+                                                                    selectedContacts.filter(
+                                                                        (c) =>
+                                                                            c.id !==
+                                                                            contact.id,
+                                                                    ),
+                                                                );
                                                             } else {
-                                                                setSelectedContacts([...selectedContacts, contact]);
+                                                                setSelectedContacts(
+                                                                    [
+                                                                        ...selectedContacts,
+                                                                        contact,
+                                                                    ],
+                                                                );
                                                             }
                                                         }}
-                                                        disabled={!hasValidViberNumber}
+                                                        disabled={
+                                                            !hasValidViberNumber
+                                                        }
                                                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600"
                                                     />
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                    {contact.first_name} {contact.last_name}
+                                                    {contact.first_name}{' '}
+                                                    {contact.last_name}
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
                                                     {contact.email}
@@ -808,10 +884,14 @@ export default function Index({
                                                         ) : (
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-red-600 dark:text-red-400">
-                                                                    {viberNumber}
+                                                                    {
+                                                                        viberNumber
+                                                                    }
                                                                 </span>
                                                                 <span className="text-xs text-red-500 dark:text-red-400">
-                                                                    (Not a valid Viber number)
+                                                                    (Not a valid
+                                                                    Viber
+                                                                    number)
                                                                 </span>
                                                             </div>
                                                         )
@@ -822,8 +902,11 @@ export default function Index({
                                                     )}
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                                    {contact.group && contact.group.length > 0
-                                                        ? contact.group.join(', ')
+                                                    {contact.group &&
+                                                    contact.group.length > 0
+                                                        ? contact.group.join(
+                                                              ', ',
+                                                          )
                                                         : 'No group'}
                                                 </td>
                                             </tr>
@@ -838,4 +921,3 @@ export default function Index({
         </AuthenticatedLayout>
     );
 }
-    

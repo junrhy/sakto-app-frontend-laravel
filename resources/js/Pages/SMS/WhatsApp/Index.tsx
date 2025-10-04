@@ -14,7 +14,14 @@ import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { AlertCircle, CreditCard, Loader2, MessageSquare, Send, Users } from 'lucide-react';
+import {
+    AlertCircle,
+    CreditCard,
+    Loader2,
+    MessageSquare,
+    Send,
+    Users,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 

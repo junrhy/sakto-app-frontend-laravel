@@ -9,7 +9,6 @@ import {
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
@@ -28,11 +27,12 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-interface WhatsAppAccount {
+interface TwilioAccount {
     id: number;
     account_name: string;
+    account_sid: string;
     phone_number: string;
-    display_name: string;
+    default_country_code: string;
     is_active: boolean;
     is_verified: boolean;
     last_verified_at: string;
@@ -55,14 +55,15 @@ interface Props extends PageProps {
             profile_picture?: string;
         };
     };
-    accounts: WhatsAppAccount[];
+    accounts: TwilioAccount[];
     hasActiveAccount: boolean;
 }
 
 export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     const [showSetupForm, setShowSetupForm] = useState(false);
-    const [editingAccount, setEditingAccount] =
-        useState<WhatsAppAccount | null>(null);
+    const [editingAccount, setEditingAccount] = useState<TwilioAccount | null>(
+        null,
+    );
     const [testingAccount, setTestingAccount] = useState<number | null>(null);
 
     const {
@@ -76,21 +77,21 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
         reset,
     } = useForm({
         account_name: '',
-        access_token: '',
-        phone_number_id: '',
-        business_account_id: '',
-        webhook_verify_token: '',
+        account_sid: '',
+        auth_token: '',
+        phone_number: '',
+        default_country_code: '+1',
     });
 
-    const openSetupForm = (account?: WhatsAppAccount) => {
+    const openSetupForm = (account?: TwilioAccount) => {
         if (account) {
             setEditingAccount(account);
             setData({
                 account_name: account.account_name,
-                access_token: '',
-                phone_number_id: '',
-                business_account_id: '',
-                webhook_verify_token: '',
+                account_sid: account.account_sid,
+                auth_token: '',
+                phone_number: account.phone_number || '',
+                default_country_code: account.default_country_code || '+1',
             });
         } else {
             setEditingAccount(null);
@@ -113,44 +114,37 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
             return;
         }
 
-        if (!data.access_token.trim()) {
-            toast.error('Please enter your WhatsApp access token');
+        if (!data.account_sid.trim()) {
+            toast.error('Please enter your Twilio Account SID');
             return;
         }
 
-        if (!data.phone_number_id.trim()) {
-            toast.error('Please enter your phone number ID');
-            return;
-        }
-
-        if (!data.business_account_id.trim()) {
-            toast.error('Please enter your business account ID');
+        if (!data.auth_token.trim()) {
+            toast.error('Please enter your Twilio Auth Token');
             return;
         }
 
         try {
             if (editingAccount) {
-                await put(`/whatsapp-accounts/${editingAccount.id}`, {
+                await put(`/twilio-accounts/${editingAccount.id}`, {
                     onSuccess: () => {
-                        toast.success('WhatsApp account updated successfully!');
+                        toast.success('Twilio account updated successfully!');
                         closeSetupForm();
                     },
                     onError: (errors) => {
                         console.error('Update error:', errors);
-                        toast.error('Failed to update WhatsApp account');
+                        toast.error('Failed to update Twilio account');
                     },
                 });
             } else {
-                await post('/whatsapp-accounts', {
+                await post('/twilio-accounts', {
                     onSuccess: () => {
-                        toast.success(
-                            'WhatsApp account connected successfully!',
-                        );
+                        toast.success('Twilio account connected successfully!');
                         closeSetupForm();
                     },
                     onError: (errors) => {
                         console.error('Create error:', errors);
-                        toast.error('Failed to connect WhatsApp account');
+                        toast.error('Failed to connect Twilio account');
                     },
                 });
             }
@@ -161,27 +155,23 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     };
 
     const deleteAccount = async (accountId: number) => {
-        if (
-            !confirm(
-                'Are you sure you want to deactivate this WhatsApp account?',
-            )
-        ) {
+        if (!confirm('Are you sure you want to delete this Twilio account?')) {
             return;
         }
 
         try {
-            await destroy(`/whatsapp-accounts/${accountId}`, {
+            await destroy(`/twilio-accounts/${accountId}`, {
                 onSuccess: () => {
-                    toast.success('WhatsApp account deactivated successfully!');
+                    toast.success('Twilio account deleted successfully!');
                 },
                 onError: (errors) => {
                     console.error('Delete error:', errors);
-                    toast.error('Failed to deactivate WhatsApp account');
+                    toast.error('Failed to delete Twilio account');
                 },
             });
         } catch (error) {
             console.error('Delete error:', error);
-            toast.error('An error occurred while deactivating the account');
+            toast.error('An error occurred while deleting the account');
         }
     };
 
@@ -189,21 +179,35 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
         setTestingAccount(accountId);
         try {
             const response = await axios.post(
-                `/whatsapp-accounts/${accountId}/test`,
+                `/twilio-accounts/${accountId}/verify`,
             );
             if (response.data.success) {
-                toast.success('WhatsApp account connection test successful!');
+                toast.success('Twilio account connection test successful!');
+                if (response.data.account_balance !== undefined) {
+                    toast.info(
+                        `Account balance: ${response.data.account_balance} ${response.data.currency}`,
+                    );
+                }
             } else {
                 toast.error('Connection test failed');
             }
         } catch (error: any) {
             console.error('Test error:', error);
             toast.error(
-                error.response?.data?.error ||
-                    'Failed to test WhatsApp account',
+                error.response?.data?.error || 'Failed to test Twilio account',
             );
         } finally {
             setTestingAccount(null);
+        }
+    };
+
+    const toggleActive = async (accountId: number) => {
+        try {
+            await axios.post(`/twilio-accounts/${accountId}/toggle-active`);
+            toast.success('Account status updated successfully!');
+        } catch (error: any) {
+            console.error('Toggle error:', error);
+            toast.error('Failed to update account status');
         }
     };
 
@@ -212,11 +216,11 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
             user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-900 dark:text-white">
-                    WhatsApp Account Setup
+                    Twilio Account Setup
                 </h2>
             }
         >
-            <Head title="WhatsApp Account Setup" />
+            <Head title="Twilio Account Setup" />
 
             <div className="space-y-6">
                 {/* Setup Instructions */}
@@ -224,45 +228,46 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                     <CardHeader>
                         <CardTitle className="flex items-center text-blue-900 dark:text-blue-100">
                             <MessageSquare className="mr-2 h-5 w-5" />
-                            WhatsApp Business API Setup
+                            Twilio SMS API Setup
                         </CardTitle>
                         <CardDescription className="text-blue-700 dark:text-blue-300">
-                            Connect your WhatsApp Business account to send
-                            messages through the platform
+                            Connect your Twilio account to send SMS messages
+                            through the platform
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             <div className="rounded-lg bg-blue-100 p-4 dark:bg-blue-800/30">
                                 <h4 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">
-                                    How to get your WhatsApp Business API
-                                    credentials:
+                                    How to get your Twilio credentials:
                                 </h4>
                                 <ol className="list-inside list-decimal space-y-2 text-sm text-blue-800 dark:text-blue-200">
                                     <li>
                                         Go to{' '}
                                         <a
-                                            href="https://developers.facebook.com/"
+                                            href="https://console.twilio.com/"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline dark:text-blue-400"
                                         >
-                                            Facebook Developers
+                                            Twilio Console
                                         </a>
                                     </li>
                                     <li>
-                                        Create a new app or use an existing one
+                                        Sign up for a Twilio account or log in
+                                        to your existing account
                                     </li>
                                     <li>
-                                        Add WhatsApp Business API to your app
+                                        Get your Account SID and Auth Token from
+                                        the dashboard
                                     </li>
                                     <li>
-                                        Get your Access Token, Phone Number ID,
-                                        and Business Account ID
+                                        Purchase a phone number for sending SMS
+                                        (optional but recommended)
                                     </li>
                                     <li>
-                                        Set up webhook verification (optional
-                                        but recommended)
+                                        Set your default country code for
+                                        international messaging
                                     </li>
                                 </ol>
                             </div>
@@ -273,7 +278,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                         <>
                                             <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                                             <span className="text-sm text-green-700 dark:text-green-300">
-                                                You have an active WhatsApp
+                                                You have an active Twilio
                                                 account
                                             </span>
                                         </>
@@ -281,17 +286,17 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                         <>
                                             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                                             <span className="text-sm text-amber-700 dark:text-amber-300">
-                                                No active WhatsApp account found
+                                                No active Twilio account found
                                             </span>
                                         </>
                                     )}
                                 </div>
                                 <Button
                                     onClick={() => openSetupForm()}
-                                    className="bg-green-600 text-white hover:bg-green-700"
+                                    className="bg-blue-600 text-white hover:bg-blue-700"
                                 >
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Add WhatsApp Account
+                                    Add Twilio Account
                                 </Button>
                             </div>
                         </div>
@@ -302,7 +307,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 {accounts.length > 0 && (
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Your WhatsApp Accounts
+                            Your Twilio Accounts
                         </h3>
                         <div className="grid gap-4">
                             {accounts.map((account) => (
@@ -357,6 +362,14 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 </div>
 
                                                 <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                                    <p>
+                                                        Account SID:{' '}
+                                                        {account.account_sid.substring(
+                                                            0,
+                                                            8,
+                                                        )}
+                                                        ...
+                                                    </p>
                                                     {account.phone_number && (
                                                         <p>
                                                             Phone:{' '}
@@ -365,14 +378,12 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                             }
                                                         </p>
                                                     )}
-                                                    {account.display_name && (
-                                                        <p>
-                                                            Display Name:{' '}
-                                                            {
-                                                                account.display_name
-                                                            }
-                                                        </p>
-                                                    )}
+                                                    <p>
+                                                        Country Code:{' '}
+                                                        {
+                                                            account.default_country_code
+                                                        }
+                                                    </p>
                                                     <p>
                                                         Created:{' '}
                                                         {new Date(
@@ -411,6 +422,22 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 </Button>
                                                 <Button
                                                     onClick={() =>
+                                                        toggleActive(account.id)
+                                                    }
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className={
+                                                        account.is_active
+                                                            ? 'text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/20 dark:hover:text-amber-300'
+                                                            : 'text-green-600 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300'
+                                                    }
+                                                >
+                                                    {account.is_active
+                                                        ? 'Deactivate'
+                                                        : 'Activate'}
+                                                </Button>
+                                                <Button
+                                                    onClick={() =>
                                                         openSetupForm(account)
                                                     }
                                                     variant="outline"
@@ -445,13 +472,13 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                         <div className="relative top-20 mx-auto w-3/4 max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
                             <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
                                 <div className="flex items-center space-x-3">
-                                    <div className="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
-                                        <MessageSquare className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                    <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+                                        <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                     </div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         {editingAccount
-                                            ? 'Edit WhatsApp Account'
-                                            : 'Add WhatsApp Account'}
+                                            ? 'Edit Twilio Account'
+                                            : 'Add Twilio Account'}
                                     </h3>
                                 </div>
                                 <button
@@ -477,8 +504,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                             <div className="mb-4">
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                     {editingAccount
-                                        ? 'Update your WhatsApp Business API credentials below.'
-                                        : 'Enter your WhatsApp Business API credentials to start sending messages.'}
+                                        ? 'Update your Twilio credentials below.'
+                                        : 'Enter your Twilio credentials to start sending SMS messages.'}
                                 </p>
                             </div>
 
@@ -499,8 +526,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="My WhatsApp Business"
-                                        className="mt-1 border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                        placeholder="My Twilio Account"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                         required
                                     />
                                     {errors.account_name && (
@@ -511,97 +538,97 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="access_token">
-                                        Access Token
+                                    <Label htmlFor="account_sid">
+                                        Account SID
                                     </Label>
-                                    <Textarea
-                                        id="access_token"
-                                        value={data.access_token}
+                                    <Input
+                                        id="account_sid"
+                                        value={data.account_sid}
                                         onChange={(e) =>
                                             setData(
-                                                'access_token',
+                                                'account_sid',
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="Enter your WhatsApp Business API access token"
-                                        className="mt-1 border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                        rows={3}
+                                        placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                         required
                                     />
-                                    {errors.access_token && (
+                                    {errors.account_sid && (
                                         <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                            {errors.access_token}
+                                            {errors.account_sid}
                                         </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="phone_number_id">
-                                        Phone Number ID
+                                    <Label htmlFor="auth_token">
+                                        Auth Token
                                     </Label>
                                     <Input
-                                        id="phone_number_id"
-                                        value={data.phone_number_id}
+                                        id="auth_token"
+                                        type="password"
+                                        value={data.auth_token}
                                         onChange={(e) =>
                                             setData(
-                                                'phone_number_id',
+                                                'auth_token',
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="123456789012345"
-                                        className="mt-1 border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                        placeholder="Enter your Twilio Auth Token"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                         required
                                     />
-                                    {errors.phone_number_id && (
+                                    {errors.auth_token && (
                                         <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                            {errors.phone_number_id}
+                                            {errors.auth_token}
                                         </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="business_account_id">
-                                        Business Account ID
+                                    <Label htmlFor="phone_number">
+                                        Phone Number (Optional)
                                     </Label>
                                     <Input
-                                        id="business_account_id"
-                                        value={data.business_account_id}
+                                        id="phone_number"
+                                        value={data.phone_number}
                                         onChange={(e) =>
                                             setData(
-                                                'business_account_id',
+                                                'phone_number',
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="123456789012345"
-                                        className="mt-1 border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                        required
+                                        placeholder="+1234567890"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                     />
-                                    {errors.business_account_id && (
+                                    {errors.phone_number && (
                                         <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                            {errors.business_account_id}
+                                            {errors.phone_number}
                                         </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="webhook_verify_token">
-                                        Webhook Verify Token (Optional)
+                                    <Label htmlFor="default_country_code">
+                                        Default Country Code
                                     </Label>
                                     <Input
-                                        id="webhook_verify_token"
-                                        value={data.webhook_verify_token}
+                                        id="default_country_code"
+                                        value={data.default_country_code}
                                         onChange={(e) =>
                                             setData(
-                                                'webhook_verify_token',
+                                                'default_country_code',
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="Your webhook verification token"
-                                        className="mt-1 border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                        placeholder="+1"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                        required
                                     />
-                                    {errors.webhook_verify_token && (
+                                    {errors.default_country_code && (
                                         <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                            {errors.webhook_verify_token}
+                                            {errors.default_country_code}
                                         </p>
                                     )}
                                 </div>
@@ -618,7 +645,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     <Button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-green-600 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {processing ? (
                                             <>

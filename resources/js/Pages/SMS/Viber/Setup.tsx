@@ -9,7 +9,6 @@ import {
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
@@ -73,15 +72,18 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         const submitData = {
             ...data,
-            webhook_events: data.webhook_events.filter(event => event.trim() !== ''),
+            webhook_events: data.webhook_events.filter(
+                (event) => event.trim() !== '',
+            ),
         };
 
         if (editingAccount) {
             // Update existing account
-            axios.put(route('viber-accounts.update', editingAccount), submitData)
+            axios
+                .put(route('viber-accounts.update', editingAccount), submitData)
                 .then(() => {
                     toast.success('Viber account updated successfully!');
                     setShowAddForm(false);
@@ -122,7 +124,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
     const handleDelete = (accountId: number) => {
         if (confirm('Are you sure you want to delete this Viber account?')) {
-            axios.delete(route('viber-accounts.destroy', accountId))
+            axios
+                .delete(route('viber-accounts.destroy', accountId))
                 .then(() => {
                     toast.success('Viber account deleted successfully!');
                     window.location.reload();
@@ -137,7 +140,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     const handleTest = async (accountId: number) => {
         setTestingAccount(accountId);
         try {
-            const response = await axios.post(route('viber-accounts.test', accountId));
+            const response = await axios.post(
+                route('viber-accounts.test', accountId),
+            );
             toast.success('Connection test successful!');
         } catch (error) {
             console.error('Test error:', error);
@@ -158,7 +163,10 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     };
 
     const removeWebhookEvent = (index: number) => {
-        setData('webhook_events', data.webhook_events.filter((_, i) => i !== index));
+        setData(
+            'webhook_events',
+            data.webhook_events.filter((_, i) => i !== index),
+        );
     };
 
     return (
@@ -181,20 +189,41 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                             <span>Viber Public Account Setup</span>
                         </CardTitle>
                         <CardDescription>
-                            Connect your Viber Public Account to send messages to your customers
+                            Connect your Viber Public Account to send messages
+                            to your customers
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                                    How to get your Viber Public Account credentials:
+                            <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                                <h4 className="mb-2 font-medium text-blue-900 dark:text-blue-100">
+                                    How to get your Viber Public Account
+                                    credentials:
                                 </h4>
-                                <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                                    <li>Create a Viber Public Account at <a href="https://partners.viber.com" target="_blank" rel="noopener noreferrer" className="underline">partners.viber.com</a></li>
-                                    <li>Complete the verification process for your business</li>
-                                    <li>Get your Auth Token from the Viber Partners dashboard</li>
-                                    <li>Configure webhook URL to receive message status updates</li>
+                                <ol className="list-inside list-decimal space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                                    <li>
+                                        Create a Viber Public Account at{' '}
+                                        <a
+                                            href="https://partners.viber.com"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="underline"
+                                        >
+                                            partners.viber.com
+                                        </a>
+                                    </li>
+                                    <li>
+                                        Complete the verification process for
+                                        your business
+                                    </li>
+                                    <li>
+                                        Get your Auth Token from the Viber
+                                        Partners dashboard
+                                    </li>
+                                    <li>
+                                        Configure webhook URL to receive message
+                                        status updates
+                                    </li>
                                 </ol>
                             </div>
                         </div>
@@ -209,9 +238,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                             setEditingAccount(null);
                             reset();
                         }}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-green-600 text-white hover:bg-green-700"
                     >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="mr-2 h-4 w-4" />
                         Add Viber Account
                     </Button>
                 </div>
@@ -221,49 +250,76 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                     <Card>
                         <CardHeader>
                             <CardTitle>
-                                {editingAccount ? 'Edit Viber Account' : 'Add New Viber Account'}
+                                {editingAccount
+                                    ? 'Edit Viber Account'
+                                    : 'Add New Viber Account'}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <Label htmlFor="account_name">Account Name</Label>
+                                    <Label htmlFor="account_name">
+                                        Account Name
+                                    </Label>
                                     <Input
                                         id="account_name"
                                         value={data.account_name}
-                                        onChange={(e) => setData('account_name', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'account_name',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="My Viber Business Account"
                                         required
                                     />
                                     {errors.account_name && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.account_name}</p>
+                                        <p className="mt-1 text-sm text-red-500">
+                                            {errors.account_name}
+                                        </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="auth_token">Auth Token</Label>
+                                    <Label htmlFor="auth_token">
+                                        Auth Token
+                                    </Label>
                                     <Input
                                         id="auth_token"
                                         type="password"
                                         value={data.auth_token}
-                                        onChange={(e) => setData('auth_token', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'auth_token',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="Your Viber Public Account Auth Token"
                                         required
                                     />
                                     {errors.auth_token && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.auth_token}</p>
+                                        <p className="mt-1 text-sm text-red-500">
+                                            {errors.auth_token}
+                                        </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="webhook_url">Webhook URL (Optional)</Label>
+                                    <Label htmlFor="webhook_url">
+                                        Webhook URL (Optional)
+                                    </Label>
                                     <Input
                                         id="webhook_url"
                                         value={data.webhook_url}
-                                        onChange={(e) => setData('webhook_url', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'webhook_url',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="https://yourdomain.com/webhook/viber"
                                     />
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                         URL to receive message status updates
                                     </p>
                                 </div>
@@ -271,28 +327,42 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                 <div>
                                     <Label>Webhook Events (Optional)</Label>
                                     <div className="space-y-2">
-                                        {data.webhook_events.map((event, index) => (
-                                            <div key={index} className="flex space-x-2">
-                                                <Input
-                                                    value={event}
-                                                    onChange={(e) => updateWebhookEvent(index, e.target.value)}
-                                                    placeholder="delivered, seen, failed"
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => removeWebhookEvent(index)}
+                                        {data.webhook_events.map(
+                                            (event, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex space-x-2"
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        ))}
+                                                    <Input
+                                                        value={event}
+                                                        onChange={(e) =>
+                                                            updateWebhookEvent(
+                                                                index,
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        placeholder="delivered, seen, failed"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            removeWebhookEvent(
+                                                                index,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ),
+                                        )}
                                         <Button
                                             type="button"
                                             variant="outline"
                                             onClick={addWebhookEvent}
                                         >
-                                            <Plus className="h-4 w-4 mr-2" />
+                                            <Plus className="mr-2 h-4 w-4" />
                                             Add Event
                                         </Button>
                                     </div>
@@ -313,15 +383,19 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     <Button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                        className="bg-green-600 text-white hover:bg-green-700"
                                     >
                                         {processing ? (
                                             <>
-                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                {editingAccount ? 'Updating...' : 'Creating...'}
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                {editingAccount
+                                                    ? 'Updating...'
+                                                    : 'Creating...'}
                                             </>
+                                        ) : editingAccount ? (
+                                            'Update Account'
                                         ) : (
-                                            editingAccount ? 'Update Account' : 'Create Account'
+                                            'Create Account'
                                         )}
                                     </Button>
                                 </div>
@@ -335,11 +409,11 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Your Viber Accounts
                     </h3>
-                    
+
                     {accounts.length === 0 ? (
                         <Card>
                             <CardContent className="p-6 text-center">
-                                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                                 <p className="text-gray-500 dark:text-gray-400">
                                     No Viber accounts configured yet
                                 </p>
@@ -355,18 +429,23 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 <div className="flex items-center space-x-3">
                                                     <div>
                                                         <h4 className="font-medium text-gray-900 dark:text-white">
-                                                            {account.account_name}
+                                                            {
+                                                                account.account_name
+                                                            }
                                                         </h4>
                                                         <p className="text-sm text-gray-600 dark:text-gray-400">
                                                             {account.uri}
                                                         </p>
                                                         <p className="text-xs text-gray-500 dark:text-gray-500">
-                                                            Created: {new Date(account.created_at).toLocaleDateString()}
+                                                            Created:{' '}
+                                                            {new Date(
+                                                                account.created_at,
+                                                            ).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="flex items-center space-x-2">
                                                 <Badge
                                                     variant={
@@ -378,41 +457,55 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                     {account.is_verified ? (
                                                         <div className="flex items-center space-x-1">
                                                             <CheckCircle className="h-3 w-3" />
-                                                            <span>Verified</span>
+                                                            <span>
+                                                                Verified
+                                                            </span>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center space-x-1">
                                                             <AlertCircle className="h-3 w-3" />
-                                                            <span>Unverified</span>
+                                                            <span>
+                                                                Unverified
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </Badge>
-                                                
+
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => handleTest(account.id)}
-                                                    disabled={testingAccount === account.id}
+                                                    onClick={() =>
+                                                        handleTest(account.id)
+                                                    }
+                                                    disabled={
+                                                        testingAccount ===
+                                                        account.id
+                                                    }
                                                 >
-                                                    {testingAccount === account.id ? (
+                                                    {testingAccount ===
+                                                    account.id ? (
                                                         <Loader2 className="h-4 w-4 animate-spin" />
                                                     ) : (
                                                         <Wifi className="h-4 w-4" />
                                                     )}
                                                 </Button>
-                                                
+
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => handleEdit(account)}
+                                                    onClick={() =>
+                                                        handleEdit(account)
+                                                    }
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
-                                                
+
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => handleDelete(account.id)}
+                                                    onClick={() =>
+                                                        handleDelete(account.id)
+                                                    }
                                                     className="text-red-600 hover:text-red-700"
                                                 >
                                                     <Trash2 className="h-4 w-4" />

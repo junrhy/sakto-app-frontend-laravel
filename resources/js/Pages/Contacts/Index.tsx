@@ -721,11 +721,11 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                         <div className="flex items-center space-x-2">
                                                             <span className="h-2 w-2 rounded-full bg-blue-500"></span>
                                                             <span className="font-medium">
-                                                            {contact.call_number ||
-                                                                contact.sms_number ||
-                                                                contact.whatsapp ||
-                                                                contact.viber ||
-                                                                '-'}
+                                                                {contact.call_number ||
+                                                                    contact.sms_number ||
+                                                                    contact.whatsapp ||
+                                                                    contact.viber ||
+                                                                    '-'}
                                                             </span>
                                                         </div>
                                                     </TableCell>

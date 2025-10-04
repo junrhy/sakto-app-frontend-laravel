@@ -22,8 +22,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     // Twilio SMS
     Route::get('/sms-twilio', [SmsTwilioController::class, 'index'])->name('twilio-sms');
     Route::post('/sms-twilio/send', [SmsTwilioController::class, 'send'])->name('twilio-sms.send');
-    Route::get('/sms-twilio/balance', [SmsTwilioController::class, 'getBalance'])->name('twilio-sms.balance');
-    Route::get('/sms-twilio/status/{messageId}', [SmsTwilioController::class, 'getMessageStatus'])->name('twilio-sms.status');
+    Route::post('/sms-twilio/balance', [SmsTwilioController::class, 'getBalance'])->name('twilio-sms.balance');
+    Route::post('/sms-twilio/status/{messageId}', [SmsTwilioController::class, 'getMessageStatus'])->name('twilio-sms.status');
     
     // Semaphore SMS
     Route::get('/sms-semaphore', [SmsSemaphoreController::class, 'index'])->name('semaphore-sms');

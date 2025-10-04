@@ -19,51 +19,57 @@ class SmsTwilioController extends Controller
 
     public function index()
     {
+        $clientIdentifier = auth()->user()->identifier;
+        
+        $accounts = \App\Models\TwilioAccount::where('client_identifier', $clientIdentifier)
+            ->orderBy('is_verified', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return Inertia::render('SMS/Twilio/Index', [
             'messages' => [], // TODO: Fetch messages from your database
             'stats' => [
                 'sent' => 0,
                 'delivered' => 0,
                 'failed' => 0
-            ]
+            ],
+            'accounts' => $accounts,
+            'hasActiveAccount' => $accounts->where('is_active', true)->where('is_verified', true)->count() > 0
         ]);
     }
 
     public function settings()
     {
         try {
-            // $clientIdentifier = auth()->user()->identifier;
-            // $response = Http::withToken($this->apiToken)
-            //     ->get("{$this->apiUrl}/sms/settings", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get all Twilio accounts for the client
+            $accounts = \App\Models\TwilioAccount::where('client_identifier', $clientIdentifier)
+                ->orderBy('is_verified', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-            // if (!$response->successful()) {
-            //     throw new \Exception('Failed to fetch SMS settings');
-            // }
+            // Get the active account (first verified and active account)
+            $activeAccount = $accounts->where('is_active', true)->where('is_verified', true)->first();
 
-            // Dummy data
-            $dummySettings = [
-                'data' => [
-                    'twilio_account_sid' => 'AC********************************',
-                    'twilio_auth_token' => '********************************',
-                    'twilio_phone_number' => '+1234567890',
-                    'default_country_code' => '+1',
-                    'message_templates' => [
-                        'appointment_reminder' => 'Hi {name}, reminder for your appointment on {date} at {time}.',
-                        'payment_confirmation' => 'Thank you for your payment of {amount}.',
-                        'general_notification' => 'Important: {message}'
-                    ],
-                    'notification_preferences' => [
-                        'send_reminders' => true,
-                        'send_confirmations' => true,
-                        'reminder_time' => '24h'
-                    ]
+            $settings = [
+                'accounts' => $accounts,
+                'active_account' => $activeAccount,
+                'has_active_account' => $activeAccount !== null,
+                'message_templates' => [
+                    'appointment_reminder' => 'Hi {name}, reminder for your appointment on {date} at {time}.',
+                    'payment_confirmation' => 'Thank you for your payment of {amount}.',
+                    'general_notification' => 'Important: {message}'
+                ],
+                'notification_preferences' => [
+                    'send_reminders' => true,
+                    'send_confirmations' => true,
+                    'reminder_time' => '24h'
                 ]
             ];
 
             return Inertia::render('SMS/Settings', [
-                'settings' => $dummySettings['data'],
+                'settings' => $settings,
                 'auth' => [
                     'user' => auth()->user()
                 ]
@@ -78,24 +84,41 @@ class SmsTwilioController extends Controller
         $request->validate([
             'to' => 'required|string',
             'message' => 'required|string|max:1600',
+            'account_id' => 'required|integer|exists:twilio_accounts,id',
         ]);
 
         try {
-            $account_sid = config('services.twilio.sid');
-            $auth_token = config('services.twilio.token');
-            $twilio_number = config('services.twilio.phone_number');
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Twilio account
+            $twilioAccount = \App\Models\TwilioAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
 
-            $client = new Client($account_sid, $auth_token);
+            if (!$twilioAccount) {
+                return back()->with('error', 'Twilio account not found or not verified');
+            }
+
+            $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
+
+            // Use the account's phone number
+            $fromNumber = $twilioAccount->phone_number;
+            
+            if (!$fromNumber) {
+                return back()->with('error', 'No phone number configured for this Twilio account. Please add a phone number in the account settings.');
+            }
 
             $message = $client->messages->create(
                 $request->to,
                 [
-                    'from' => $twilio_number,
+                    'from' => $fromNumber,
                     'body' => $request->message
                 ]
             );
 
-            // TODO: Save message to database
+            // TODO: Save message to database with account reference
 
             return back()->with('success', 'Message sent successfully!');
         } catch (\Exception $e) {
@@ -103,14 +126,28 @@ class SmsTwilioController extends Controller
         }
     }
 
-    public function getBalance()
+    public function getBalance(Request $request)
     {
-        try {
-            $account_sid = config('services.twilio.sid');
-            $auth_token = config('services.twilio.token');
+        $request->validate([
+            'account_id' => 'required|integer|exists:twilio_accounts,id',
+        ]);
 
-            $client = new Client($account_sid, $auth_token);
-            $account = $client->api->v2010->accounts($account_sid)->fetch();
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Twilio account
+            $twilioAccount = \App\Models\TwilioAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
+
+            if (!$twilioAccount) {
+                return response()->json(['error' => 'Twilio account not found or not verified'], 404);
+            }
+
+            $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
+            $account = $client->api->v2010->accounts($twilioAccount->account_sid)->fetch();
 
             return response()->json([
                 'balance' => $account->balance,
@@ -121,13 +158,27 @@ class SmsTwilioController extends Controller
         }
     }
 
-    public function getMessageStatus($messageId)
+    public function getMessageStatus(Request $request, $messageId)
     {
-        try {
-            $account_sid = config('services.twilio.sid');
-            $auth_token = config('services.twilio.token');
+        $request->validate([
+            'account_id' => 'required|integer|exists:twilio_accounts,id',
+        ]);
 
-            $client = new Client($account_sid, $auth_token);
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            // Get the Twilio account
+            $twilioAccount = \App\Models\TwilioAccount::where('client_identifier', $clientIdentifier)
+                ->where('id', $request->account_id)
+                ->where('is_active', true)
+                ->where('is_verified', true)
+                ->first();
+
+            if (!$twilioAccount) {
+                return response()->json(['error' => 'Twilio account not found or not verified'], 404);
+            }
+
+            $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
             $message = $client->messages($messageId)->fetch();
 
             return response()->json([

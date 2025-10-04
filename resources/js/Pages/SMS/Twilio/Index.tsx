@@ -14,7 +14,7 @@ import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -41,6 +41,18 @@ interface Stats {
     failed: number;
 }
 
+interface TwilioAccount {
+    id: number;
+    account_name: string;
+    account_sid: string;
+    phone_number: string;
+    default_country_code: string;
+    is_active: boolean;
+    is_verified: boolean;
+    last_verified_at: string;
+    created_at: string;
+}
+
 interface Props extends PageProps {
     auth: {
         user: User;
@@ -59,9 +71,11 @@ interface Props extends PageProps {
     };
     messages: Message[];
     stats: Stats;
+    accounts: TwilioAccount[];
+    hasActiveAccount: boolean;
 }
 
-export default function Index({ auth, messages, stats }: Props) {
+export default function Index({ auth, messages, stats, accounts, hasActiveAccount }: Props) {
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
 
     const canEdit = useMemo(() => {
@@ -87,6 +101,9 @@ export default function Index({ auth, messages, stats }: Props) {
     const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [groupFilter, setGroupFilter] = useState<string>('all');
+    const [selectedAccount, setSelectedAccount] = useState<number | null>(
+        accounts.length > 0 ? accounts[0].id : null,
+    );
 
     const addRecipient = () => {
         if (!newRecipient.trim()) {
@@ -296,6 +313,7 @@ export default function Index({ auth, messages, stats }: Props) {
                 data: {
                     ...data,
                     to: recipients.join(','),
+                    account_id: selectedAccount,
                 },
                 onSuccess: () => {
                     toast.success('Message sent successfully!');
@@ -342,10 +360,76 @@ export default function Index({ auth, messages, stats }: Props) {
         >
             <Head title="International SMS" />
 
-            <div>
-                <div>
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-6">
+                {/* Account Setup Status */}
+                {!hasActiveAccount && (
+                    <Card className="border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                                    <div>
+                                        <h3 className="font-semibold text-amber-900 dark:text-amber-100">
+                                            Twilio Account Not Set Up
+                                        </h3>
+                                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                                            You need to connect your Twilio account to send SMS messages.
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={() =>
+                                        (window.location.href =
+                                            '/twilio-accounts?app=sms')
+                                    }
+                                    className="bg-amber-600 text-white hover:bg-amber-700"
+                                >
+                                    Set Up Account
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Account Selection */}
+                {hasActiveAccount && accounts.length > 1 && (
+                    <Card className="border border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                                        Select Twilio Account
+                                    </h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Choose which Twilio account to use for sending messages
+                                    </p>
+                                </div>
+                                <select
+                                    value={selectedAccount || ''}
+                                    onChange={(e) =>
+                                        setSelectedAccount(
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                >
+                                    {accounts.map((account) => (
+                                        <option
+                                            key={account.id}
+                                            value={account.id}
+                                        >
+                                            {account.account_name} (
+                                            {account.phone_number || 'No phone number'})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                         {/* Total Sent Card */}
                         <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
                             <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
@@ -777,7 +861,6 @@ export default function Index({ auth, messages, stats }: Props) {
                         </Card>
                     </div>
                 </div>
-            </div>
 
             {/* Contact Selector Modal */}
             {showContactSelector && (

@@ -10,9 +10,9 @@ import {
     FaPhone,
     FaSms,
     FaTwitter,
+    FaViber,
     FaWhatsapp,
 } from 'react-icons/fa';
-import { FaViber } from 'react-icons/fa';
 
 interface IdNumber {
     id: number;
