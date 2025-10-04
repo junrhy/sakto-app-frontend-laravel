@@ -275,7 +275,7 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
                 );
                 if (response.ok) {
                     const data = await response.json();
-                    setCredits(data.balance || 0);
+                    setCredits(data.available_credit || 0);
                 }
             }
         } catch (error) {

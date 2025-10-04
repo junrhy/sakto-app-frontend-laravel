@@ -8,11 +8,13 @@ import {
     CardTitle,
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import axios from 'axios';
 import {
     AlertCircle,
@@ -51,11 +53,13 @@ interface Stats {
 interface WhatsAppAccount {
     id: number;
     account_name: string;
+    provider: string;
     phone_number: string;
     display_name: string;
     is_active: boolean;
     is_verified: boolean;
     last_verified_at: string;
+    available_templates?: any[];
     created_at: string;
 }
 
@@ -102,6 +106,12 @@ export default function Index({
     const { data, setData, post, processing, errors, reset } = useForm({
         to: '',
         message: '',
+        message_type: 'text',
+        template_name: '',
+        template_data: {
+            placeholders: [] as string[],
+            language: 'en'
+        },
     });
 
     const [recipients, setRecipients] = useState<string[]>([]);
@@ -115,9 +125,116 @@ export default function Index({
     const [selectedAccount, setSelectedAccount] = useState<number | null>(
         accounts.length > 0 ? accounts[0].id : null,
     );
+    const [templatePlaceholders, setTemplatePlaceholders] = useState<string[]>([]);
+    const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
 
     // WhatsApp number validation (international format or local format)
     const whatsappRegex = /^(\+[1-9]\d{1,14}|0\d{9,10})$/;
+
+    // Update templates when account changes
+    useEffect(() => {
+        if (selectedAccount) {
+            const account = accounts.find(acc => acc.id === selectedAccount);
+            if (account && account.available_templates) {
+                setAvailableTemplates(account.available_templates);
+            } else {
+                setAvailableTemplates([]);
+            }
+            
+            // If current message type is text and account is Infobip, set up template
+            if (data.message_type === 'text' && account?.provider === 'infobip') {
+                setData('template_name', 'test_whatsapp_template_en');
+                setTemplatePlaceholders(['text']);
+                setData('template_data', {
+                    placeholders: [''] as string[],
+                    language: 'en'
+                });
+            }
+        }
+    }, [selectedAccount, accounts, data.message_type]);
+
+    // Handle template selection
+    const handleTemplateChange = (templateName: string) => {
+        setData('template_name', templateName);
+        const template = availableTemplates.find(t => t.name === templateName);
+        
+        if (template) {
+            let placeholders: string[] = [];
+            
+            // Check if template has explicit placeholders array (for API templates)
+            if (template.placeholders && Array.isArray(template.placeholders)) {
+                placeholders = template.placeholders;
+            }
+            // Otherwise, extract placeholders from template text (for custom templates)
+            else if (template.components && template.components[0] && template.components[0].text) {
+                const text = template.components[0].text;
+                // Extract placeholders like {{1}}, {{2}}, {{3}}, etc.
+                const placeholderMatches = text.match(/\{\{(\d+)\}\}/g);
+                if (placeholderMatches) {
+                    // Sort by number and create placeholder names
+                    placeholders = placeholderMatches
+                        .sort((a: string, b: string) => {
+                            const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+                            const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+                            return numA - numB;
+                        })
+                        .map((match: string, index: number) => `Variable ${index + 1}`);
+                }
+            }
+            
+            setTemplatePlaceholders(placeholders);
+            setData('template_data', {
+                ...data.template_data,
+                placeholders: new Array(placeholders.length).fill('') as string[]
+            });
+        } else {
+            setTemplatePlaceholders([]);
+            setData('template_data', {
+                ...data.template_data,
+                placeholders: [] as string[]
+            });
+        }
+    };
+
+    // Handle message type change - for Infobip accounts, both text and template use templates
+    const handleMessageTypeChange = (value: string) => {
+        setData('message_type', value);
+        
+        if (selectedAccount) {
+            const account = accounts.find(acc => acc.id === selectedAccount);
+            const isInfobip = account?.provider === 'infobip';
+            
+            if (value === 'text') {
+                if (isInfobip) {
+                    // For Infobip, text messages use the default template
+                    setData('template_name', 'test_whatsapp_template_en');
+                    setTemplatePlaceholders(['text']); // One placeholder for the text message
+                    setData('template_data', {
+                        placeholders: [''] as string[],
+                        language: 'en'
+                    });
+                } else {
+                    // For Facebook, clear template data
+                    setData('template_name', '');
+                    setTemplatePlaceholders([]);
+                }
+            } else {
+                // Template message - clear template selection to let user choose
+                setData('template_name', '');
+                setTemplatePlaceholders([]);
+            }
+        }
+    };
+
+    // Handle placeholder change
+    const handlePlaceholderChange = (index: number, value: string) => {
+        const newPlaceholders = [...(data.template_data.placeholders as string[])];
+        newPlaceholders[index] = value;
+        setData('template_data', {
+            ...data.template_data,
+            placeholders: newPlaceholders as string[]
+        });
+    };
 
     const addRecipient = () => {
         if (!newRecipient.trim()) {
@@ -164,7 +281,7 @@ export default function Index({
                 );
                 if (response.ok) {
                     const data = await response.json();
-                    setCredits(data.balance || 0);
+                    setCredits(data.available_credit || 0);
                 }
             }
         } catch (error) {
@@ -275,8 +392,13 @@ export default function Index({
             return;
         }
 
-        if (!data.message.trim()) {
+        if (data.message_type === 'text' && !data.message.trim()) {
             toast.error('Please enter a message');
+            return;
+        }
+
+        if (data.message_type === 'template' && !data.template_name) {
+            toast.error('Please select a template');
             return;
         }
 
@@ -290,24 +412,28 @@ export default function Index({
             await axios.post('/credits/spend', {
                 amount: totalCredits,
                 description: `WhatsApp message to ${recipients.length} recipient(s)`,
+                purpose: 'whatsapp_message',
+                reference_id: `whatsapp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             });
         } catch (error: any) {
             toast.error('Insufficient credits or failed to deduct credits');
             return;
         }
 
-        post('/sms-whatsapp/send', {
-            data: {
-                to: recipients,
-                message: data.message,
-                account_id: selectedAccount,
-            },
+        router.post('/sms-whatsapp/send', {
+            to: recipients,
+            message: data.message,
+            message_type: data.message_type,
+            template_name: data.template_name,
+            template_data: data.template_data,
+            account_id: selectedAccount,
+        }, {
             onSuccess: () => {
                 toast.success('WhatsApp message sent successfully!');
                 setRecipients([]);
                 setData('message', '');
             },
-            onError: (errors) => {
+            onError: (errors: any) => {
                 console.error('Send error:', errors);
                 toast.error('Failed to send WhatsApp message');
             },
@@ -607,39 +733,169 @@ export default function Index({
                                         )}
                                     </div>
 
-                                    {/* Message Input */}
+                                    {/* Message Type Selection */}
                                     <div className="space-y-2">
-                                        <label
-                                            htmlFor="message"
-                                            className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                        <Label htmlFor="message_type">Message Type</Label>
+                                        <Select
+                                            value={data.message_type}
+                                            onValueChange={handleMessageTypeChange}
                                         >
-                                            Message
-                                        </label>
-                                        <div className="space-y-2">
-                                            <Textarea
-                                                id="message"
-                                                value={data.message}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'message',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Enter your WhatsApp message..."
-                                                className="min-h-[100px] border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                                maxLength={1000}
-                                            />
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {data.message.length}/1000
-                                                characters
-                                            </p>
-                                        </div>
-                                        {errors.message && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.message}
-                                            </p>
-                                        )}
+                                            <SelectTrigger className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                                <SelectValue placeholder="Select message type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {selectedAccount && accounts.find(acc => acc.id === selectedAccount)?.provider === 'infobip' ? (
+                                                    // Infobip-specific options
+                                                    <>
+                                                        <SelectItem value="text">Quick Message</SelectItem>
+                                                        <SelectItem value="template">Custom Template</SelectItem>
+                                                    </>
+                                                ) : (
+                                                    // Facebook-specific options
+                                                    <>
+                                                        <SelectItem value="text">Text Message</SelectItem>
+                                                        <SelectItem value="template">Template Message</SelectItem>
+                                                    </>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                        {/* Help text based on provider and message type */}
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {selectedAccount && accounts.find(acc => acc.id === selectedAccount)?.provider === 'infobip' ? (
+                                                data.message_type === 'text' ? 
+                                                    "Quick messages use a default template for simple text communication." :
+                                                    "Custom templates allow you to use pre-approved templates with multiple variables."
+                                            ) : (
+                                                data.message_type === 'text' ? 
+                                                    "Send a direct text message to recipients." :
+                                                    "Use approved WhatsApp Business templates for structured messages."
+                                            )}
+                                        </p>
                                     </div>
+
+                                    {/* Template Selection */}
+                                    {data.message_type === 'template' && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="template_name">
+                                                {selectedAccount && accounts.find(acc => acc.id === selectedAccount)?.provider === 'infobip' ? 
+                                                    'Select Custom Template' : 
+                                                    'Select Template'
+                                                }
+                                            </Label>
+                                            {availableTemplates.length > 0 ? (
+                                                <Select
+                                                    value={data.template_name}
+                                                    onValueChange={handleTemplateChange}
+                                                >
+                                                    <SelectTrigger className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                                        <SelectValue placeholder="Select a template" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableTemplates.map((template) => (
+                                                            <SelectItem key={template.name} value={template.name}>
+                                                                {template.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            ) : (
+                                                <div className="p-3 border border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20 rounded-md">
+                                                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                                        {selectedAccount && accounts.find(acc => acc.id === selectedAccount)?.provider === 'infobip' ? 
+                                                            'No custom templates available. Use "Quick Message" for simple text communication.' :
+                                                            'No approved templates available. Please contact your administrator.'
+                                                        }
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Template Placeholders */}
+                                    {data.message_type === 'template' && templatePlaceholders.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Label>Template Variables</Label>
+                                            {templatePlaceholders.map((placeholder, index) => (
+                                                <div key={index} className="space-y-1">
+                                                    <Label htmlFor={`placeholder-${index}`} className="text-sm">
+                                                        {placeholder}
+                                                    </Label>
+                                                    <Input
+                                                        id={`placeholder-${index}`}
+                                                        value={(data.template_data.placeholders as string[])[index] || ''}
+                                                        onChange={(e) => handlePlaceholderChange(index, e.target.value)}
+                                                        placeholder={`Enter ${placeholder}`}
+                                                        className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Message Input */}
+                                    {data.message_type === 'text' && (
+                                        <div className="space-y-2">
+                                            <label
+                                                htmlFor="message"
+                                                className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                            >
+                                                Message
+                                            </label>
+                                        <div className="space-y-2">
+                                            {selectedAccount && accounts.find(acc => acc.id === selectedAccount)?.provider === 'infobip' ? (
+                                                // For Infobip accounts, show placeholder input for template
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="text-placeholder">Message Content</Label>
+                                                    <Input
+                                                        id="text-placeholder"
+                                                        value={data.template_data.placeholders[0] || ''}
+                                                        onChange={(e) => {
+                                                            const newPlaceholders = [...(data.template_data.placeholders as string[])];
+                                                            newPlaceholders[0] = e.target.value;
+                                                            setData('template_data', {
+                                                                ...data.template_data,
+                                                                placeholders: newPlaceholders
+                                                            });
+                                                            // Also update the message field for compatibility
+                                                            setData('message', e.target.value);
+                                                        }}
+                                                        placeholder="Type your WhatsApp message here..."
+                                                        className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                                        maxLength={1000}
+                                                    />
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {data.template_data.placeholders[0]?.length || 0}/1000 characters
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                // For Facebook accounts, show regular textarea
+                                                <>
+                                                    <Textarea
+                                                        id="message"
+                                                        value={data.message}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'message',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        placeholder="Enter your WhatsApp message..."
+                                                        className="min-h-[100px] border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                        maxLength={1000}
+                                                    />
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {data.message.length}/1000 characters
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
+                                            {errors.message && (
+                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                    {errors.message}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* Credit Cost Info and Send Button */}
                                     <div className="flex items-center justify-between">

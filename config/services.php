@@ -51,6 +51,10 @@ return [
 
     'whatsapp' => [
         'api_url' => env('WHATSAPP_API_URL', 'https://graph.facebook.com/v18.0'),
+        'infobip' => [
+            'api_url' => env('INFOBIP_WHATSAPP_API_URL', 'https://d9w1wg.api.infobip.com/whatsapp/1'),
+            'api_key' => env('INFOBIP_WHATSAPP_API_KEY'),
+        ],
     ],
 
     'maya' => [

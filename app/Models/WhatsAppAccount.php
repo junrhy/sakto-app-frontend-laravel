@@ -12,8 +12,11 @@ class WhatsAppAccount extends Model
     protected $fillable = [
         'client_identifier',
         'account_name',
+        'provider',
         'access_token',
+        'infobip_api_key',
         'phone_number_id',
+        'infobip_sender_number',
         'business_account_id',
         'webhook_verify_token',
         'phone_number',
@@ -21,6 +24,7 @@ class WhatsAppAccount extends Model
         'is_active',
         'is_verified',
         'webhook_urls',
+        'available_templates',
         'last_verified_at',
     ];
 
@@ -28,6 +32,7 @@ class WhatsAppAccount extends Model
         'is_active' => 'boolean',
         'is_verified' => 'boolean',
         'webhook_urls' => 'array',
+        'available_templates' => 'array',
         'last_verified_at' => 'datetime',
     ];
 
@@ -59,5 +64,37 @@ class WhatsAppAccount extends Model
                     ->where('is_active', true)
                     ->orderBy('is_verified', 'desc')
                     ->orderBy('created_at', 'asc');
+    }
+
+    /**
+     * Check if this account uses Infobip provider
+     */
+    public function isInfobip()
+    {
+        return $this->provider === 'infobip';
+    }
+
+    /**
+     * Check if this account uses Facebook provider
+     */
+    public function isFacebook()
+    {
+        return $this->provider === 'facebook';
+    }
+
+    /**
+     * Get the appropriate API key based on provider
+     */
+    public function getApiKey()
+    {
+        return $this->isInfobip() ? $this->infobip_api_key : $this->access_token;
+    }
+
+    /**
+     * Get the sender number based on provider
+     */
+    public function getSenderNumber()
+    {
+        return $this->isInfobip() ? $this->infobip_sender_number : $this->phone_number_id;
     }
 }

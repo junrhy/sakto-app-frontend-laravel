@@ -18,4 +18,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::put('/whatsapp-accounts/{id}', [WhatsAppAccountController::class, 'update'])->name('whatsapp-accounts.update');
     Route::delete('/whatsapp-accounts/{id}', [WhatsAppAccountController::class, 'destroy'])->name('whatsapp-accounts.destroy');
     Route::post('/whatsapp-accounts/{id}/test', [WhatsAppAccountController::class, 'test'])->name('whatsapp-accounts.test');
+    
+    // Template management routes
+    Route::post('/whatsapp-accounts/templates', [WhatsAppAccountController::class, 'createTemplate'])->name('whatsapp-accounts.templates.create');
+    Route::delete('/whatsapp-accounts/templates', [WhatsAppAccountController::class, 'deleteTemplate'])->name('whatsapp-accounts.templates.delete');
 });
