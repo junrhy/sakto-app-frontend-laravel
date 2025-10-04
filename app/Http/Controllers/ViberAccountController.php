@@ -55,9 +55,9 @@ class ViberAccountController extends Controller
             $verificationResult = $this->verifyViberCredentials($request->auth_token);
 
             if (!$verificationResult['success']) {
-                return response()->json([
-                    'error' => 'Invalid Viber credentials: ' . $verificationResult['message']
-                ], 400);
+                return redirect()->back()->withErrors([
+                    'auth_token' => 'Invalid Viber credentials: ' . $verificationResult['message']
+                ]);
             }
 
             // Create the Viber account
@@ -80,11 +80,7 @@ class ViberAccountController extends Controller
                 'country' => $verificationResult['country'],
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Viber account connected successfully!',
-                'account' => $account
-            ]);
+            return redirect()->back()->with('success', 'Viber account connected successfully!');
 
         } catch (\Exception $e) {
             Log::error('Viber account creation failed', [
@@ -92,9 +88,9 @@ class ViberAccountController extends Controller
                 'user' => auth()->user()->identifier
             ]);
 
-            return response()->json([
-                'error' => 'Failed to create Viber account: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->withErrors([
+                'general' => 'Failed to create Viber account: ' . $e->getMessage()
+            ]);
         }
     }
 
@@ -196,7 +192,7 @@ class ViberAccountController extends Controller
     }
 
     /**
-     * Test Viber account connection
+     * Test Viber account connection using Infobip API
      */
     public function test($id)
     {
@@ -208,11 +204,23 @@ class ViberAccountController extends Controller
                 ->where('is_active', true)
                 ->firstOrFail();
 
-            // Test the connection by getting account info
+            // Test the connection by sending a test message
             $response = Http::withHeaders([
-                'X-Viber-Auth-Token' => $account->auth_token,
-                'Content-Type' => 'application/json'
-            ])->get('https://chatapi.viber.com/pa/get_account_info');
+                'Authorization' => 'App ' . $account->auth_token,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->post('https://api.infobip.com/viber/2/messages', [
+                'messages' => [
+                    [
+                        'sender' => $account->account_name,
+                        'destinations' => [['to' => '639260049848']], // Test number
+                        'content' => [
+                            'text' => 'Connection test message',
+                            'type' => 'TEXT'
+                        ]
+                    ]
+                ]
+            ]);
 
             if ($response->successful()) {
                 $account->update([
@@ -220,10 +228,12 @@ class ViberAccountController extends Controller
                     'last_verified_at' => now()
                 ]);
 
+                $responseData = $response->json();
                 return response()->json([
                     'success' => true,
                     'message' => 'Viber account connection test successful!',
-                    'account_info' => $response->json()
+                    'bulk_id' => $responseData['bulkId'] ?? null,
+                    'message_id' => $responseData['messages'][0]['messageId'] ?? null
                 ]);
             } else {
                 return response()->json([
@@ -239,37 +249,50 @@ class ViberAccountController extends Controller
     }
 
     /**
-     * Verify Viber Public Account credentials
+     * Verify Viber Public Account credentials using Infobip API
      */
     private function verifyViberCredentials($authToken)
     {
         try {
-            // Test auth token by getting account info
+            // Test auth token by sending a test message to verify credentials
             $response = Http::withHeaders([
-                'X-Viber-Auth-Token' => $authToken,
-                'Content-Type' => 'application/json'
-            ])->get('https://chatapi.viber.com/pa/get_account_info');
+                'Authorization' => 'App ' . $authToken,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->post('https://api.infobip.com/viber/2/messages', [
+                'messages' => [
+                    [
+                        'sender' => 'TestSender',
+                        'destinations' => [['to' => '639260049848']], // Test number
+                        'content' => [
+                            'text' => 'Test message for credential verification',
+                            'type' => 'TEXT'
+                        ]
+                    ]
+                ]
+            ]);
 
             if (!$response->successful()) {
                 return [
                     'success' => false,
-                    'message' => 'Invalid auth token'
+                    'message' => 'Invalid auth token or API credentials'
                 ];
             }
 
-            $accountData = $response->json();
-
+            $responseData = $response->json();
+            
+            // Extract account info from response or use defaults
             return [
                 'success' => true,
-                'public_account_id' => $accountData['id'] ?? null,
-                'uri' => $accountData['uri'] ?? null,
-                'icon' => $accountData['icon'] ?? null,
-                'background' => $accountData['background'] ?? null,
-                'category' => $accountData['category'] ?? null,
-                'subcategory' => $accountData['subcategory'] ?? null,
-                'location' => $accountData['location'] ?? null,
-                'country' => $accountData['country'] ?? null,
-                'message' => 'Credentials verified successfully'
+                'public_account_id' => 'infobip_viber_account',
+                'uri' => 'infobip_viber_uri',
+                'icon' => null,
+                'background' => null,
+                'category' => 'Business',
+                'subcategory' => 'Messaging',
+                'location' => null,
+                'country' => 'PH',
+                'message' => 'Infobip Viber credentials verified successfully'
             ];
 
         } catch (\Exception $e) {

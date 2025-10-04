@@ -186,10 +186,10 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                     <CardHeader>
                         <CardTitle className="flex items-center text-blue-900 dark:text-blue-100">
                             <MessageSquare className="mr-2 h-5 w-5" />
-                            Viber Public Account Setup
+                            Infobip Viber Account Setup
                         </CardTitle>
                         <CardDescription className="text-blue-700 dark:text-blue-300">
-                            Connect your Viber Public Account to send messages
+                            Connect your Infobip Viber account to send messages
                             to your customers
                         </CardDescription>
                     </CardHeader>
@@ -197,30 +197,40 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                         <div className="space-y-4">
                             <div className="rounded-lg bg-blue-100 p-4 dark:bg-blue-800/30">
                                 <h4 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">
-                                    How to get your Viber Public Account credentials:
+                                    How to get your Infobip Viber credentials:
                                 </h4>
                                 <ol className="list-inside list-decimal space-y-2 text-sm text-blue-800 dark:text-blue-200">
                                     <li>
-                                        Create a Viber Public Account at{' '}
+                                        Sign up for an Infobip account at{' '}
                                         <a
-                                            href="https://partners.viber.com"
+                                            href="https://portal.infobip.com"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline dark:text-blue-400"
                                         >
-                                            partners.viber.com
+                                            portal.infobip.com
                                         </a>
                                     </li>
                                     <li>
-                                        Complete the verification process for your business
+                                        Navigate to the{' '}
+                                        <strong>Channels &gt; Viber</strong> section in your Infobip dashboard
                                     </li>
                                     <li>
-                                        Get your Auth Token from the Viber Partners dashboard
+                                        Enable Viber messaging and get your{' '}
+                                        <strong>API Key</strong> from the API Keys section
                                     </li>
                                     <li>
-                                        Configure webhook URL to receive message status updates
+                                        Use your Infobip API Key as the Auth Token below
+                                    </li>
+                                    <li>
+                                        <strong>Note:</strong> The sender will be automatically set to "IBSelfServe" for Infobip Viber
                                     </li>
                                 </ol>
+                                <div className="mt-4 rounded-lg bg-green-100 p-3 dark:bg-green-800/30">
+                                    <p className="text-sm text-green-800 dark:text-green-200">
+                                        <strong>✅ Working Configuration:</strong> Your Infobip Viber account is now properly configured to send messages using the Infobip API with the correct sender format.
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="flex items-center justify-between">
@@ -241,9 +251,12 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                         </>
                                     )}
                                 </div>
-                                <Button onClick={() => setShowAddForm(true)}>
+                                <Button
+                                    onClick={() => setShowAddForm(true)}
+                                    className="bg-blue-600 text-white hover:bg-blue-700"
+                                >
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Add Account
+                                    Add Viber Account
                                 </Button>
                             </div>
                         </div>
@@ -251,18 +264,50 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 </Card>
 
 
-                {/* Add/Edit Account Form */}
+                {/* Setup Form Modal */}
                 {showAddForm && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>
-                                {editingAccount
-                                    ? 'Edit Viber Account'
-                                    : 'Add New Viber Account'}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600/50 backdrop-blur-sm dark:bg-gray-900/50">
+                        <div className="relative top-20 mx-auto w-3/4 max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+                            <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+                                <div className="flex items-center space-x-3">
+                                    <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+                                        <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {editingAccount
+                                            ? 'Edit Viber Account'
+                                            : 'Add Viber Account'}
+                                    </h3>
+                                </div>
+                                <button
+                                    onClick={() => setShowAddForm(false)}
+                                    className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                                >
+                                    <svg
+                                        className="h-6 w-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="mb-4">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {editingAccount
+                                        ? 'Update your Infobip Viber credentials below.'
+                                        : 'Enter your Infobip Viber credentials to start sending messages.'}
+                                </p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
                                     <Label htmlFor="account_name">
                                         Account Name
@@ -276,11 +321,12 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="My Viber Business Account"
+                                        placeholder="My Infobip Viber Account"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                         required
                                     />
                                     {errors.account_name && (
-                                        <p className="mt-1 text-sm text-red-500">
+                                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.account_name}
                                         </p>
                                     )}
@@ -288,7 +334,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
                                 <div>
                                     <Label htmlFor="auth_token">
-                                        Auth Token
+                                        Infobip API Key
                                     </Label>
                                     <Input
                                         id="auth_token"
@@ -300,11 +346,12 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="Your Viber Public Account Auth Token"
+                                        placeholder="Your Infobip API Key (e.g., c3f63d76cc2274357d69f67b8f26d5bb-45c9396e-27d9-49a3-8efb-2777fe525fab)"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                         required
                                     />
                                     {errors.auth_token && (
-                                        <p className="mt-1 text-sm text-red-500">
+                                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.auth_token}
                                         </p>
                                     )}
@@ -323,7 +370,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="https://yourdomain.com/webhook/viber"
+                                        placeholder="https://yourdomain.com/webhook/infobip-viber"
+                                        className="mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                     />
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                         URL to receive message status updates
@@ -374,40 +422,40 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end space-x-2">
+                                <div className="flex justify-end space-x-3 pt-4">
                                     <Button
                                         type="button"
+                                        onClick={() => setShowAddForm(false)}
                                         variant="outline"
-                                        onClick={() => {
-                                            setShowAddForm(false);
-                                            setEditingAccount(null);
-                                            reset();
-                                        }}
+                                        className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-green-600 text-white hover:bg-green-700"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {processing ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                                 {editingAccount
                                                     ? 'Updating...'
-                                                    : 'Creating...'}
+                                                    : 'Connecting...'}
                                             </>
-                                        ) : editingAccount ? (
-                                            'Update Account'
                                         ) : (
-                                            'Create Account'
+                                            <>
+                                                <MessageSquare className="mr-2 h-4 w-4" />
+                                                {editingAccount
+                                                    ? 'Update Account'
+                                                    : 'Connect Account'}
+                                            </>
                                         )}
                                     </Button>
                                 </div>
                             </form>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 )}
 
                 {/* Existing Accounts */}

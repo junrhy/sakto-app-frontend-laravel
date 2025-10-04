@@ -81,44 +81,81 @@ class SmsViberController extends Controller
             $message = $request->input('message');
             $results = [];
 
+            // Format phone numbers to international format
+            $formattedRecipients = [];
             foreach ($recipients as $recipient) {
-                try {
-                    // Send message via Viber Public Account API
-                    $response = Http::withHeaders([
-                        'X-Viber-Auth-Token' => $account->auth_token,
-                        'Content-Type' => 'application/json'
-                    ])->post('https://chatapi.viber.com/pa/send_message', [
-                        'receiver' => $recipient,
-                        'type' => 'text',
-                        'text' => $message,
-                        'sender' => [
-                            'name' => $account->account_name,
-                            'avatar' => $account->icon
-                        ]
-                    ]);
+                $formattedRecipients[] = $this->formatPhoneNumber($recipient);
+            }
 
-                    if ($response->successful()) {
-                        $responseData = $response->json();
-                        $results[] = [
-                            'recipient' => $recipient,
-                            'message_id' => $responseData['message_token'] ?? 'viber_' . uniqid(),
-                            'status' => 'sent'
-                        ];
+            try {
+                // Send messages via Infobip Viber API (batch format)
+                $response = Http::withHeaders([
+                    'Authorization' => 'App ' . $account->auth_token,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ])->post('https://api.infobip.com/viber/2/messages', [
+                    'messages' => [
+                        [
+                            'sender' => $account->account_name,
+                            'destinations' => array_map(function($recipient) {
+                                return ['to' => $recipient];
+                            }, $formattedRecipients),
+                            'content' => [
+                                'text' => $message,
+                                'type' => 'TEXT'
+                            ]
+                        ]
+                    ]
+                ]);
+
+                if ($response->successful()) {
+                    $responseData = $response->json();
+                    $bulkId = $responseData['bulkId'] ?? null;
+                    
+                    // Process individual message results
+                    if (isset($responseData['messages'])) {
+                        foreach ($responseData['messages'] as $index => $messageResult) {
+                            $results[] = [
+                                'recipient' => $formattedRecipients[$index] ?? 'unknown',
+                                'message_id' => $messageResult['messageId'] ?? 'viber_' . uniqid(),
+                                'status' => $this->mapInfobipStatus($messageResult['status']['name'] ?? 'unknown'),
+                                'bulk_id' => $bulkId
+                            ];
+                        }
                     } else {
+                        // Fallback if no individual results
+                        foreach ($formattedRecipients as $recipient) {
+                            $results[] = [
+                                'recipient' => $recipient,
+                                'message_id' => 'viber_' . uniqid(),
+                                'status' => 'sent',
+                                'bulk_id' => $bulkId
+                            ];
+                        }
+                    }
+                } else {
+                    Log::error('Infobip Viber API error', [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                        'account_id' => $account->id
+                    ]);
+                    
+                    foreach ($formattedRecipients as $recipient) {
                         $results[] = [
                             'recipient' => $recipient,
                             'message_id' => null,
                             'status' => 'failed',
-                            'error' => $response->body()
+                            'error' => 'API Error: ' . $response->body()
                         ];
                     }
-                } catch (\Exception $e) {
-                    Log::error('Viber message sending failed', [
-                        'error' => $e->getMessage(),
-                        'recipient' => $recipient,
-                        'account_id' => $account->id
-                    ]);
-                    
+                }
+            } catch (\Exception $e) {
+                Log::error('Viber message sending failed', [
+                    'error' => $e->getMessage(),
+                    'account_id' => $account->id
+                ]);
+                
+                foreach ($formattedRecipients as $recipient) {
                     $results[] = [
                         'recipient' => $recipient,
                         'message_id' => null,
@@ -143,5 +180,56 @@ class SmsViberController extends Controller
                 'error' => 'Failed to send Viber message: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Format phone number to international format
+     */
+    private function formatPhoneNumber($phoneNumber)
+    {
+        // Remove any non-digit characters except +
+        $cleaned = preg_replace('/[^\d+]/', '', $phoneNumber);
+        
+        // If it starts with +, return as is
+        if (strpos($cleaned, '+') === 0) {
+            return $cleaned;
+        }
+        
+        // If it starts with 0, replace with country code
+        if (strpos($cleaned, '0') === 0) {
+            return '+63' . substr($cleaned, 1);
+        }
+        
+        // If it's already 10-11 digits without country code, add +63
+        if (strlen($cleaned) >= 10 && strlen($cleaned) <= 11) {
+            return '+63' . $cleaned;
+        }
+        
+        // If it's 12+ digits, assume it has country code but no +
+        if (strlen($cleaned) >= 12) {
+            return '+' . $cleaned;
+        }
+        
+        // Default: return as is
+        return $cleaned;
+    }
+
+    /**
+     * Map Infobip status to our internal status
+     */
+    private function mapInfobipStatus($infobipStatus)
+    {
+        $statusMap = [
+            'PENDING_ACCEPTED' => 'sent',
+            'PENDING' => 'sent',
+            'SENT' => 'sent',
+            'DELIVERED' => 'delivered',
+            'UNDELIVERED' => 'failed',
+            'EXPIRED' => 'failed',
+            'REJECTED' => 'failed',
+            'UNKNOWN' => 'failed'
+        ];
+        
+        return $statusMap[$infobipStatus] ?? 'unknown';
     }
 }
