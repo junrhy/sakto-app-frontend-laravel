@@ -22,7 +22,7 @@ export default function Features({ auth }: PageProps) {
     const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(
-        hostname === 'sakto' ? 'Komunidad' : 'Community',
+        hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
     );
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
@@ -49,15 +49,15 @@ export default function Features({ auth }: PageProps) {
     }, []);
 
     const productsMenuItems =
-        hostname === 'sakto'
+        hostname !== 'Neulify'
             ? [
-                  { name: 'Komunidad', href: route('community') },
-                  { name: 'Logistika', href: route('logistics') },
-                  { name: 'Medikal', href: route('medical') },
-                  { name: 'Lakbay', href: route('travel') },
-                  { name: 'Hatid', href: route('delivery') },
-                  { name: 'Taohan', href: route('jobs') },
-                  { name: 'Merkado', href: route('shop') },
+                  { name: `${hostname} Community`, href: route('community') },
+                  { name: `${hostname} Logistics`, href: route('logistics') },
+                  { name: `${hostname} Medical`, href: route('medical') },
+                  { name: `${hostname} Travel`, href: route('travel') },
+                  { name: `${hostname} Delivery`, href: route('delivery') },
+                  { name: `${hostname} Job Board`, href: route('jobs') },
+                  { name: `${hostname} Marketplace`, href: route('shop') },
               ]
             : [
                   { name: 'Community', href: route('community') },
@@ -77,8 +77,8 @@ export default function Features({ auth }: PageProps) {
     ];
 
     const projectFeatures = {
-        [hostname === 'sakto' ? 'Komunidad' : 'Community']: {
-            name: hostname === 'sakto' ? 'Komunidad' : 'Community',
+        [hostname !== 'Neulify' ? `${hostname} Community` : 'Community']: {
+            name: hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
             project: 'community',
             icon: UserGroupIcon,
             features: [
@@ -129,8 +129,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname === 'sakto' ? 'Logistika' : 'Logistics']: {
-            name: hostname === 'sakto' ? 'Logistika' : 'Logistics',
+        [hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics']: {
+            name: hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics',
             project: 'logistics',
             icon: TruckIcon,
             features: [
@@ -166,8 +166,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname === 'sakto' ? 'Medikal' : 'Medical']: {
-            name: hostname === 'sakto' ? 'Medikal' : 'Medical',
+        [hostname !== 'Neulify' ? `${hostname} Medical` : 'Medical']: {
+            name: hostname !== 'Neulify' ? `${hostname} Medical` : 'Medical',
             project: 'medical',
             icon: HeartIcon,
             features: [
@@ -198,8 +198,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname === 'sakto' ? 'Lakbay' : 'Travel']: {
-            name: hostname === 'sakto' ? 'Lakbay' : 'Travel',
+        [hostname !== 'Neulify' ? `${hostname} Travel` : 'Travel']: {
+            name: hostname !== 'Neulify' ? `${hostname} Travel` : 'Travel',
             project: 'travel',
             icon: TruckIcon,
             features: [
@@ -235,8 +235,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname === 'sakto' ? 'Hatid' : 'Delivery']: {
-            name: hostname === 'sakto' ? 'Hatid' : 'Delivery',
+        [hostname !== 'Neulify' ? `${hostname} Delivery` : 'Delivery']: {
+            name: hostname !== 'Neulify' ? `${hostname} Delivery` : 'Delivery',
             project: 'delivery',
             icon: TruckIcon,
             features: [
@@ -272,8 +272,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname === 'sakto' ? 'Taohan' : 'Jobs']: {
-            name: hostname === 'sakto' ? 'Taohan' : 'Jobs',
+        [hostname !== 'Neulify' ? `${hostname} Job Board` : 'Jobs']: {
+            name: hostname !== 'Neulify' ? `${hostname} Job Board` : 'Jobs',
             project: 'jobs',
             icon: UserGroupIcon,
             features: [
@@ -309,8 +309,8 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname === 'sakto' ? 'Merkado' : 'Shop']: {
-            name: hostname === 'sakto' ? 'Merkado' : 'Shop',
+        [hostname !== 'Neulify' ? `${hostname} Marketplace` : 'Shop']: {
+            name: hostname !== 'Neulify' ? `${hostname} Marketplace` : 'Shop',
             project: 'shop',
             icon: TruckIcon,
             features: [
@@ -351,15 +351,20 @@ export default function Features({ auth }: PageProps) {
     return (
         <>
             <Head title={`Features - ${hostname}`} />
-            <div className="min-h-screen from-white via-indigo-50/30 to-white dark:bg-gray-900">
+            <div className="relative min-h-screen overflow-hidden">
+                {/* Centralized Background */}
+                <div className="pointer-events-none fixed inset-0 z-0">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/20 via-transparent to-transparent dark:from-[#14B8A6]/10"></div>
+                </div>
                 {/* Navigation */}
-                <nav className="fixed left-1/2 top-4 z-50 mx-auto w-[95%] max-w-7xl -translate-x-1/2 rounded-2xl border border-gray-100 bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 dark:shadow-gray-900/50">
-                    <div className="px-4 sm:px-6 lg:px-8">
+                <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[#E2E8F0]/50 bg-white/95 shadow-sm backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex items-center">
                                 <Link href="/" className="flex items-center">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
-                                    <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
+                                    <span className="ml-2 bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
                                         {hostname === 'sakto'
                                             ? 'Sakto Solutions'
                                             : hostname}
@@ -378,7 +383,7 @@ export default function Features({ auth }: PageProps) {
                                                 !isProductsDropdownOpen,
                                             )
                                         }
-                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Our Solutions
                                         <svg
@@ -402,7 +407,7 @@ export default function Features({ auth }: PageProps) {
                                                 <Link
                                                     key={item.name}
                                                     href={item.href}
-                                                    className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                    className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsProductsDropdownOpen(
                                                             false,
@@ -418,20 +423,20 @@ export default function Features({ auth }: PageProps) {
                                 {hostname === 'neulify' && (
                                     <Link
                                         href={route('neulify')}
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Our Company
                                     </Link>
                                 )}
                                 <Link
                                     href={route('features')}
-                                    className="rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-600 transition-colors duration-200 dark:bg-indigo-900/30 dark:text-indigo-400"
+                                    className="rounded-md bg-[#14B8A6]/10 px-3 py-2 text-sm font-medium text-[#14B8A6] transition-colors duration-200 dark:bg-[#14B8A6]/20 dark:text-[#14B8A6]"
                                 >
                                     Features
                                 </Link>
                                 <Link
                                     href={route('pricing')}
-                                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                    className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                 >
                                     Pricing
                                 </Link>
@@ -447,7 +452,7 @@ export default function Features({ auth }: PageProps) {
                                                 !isLegalDropdownOpen,
                                             )
                                         }
-                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Legal
                                         <svg
@@ -471,7 +476,7 @@ export default function Features({ auth }: PageProps) {
                                                 <Link
                                                     key={item.name}
                                                     href={item.href}
-                                                    className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                    className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsLegalDropdownOpen(
                                                             false,
@@ -490,9 +495,9 @@ export default function Features({ auth }: PageProps) {
                 </nav>
 
                 {/* Features Section */}
-                <div className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
+                <div className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-3xl text-center">
-                        <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
+                        <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
                             Tailored Solutions for Every Industry
                         </h1>
                         <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
@@ -511,7 +516,7 @@ export default function Features({ auth }: PageProps) {
                                         onClick={() => setActiveTab(key)}
                                         className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
                                             activeTab === key
-                                                ? 'bg-white text-indigo-600 shadow-sm dark:bg-gray-700 dark:text-indigo-400'
+                                                ? 'bg-white text-[#14B8A6] shadow-sm dark:bg-gray-700 dark:text-[#14B8A6]'
                                                 : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
                                         }`}
                                     >
@@ -535,8 +540,8 @@ export default function Features({ auth }: PageProps) {
                                 >
                                     <div className="mb-6 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <project.icon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-                                            <h2 className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent dark:from-indigo-400 dark:to-purple-400">
+                                            <project.icon className="h-8 w-8 text-[#14B8A6] dark:text-[#14B8A6]" />
+                                            <h2 className="bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-2xl font-bold text-transparent dark:from-[#14B8A6] dark:to-[#06B6D4]">
                                                 {project.name}
                                             </h2>
                                         </div>
@@ -564,7 +569,7 @@ export default function Features({ auth }: PageProps) {
                                                                 ? route('shop')
                                                                 : '#'
                                             }
-                                            className="inline-flex items-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-indigo-500 hover:to-purple-500 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            className="inline-flex items-center rounded-md bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-[#0D9488] hover:to-[#0891B2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:ring-offset-2"
                                         >
                                             Learn More
                                             <svg
@@ -583,16 +588,16 @@ export default function Features({ auth }: PageProps) {
                                             </svg>
                                         </Link>
                                     </div>
-                                    <div className="mb-6 h-px bg-gradient-to-r from-indigo-500/50 to-transparent"></div>
+                                    <div className="mb-6 h-px bg-gradient-to-r from-[#14B8A6]/50 to-transparent"></div>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                         {project.features.map((feature) => (
                                             <div
                                                 key={feature.title}
                                                 className="group relative"
                                             >
-                                                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 transition duration-200 group-hover:opacity-20 dark:group-hover:opacity-30"></div>
+                                                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] opacity-0 transition duration-200 group-hover:opacity-20 dark:group-hover:opacity-30"></div>
                                                 <div className="relative rounded-lg bg-white p-4 shadow-sm transition duration-200 hover:shadow-lg hover:shadow-indigo-500/10 dark:bg-gray-800">
-                                                    <h3 className="text-lg font-semibold text-gray-900 transition-colors duration-200 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                                                    <h3 className="text-lg font-semibold text-gray-900 transition-colors duration-200 group-hover:text-[#14B8A6] dark:text-white dark:group-hover:text-indigo-400">
                                                         {feature.title}
                                                     </h3>
                                                     <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
@@ -609,7 +614,7 @@ export default function Features({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer className="border-t border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
+                <footer className="relative z-10 border-t border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-gray-500 dark:text-gray-500">
@@ -619,25 +624,25 @@ export default function Features({ auth }: PageProps) {
                             <div className="flex items-center space-x-6">
                                 <Link
                                     href={route('privacy-policy')}
-                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                    className="text-sm text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     Privacy Policy
                                 </Link>
                                 <Link
                                     href={route('terms-and-conditions')}
-                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                    className="text-sm text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     Terms
                                 </Link>
                                 <Link
                                     href={route('cookie-policy')}
-                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                    className="text-sm text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     Cookies
                                 </Link>
                                 <Link
                                     href={route('faq')}
-                                    className="text-sm text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                    className="text-sm text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-400 dark:hover:text-indigo-400"
                                 >
                                     FAQ
                                 </Link>

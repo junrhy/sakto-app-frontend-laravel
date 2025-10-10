@@ -134,6 +134,11 @@ export const menuCategories: MenuCategory[] = [
                 title: 'Contacts',
                 href: '/contacts?app=contacts',
             },
+            {
+                id: 'chat',
+                title: 'Chat',
+                href: '/chat?app=chat',
+            },
         ],
     },
     {

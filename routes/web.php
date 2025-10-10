@@ -30,6 +30,12 @@ Route::group(['middleware' => ['web']], function () {
     require __DIR__.'/web/public/GoogleController.php';
     require __DIR__.'/web/public/TransportationController.php';
     require __DIR__.'/web/public/Static.php';
+    require __DIR__.'/web/ChatAuthController.php';
+    require __DIR__.'/web/CommunityController.php';
+    require __DIR__.'/web/LogisticsController.php';
+    require __DIR__.'/web/DeliveryController.php';
+    require __DIR__.'/web/JobsController.php';
+    require __DIR__.'/web/ShopController.php';
 });
 
 // Admin routes
@@ -44,9 +50,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::get('/help', function () {
         return Inertia::render('Help');
     })->name('help');
-});
-
-// Include controller-specific route files
+    
+    // Include controller-specific route files
 require __DIR__.'/web/DashboardController.php';
 require __DIR__.'/web/WidgetController.php';
 require __DIR__.'/web/AppsController.php';
@@ -88,14 +93,11 @@ require __DIR__.'/web/PagesController.php';
 require __DIR__.'/web/HealthInsuranceController.php';
 require __DIR__.'/web/MortuaryController.php';
 require __DIR__.'/web/BillPaymentController.php';
-require __DIR__.'/web/DeliveryController.php';
-require __DIR__.'/web/JobsController.php';
-require __DIR__.'/web/ShopController.php';
-require __DIR__.'/web/LogisticsController.php';
-require __DIR__.'/web/CommunityController.php';
 require __DIR__.'/web/CommunityKioskTerminalController.php';
 require __DIR__.'/web/MedicalController.php';
 require __DIR__.'/web/ClinicEmbedController.php';
+require __DIR__.'/web/ChatController.php';
+});
 
 // Include authentication routes
 require __DIR__.'/auth.php';

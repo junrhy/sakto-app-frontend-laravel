@@ -9,6 +9,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Toaster as SonnerToaster } from 'sonner';
+import './echo'; // Initialize Laravel Echo
 
 interface InertiaUser extends Omit<User, 'theme'> {
     theme?: 'light' | 'dark' | 'system';

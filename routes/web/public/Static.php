@@ -16,11 +16,11 @@ use Inertia\Inertia;
 
 // Static Pages
 Route::get('/pricing', function () {
-    return Inertia::render('Pricing');
+    return Inertia::render('Public/Pricing');
 })->name('pricing');
 
 Route::get('/features', function () {
-    return Inertia::render('Features');
+    return Inertia::render('Public/Features');
 })->name('features');
 
 // Policy Routes

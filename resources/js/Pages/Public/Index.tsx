@@ -183,15 +183,15 @@ export default function Welcome({ auth }: PageProps) {
     }, []);
 
     const productsMenuItems =
-        hostname === 'sakto'
+        hostname !== 'Neulify'
             ? [
-                  { name: 'Komunidad', href: route('community') },
-                  { name: 'Logistika', href: route('logistics') },
-                  { name: 'Medikal', href: route('medical') },
-                  { name: 'Lakbay', href: route('travel') },
-                  { name: 'Hatid', href: route('delivery') },
-                  { name: 'Taohan', href: route('jobs') },
-                  { name: 'Merkado', href: route('shop') },
+                  { name: `${hostname} Community`, href: route('community') },
+                  { name: `${hostname} Logistics`, href: route('logistics') },
+                  { name: `${hostname} Medical`, href: route('medical') },
+                  { name: `${hostname} Travel`, href: route('travel') },
+                  { name: `${hostname} Delivery`, href: route('delivery') },
+                  { name: `${hostname} Job Board`, href: route('jobs') },
+                  { name: `${hostname} Marketplace`, href: route('shop') },
               ]
             : [
                   { name: 'Community', href: route('community') },
@@ -216,24 +216,22 @@ export default function Welcome({ auth }: PageProps) {
             <div className="relative h-screen overflow-hidden">
                 {/* Centralized Background */}
                 <div className="pointer-events-none fixed inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-100/70 via-transparent to-transparent dark:from-indigo-900/10"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/20 via-transparent to-transparent dark:from-[#14B8A6]/10"></div>
                 </div>
                 {/* Navigation */}
-                <nav className="fixed left-1/2 top-4 z-50 mx-auto w-[95%] max-w-7xl -translate-x-1/2 rounded-2xl border border-gray-100 bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 dark:shadow-gray-900/50">
-                    <div className="px-4 sm:px-6 lg:px-8">
+                <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[#E2E8F0]/50 bg-white/95 shadow-sm backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/95">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
-                                <span className="ml-2 bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
-                                    {hostname === 'sakto'
-                                        ? 'Sakto Solutions'
-                                        : hostname}
+                                <span className="ml-2 bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
+                                    {hostname}
                                 </span>
                             </div>
                             <div className="flex items-center">
                                 {/* Desktop Navigation */}
-                                <div className="hidden items-center space-x-1 md:flex">
+                                <div className="hidden items-center space-x-8 md:flex">
                                     {/* Products Dropdown */}
                                     <div
                                         className="relative"
@@ -245,7 +243,7 @@ export default function Welcome({ auth }: PageProps) {
                                                     !isProductsDropdownOpen,
                                                 )
                                             }
-                                            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="flex items-center space-x-1 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Our Solutions
                                             <svg
@@ -264,13 +262,13 @@ export default function Welcome({ auth }: PageProps) {
                                             </svg>
                                         </button>
                                         {isProductsDropdownOpen && (
-                                            <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                            <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-[#E2E8F0] bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                                                 {productsMenuItems.map(
                                                     (item) => (
                                                         <Link
                                                             key={item.name}
                                                             href={item.href}
-                                                            className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                            className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                             onClick={() =>
                                                                 setIsProductsDropdownOpen(
                                                                     false,
@@ -284,23 +282,23 @@ export default function Welcome({ auth }: PageProps) {
                                             </div>
                                         )}
                                     </div>
-                                    {hostname === 'neulify' && (
+                                    {hostname === 'Neulify' && (
                                         <Link
                                             href={route('neulify')}
-                                            className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Our Company
                                         </Link>
                                     )}
                                     <Link
                                         href={route('features')}
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Features
                                     </Link>
                                     <Link
                                         href={route('pricing')}
-                                        className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        className="text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Pricing
                                     </Link>
@@ -316,7 +314,7 @@ export default function Welcome({ auth }: PageProps) {
                                                     !isLegalDropdownOpen,
                                                 )
                                             }
-                                            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="flex items-center space-x-1 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Legal
                                             <svg
@@ -335,12 +333,12 @@ export default function Welcome({ auth }: PageProps) {
                                             </svg>
                                         </button>
                                         {isLegalDropdownOpen && (
-                                            <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                            <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-[#E2E8F0] bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                                                 {legalMenuItems.map((item) => (
                                                     <Link
                                                         key={item.name}
                                                         href={item.href}
-                                                        className="block px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                                                        className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                         onClick={() =>
                                                             setIsLegalDropdownOpen(
                                                                 false,
@@ -361,7 +359,7 @@ export default function Welcome({ auth }: PageProps) {
                                         onClick={() =>
                                             setIsMenuOpen(!isMenuOpen)
                                         }
-                                        className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:text-indigo-600 focus:outline-none dark:text-gray-200 dark:hover:text-white"
+                                        className="inline-flex items-center justify-center rounded-md p-2 text-[#334155] hover:text-[#14B8A6] focus:outline-none dark:text-gray-200 dark:hover:text-white"
                                     >
                                         <svg
                                             className="h-6 w-6"
@@ -405,7 +403,7 @@ export default function Welcome({ auth }: PageProps) {
                                                 <Link
                                                     key={item.name}
                                                     href={item.href}
-                                                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                                    className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsMenuOpen(false)
                                                     }
@@ -416,23 +414,23 @@ export default function Welcome({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
-                                        {hostname === 'neulify' && (
+                                        {hostname === 'Neulify' && (
                                             <Link
                                                 href={route('neulify')}
-                                                className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                                className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                             >
                                                 Our Company
                                             </Link>
                                         )}
                                         <Link
                                             href={route('features')}
-                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Features
                                         </Link>
                                         <Link
                                             href={route('pricing')}
-                                            className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                            className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                         >
                                             Pricing
                                         </Link>
@@ -446,7 +444,7 @@ export default function Welcome({ auth }: PageProps) {
                                                     <Link
                                                         key={item.name}
                                                         href={item.href}
-                                                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                                        className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                                         onClick={() =>
                                                             setIsMenuOpen(false)
                                                         }
@@ -474,22 +472,22 @@ export default function Welcome({ auth }: PageProps) {
                         <section className="relative flex h-full w-screen flex-shrink-0 snap-start items-center justify-center overflow-hidden">
                             <div className="relative mx-auto max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
                                 <div className="text-center">
-                                    <h1 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl">
+                                    <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-5xl md:text-6xl">
                                         <span className="block">
                                             Choose Your Solution
                                         </span>
-                                        <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:text-indigo-400">
+                                        <span className="block bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-transparent dark:text-[#14B8A6]">
                                             Tailored for Your Industry
                                         </span>
                                     </h1>
-                                    {hostname !== 'neulify' && (
+                                    {hostname !== 'Neulify' && (
                                         <div className="mt-4 flex items-center justify-center gap-2">
                                             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 Powered by
                                             </span>
                                             <Link
                                                 href={route('neulify')}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent transition-all duration-200 hover:scale-105 hover:from-indigo-700 hover:to-purple-700"
+                                                className="bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-lg font-bold text-transparent transition-all duration-200 hover:scale-105 hover:from-[#0D9488] hover:to-[#0891B2]"
                                             >
                                                 Neulify
                                             </Link>
@@ -510,7 +508,7 @@ export default function Welcome({ auth }: PageProps) {
                         <section className="relative flex h-full w-screen flex-shrink-0 snap-start items-center justify-center overflow-hidden">
                             <div className="relative mx-auto w-full max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
                                 <div className="mb-12 text-center">
-                                    <h2 className="mb-4 bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
+                                    <h2 className="mb-4 bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
                                         How It Works
                                     </h2>
                                     <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gray-300">
@@ -519,14 +517,14 @@ export default function Welcome({ auth }: PageProps) {
                                         and transform your business operations
                                         with ease.
                                     </p>
-                                    {hostname !== 'neulify' && (
+                                    {hostname !== 'Neulify' && (
                                         <div className="mt-4 flex items-center justify-center gap-2">
                                             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                 Built by
                                             </span>
                                             <Link
                                                 href={route('neulify')}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text font-semibold text-transparent transition-all duration-200 hover:scale-105 hover:from-indigo-700 hover:to-purple-700"
+                                                className="bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text font-semibold text-transparent transition-all duration-200 hover:scale-105 hover:from-[#0D9488] hover:to-[#0891B2]"
                                             >
                                                 Neulify
                                             </Link>
@@ -538,12 +536,12 @@ export default function Welcome({ auth }: PageProps) {
                                         {/* Step 1 */}
                                         <div className="text-center">
                                             <div className="relative mb-6">
-                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
-                                                    <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#14B8A6]/10 dark:bg-[#14B8A6]/20">
+                                                    <span className="text-2xl font-bold text-[#14B8A6] dark:text-[#14B8A6]">
                                                         1
                                                     </span>
                                                 </div>
-                                                <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500">
+                                                <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#14B8A6]">
                                                     <svg
                                                         className="h-4 w-4 text-white"
                                                         fill="none"
@@ -609,12 +607,12 @@ export default function Welcome({ auth }: PageProps) {
                                         {/* Step 3 */}
                                         <div className="text-center">
                                             <div className="relative mb-6">
-                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
-                                                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#06B6D4]/10 dark:bg-[#06B6D4]/20">
+                                                    <span className="text-2xl font-bold text-[#06B6D4] dark:text-[#06B6D4]">
                                                         3
                                                     </span>
                                                 </div>
-                                                <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-purple-500">
+                                                <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#06B6D4]">
                                                     <svg
                                                         className="h-4 w-4 text-white"
                                                         fill="none"
@@ -684,7 +682,7 @@ export default function Welcome({ auth }: PageProps) {
                         <section className="relative flex h-full w-screen flex-shrink-0 snap-start items-center justify-center overflow-hidden">
                             <div className="relative mx-auto w-full max-w-7xl px-4 py-32 sm:px-6 lg:px-8">
                                 <div className="text-center">
-                                    <h2 className="bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
+                                    <h2 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:text-gray-100 sm:text-4xl md:text-5xl">
                                         Ready to Transform Your Industry?
                                     </h2>
                                     <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
@@ -698,8 +696,8 @@ export default function Welcome({ auth }: PageProps) {
                                                 {[
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Komunidad'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Community`
                                                                 : 'Community',
                                                         color: 'from-pink-500 to-rose-500',
                                                         enabled: true,
@@ -729,8 +727,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Logistika'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Logistics`
                                                                 : 'Logistics',
                                                         color: 'from-cyan-500 to-blue-500',
                                                         enabled: true,
@@ -760,8 +758,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Medikal'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Medical`
                                                                 : 'Medical',
                                                         color: 'from-emerald-500 to-teal-500',
                                                         enabled: true,
@@ -789,10 +787,10 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Lakbay'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Travel`
                                                                 : 'Travel',
-                                                        color: 'from-blue-500 to-indigo-600',
+                                                        color: 'from-[#06B6D4] to-[#1E3A8A]',
                                                         enabled: true,
                                                         description:
                                                             'Revolutionize travel planning with comprehensive flight booking, hotel reservations, travel packages, and insurance services. Complete solution for travel agencies and tour operators.',
@@ -818,10 +816,10 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Hatid'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Delivery`
                                                                 : 'Delivery',
-                                                        color: 'from-purple-500 to-violet-500',
+                                                        color: 'from-[#14B8A6] to-[#1E3A8A]',
                                                         enabled: true,
                                                         description:
                                                             'Optimize retail operations with advanced order management, inventory tracking, delivery scheduling, and customer analytics. Perfect for retail stores and e-commerce businesses.',
@@ -847,10 +845,10 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Taohan'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Job Board`
                                                                 : 'Jobs',
-                                                        color: 'from-indigo-500 to-blue-600',
+                                                        color: 'from-[#1E3A8A] to-[#14B8A6]',
                                                         enabled: true,
                                                         description:
                                                             'Streamline HR operations with comprehensive employee management, recruitment tools, performance tracking, and payroll integration. Essential for businesses of all sizes.',
@@ -876,8 +874,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname === 'sakto'
-                                                                ? 'Merkado'
+                                                            hostname !== 'Neulify'
+                                                                ? `${hostname} Marketplace`
                                                                 : 'Shop',
                                                         color: 'from-green-500 to-emerald-600',
                                                         enabled: true,
@@ -1033,7 +1031,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                 'sakto'
                                                                     ? 'Lakbay'
                                                                     : 'Travel',
-                                                            color: 'from-blue-500 to-indigo-600',
+                                                            color: 'from-[#06B6D4] to-[#1E3A8A]',
                                                             enabled: true,
                                                             description:
                                                                 'Revolutionize travel planning with comprehensive flight booking, hotel reservations, travel packages, and insurance services. Complete solution for travel agencies and tour operators.',
@@ -1065,7 +1063,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                 'sakto'
                                                                     ? 'Hatid'
                                                                     : 'Delivery',
-                                                            color: 'from-purple-500 to-violet-500',
+                                                            color: 'from-[#14B8A6] to-[#1E3A8A]',
                                                             enabled: true,
                                                             description:
                                                                 'Optimize retail operations with advanced order management, inventory tracking, delivery scheduling, and customer analytics. Perfect for retail stores and e-commerce businesses.',
@@ -1097,7 +1095,7 @@ export default function Welcome({ auth }: PageProps) {
                                                                 'sakto'
                                                                     ? 'Taohan'
                                                                     : 'Jobs',
-                                                            color: 'from-indigo-500 to-blue-600',
+                                                            color: 'from-[#1E3A8A] to-[#14B8A6]',
                                                             enabled: true,
                                                             description:
                                                                 'Streamline HR operations with comprehensive employee management, recruitment tools, performance tracking, and payroll integration. Essential for businesses of all sizes.',
@@ -1287,7 +1285,7 @@ export default function Welcome({ auth }: PageProps) {
                 </div>
 
                 {/* Navigation Controls */}
-                <div className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center space-x-4 sm:bottom-20">
+                <div className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center space-x-4 sm:bottom-8">
                     {/* Left Arrow */}
                     <button
                         onClick={() => {
@@ -1343,7 +1341,7 @@ export default function Welcome({ auth }: PageProps) {
                                 className={`h-3 w-3 rounded-full transition-all duration-300 ${
                                     Math.round(scrollX / window.innerWidth) ===
                                     index
-                                        ? 'w-8 bg-indigo-600'
+                                        ? 'w-8 bg-[#14B8A6]'
                                         : 'bg-gray-300 dark:bg-gray-600'
                                 }`}
                             />

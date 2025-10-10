@@ -537,6 +537,19 @@ class ModuleSeeder extends Seeder
                 'bgColor' => 'bg-amber-100 dark:bg-amber-900/30',
                 'rating' => 4.6
             ],
+            [
+                'title' => 'Chat',
+                'route' => '/dashboard?app=chat',
+                'visible' => false,
+                'description' => 'Real-time chat application with user registration, conversation management, and instant message delivery.',
+                'price' => 99,
+                'categories' => ['Communication', 'Social', 'Business'],
+                'comingSoon' => false,
+                'pricingType' => 'subscription',
+                'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
+                'bgColor' => 'bg-blue-100 dark:bg-blue-900/30',
+                'rating' => 4.8
+            ],
         ];
     }
 }

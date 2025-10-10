@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {   
-        if (!Schema::hasTable('user_subscriptions')) {
+        if (Schema::hasTable('user_subscriptions')) {
             Schema::table('user_subscriptions', function (Blueprint $table) {
                 $table->string('maya_subscription_id')->nullable()->after('maya_checkout_id');
                 $table->string('maya_payment_token_id')->nullable()->after('maya_subscription_id');
