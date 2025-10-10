@@ -6,7 +6,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { ArrowLeft, Send, MoreVertical, Users, Clock, Phone, Video, Info } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, Users, Clock, Phone, Video, Info, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import ChatService, { Message as ChatMessage } from '@/Services/ChatService';
 
