@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface PageProps {
     auth: {
@@ -20,12 +20,18 @@ interface PageProps {
 }
 
 export default function FinanceIndex({ auth }: PageProps) {
-    const pricing = getPricingForService('finance');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const hostname = getHost();
+
+    // Get currency and symbol from URL params, default to USD and $
+    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const currency = urlParams.get('currency') || 'usd';
+    const symbol = urlParams.get('symbol') || '$';
+
+    const pricing = getPricingForService('finance', currency, symbol);
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const hostname = getHost();
 
     return (
         <>
@@ -403,7 +409,7 @@ export default function FinanceIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            ${basicPlan.price}
+                                            {basicPlan.currency}{basicPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -452,7 +458,7 @@ export default function FinanceIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            ${proPlan.price}
+                                            {proPlan.currency}{proPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -496,7 +502,7 @@ export default function FinanceIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            ${businessPlan.price}
+                                            {businessPlan.currency}{businessPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month

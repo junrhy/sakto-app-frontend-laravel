@@ -7,7 +7,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface PageProps {
     auth: {
@@ -19,11 +19,17 @@ interface PageProps {
 }
 
 export default function JobsIndex({ auth }: PageProps) {
-    const pricing = getPricingForService('jobs');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Get currency and symbol from URL params, default to USD and $
+    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const currency = urlParams.get('currency') || 'usd';
+    const symbol = urlParams.get('symbol') || '$';
+
+    const pricing = getPricingForService('jobs', currency, symbol);
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
         <>

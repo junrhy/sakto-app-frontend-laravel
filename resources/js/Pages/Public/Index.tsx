@@ -22,6 +22,8 @@ import {
     UtensilsCrossed,
     GraduationCap,
     Landmark,
+    Sprout,
+    HardHat,
 } from 'lucide-react';
 
 interface PageProps extends Record<string, any> {
@@ -130,6 +132,22 @@ export default function Welcome({ auth }: PageProps) {
             href: '/finance',
             color: 'text-emerald-600',
             bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+        },
+        {
+            name: 'Agriculture',
+            description: 'Modern farm management for increased productivity and yields',
+            icon: Sprout,
+            href: '/agriculture',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-900/20',
+        },
+        {
+            name: 'Construction',
+            description: 'Manage construction projects with efficiency and precision',
+            icon: HardHat,
+            href: '/construction',
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
         },
     ];
 

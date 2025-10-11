@@ -2,8 +2,15 @@ export interface PricingPlan {
     id: string;
     name: string;
     description: string;
-    price: number;
-    currency: string;
+    prices: {
+        usd: number;
+        php: number;
+        eur: number;
+        gbp: number;
+        [key: string]: number;
+    };
+    price?: number; // Computed based on currency
+    currency?: string; // Set dynamically
     period: string;
     features: string[];
     buttonText: string;
@@ -23,8 +30,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small fleets and startups',
-                price: 299,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 10 vehicles',
@@ -38,8 +49,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing logistics companies',
-                price: 599,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 50 vehicles',
@@ -55,8 +70,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large enterprises and corporations',
-                price: 999,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited vehicles',
@@ -75,8 +94,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small clinics',
-                price: 399,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 5 practitioners',
@@ -90,8 +113,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing medical practices',
-                price: 799,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 20 practitioners',
@@ -107,8 +134,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large hospitals and medical centers',
-                price: 1499,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited practitioners',
@@ -127,8 +158,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small communities',
-                price: 299,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 100 members',
@@ -142,8 +177,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing communities',
-                price: 599,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 500 members',
@@ -159,8 +198,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large communities and organizations',
-                price: 999,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited members',
@@ -179,8 +222,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small travel agencies',
-                price: 199,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 10 bookings',
@@ -194,8 +241,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing travel businesses',
-                price: 499,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 100 bookings',
@@ -211,8 +262,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large travel companies',
-                price: 899,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited bookings',
@@ -231,8 +286,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small delivery services',
-                price: 199,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 50 deliveries',
@@ -246,8 +305,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing delivery businesses',
-                price: 399,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 200 deliveries',
@@ -263,8 +326,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large delivery companies',
-                price: 799,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited deliveries',
@@ -283,8 +350,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small job boards',
-                price: 299,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 50 job postings',
@@ -298,8 +369,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing job platforms',
-                price: 599,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 200 job postings',
@@ -315,8 +390,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large job platforms',
-                price: 999,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited job postings',
@@ -335,8 +414,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small online stores',
-                price: 199,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 100 products',
@@ -350,8 +433,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing online stores',
-                price: 399,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 500 products',
@@ -367,8 +454,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large online stores',
-                price: 799,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited products',
@@ -387,8 +478,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small cafes and food stalls',
-                price: 299,
-                currency: '₱',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
                 period: '/month',
                 features: [
                     'Up to 5 tables',
@@ -403,8 +498,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing restaurants',
-                price: 599,
-                currency: '₱',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
                 period: '/month',
                 features: [
                     'Up to 20 tables',
@@ -421,8 +520,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large restaurants and chains',
-                price: 999,
-                currency: '₱',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
                 period: '/month',
                 features: [
                     'Unlimited tables',
@@ -436,10 +539,294 @@ export const pricingConfig: Record<string, ServicePricing> = {
             },
         ],
     },
+    education: {
+        plans: [
+            {
+                id: 'basic',
+                name: 'Basic',
+                description: 'Perfect for small schools and tutors',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
+                period: '/month',
+                features: [
+                    'Up to 50 students',
+                    'Course management',
+                    'Basic assessments',
+                    'Email support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+            },
+            {
+                id: 'pro',
+                name: 'Pro',
+                description: 'Ideal for growing educational institutions',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
+                period: '/month',
+                features: [
+                    'Up to 500 students',
+                    'Advanced analytics',
+                    'Live virtual classes',
+                    'Discussion forums',
+                    'Priority support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+                popular: true,
+            },
+            {
+                id: 'business',
+                name: 'Business',
+                description: 'For large schools and universities',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
+                period: '/month',
+                features: [
+                    'Unlimited students',
+                    'Custom integrations',
+                    'White-label option',
+                    'Advanced reporting',
+                    '24/7 phone support',
+                    'Dedicated account manager',
+                ],
+                buttonText: 'Contact Sales',
+                buttonLink: 'contact',
+            },
+        ],
+    },
+    finance: {
+        plans: [
+            {
+                id: 'basic',
+                name: 'Basic',
+                description: 'Perfect for individuals and freelancers',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
+                period: '/month',
+                features: [
+                    'Expense tracking',
+                    'Budget management',
+                    'Basic reports',
+                    'Email support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+            },
+            {
+                id: 'pro',
+                name: 'Pro',
+                description: 'Ideal for small to medium businesses',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
+                period: '/month',
+                features: [
+                    'Bank account sync',
+                    'Invoice management',
+                    'Advanced analytics',
+                    'Multi-currency support',
+                    'Priority support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+                popular: true,
+            },
+            {
+                id: 'business',
+                name: 'Business',
+                description: 'For large enterprises',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
+                period: '/month',
+                features: [
+                    'Unlimited accounts',
+                    'Custom integrations',
+                    'API access',
+                    'Advanced reporting',
+                    '24/7 phone support',
+                    'Dedicated account manager',
+                ],
+                buttonText: 'Contact Sales',
+                buttonLink: 'contact',
+            },
+        ],
+    },
+    agriculture: {
+        plans: [
+            {
+                id: 'basic',
+                name: 'Basic',
+                description: 'Perfect for small family farms',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
+                period: '/month',
+                features: [
+                    'Up to 10 hectares',
+                    'Crop tracking',
+                    'Weather updates',
+                    'Email support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+            },
+            {
+                id: 'pro',
+                name: 'Pro',
+                description: 'Ideal for commercial farms',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
+                period: '/month',
+                features: [
+                    'Up to 100 hectares',
+                    'Equipment management',
+                    'Yield analytics',
+                    'Inventory tracking',
+                    'Priority support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+                popular: true,
+            },
+            {
+                id: 'business',
+                name: 'Business',
+                description: 'For large agricultural operations',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
+                period: '/month',
+                features: [
+                    'Unlimited hectares',
+                    'Multi-farm support',
+                    'Advanced analytics',
+                    'Custom integrations',
+                    '24/7 phone support',
+                    'Dedicated account manager',
+                ],
+                buttonText: 'Contact Sales',
+                buttonLink: 'contact',
+            },
+        ],
+    },
+    construction: {
+        plans: [
+            {
+                id: 'basic',
+                name: 'Basic',
+                description: 'Perfect for small contractors',
+                prices: {
+                    usd: 12,
+                    php: 700,
+                    eur: 11,
+                    gbp: 9.5,
+                },
+                period: '/month',
+                features: [
+                    'Up to 5 active projects',
+                    'Team management',
+                    'Budget tracking',
+                    'Email support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+            },
+            {
+                id: 'pro',
+                name: 'Pro',
+                description: 'Ideal for growing construction firms',
+                prices: {
+                    usd: 20,
+                    php: 1100,
+                    eur: 18,
+                    gbp: 16,
+                },
+                period: '/month',
+                features: [
+                    'Up to 25 active projects',
+                    'Equipment tracking',
+                    'Material management',
+                    'Safety compliance',
+                    'Priority support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+                popular: true,
+            },
+            {
+                id: 'business',
+                name: 'Business',
+                description: 'For large construction companies',
+                prices: {
+                    usd: 35,
+                    php: 2000,
+                    eur: 32,
+                    gbp: 28,
+                },
+                period: '/month',
+                features: [
+                    'Unlimited projects',
+                    'Multi-site support',
+                    'Custom integrations',
+                    'Advanced reporting',
+                    '24/7 phone support',
+                    'Dedicated account manager',
+                ],
+                buttonText: 'Contact Sales',
+                buttonLink: 'contact',
+            },
+        ],
+    },
 };
 
 export const getPricingForService = (
     serviceName: string,
+    currency: string = 'usd',
+    symbol: string = '$',
 ): ServicePricing | undefined => {
-    return pricingConfig[serviceName];
+    const config = pricingConfig[serviceName];
+    if (!config) return undefined;
+
+    // Update price based on currency and add symbol for all plans
+    return {
+        plans: config.plans.map(plan => ({
+            ...plan,
+            price: plan.prices[currency.toLowerCase()] || plan.prices.usd,
+            currency: symbol,
+        })),
+    };
 };

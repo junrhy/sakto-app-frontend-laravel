@@ -1,10 +1,10 @@
 import { getPricingForService } from '@/config/pricing';
 import { getHost } from '@/lib/utils';
 import {
-    faBookOpen,
     faChartLine,
     faCheckCircle,
-    faGraduationCap,
+    faSeedling,
+    faTractor,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
@@ -19,7 +19,7 @@ interface PageProps {
     };
 }
 
-export default function EducationIndex({ auth }: PageProps) {
+export default function AgricultureIndex({ auth }: PageProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const hostname = getHost();
 
@@ -28,28 +28,28 @@ export default function EducationIndex({ auth }: PageProps) {
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
-    const pricing = getPricingForService('education', currency, symbol);
+    const pricing = getPricingForService('agriculture', currency, symbol);
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
 
     return (
         <>
-            <Head title={`${hostname} Education - Learning Management Platform`} />
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
+            <Head title={`${hostname} Agriculture - Farm Management Platform`} />
+            <div className="min-h-screen bg-gradient-to-br from-lime-50 via-green-50 to-emerald-50">
                 {/* Header */}
-                <div className="border-b border-indigo-700 bg-gradient-to-r from-indigo-700 to-purple-700 shadow-lg">
+                <div className="border-b border-green-700 bg-gradient-to-r from-green-700 to-lime-700 shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <div className="rounded-lg bg-white p-2">
                                     <FontAwesomeIcon
-                                        icon={faGraduationCap}
-                                        className="h-8 w-8 text-indigo-700"
+                                        icon={faSeedling}
+                                        className="h-8 w-8 text-green-700"
                                     />
                                 </div>
                                 <span className="ml-3 text-2xl font-bold text-white">
-                                    {hostname} Education
+                                    {hostname} Agriculture
                                 </span>
                             </div>
 
@@ -57,34 +57,34 @@ export default function EducationIndex({ auth }: PageProps) {
                             <div className="hidden md:flex md:items-center md:space-x-6">
                                 <Link
                                     href="#features"
-                                    className="text-indigo-100 transition-colors hover:text-white"
+                                    className="text-green-100 transition-colors hover:text-white"
                                 >
                                     Features
                                 </Link>
                                 <Link
                                     href="#pricing"
-                                    className="text-indigo-100 transition-colors hover:text-white"
+                                    className="text-green-100 transition-colors hover:text-white"
                                 >
                                     Pricing
                                 </Link>
                                 {auth?.user ? (
                                     <Link
                                         href={route('dashboard')}
-                                        className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-indigo-700 shadow-md transition-all hover:bg-indigo-50"
+                                        className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-md transition-all hover:bg-green-50"
                                     >
                                         Dashboard
                                     </Link>
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('login', { project: 'education' })}
-                                            className="text-indigo-100 transition-colors hover:text-white"
+                                            href={route('login', { project: 'agriculture' })}
+                                            className="text-green-100 transition-colors hover:text-white"
                                         >
                                             Log in
                                         </Link>
                                         <Link
-                                            href={route('register', { project: 'education' })}
-                                            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-indigo-700 shadow-md transition-all hover:bg-indigo-50"
+                                            href={route('register', { project: 'agriculture' })}
+                                            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-md transition-all hover:bg-green-50"
                                         >
                                             Get Started
                                         </Link>
@@ -97,7 +97,7 @@ export default function EducationIndex({ auth }: PageProps) {
                                 onClick={() =>
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }
-                                className="md:hidden rounded-lg p-2 text-white hover:bg-indigo-600"
+                                className="md:hidden rounded-lg p-2 text-white hover:bg-green-600"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -126,38 +126,38 @@ export default function EducationIndex({ auth }: PageProps) {
 
                         {/* Mobile Navigation */}
                         {isMobileMenuOpen && (
-                            <div className="mt-4 border-t border-indigo-600 pt-4 md:hidden">
+                            <div className="mt-4 border-t border-green-600 pt-4 md:hidden">
                                 <div className="flex flex-col space-y-3">
                                     <Link
                                         href="#features"
-                                        className="text-indigo-100 transition-colors hover:text-white"
+                                        className="text-green-100 transition-colors hover:text-white"
                                     >
                                         Features
                                     </Link>
                                     <Link
                                         href="#pricing"
-                                        className="text-indigo-100 transition-colors hover:text-white"
+                                        className="text-green-100 transition-colors hover:text-white"
                                     >
                                         Pricing
                                     </Link>
                                     {auth?.user ? (
                                         <Link
                                             href={route('dashboard')}
-                                            className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-indigo-700 shadow-md transition-all hover:bg-indigo-50"
+                                            className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-green-700 shadow-md transition-all hover:bg-green-50"
                                         >
                                             Dashboard
                                         </Link>
                                     ) : (
                                         <>
                                             <Link
-                                                href={route('login', { project: 'education' })}
-                                                className="text-indigo-100 transition-colors hover:text-white"
+                                                href={route('login', { project: 'agriculture' })}
+                                                className="text-green-100 transition-colors hover:text-white"
                                             >
                                                 Log in
                                             </Link>
                                             <Link
-                                                href={route('register', { project: 'education' })}
-                                                className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-indigo-700 shadow-md transition-all hover:bg-indigo-50"
+                                                href={route('register', { project: 'agriculture' })}
+                                                className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-green-700 shadow-md transition-all hover:bg-green-50"
                                             >
                                                 Get Started
                                             </Link>
@@ -170,27 +170,28 @@ export default function EducationIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Hero Section */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-700 py-12 sm:py-16 lg:py-24">
+                <div className="relative overflow-hidden bg-gradient-to-r from-green-700 to-lime-700 py-12 sm:py-16 lg:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h1 className="text-3xl font-extrabold text-white sm:text-4xl md:text-5xl lg:text-6xl">
-                                Transform Learning with Technology
+                                Smart Agriculture Management
                             </h1>
-                            <p className="mx-auto mt-4 max-w-2xl text-base text-indigo-100 sm:mt-6 sm:text-lg md:text-xl">
-                                Empower educators and engage students with our
-                                comprehensive learning management platform. Create,
-                                deliver, and track educational content seamlessly.
+                            <p className="mx-auto mt-4 max-w-2xl text-base text-green-100 sm:mt-6 sm:text-lg md:text-xl">
+                                Modernize your farming operations with our
+                                comprehensive agriculture management platform. Track
+                                crops, manage inventory, and optimize yields with
+                                data-driven insights.
                             </p>
                             <div className="mt-8 flex flex-col justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
                                 <Link
-                                    href={route('register', { project: 'education' })}
-                                    className="rounded-lg bg-white px-6 py-3 text-base font-semibold text-indigo-700 shadow-lg transition-all hover:bg-indigo-50 hover:shadow-xl sm:px-8 sm:text-lg"
+                                    href={route('register', { project: 'agriculture' })}
+                                    className="rounded-lg bg-white px-6 py-3 text-base font-semibold text-green-700 shadow-lg transition-all hover:bg-green-50 hover:shadow-xl sm:px-8 sm:text-lg"
                                 >
                                     Start Free Trial
                                 </Link>
                                 <Link
                                     href="#features"
-                                    className="rounded-lg border-2 border-white px-6 py-3 text-base font-semibold text-white transition-all hover:bg-white hover:text-indigo-700 sm:px-8 sm:text-lg"
+                                    className="rounded-lg border-2 border-white px-6 py-3 text-base font-semibold text-white transition-all hover:bg-white hover:text-green-700 sm:px-8 sm:text-lg"
                                 >
                                     Learn More
                                 </Link>
@@ -204,27 +205,27 @@ export default function EducationIndex({ auth }: PageProps) {
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-indigo-700 sm:text-4xl">
+                                <div className="text-3xl font-bold text-green-700 sm:text-4xl">
                                     10K+
                                 </div>
                                 <div className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Active Students
+                                    Farms Managed
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-indigo-700 sm:text-4xl">
-                                    500+
+                                <div className="text-3xl font-bold text-green-700 sm:text-4xl">
+                                    50K+
                                 </div>
                                 <div className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Educators
+                                    Hectares Monitored
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-indigo-700 sm:text-4xl">
-                                    1000+
+                                <div className="text-3xl font-bold text-green-700 sm:text-4xl">
+                                    30%+
                                 </div>
                                 <div className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Courses Created
+                                    Yield Increase
                                 </div>
                             </div>
                         </div>
@@ -236,114 +237,123 @@ export default function EducationIndex({ auth }: PageProps) {
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl lg:text-4xl">
-                                Powerful Features for Modern Education
+                                Modern Farm Management Tools
                             </h2>
                             <p className="mt-3 text-base text-gray-600 sm:mt-4 sm:text-lg lg:text-xl">
-                                Everything you need to create engaging learning
-                                experiences
+                                Everything you need to run a successful agricultural
+                                operation
                             </p>
                         </div>
 
                         <div className="mt-8 grid gap-6 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                             {/* Feature 1 */}
                             <div className="rounded-lg bg-white p-5 shadow-md transition-all hover:shadow-lg sm:p-6">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 sm:h-12 sm:w-12">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 sm:h-12 sm:w-12">
                                     <FontAwesomeIcon
-                                        icon={faBookOpen}
-                                        className="h-5 w-5 text-indigo-700 sm:h-6 sm:w-6"
+                                        icon={faSeedling}
+                                        className="h-5 w-5 text-green-700 sm:h-6 sm:w-6"
                                     />
                                 </div>
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900 sm:text-xl">
-                                    Course Creation
+                                    Crop Management
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Build comprehensive courses with multimedia
-                                    content, quizzes, and assessments.
+                                    Track crop growth, planting schedules, and harvest
+                                    times with precision.
                                 </p>
                             </div>
 
                             {/* Feature 2 */}
                             <div className="rounded-lg bg-white p-5 shadow-md transition-all hover:shadow-lg sm:p-6">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 sm:h-12 sm:w-12">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 sm:h-12 sm:w-12">
                                     <FontAwesomeIcon
-                                        icon={faGraduationCap}
-                                        className="h-5 w-5 text-indigo-700 sm:h-6 sm:w-6"
+                                        icon={faTractor}
+                                        className="h-5 w-5 text-green-700 sm:h-6 sm:w-6"
                                     />
                                 </div>
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900 sm:text-xl">
-                                    Student Management
+                                    Equipment Tracking
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Track student progress, grades, and engagement
-                                    with powerful analytics.
+                                    Manage farm equipment, maintenance schedules, and
+                                    usage logs efficiently.
                                 </p>
                             </div>
 
                             {/* Feature 3 */}
                             <div className="rounded-lg bg-white p-5 shadow-md transition-all hover:shadow-lg sm:p-6">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 sm:h-12 sm:w-12">
-                                    <FontAwesomeIcon
-                                        icon={faChartLine}
-                                        className="h-5 w-5 text-indigo-700 sm:h-6 sm:w-6"
-                                    />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 sm:h-12 sm:w-12">
+                                    <svg
+                                        className="h-5 w-5 text-green-700 sm:h-6 sm:w-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
+                                        />
+                                    </svg>
                                 </div>
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900 sm:text-xl">
-                                    Analytics & Reporting
+                                    Weather Monitoring
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Gain insights with detailed reports on student
-                                    performance and engagement.
+                                    Get real-time weather updates and forecasts to plan
+                                    your farming activities.
                                 </p>
                             </div>
 
                             {/* Feature 4 */}
                             <div className="rounded-lg bg-white p-5 shadow-md transition-all hover:shadow-lg sm:p-6">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 sm:h-12 sm:w-12">
-                                    <FontAwesomeIcon
-                                        icon={faCheckCircle}
-                                        className="h-5 w-5 text-indigo-700 sm:h-6 sm:w-6"
-                                    />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 sm:h-12 sm:w-12">
+                                    <svg
+                                        className="h-5 w-5 text-green-700 sm:h-6 sm:w-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                        />
+                                    </svg>
                                 </div>
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900 sm:text-xl">
-                                    Assessment Tools
+                                    Inventory Management
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Create quizzes, assignments, and exams with
-                                    automated grading.
+                                    Track seeds, fertilizers, and supplies with
+                                    automated stock alerts.
                                 </p>
                             </div>
 
                             {/* Feature 5 */}
                             <div className="rounded-lg bg-white p-5 shadow-md transition-all hover:shadow-lg sm:p-6">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 sm:h-12 sm:w-12">
-                                    <svg
-                                        className="h-5 w-5 text-indigo-700 sm:h-6 sm:w-6"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                                        />
-                                    </svg>
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 sm:h-12 sm:w-12">
+                                    <FontAwesomeIcon
+                                        icon={faChartLine}
+                                        className="h-5 w-5 text-green-700 sm:h-6 sm:w-6"
+                                    />
                                 </div>
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900 sm:text-xl">
-                                    Discussion Forums
+                                    Yield Analytics
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Foster collaboration with integrated discussion
-                                    boards and chat.
+                                    Analyze crop yields and identify optimization
+                                    opportunities with AI-powered insights.
                                 </p>
                             </div>
 
                             {/* Feature 6 */}
                             <div className="rounded-lg bg-white p-5 shadow-md transition-all hover:shadow-lg sm:p-6">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 sm:h-12 sm:w-12">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 sm:h-12 sm:w-12">
                                     <svg
-                                        className="h-5 w-5 text-indigo-700 sm:h-6 sm:w-6"
+                                        className="h-5 w-5 text-green-700 sm:h-6 sm:w-6"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -352,16 +362,16 @@ export default function EducationIndex({ auth }: PageProps) {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             strokeWidth={2}
-                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
                                         />
                                     </svg>
                                 </div>
                                 <h3 className="mt-4 text-lg font-semibold text-gray-900 sm:text-xl">
-                                    Virtual Classrooms
+                                    Financial Tracking
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Host live classes with video conferencing and
-                                    screen sharing.
+                                    Monitor farm expenses, revenues, and profitability
+                                    with detailed reports.
                                 </p>
                             </div>
                         </div>
@@ -376,7 +386,7 @@ export default function EducationIndex({ auth }: PageProps) {
                                 Simple, Transparent Pricing
                             </h2>
                             <p className="mt-3 text-base text-gray-600 sm:mt-4 sm:text-lg lg:text-xl">
-                                Choose the plan that's right for your institution
+                                Choose the plan that fits your farm size
                             </p>
                         </div>
 
@@ -407,7 +417,7 @@ export default function EducationIndex({ auth }: PageProps) {
                                                 >
                                                     <FontAwesomeIcon
                                                         icon={faCheckCircle}
-                                                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 sm:mt-1 sm:h-5 sm:w-5"
+                                                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 sm:mt-1 sm:h-5 sm:w-5"
                                                     />
                                                     <span className="ml-3 text-sm text-gray-700 sm:text-base">
                                                         {feature}
@@ -417,8 +427,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'education' })}
-                                        className="mt-6 block rounded-lg border-2 border-indigo-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-indigo-600 transition-all hover:bg-indigo-50 sm:mt-8 sm:py-3 sm:text-base"
+                                        href={route('register', { project: 'agriculture' })}
+                                        className="mt-6 block rounded-lg border-2 border-green-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-green-600 transition-all hover:bg-green-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
                                     </Link>
@@ -427,12 +437,12 @@ export default function EducationIndex({ auth }: PageProps) {
 
                             {/* Pro Plan */}
                             {proPlan && (
-                                <div className="flex flex-col rounded-lg border-2 border-indigo-600 bg-white p-6 shadow-lg sm:p-8 md:col-span-2 lg:col-span-1">
+                                <div className="flex flex-col rounded-lg border-2 border-green-600 bg-white p-6 shadow-lg sm:p-8 md:col-span-2 lg:col-span-1">
                                     <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                                         <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">
                                             {proPlan.name}
                                         </h3>
-                                        <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 sm:text-sm">
+                                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 sm:text-sm">
                                             Popular
                                         </span>
                                     </div>
@@ -456,7 +466,7 @@ export default function EducationIndex({ auth }: PageProps) {
                                                 >
                                                     <FontAwesomeIcon
                                                         icon={faCheckCircle}
-                                                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 sm:mt-1 sm:h-5 sm:w-5"
+                                                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 sm:mt-1 sm:h-5 sm:w-5"
                                                     />
                                                     <span className="ml-3 text-sm text-gray-700 sm:text-base">
                                                         {feature}
@@ -466,8 +476,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'education' })}
-                                        className="mt-6 block rounded-lg bg-indigo-600 px-6 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-indigo-700 sm:mt-8 sm:py-3 sm:text-base"
+                                        href={route('register', { project: 'agriculture' })}
+                                        className="mt-6 block rounded-lg bg-green-600 px-6 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-green-700 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
                                     </Link>
@@ -500,7 +510,7 @@ export default function EducationIndex({ auth }: PageProps) {
                                                 >
                                                     <FontAwesomeIcon
                                                         icon={faCheckCircle}
-                                                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600 sm:mt-1 sm:h-5 sm:w-5"
+                                                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 sm:mt-1 sm:h-5 sm:w-5"
                                                     />
                                                     <span className="ml-3 text-sm text-gray-700 sm:text-base">
                                                         {feature}
@@ -510,8 +520,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'education' })}
-                                        className="mt-6 block rounded-lg border-2 border-indigo-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-indigo-600 transition-all hover:bg-indigo-50 sm:mt-8 sm:py-3 sm:text-base"
+                                        href={route('register', { project: 'agriculture' })}
+                                        className="mt-6 block rounded-lg border-2 border-green-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-green-600 transition-all hover:bg-green-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
                                     </Link>
@@ -533,42 +543,42 @@ export default function EducationIndex({ auth }: PageProps) {
                             <dl className="space-y-4 sm:space-y-6">
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
                                     <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                                        Can I try before purchasing?
+                                        What size farms can use this platform?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes! We offer a 14-day free trial with full
-                                        access to all features. No credit card
-                                        required to get started.
+                                        Our platform scales from small family farms to
+                                        large commercial operations. Choose the plan
+                                        that matches your farm size and needs.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
                                     <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                                        How many students can I have?
+                                        Does it work offline?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Our plans scale with your needs. Basic
-                                        supports up to 50 students, Pro up to 500,
-                                        and Business offers unlimited students.
+                                        Yes! Our mobile app includes offline mode for
+                                        field work. Data syncs automatically when
+                                        you're back online.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
                                     <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                                        Is technical support included?
+                                        Can I track multiple farms?
+                                    </dt>
+                                    <dd className="text-sm text-gray-600 sm:text-base">
+                                        Yes, Pro and Business plans support multiple
+                                        farm locations with centralized management and
+                                        reporting.
+                                    </dd>
+                                </div>
+                                <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
+                                    <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
+                                        What about customer support?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
                                         All plans include email support. Pro and
-                                        Business plans get priority support with
-                                        faster response times.
-                                    </dd>
-                                </div>
-                                <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
-                                    <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                                        Can I integrate with other tools?
-                                    </dt>
-                                    <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes, our platform integrates with popular
-                                        tools like Zoom, Google Classroom, and many
-                                        more through our API and webhooks.
+                                        Business plans get priority phone support and
+                                        dedicated account managers.
                                     </dd>
                                 </div>
                             </dl>
@@ -584,21 +594,21 @@ export default function EducationIndex({ auth }: PageProps) {
                             {/* Company Info - Spans 2 columns on large screens */}
                             <div className="lg:col-span-2">
                                 <div className="mb-4 flex items-center">
-                                    <div className="mr-3 rounded-lg bg-indigo-800 p-2">
+                                    <div className="mr-3 rounded-lg bg-green-800 p-2">
                                         <FontAwesomeIcon
-                                            icon={faGraduationCap}
+                                            icon={faSeedling}
                                             className="h-6 w-6 text-white"
                                         />
                                     </div>
                                     <span className="text-xl font-bold">
-                                        Education
+                                        Agriculture
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Transform learning with our comprehensive
-                                    education management platform. Empower educators
-                                    and engage students with modern tools and
-                                    technology.
+                                    Modern farm management platform designed to help
+                                    farmers increase productivity and profitability.
+                                    Track crops, equipment, and finances all in one
+                                    place.
                                 </p>
                             </div>
 
@@ -681,7 +691,7 @@ export default function EducationIndex({ auth }: PageProps) {
                         <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                 <div className="text-center text-sm text-slate-400 md:text-left">
-                                    © {new Date().getFullYear()} {hostname} Education. All
+                                    © {new Date().getFullYear()} {hostname} Agriculture. All
                                     rights reserved.
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">

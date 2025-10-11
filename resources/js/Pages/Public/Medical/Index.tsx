@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 interface PageProps {
     auth: {
@@ -20,12 +20,18 @@ interface PageProps {
 }
 
 export default function Medical({ auth }: PageProps) {
-    const pricing = getPricingForService('medical');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const hostname = getHost();
+
+    // Get currency and symbol from URL params, default to USD and $
+    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const currency = urlParams.get('currency') || 'usd';
+    const symbol = urlParams.get('symbol') || '$';
+
+    const pricing = getPricingForService('medical', currency, symbol);
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const hostname = getHost();
 
     return (
         <React.Fragment>
@@ -461,7 +467,7 @@ export default function Medical({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            ₱299
+                                            {basicPlan?.currency}{basicPlan?.price}
                                         </span>
                                         <span className="text-sm text-teal-600">
                                             /month
@@ -562,7 +568,7 @@ export default function Medical({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            ₱499
+                                            {proPlan?.currency}{proPlan?.price}
                                         </span>
                                         <span className="text-sm text-teal-600">
                                             /month
@@ -658,7 +664,7 @@ export default function Medical({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            ₱699
+                                            {businessPlan?.currency}{businessPlan?.price}
                                         </span>
                                         <span className="text-sm text-teal-600">
                                             /month

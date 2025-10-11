@@ -2,7 +2,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getPricingForService } from '@/config/pricing';
 import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface PageProps {
     auth: {
@@ -25,12 +25,18 @@ export default function Community({
     communityUsers,
     totalContacts,
 }: PageProps) {
-    const pricing = getPricingForService('community');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const hostname = getHost();
+
+    // Get currency and symbol from URL params, default to USD and $
+    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const currency = urlParams.get('currency') || 'usd';
+    const symbol = urlParams.get('symbol') || '$';
+
+    const pricing = getPricingForService('community', currency, symbol);
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const hostname = getHost();
 
     // Use totalContacts from backend instead of calculating from communityUsers
     const totalMembers = totalContacts;
