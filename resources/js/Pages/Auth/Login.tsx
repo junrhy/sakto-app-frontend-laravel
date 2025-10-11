@@ -68,10 +68,10 @@ export default function Login({
                         </p>
                         <div className="mt-4">
                             <Link
-                                href={route('login', { project: 'trial' })}
+                                href={route('public')}
                                 className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                             >
-                                Go to Trial Login
+                                Back to Home
                             </Link>
                         </div>
                     </div>
