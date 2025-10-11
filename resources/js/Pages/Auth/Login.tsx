@@ -18,6 +18,7 @@ const ALLOWED_PROJECTS = [
     'shop',
     'enterprise',
     'travel',
+    'fnb',
 ] as const;
 
 const PROJECT_IMAGES = {
@@ -35,6 +36,7 @@ const PROJECT_IMAGES = {
     enterprise:
         'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     travel: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    fnb: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
 } as const;
 
 export default function Login({
@@ -270,7 +272,7 @@ export default function Login({
 
                 {/* Right side - Image */}
                 <div className="hidden md:block md:w-1/2">
-                    <div className="h-full w-full">
+                    <div className="h-screen w-full">
                         <img
                             src={PROJECT_IMAGES[validProject]}
                             alt={`${validProject.charAt(0).toUpperCase() + validProject.slice(1)} workspace`}

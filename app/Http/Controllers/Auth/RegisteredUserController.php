@@ -30,7 +30,7 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         // Check if registration is enabled
         $registrationEnabled = Setting::get('registration_enabled', 'true') === 'true';
@@ -39,10 +39,21 @@ class RegisteredUserController extends Controller
             return Inertia::render('Auth/RegistrationDisabled');
         }
         
+        // Get project parameter from URL
+        $projectParam = $request->query('project');
+        $projectExists = false;
+        
+        // Check if project exists in database
+        if ($projectParam) {
+            $projectExists = Project::where('identifier', $projectParam)->exists();
+        }
+        
         $projects = Project::select('identifier', 'name')->get();
         
         return Inertia::render('Auth/Register', [
-            'projects' => $projects
+            'projects' => $projects,
+            'projectParam' => $projectParam,
+            'projectExists' => $projectExists
         ]);
     }
 

@@ -22,6 +22,7 @@ Route::get('/delivery', [PublicController::class, 'delivery'])->name('delivery')
 Route::get('/jobs', [PublicController::class, 'jobs'])->name('jobs');
 Route::get('/medical', [PublicController::class, 'medical'])->name('medical');
 Route::get('/travel', [PublicController::class, 'travel'])->name('travel');
+Route::get('/fnb', [PublicController::class, 'fnb'])->name('fnb');
 
 // Home Route with Host-based Redirects
 Route::get('/', function (Request $request) {
@@ -35,6 +36,8 @@ Route::get('/', function (Request $request) {
         return redirect()->route('delivery');
     } elseif (stripos($host, 'jobs') !== false || stripos($path, 'jobs') !== false) {
         return redirect()->route('jobs');
+    } elseif (stripos($host, 'fnb') !== false || stripos($path, 'fnb') !== false) {
+        return redirect()->route('fnb');
     } elseif (stripos($host, 'community') !== false || stripos($path, 'community') !== false) {
         return redirect()->route('community');
     } elseif (stripos($host, 'logistics') !== false || stripos($path, 'logistics') !== false) {

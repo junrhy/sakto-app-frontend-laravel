@@ -56,6 +56,15 @@ class PublicController extends Controller
             ]);
         }
 
+        if (str_contains($request->getHost(), 'fnb') || str_contains($request->getHost(), 'f&b') || str_contains($request->getPathInfo(), 'fnb')) {
+            return Inertia::render('Public/Fnb/Index', [
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+            ]);
+        }
+
         return Inertia::render('Public/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -114,6 +123,15 @@ class PublicController extends Controller
         ]);
     }
 
+    public function fnb()
+    {
+        return Inertia::render('Public/Fnb/Index', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+        ]);
+    }
 
     public function neulify()
     {

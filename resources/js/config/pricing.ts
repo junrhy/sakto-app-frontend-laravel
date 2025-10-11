@@ -381,6 +381,61 @@ export const pricingConfig: Record<string, ServicePricing> = {
             },
         ],
     },
+    fnb: {
+        plans: [
+            {
+                id: 'basic',
+                name: 'Basic',
+                description: 'Perfect for small cafes and food stalls',
+                price: 299,
+                currency: '₱',
+                period: '/month',
+                features: [
+                    'Up to 5 tables',
+                    'Basic menu management',
+                    'Order tracking',
+                    'Email support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+            },
+            {
+                id: 'pro',
+                name: 'Pro',
+                description: 'Ideal for growing restaurants',
+                price: 599,
+                currency: '₱',
+                period: '/month',
+                features: [
+                    'Up to 20 tables',
+                    'Advanced menu management',
+                    'Kitchen display system',
+                    'Reservations',
+                    'Priority support',
+                ],
+                buttonText: 'Get Started',
+                buttonLink: 'register',
+                popular: true,
+            },
+            {
+                id: 'business',
+                name: 'Business',
+                description: 'For large restaurants and chains',
+                price: 999,
+                currency: '₱',
+                period: '/month',
+                features: [
+                    'Unlimited tables',
+                    'Multi-branch support',
+                    'Custom integrations',
+                    'Analytics & reporting',
+                    '24/7 phone support',
+                ],
+                buttonText: 'Contact Sales',
+                buttonLink: 'contact',
+            },
+        ],
+    },
 };
 
 export const getPricingForService = (
