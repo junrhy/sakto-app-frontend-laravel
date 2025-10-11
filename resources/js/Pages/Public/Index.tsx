@@ -43,6 +43,7 @@ export default function Welcome({ auth }: PageProps) {
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
     const [isSolutionsDialogOpen, setIsSolutionsDialogOpen] = useState(true);
+    const [userCountry, setUserCountry] = useState<string | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
@@ -50,6 +51,54 @@ export default function Welcome({ auth }: PageProps) {
     const currentScrollXRef = useRef(0);
     const resetAutoSlideRef = useRef<(() => void) | null>(null);
     const hostname = getHost();
+
+    // Country-specific currency configuration
+    // Easily add more countries here in the future
+    const countryCurrencyMap: Record<string, { currency: string; symbol: string }> = {
+        'PH': { currency: 'php', symbol: '₱' },
+        // Add more countries as needed:
+        // 'US': { currency: 'usd', symbol: '$' },
+        // 'GB': { currency: 'gbp', symbol: '£' },
+        // 'EU': { currency: 'eur', symbol: '€' },
+    };
+
+    // Detect user's country on component mount
+    useEffect(() => {
+        const detectCountry = async () => {
+            try {
+                // Using ipapi.co free API for geolocation
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.country_code) {
+                    setUserCountry(data.country_code);
+                }
+            } catch (error) {
+                console.log('Could not detect country:', error);
+                // Fallback: no currency params will be added
+            }
+        };
+        detectCountry();
+    }, []);
+
+    // Function to get URL with currency parameters if applicable
+    const getUrlWithCurrency = (baseUrl: string, additionalParams: Record<string, string> = {}): string => {
+        const params = new URLSearchParams();
+        
+        // Add currency params if applicable
+        if (userCountry && countryCurrencyMap[userCountry]) {
+            const { currency, symbol } = countryCurrencyMap[userCountry];
+            params.append('currency', currency);
+            params.append('symbol', symbol);
+        }
+        
+        // Add any additional params
+        Object.entries(additionalParams).forEach(([key, value]) => {
+            params.append(key, value);
+        });
+        
+        const queryString = params.toString();
+        return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    };
 
     // Solutions data
     const solutions = [
@@ -309,22 +358,32 @@ export default function Welcome({ auth }: PageProps) {
     const productsMenuItems =
         hostname !== 'Neulify'
             ? [
-                  { name: `${hostname} Community`, href: route('community') },
-                  { name: `${hostname} Logistics`, href: route('logistics') },
-                  { name: `${hostname} Medical`, href: route('medical') },
-                  { name: `${hostname} Travel`, href: route('travel') },
-                  { name: `${hostname} Delivery`, href: route('delivery') },
-                  { name: `${hostname} Job Board`, href: route('jobs') },
-                  { name: `${hostname} Marketplace`, href: route('shop') },
+                  { name: `${hostname} Community`, href: '/community' },
+                  { name: `${hostname} Logistics`, href: '/logistics' },
+                  { name: `${hostname} Medical`, href: '/medical' },
+                  { name: `${hostname} Travel`, href: '/travel' },
+                  { name: `${hostname} Delivery`, href: '/delivery' },
+                  { name: `${hostname} Job Board`, href: '/jobs' },
+                  { name: `${hostname} Marketplace`, href: '/shop' },
+                  { name: `${hostname} F&B`, href: '/fnb' },
+                  { name: `${hostname} Education`, href: '/education' },
+                  { name: `${hostname} Finance`, href: '/finance' },
+                  { name: `${hostname} Agriculture`, href: '/agriculture' },
+                  { name: `${hostname} Construction`, href: '/construction' },
               ]
             : [
-                  { name: 'Community', href: route('community') },
-                  { name: 'Logistics', href: route('logistics') },
-                  { name: 'Medical', href: route('medical') },
-                  { name: 'Travel', href: route('travel') },
-                  { name: 'Delivery', href: route('delivery') },
-                  { name: 'Jobs', href: route('jobs') },
-                  { name: 'Shop', href: route('shop') },
+                  { name: 'Community', href: '/community' },
+                  { name: 'Logistics', href: '/logistics' },
+                  { name: 'Medical', href: '/medical' },
+                  { name: 'Travel', href: '/travel' },
+                  { name: 'Delivery', href: '/delivery' },
+                  { name: 'Jobs', href: '/jobs' },
+                  { name: 'Shop', href: '/shop' },
+                  { name: 'F&B', href: '/fnb' },
+                  { name: 'Education', href: '/education' },
+                  { name: 'Finance', href: '/finance' },
+                  { name: 'Agriculture', href: '/agriculture' },
+                  { name: 'Construction', href: '/construction' },
               ];
 
     const legalMenuItems = [
@@ -391,7 +450,7 @@ export default function Welcome({ auth }: PageProps) {
                                                     (item) => (
                                                         <Link
                                                             key={item.name}
-                                                            href={item.href}
+                                                            href={getUrlWithCurrency(item.href)}
                                                             className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                             onClick={() =>
                                                                 setIsProductsDropdownOpen(
@@ -526,7 +585,7 @@ export default function Welcome({ auth }: PageProps) {
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
-                                                    href={item.href}
+                                                    href={getUrlWithCurrency(item.href)}
                                                     className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsMenuOpen(false)
@@ -1573,7 +1632,7 @@ export default function Welcome({ auth }: PageProps) {
                                 return (
                                     <Link
                                         key={solution.name}
-                                        href={solution.href}
+                                        href={getUrlWithCurrency(solution.href)}
                                         className="group"
                                         onClick={() => setIsSolutionsDialogOpen(false)}
                                     >

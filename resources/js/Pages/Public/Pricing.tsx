@@ -6,7 +6,8 @@ import {
     UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { getPricingForService } from '@/config/pricing';
 
 interface PageProps {
     auth: {
@@ -24,8 +25,39 @@ export default function Pricing({ auth }: PageProps) {
     const [activeTab, setActiveTab] = useState(
         hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
     );
+    const [userCountry, setUserCountry] = useState<string | null>(null);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Get currency and symbol from URL params, default to USD and $
+    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlCurrency = urlParams.get('currency') || 'usd';
+    const urlSymbol = urlParams.get('symbol') || '$';
+
+    // Country-specific currency configuration
+    const countryCurrencyMap: Record<string, { currency: string; symbol: string }> = {
+        'PH': { currency: 'php', symbol: '₱' },
+        // Add more countries as needed:
+        // 'US': { currency: 'usd', symbol: '$' },
+        // 'GB': { currency: 'gbp', symbol: '£' },
+        // 'EU': { currency: 'eur', symbol: '€' },
+    };
+
+    // Detect user's country on component mount
+    useEffect(() => {
+        const detectCountry = async () => {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.country_code) {
+                    setUserCountry(data.country_code);
+                }
+            } catch (error) {
+                console.log('Could not detect country:', error);
+            }
+        };
+        detectCountry();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -48,25 +80,55 @@ export default function Pricing({ auth }: PageProps) {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Function to get URL with currency parameters if applicable
+    const getUrlWithCurrency = (baseUrl: string, additionalParams: Record<string, string> = {}): string => {
+        const params = new URLSearchParams();
+        
+        // Add currency params if applicable
+        if (userCountry && countryCurrencyMap[userCountry]) {
+            const { currency, symbol } = countryCurrencyMap[userCountry];
+            params.append('currency', currency);
+            params.append('symbol', symbol);
+        }
+        
+        // Add any additional params
+        Object.entries(additionalParams).forEach(([key, value]) => {
+            params.append(key, value);
+        });
+        
+        const queryString = params.toString();
+        return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    };
+
     const productsMenuItems =
         hostname !== 'Neulify'
             ? [
-                  { name: `${hostname} Community`, href: route('community') },
-                  { name: `${hostname} Logistics`, href: route('logistics') },
-                  { name: `${hostname} Medical`, href: route('medical') },
-                  { name: `${hostname} Travel`, href: route('travel') },
-                  { name: `${hostname} Delivery`, href: route('delivery') },
-                  { name: `${hostname} Job Board`, href: route('jobs') },
-                  { name: `${hostname} Marketplace`, href: route('shop') },
+                  { name: `${hostname} Community`, href: '/community' },
+                  { name: `${hostname} Logistics`, href: '/logistics' },
+                  { name: `${hostname} Medical`, href: '/medical' },
+                  { name: `${hostname} Travel`, href: '/travel' },
+                  { name: `${hostname} Delivery`, href: '/delivery' },
+                  { name: `${hostname} Job Board`, href: '/jobs' },
+                  { name: `${hostname} Marketplace`, href: '/shop' },
+                  { name: `${hostname} F&B`, href: '/fnb' },
+                  { name: `${hostname} Education`, href: '/education' },
+                  { name: `${hostname} Finance`, href: '/finance' },
+                  { name: `${hostname} Agriculture`, href: '/agriculture' },
+                  { name: `${hostname} Construction`, href: '/construction' },
               ]
             : [
-                  { name: 'Community', href: route('community') },
-                  { name: 'Logistics', href: route('logistics') },
-                  { name: 'Medical', href: route('medical') },
-                  { name: 'Travel', href: route('travel') },
-                  { name: 'Delivery', href: route('delivery') },
-                  { name: 'Jobs', href: route('jobs') },
-                  { name: 'Shop', href: route('shop') },
+                  { name: 'Community', href: '/community' },
+                  { name: 'Logistics', href: '/logistics' },
+                  { name: 'Medical', href: '/medical' },
+                  { name: 'Travel', href: '/travel' },
+                  { name: 'Delivery', href: '/delivery' },
+                  { name: 'Jobs', href: '/jobs' },
+                  { name: 'Shop', href: '/shop' },
+                  { name: 'F&B', href: '/fnb' },
+                  { name: 'Education', href: '/education' },
+                  { name: 'Finance', href: '/finance' },
+                  { name: 'Agriculture', href: '/agriculture' },
+                  { name: 'Construction', href: '/construction' },
               ];
 
     const legalMenuItems = [
@@ -75,308 +137,153 @@ export default function Pricing({ auth }: PageProps) {
         { name: 'Cookie Policy', href: route('cookie-policy') },
         { name: 'FAQ', href: route('faq') },
     ];
+
+    // Use pricing config to get dynamic pricing based on URL currency
+    const communityPricing = getPricingForService('community', urlCurrency, urlSymbol);
+    const logisticsPricing = getPricingForService('logistics', urlCurrency, urlSymbol);
+    const medicalPricing = getPricingForService('medical', urlCurrency, urlSymbol);
+    const travelPricing = getPricingForService('travel', urlCurrency, urlSymbol);
+    const deliveryPricing = getPricingForService('delivery', urlCurrency, urlSymbol);
+    const jobsPricing = getPricingForService('jobs', urlCurrency, urlSymbol);
+    const shopPricing = getPricingForService('shop', urlCurrency, urlSymbol);
+    const fnbPricing = getPricingForService('fnb', urlCurrency, urlSymbol);
+    const educationPricing = getPricingForService('education', urlCurrency, urlSymbol);
+    const financePricing = getPricingForService('finance', urlCurrency, urlSymbol);
+    const agriculturePricing = getPricingForService('agriculture', urlCurrency, urlSymbol);
+    const constructionPricing = getPricingForService('construction', urlCurrency, urlSymbol);
+
     const projectPlans = {
         [hostname !== 'Neulify' ? `${hostname} Community` : 'Community']: {
             name: hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
             icon: UserGroupIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 99,
-                    project: 'community',
-                    description:
-                        'Perfect for small communities and organizations',
-                    features: [
-                        'All Community Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 199,
-                    project: 'community',
-                    description: 'Ideal for growing communities',
-                    features: [
-                        'All Community Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 299,
-                    project: 'community',
-                    description:
-                        'Perfect for established communities with advanced needs',
-                    features: [
-                        'All Community Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: communityPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'community',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics']: {
             name: hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics',
             icon: TruckIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 299,
-                    project: 'logistics',
-                    description: 'Perfect for small logistics operations',
-                    features: [
-                        'All Logistics Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 499,
-                    project: 'logistics',
-                    description: 'Ideal for growing logistics companies',
-                    features: [
-                        'All Logistics Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 699,
-                    project: 'logistics',
-                    description:
-                        'Perfect for established logistics companies with advanced needs',
-                    features: [
-                        'All Logistics Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: logisticsPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'logistics',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Medical` : 'Medical']: {
             name: hostname !== 'Neulify' ? `${hostname} Medical` : 'Medical',
             icon: HeartIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 299,
-                    project: 'medical',
-                    description: 'Perfect for small clinics',
-                    features: [
-                        'All Medical Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 499,
-                    project: 'medical',
-                    description: 'Ideal for growing medical practices',
-                    features: [
-                        'All Medical Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 699,
-                    project: 'medical',
-                    description:
-                        'Perfect for established medical practices with advanced needs',
-                    features: [
-                        'All Medical Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: medicalPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'medical',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Travel` : 'Travel']: {
             name: hostname !== 'Neulify' ? `${hostname} Travel` : 'Travel',
             icon: TruckIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 199,
-                    project: 'travel',
-                    description: 'Perfect for small travel agencies',
-                    features: [
-                        'All Travel Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 399,
-                    project: 'travel',
-                    description: 'Ideal for growing travel companies',
-                    features: [
-                        'All Travel Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 599,
-                    project: 'travel',
-                    description:
-                        'Perfect for established travel companies with advanced needs',
-                    features: [
-                        'All Travel Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: travelPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'travel',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Delivery` : 'Delivery']: {
             name: hostname !== 'Neulify' ? `${hostname} Delivery` : 'Delivery',
             icon: TruckIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 199,
-                    project: 'delivery',
-                    description: 'Perfect for small delivery services',
-                    features: [
-                        'All Delivery Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 399,
-                    project: 'delivery',
-                    description: 'Ideal for growing delivery companies',
-                    features: [
-                        'All Delivery Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 599,
-                    project: 'delivery',
-                    description:
-                        'Perfect for established delivery companies with advanced needs',
-                    features: [
-                        'All Delivery Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: deliveryPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'delivery',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Job Board` : 'Jobs']: {
             name: hostname !== 'Neulify' ? `${hostname} Job Board` : 'Jobs',
             icon: UserGroupIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 199,
-                    project: 'jobs',
-                    description: 'Perfect for small job boards',
-                    features: [
-                        'All Jobs Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 399,
-                    project: 'jobs',
-                    description: 'Ideal for growing job platforms',
-                    features: [
-                        'All Jobs Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 599,
-                    project: 'jobs',
-                    description:
-                        'Perfect for established job platforms with advanced needs',
-                    features: [
-                        'All Jobs Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: jobsPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'jobs',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Marketplace` : 'Shop']: {
             name: hostname !== 'Neulify' ? `${hostname} Marketplace` : 'Shop',
             icon: TruckIcon,
-            plans: [
-                {
-                    name: 'Basic',
-                    price: 199,
-                    project: 'shop',
-                    description: 'Perfect for small online stores',
-                    features: [
-                        'All Shop Apps',
-                        'Basic Support',
-                        'Email Support',
-                    ],
-                },
-                {
-                    name: 'Pro',
-                    price: 399,
-                    project: 'shop',
-                    description: 'Ideal for growing e-commerce businesses',
-                    features: [
-                        'All Shop Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                    ],
-                },
-                {
-                    name: 'Business',
-                    price: 599,
-                    project: 'shop',
-                    description:
-                        'Perfect for established e-commerce businesses with advanced needs',
-                    features: [
-                        'All Shop Apps',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Priority Support',
-                        'Virtual Assistant',
-                    ],
-                },
-            ],
+            plans: shopPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'shop',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
+        },
+        [hostname !== 'Neulify' ? `${hostname} F&B` : 'F&B']: {
+            name: hostname !== 'Neulify' ? `${hostname} F&B` : 'F&B',
+            icon: TruckIcon,
+            plans: fnbPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'fnb',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Education` : 'Education']: {
+            name: hostname !== 'Neulify' ? `${hostname} Education` : 'Education',
+            icon: UserGroupIcon,
+            plans: educationPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'education',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Finance` : 'Finance']: {
+            name: hostname !== 'Neulify' ? `${hostname} Finance` : 'Finance',
+            icon: TruckIcon,
+            plans: financePricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'finance',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture']: {
+            name: hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture',
+            icon: TruckIcon,
+            plans: agriculturePricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'agriculture',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction']: {
+            name: hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction',
+            icon: TruckIcon,
+            plans: constructionPricing?.plans.map(plan => ({
+                name: plan.name,
+                price: plan.price,
+                project: 'construction',
+                description: plan.description,
+                features: plan.features,
+            })) || [],
         },
     };
 
@@ -436,7 +343,7 @@ export default function Pricing({ auth }: PageProps) {
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
-                                                    href={item.href}
+                                                    href={getUrlWithCurrency(item.href)}
                                                     className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsProductsDropdownOpen(
@@ -535,25 +442,24 @@ export default function Pricing({ auth }: PageProps) {
                         </p>
                     </div>
 
-                    {/* Tab Navigation */}
+                    {/* Solution Selector */}
                     <div className="mt-12 flex justify-center">
-                        <div className="flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-                            {Object.entries(projectPlans).map(
-                                ([key, project]) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => setActiveTab(key)}
-                                        className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                                            activeTab === key
-                                                ? 'bg-white text-[#14B8A6] shadow-sm dark:bg-gray-700 dark:text-[#14B8A6]'
-                                                : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-                                        }`}
-                                    >
-                                        <project.icon className="h-5 w-5" />
+                        <div className="w-full max-w-md">
+                            <label htmlFor="solution-select" className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Select a Solution
+                            </label>
+                            <select
+                                id="solution-select"
+                                value={activeTab}
+                                onChange={(e) => setActiveTab(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-900 shadow-sm transition-colors focus:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#14B8A6]"
+                            >
+                                {Object.entries(projectPlans).map(([key, project]) => (
+                                    <option key={key} value={key}>
                                         {project.name}
-                                    </button>
-                                ),
-                            )}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -604,7 +510,7 @@ export default function Pricing({ auth }: PageProps) {
                                                     </p>
                                                     <p className="mt-4">
                                                         <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                                                            ₱{plan.price}
+                                                            {urlSymbol}{plan.price}
                                                         </span>
                                                         <span className="text-sm text-gray-600 dark:text-gray-300">
                                                             /month
@@ -612,30 +518,7 @@ export default function Pricing({ auth }: PageProps) {
                                                     </p>
                                                     {!auth.user && (
                                                         <Link
-                                                            href={
-                                                                plan.project ===
-                                                                'community'
-                                                                    ? `${route('community')}?plan=${plan.name.toLowerCase()}`
-                                                                    : plan.project ===
-                                                                        'logistics'
-                                                                      ? `${route('logistics')}?plan=${plan.name.toLowerCase()}`
-                                                                      : plan.project ===
-                                                                          'medical'
-                                                                        ? `${route('medical')}?plan=${plan.name.toLowerCase()}`
-                                                                        : plan.project ===
-                                                                            'travel'
-                                                                          ? `${route('travel')}?plan=${plan.name.toLowerCase()}`
-                                                                          : plan.project ===
-                                                                              'delivery'
-                                                                            ? `${route('delivery')}?plan=${plan.name.toLowerCase()}`
-                                                                            : plan.project ===
-                                                                                'jobs'
-                                                                              ? `${route('jobs')}?plan=${plan.name.toLowerCase()}`
-                                                                              : plan.project ===
-                                                                                  'shop'
-                                                                                ? `${route('shop')}?plan=${plan.name.toLowerCase()}`
-                                                                                : '#'
-                                                            }
+                                                            href={getUrlWithCurrency(`/${plan.project}`, { plan: plan.name.toLowerCase() })}
                                                             className="mt-4 block w-full rounded-md border border-transparent bg-gradient-to-r from-[#14B8A6] to-[#0D9488] px-4 py-2 text-center text-sm font-medium text-white shadow transition-all duration-200 hover:from-[#0D9488] hover:to-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/25 dark:bg-[#14B8A6] dark:hover:bg-[#0D9488]"
                                                         >
                                                             Choose Plan

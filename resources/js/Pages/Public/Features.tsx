@@ -24,8 +24,34 @@ export default function Features({ auth }: PageProps) {
     const [activeTab, setActiveTab] = useState(
         hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
     );
+    const [userCountry, setUserCountry] = useState<string | null>(null);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Country-specific currency configuration
+    const countryCurrencyMap: Record<string, { currency: string; symbol: string }> = {
+        'PH': { currency: 'php', symbol: '₱' },
+        // Add more countries as needed:
+        // 'US': { currency: 'usd', symbol: '$' },
+        // 'GB': { currency: 'gbp', symbol: '£' },
+        // 'EU': { currency: 'eur', symbol: '€' },
+    };
+
+    // Detect user's country on component mount
+    useEffect(() => {
+        const detectCountry = async () => {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.country_code) {
+                    setUserCountry(data.country_code);
+                }
+            } catch (error) {
+                console.log('Could not detect country:', error);
+            }
+        };
+        detectCountry();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -48,25 +74,55 @@ export default function Features({ auth }: PageProps) {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Function to get URL with currency parameters if applicable
+    const getUrlWithCurrency = (baseUrl: string, additionalParams: Record<string, string> = {}): string => {
+        const params = new URLSearchParams();
+        
+        // Add currency params if applicable
+        if (userCountry && countryCurrencyMap[userCountry]) {
+            const { currency, symbol } = countryCurrencyMap[userCountry];
+            params.append('currency', currency);
+            params.append('symbol', symbol);
+        }
+        
+        // Add any additional params
+        Object.entries(additionalParams).forEach(([key, value]) => {
+            params.append(key, value);
+        });
+        
+        const queryString = params.toString();
+        return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    };
+
     const productsMenuItems =
         hostname !== 'Neulify'
             ? [
-                  { name: `${hostname} Community`, href: route('community') },
-                  { name: `${hostname} Logistics`, href: route('logistics') },
-                  { name: `${hostname} Medical`, href: route('medical') },
-                  { name: `${hostname} Travel`, href: route('travel') },
-                  { name: `${hostname} Delivery`, href: route('delivery') },
-                  { name: `${hostname} Job Board`, href: route('jobs') },
-                  { name: `${hostname} Marketplace`, href: route('shop') },
+                  { name: `${hostname} Community`, href: '/community' },
+                  { name: `${hostname} Logistics`, href: '/logistics' },
+                  { name: `${hostname} Medical`, href: '/medical' },
+                  { name: `${hostname} Travel`, href: '/travel' },
+                  { name: `${hostname} Delivery`, href: '/delivery' },
+                  { name: `${hostname} Job Board`, href: '/jobs' },
+                  { name: `${hostname} Marketplace`, href: '/shop' },
+                  { name: `${hostname} F&B`, href: '/fnb' },
+                  { name: `${hostname} Education`, href: '/education' },
+                  { name: `${hostname} Finance`, href: '/finance' },
+                  { name: `${hostname} Agriculture`, href: '/agriculture' },
+                  { name: `${hostname} Construction`, href: '/construction' },
               ]
             : [
-                  { name: 'Community', href: route('community') },
-                  { name: 'Logistics', href: route('logistics') },
-                  { name: 'Medical', href: route('medical') },
-                  { name: 'Travel', href: route('travel') },
-                  { name: 'Delivery', href: route('delivery') },
-                  { name: 'Jobs', href: route('jobs') },
-                  { name: 'Shop', href: route('shop') },
+                  { name: 'Community', href: '/community' },
+                  { name: 'Logistics', href: '/logistics' },
+                  { name: 'Medical', href: '/medical' },
+                  { name: 'Travel', href: '/travel' },
+                  { name: 'Delivery', href: '/delivery' },
+                  { name: 'Jobs', href: '/jobs' },
+                  { name: 'Shop', href: '/shop' },
+                  { name: 'F&B', href: '/fnb' },
+                  { name: 'Education', href: '/education' },
+                  { name: 'Finance', href: '/finance' },
+                  { name: 'Agriculture', href: '/agriculture' },
+                  { name: 'Construction', href: '/construction' },
               ];
 
     const legalMenuItems = [
@@ -346,6 +402,191 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
+        [hostname !== 'Neulify' ? `${hostname} F&B` : 'F&B']: {
+            name: hostname !== 'Neulify' ? `${hostname} F&B` : 'F&B',
+            project: 'fnb',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Restaurant Management',
+                    description:
+                        'Complete restaurant management system with table reservations, menu management, and order tracking.',
+                },
+                {
+                    title: 'Point of Sale',
+                    description:
+                        'Modern POS system with order processing, payment integration, and kitchen display system.',
+                },
+                {
+                    title: 'Inventory Management',
+                    description:
+                        'Track ingredients, manage stock levels, and automate reordering for optimal inventory control.',
+                },
+                {
+                    title: 'Kitchen Management',
+                    description:
+                        'Kitchen display system with order tracking, preparation times, and staff coordination.',
+                },
+                {
+                    title: 'Customer Management',
+                    description:
+                        'Manage customer preferences, order history, and loyalty programs for repeat business.',
+                },
+                {
+                    title: 'Delivery Integration',
+                    description:
+                        'Integrate with delivery services and manage online orders with real-time tracking.',
+                },
+            ],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Education` : 'Education']: {
+            name: hostname !== 'Neulify' ? `${hostname} Education` : 'Education',
+            project: 'education',
+            icon: UserGroupIcon,
+            features: [
+                {
+                    title: 'Student Management',
+                    description:
+                        'Comprehensive student information system with enrollment, grades, and attendance tracking.',
+                },
+                {
+                    title: 'Course Management',
+                    description:
+                        'Create and manage courses, curriculum, syllabi, and learning materials for students.',
+                },
+                {
+                    title: 'Online Learning',
+                    description:
+                        'Virtual classroom with video conferencing, assignments, and interactive learning tools.',
+                },
+                {
+                    title: 'Grading System',
+                    description:
+                        'Automated grading system with gradebook, report cards, and academic performance tracking.',
+                },
+                {
+                    title: 'Parent Portal',
+                    description:
+                        'Parent communication portal with student progress, attendance, and school announcements.',
+                },
+                {
+                    title: 'Staff Management',
+                    description:
+                        'Manage teachers, staff schedules, payroll, and professional development tracking.',
+                },
+            ],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Finance` : 'Finance']: {
+            name: hostname !== 'Neulify' ? `${hostname} Finance` : 'Finance',
+            project: 'finance',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Lending Management',
+                    description:
+                        'Complete loan management system with applications, approvals, and repayment tracking.',
+                },
+                {
+                    title: 'Accounting System',
+                    description:
+                        'Double-entry accounting with general ledger, accounts payable/receivable, and financial reports.',
+                },
+                {
+                    title: 'Investment Tracking',
+                    description:
+                        'Track investments, portfolios, and returns with real-time market data integration.',
+                },
+                {
+                    title: 'Payment Processing',
+                    description:
+                        'Secure payment processing with multiple payment methods and automated reconciliation.',
+                },
+                {
+                    title: 'Financial Reporting',
+                    description:
+                        'Generate financial statements, balance sheets, income statements, and cash flow reports.',
+                },
+                {
+                    title: 'Client Management',
+                    description:
+                        'Manage client accounts, financial profiles, and transaction history securely.',
+                },
+            ],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture']: {
+            name: hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture',
+            project: 'agriculture',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Farm Management',
+                    description:
+                        'Comprehensive farm management with crop planning, field mapping, and resource allocation.',
+                },
+                {
+                    title: 'Crop Monitoring',
+                    description:
+                        'Monitor crop health, growth stages, and yield predictions with data analytics.',
+                },
+                {
+                    title: 'Inventory Management',
+                    description:
+                        'Track seeds, fertilizers, equipment, and harvest inventory with automated alerts.',
+                },
+                {
+                    title: 'Weather Integration',
+                    description:
+                        'Real-time weather data integration for planning irrigation, planting, and harvesting.',
+                },
+                {
+                    title: 'Financial Tracking',
+                    description:
+                        'Track expenses, income, and profitability by crop, field, or season.',
+                },
+                {
+                    title: 'Supply Chain',
+                    description:
+                        'Manage distribution, sales channels, and buyer relationships for agricultural products.',
+                },
+            ],
+        },
+        [hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction']: {
+            name: hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction',
+            project: 'construction',
+            icon: TruckIcon,
+            features: [
+                {
+                    title: 'Project Management',
+                    description:
+                        'Comprehensive project management with timelines, milestones, and resource allocation.',
+                },
+                {
+                    title: 'Bid Management',
+                    description:
+                        'Create and manage bids, proposals, and quotations for construction projects.',
+                },
+                {
+                    title: 'Subcontractor Management',
+                    description:
+                        'Manage subcontractors, contracts, work orders, and payment tracking.',
+                },
+                {
+                    title: 'Equipment Tracking',
+                    description:
+                        'Track equipment, maintenance schedules, and utilization across job sites.',
+                },
+                {
+                    title: 'Document Management',
+                    description:
+                        'Store and manage blueprints, permits, contracts, and project documentation.',
+                },
+                {
+                    title: 'Financial Tracking',
+                    description:
+                        'Track project costs, budgets, expenses, and profitability in real-time.',
+                },
+            ],
+        },
     };
 
     return (
@@ -406,7 +647,7 @@ export default function Features({ auth }: PageProps) {
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
-                                                    href={item.href}
+                                                    href={getUrlWithCurrency(item.href)}
                                                     className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsProductsDropdownOpen(
@@ -506,25 +747,24 @@ export default function Features({ auth }: PageProps) {
                         </p>
                     </div>
 
-                    {/* Tab Navigation */}
+                    {/* Solution Selector */}
                     <div className="mt-12 flex justify-center">
-                        <div className="flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-                            {Object.entries(projectFeatures).map(
-                                ([key, project]) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => setActiveTab(key)}
-                                        className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                                            activeTab === key
-                                                ? 'bg-white text-[#14B8A6] shadow-sm dark:bg-gray-700 dark:text-[#14B8A6]'
-                                                : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-                                        }`}
-                                    >
-                                        <project.icon className="h-5 w-5" />
+                        <div className="w-full max-w-md">
+                            <label htmlFor="solution-select" className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Select a Solution
+                            </label>
+                            <select
+                                id="solution-select"
+                                value={activeTab}
+                                onChange={(e) => setActiveTab(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-900 shadow-sm transition-colors focus:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#14B8A6]"
+                            >
+                                {Object.entries(projectFeatures).map(([key, project]) => (
+                                    <option key={key} value={key}>
                                         {project.name}
-                                    </button>
-                                ),
-                            )}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -546,29 +786,7 @@ export default function Features({ auth }: PageProps) {
                                             </h2>
                                         </div>
                                         <Link
-                                            href={
-                                                project.project === 'community'
-                                                    ? route('community')
-                                                    : project.project ===
-                                                        'logistics'
-                                                      ? route('logistics')
-                                                      : project.project ===
-                                                          'medical'
-                                                        ? route('medical')
-                                                        : project.project ===
-                                                            'travel'
-                                                          ? route('travel')
-                                                          : project.project ===
-                                                              'delivery'
-                                                            ? route('delivery')
-                                                            : project.project ===
-                                                                'jobs'
-                                                              ? route('jobs')
-                                                              : project.project ===
-                                                                  'shop'
-                                                                ? route('shop')
-                                                                : '#'
-                                            }
+                                            href={getUrlWithCurrency(`/${project.project}`)}
                                             className="inline-flex items-center rounded-md bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-[#0D9488] hover:to-[#0891B2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:ring-offset-2"
                                         >
                                             Learn More
