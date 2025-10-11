@@ -2,6 +2,24 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import { Card, CardContent } from '@/Components/ui/card';
+import {
+    Users,
+    Stethoscope,
+    Truck,
+    ShoppingBag,
+    Package,
+    Briefcase,
+    Plane,
+    ArrowRight,
+    X,
+} from 'lucide-react';
 
 interface PageProps extends Record<string, any> {
     auth: {
@@ -19,6 +37,7 @@ export default function Welcome({ auth }: PageProps) {
     const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
+    const [isSolutionsDialogOpen, setIsSolutionsDialogOpen] = useState(true);
     const containerRef = useRef<HTMLDivElement>(null);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
@@ -26,6 +45,66 @@ export default function Welcome({ auth }: PageProps) {
     const currentScrollXRef = useRef(0);
     const resetAutoSlideRef = useRef<(() => void) | null>(null);
     const hostname = getHost();
+
+    // Solutions data
+    const solutions = [
+        {
+            name: 'Community',
+            description: 'Connect with your community, manage events, and stay informed',
+            icon: Users,
+            href: '/community',
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+        },
+        {
+            name: 'Medical',
+            description: 'Book appointments, manage health records, and access healthcare',
+            icon: Stethoscope,
+            href: '/medical',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-900/20',
+        },
+        {
+            name: 'Logistics',
+            description: 'Track shipments, manage deliveries, and optimize transportation',
+            icon: Truck,
+            href: '/logistics',
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+        },
+        {
+            name: 'Shop',
+            description: 'Browse products, place orders, and manage your shopping',
+            icon: ShoppingBag,
+            href: '/shop',
+            color: 'text-purple-600',
+            bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+        },
+        {
+            name: 'Delivery',
+            description: 'Order food and groceries with fast delivery to your door',
+            icon: Package,
+            href: '/delivery',
+            color: 'text-red-600',
+            bgColor: 'bg-red-50 dark:bg-red-900/20',
+        },
+        {
+            name: 'Jobs',
+            description: 'Find opportunities, post listings, and grow your career',
+            icon: Briefcase,
+            href: '/jobs',
+            color: 'text-indigo-600',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+        },
+        {
+            name: 'Travel',
+            description: 'Book flights, hotels, and plan your perfect trip',
+            icon: Plane,
+            href: '/travel',
+            color: 'text-cyan-600',
+            bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+        },
+    ];
 
     useEffect(() => {
         const checkMobile = () => {
@@ -1387,6 +1466,58 @@ export default function Welcome({ auth }: PageProps) {
                     </button>
                 </div>
             </div>
+
+            {/* Solutions Dialog */}
+            <Dialog open={isSolutionsDialogOpen} onOpenChange={setIsSolutionsDialogOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center">
+                            Neulify
+                        </DialogTitle>
+                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 text-center mt-2">
+                            Choose a solution to get started
+                        </p>
+                    </DialogHeader>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        {solutions.map((solution) => {
+                            const Icon = solution.icon;
+                            return (
+                                <Link
+                                    key={solution.name}
+                                    href={solution.href}
+                                    className="group"
+                                    onClick={() => setIsSolutionsDialogOpen(false)}
+                                >
+                                    <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-gray-300 dark:hover:border-gray-600">
+                                        <CardContent className="p-6">
+                                            <div className="flex items-start space-x-4">
+                                                {/* Icon */}
+                                                <div className={`flex-shrink-0 p-3 rounded-xl ${solution.bgColor} group-hover:scale-110 transition-transform duration-300`}>
+                                                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${solution.color}`} />
+                                                </div>
+                                                
+                                                {/* Content */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                                                            {solution.name}
+                                                        </h3>
+                                                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                        {solution.description}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

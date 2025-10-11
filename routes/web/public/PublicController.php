@@ -15,6 +15,7 @@ use Inertia\Inertia;
 
 // Public Pages
 Route::get('/public', [PublicController::class, 'index'])->name('public');
+Route::get('/solutions', [PublicController::class, 'mobileSolutions'])->name('solutions');
 Route::get('/neulify', [PublicController::class, 'neulify'])->name('neulify');
 Route::get('/shop', [PublicController::class, 'shop'])->name('shop');
 Route::get('/delivery', [PublicController::class, 'delivery'])->name('delivery');
