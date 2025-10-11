@@ -19,6 +19,7 @@ import {
     Plane,
     ArrowRight,
     X,
+    UtensilsCrossed,
 } from 'lucide-react';
 
 interface PageProps extends Record<string, any> {
@@ -103,6 +104,14 @@ export default function Welcome({ auth }: PageProps) {
             href: '/travel',
             color: 'text-cyan-600',
             bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+        },
+        {
+            name: 'F&B',
+            description: 'Manage your food and beverage business with ease',
+            icon: UtensilsCrossed,
+            href: '/fnb',
+            color: 'text-amber-600',
+            bgColor: 'bg-amber-50 dark:bg-amber-900/20',
         },
     ];
 
@@ -1469,7 +1478,7 @@ export default function Welcome({ auth }: PageProps) {
 
             {/* Solutions Dialog */}
             <Dialog open={isSolutionsDialogOpen} onOpenChange={setIsSolutionsDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl">
                     <DialogHeader>
                         <DialogTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center">
                             Neulify
@@ -1479,42 +1488,86 @@ export default function Welcome({ auth }: PageProps) {
                         </p>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                        {solutions.map((solution) => {
-                            const Icon = solution.icon;
-                            return (
-                                <Link
-                                    key={solution.name}
-                                    href={solution.href}
-                                    className="group"
-                                    onClick={() => setIsSolutionsDialogOpen(false)}
-                                >
-                                    <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-gray-300 dark:hover:border-gray-600">
-                                        <CardContent className="p-6">
-                                            <div className="flex items-start space-x-4">
-                                                {/* Icon */}
-                                                <div className={`flex-shrink-0 p-3 rounded-xl ${solution.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                                                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${solution.color}`} />
-                                                </div>
-                                                
-                                                {/* Content */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                                                            {solution.name}
-                                                        </h3>
-                                                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                    <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                        <style>{`
+                            .custom-scrollbar::-webkit-scrollbar {
+                                width: 8px;
+                            }
+                            
+                            .custom-scrollbar::-webkit-scrollbar-track {
+                                background: rgb(243 244 246);
+                                border-radius: 4px;
+                            }
+                            
+                            .custom-scrollbar::-webkit-scrollbar-thumb {
+                                background: rgb(209 213 219);
+                                border-radius: 4px;
+                                transition: background 0.2s;
+                            }
+                            
+                            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                                background: rgb(156 163 175);
+                            }
+                            
+                            .dark .custom-scrollbar::-webkit-scrollbar-track {
+                                background: rgb(31 41 55);
+                            }
+                            
+                            .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+                                background: rgb(75 85 99);
+                            }
+                            
+                            .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                                background: rgb(107 114 128);
+                            }
+                            
+                            /* For Firefox */
+                            .custom-scrollbar {
+                                scrollbar-width: thin;
+                                scrollbar-color: rgb(209 213 219) rgb(243 244 246);
+                            }
+                            
+                            .dark .custom-scrollbar {
+                                scrollbar-color: rgb(75 85 99) rgb(31 41 55);
+                            }
+                        `}</style>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                            {solutions.map((solution) => {
+                                const Icon = solution.icon;
+                                return (
+                                    <Link
+                                        key={solution.name}
+                                        href={solution.href}
+                                        className="group"
+                                        onClick={() => setIsSolutionsDialogOpen(false)}
+                                    >
+                                        <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-gray-300 dark:hover:border-gray-600">
+                                            <CardContent className="p-6">
+                                                <div className="flex items-start space-x-4">
+                                                    {/* Icon */}
+                                                    <div className={`flex-shrink-0 p-3 rounded-xl ${solution.bgColor} group-hover:scale-110 transition-transform duration-300`}>
+                                                        <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${solution.color}`} />
                                                     </div>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                        {solution.description}
-                                                    </p>
+                                                    
+                                                    {/* Content */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                                                                {solution.name}
+                                                            </h3>
+                                                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                                                        </div>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                            {solution.description}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            );
-                        })}
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
