@@ -1,4 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
+import { getHost } from '@/lib/utils';
 import {
     faBolt,
     faChartLine,
@@ -7,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -23,15 +24,68 @@ export default function Medical({ auth }: PageProps) {
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const hostname = getHost();
 
     return (
         <React.Fragment>
-            <Head title="Medikal - Professional Healthcare Management" />
+            <Head title={`${hostname} Medical - Professional Healthcare Management`} />
             <div className="min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-100">
                 {/* Header */}
                 <div className="border-b border-teal-700 bg-gradient-to-r from-teal-800 to-emerald-900 shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between">
+                        <div className="relative flex items-center justify-center lg:justify-between">
+                            {/* Mobile menu button */}
+                            <div className="absolute left-0 lg:hidden">
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center justify-center rounded-md p-2 text-white transition-colors duration-200 hover:bg-teal-700 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                                    aria-controls="mobile-menu"
+                                    aria-expanded={isMobileMenuOpen}
+                                    onClick={() =>
+                                        setIsMobileMenuOpen(!isMobileMenuOpen)
+                                    }
+                                >
+                                    <span className="sr-only">
+                                        Open main menu
+                                    </span>
+                                    {isMobileMenuOpen ? (
+                                        <svg
+                                            className="block h-6 w-6"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    ) : (
+                                        <svg
+                                            className="block h-6 w-6"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M4 6h16M4 12h16M4 18h16"
+                                            />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+
+                            {/* Centered Title */}
                             <div className="flex items-center space-x-3">
                                 <div className="flex-shrink-0">
                                     <div className="rounded-lg bg-teal-800 p-2">
@@ -42,10 +96,28 @@ export default function Medical({ auth }: PageProps) {
                                     </div>
                                 </div>
                                 <h1 className="text-xl font-bold text-white">
-                                    Medical
+                                    {hostname} Medical
                                 </h1>
                             </div>
-                            <div className="flex items-center space-x-6">
+
+                            {/* Desktop Navigation Menu */}
+                            <div className="hidden items-center space-x-8 lg:flex">
+                                <Link
+                                    href="#features"
+                                    className="text-sm font-medium text-white transition-colors duration-200 hover:text-teal-100"
+                                >
+                                    Features
+                                </Link>
+                                <Link
+                                    href="#pricing"
+                                    className="text-sm font-medium text-white transition-colors duration-200 hover:text-teal-100"
+                                >
+                                    Pricing
+                                </Link>
+                            </div>
+
+                            {/* Desktop Auth Buttons */}
+                            <div className="hidden items-center space-x-4 lg:flex">
                                 {auth.user ? (
                                     <Link
                                         href={route('home')}
@@ -99,6 +171,122 @@ export default function Medical({ auth }: PageProps) {
                                         </Link>
                                     </React.Fragment>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Mobile menu overlay */}
+                        {isMobileMenuOpen && (
+                            <div
+                                className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            ></div>
+                        )}
+
+                        {/* Mobile menu sidebar */}
+                        <div
+                            className={`fixed left-0 top-0 z-50 h-full w-full transform bg-gradient-to-r from-teal-800 to-emerald-900 shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                            id="mobile-menu"
+                        >
+                            {/* Header with close button */}
+                            <div className="flex items-center justify-between border-b border-teal-700 p-6">
+                                <div className="flex items-center space-x-3">
+                                    <div className="rounded-lg bg-teal-800 p-2">
+                                        <FontAwesomeIcon
+                                            icon={faUserMd}
+                                            className="h-6 w-6 text-white"
+                                        />
+                                    </div>
+                                    <span className="text-lg font-bold text-white">
+                                        {hostname} Medical
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="rounded-md p-2 text-white transition-colors duration-200 hover:bg-teal-700 hover:text-teal-100"
+                                >
+                                    <svg
+                                        className="h-6 w-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Menu items */}
+                            <div className="space-y-6 p-6">
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-200">
+                                        Navigation
+                                    </h3>
+                                    <Link
+                                        href="#features"
+                                        className="block rounded-lg px-3 py-3 text-base font-medium text-white transition-colors duration-200 hover:bg-teal-700 hover:text-teal-100"
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }
+                                    >
+                                        Features
+                                    </Link>
+                                    <Link
+                                        href="#pricing"
+                                        className="block rounded-lg px-3 py-3 text-base font-medium text-white transition-colors duration-200 hover:bg-teal-700 hover:text-teal-100"
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }
+                                    >
+                                        Pricing
+                                    </Link>
+                                </div>
+
+                                <div className="space-y-4 border-t border-teal-700 pt-6">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-200">
+                                        Account
+                                    </h3>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="block w-full rounded-lg bg-white px-4 py-3 text-center text-base font-medium text-teal-800 transition-colors duration-200 hover:bg-teal-50"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <>
+                                            <Link
+                                                href={route('login', {
+                                                    project: 'medical',
+                                                })}
+                                                className="block w-full rounded-lg border border-white/20 px-4 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-teal-700 hover:text-teal-100"
+                                                onClick={() =>
+                                                    setIsMobileMenuOpen(false)
+                                                }
+                                            >
+                                                Login
+                                            </Link>
+                                            <Link
+                                                href={route('register', {
+                                                    project: 'medical',
+                                                })}
+                                                className="block w-full rounded-lg bg-white px-4 py-3 text-center text-base font-medium text-teal-800 transition-colors duration-200 hover:bg-teal-50"
+                                                onClick={() =>
+                                                    setIsMobileMenuOpen(false)
+                                                }
+                                            >
+                                                Get Started
+                                            </Link>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -246,7 +434,7 @@ export default function Medical({ auth }: PageProps) {
                 </div>
 
                 {/* Pricing Section */}
-                <div id="pricing" className="mb-16 mt-16">
+                <div id="pricing" className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
                     <div className="mb-12 text-center">
                         <h2 className="mb-4 text-3xl font-bold text-teal-900">
                             Choose Your Healthcare Management Plan
@@ -608,11 +796,11 @@ export default function Medical({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer id="contact" className="mt-16 bg-teal-900 text-white">
-                    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+                <footer id="contact" className="mt-8 bg-teal-900 text-white sm:mt-12 lg:mt-16">
+                    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+                        <div className="space-y-8">
                             {/* Company Info */}
-                            <div className="col-span-1 md:col-span-2">
+                            <div className="md:col-span-2">
                                 <div className="mb-4 flex items-center">
                                     <div className="mr-3 rounded-lg bg-teal-800 p-2">
                                         <FontAwesomeIcon
@@ -673,41 +861,43 @@ export default function Medical({ auth }: PageProps) {
                                 </div>
                             </div>
 
-                            {/* Quick Links */}
-                            <div>
-                                <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-teal-400">
-                                    Quick Links
-                                </h3>
-                                <ul className="space-y-3">
-                                    <li>
-                                        <Link
-                                            href="#features"
-                                            className="text-sm text-teal-300 transition-colors hover:text-white"
-                                        >
-                                            Features
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="#pricing"
-                                            className="text-sm text-teal-300 transition-colors hover:text-white"
-                                        >
-                                            Pricing
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="#"
-                                            className="text-sm text-teal-300 transition-colors hover:text-white"
-                                        >
-                                            Help Center
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
+                            {/* Quick Links and Legal Links in one row */}
+                            <div className="mx-auto grid max-w-xl grid-cols-2 gap-6 md:max-w-2xl md:grid-cols-4 md:gap-8">
+                                {/* Quick Links */}
+                                <div>
+                                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-teal-400">
+                                        Quick Links
+                                    </h3>
+                                    <ul className="space-y-3">
+                                        <li>
+                                            <Link
+                                                href="#features"
+                                                className="text-sm text-teal-300 transition-colors hover:text-white"
+                                            >
+                                                Features
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="#pricing"
+                                                className="text-sm text-teal-300 transition-colors hover:text-white"
+                                            >
+                                                Pricing
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href="#"
+                                                className="text-sm text-teal-300 transition-colors hover:text-white"
+                                            >
+                                                Help Center
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </div>
 
-                            {/* Legal Links */}
-                            <div>
+                                {/* Legal Links */}
+                                <div>
                                 <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-teal-400">
                                     Legal
                                 </h3>
@@ -746,13 +936,14 @@ export default function Medical({ auth }: PageProps) {
                                     </li>
                                 </ul>
                             </div>
+                            </div>
                         </div>
 
                         {/* Bottom Footer */}
-                        <div className="mt-12 border-t border-teal-800 pt-8">
+                        <div className="mt-8 border-t border-teal-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between md:flex-row">
                                 <div className="text-sm text-teal-400">
-                                    © {new Date().getFullYear()} Medikal. All
+                                    © {new Date().getFullYear()} {hostname} Medical. All
                                     rights reserved.
                                 </div>
                                 <div className="mt-4 flex items-center space-x-6 md:mt-0">

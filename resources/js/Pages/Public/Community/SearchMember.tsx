@@ -192,7 +192,7 @@ export default function SearchMember({
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                 <div className="ml-3">
                                     <div className="text-2xl font-bold leading-tight text-white">
-                                        Komunidad
+                                        Community
                                     </div>
                                 </div>
                             </div>
@@ -258,7 +258,7 @@ export default function SearchMember({
                                 <div className="flex items-center">
                                     <ApplicationLogo className="block h-6 w-auto fill-current text-white" />
                                     <span className="ml-2 text-lg font-bold text-white">
-                                        Komunidad
+                                        Community
                                     </span>
                                 </div>
                                 <button

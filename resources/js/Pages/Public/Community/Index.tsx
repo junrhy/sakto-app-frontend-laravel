@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getPricingForService } from '@/config/pricing';
+import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -29,6 +30,7 @@ export default function Community({
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const hostname = getHost();
 
     // Use totalContacts from backend instead of calculating from communityUsers
     const totalMembers = totalContacts;
@@ -111,9 +113,9 @@ export default function Community({
                 {/* Header */}
                 <div className="relative border-b border-blue-700 bg-blue-600 shadow-sm">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <div className="flex items-center">
+                        <div className="relative flex items-center justify-center lg:justify-between">
                             {/* Mobile menu button */}
-                            <div className="mr-4 lg:hidden">
+                            <div className="absolute left-0 lg:hidden">
                                 <button
                                     type="button"
                                     className="inline-flex items-center justify-center rounded-md p-2 text-white transition-colors duration-200 hover:bg-blue-700 hover:text-blue-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -162,17 +164,18 @@ export default function Community({
                                 </button>
                             </div>
 
+                            {/* Centered Title */}
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                 <div className="ml-3">
                                     <div className="text-2xl font-bold leading-tight text-white">
-                                        Community
+                                        {hostname} Community
                                     </div>
                                 </div>
                             </div>
 
                             {/* Desktop Navigation Menu */}
-                            <div className="ml-8 hidden items-center space-x-8 lg:flex">
+                            <div className="hidden items-center space-x-8 lg:flex">
                                 <Link
                                     href={route('community.search')}
                                     className="text-sm font-medium text-white transition-colors duration-200 hover:text-blue-100"
@@ -194,7 +197,7 @@ export default function Community({
                             </div>
 
                             {/* Desktop Auth Buttons */}
-                            <div className="ml-auto hidden items-center space-x-4 lg:flex">
+                            <div className="hidden items-center space-x-4 lg:flex">
                                 {auth.user ? (
                                     <Link
                                         href={route('home')}
@@ -235,7 +238,7 @@ export default function Community({
 
                         {/* Mobile menu sidebar */}
                         <div
-                            className={`fixed left-0 top-0 z-50 h-full w-full max-w-sm transform bg-blue-600 shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                            className={`fixed left-0 top-0 z-50 h-full w-full transform bg-blue-600 shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
                             id="mobile-menu"
                         >
                             {/* Header with close button */}
@@ -243,7 +246,7 @@ export default function Community({
                                 <div className="flex items-center">
                                     <ApplicationLogo className="block h-6 w-auto fill-current text-white" />
                                     <span className="ml-2 text-lg font-bold text-white">
-                                        Komunidad
+                                        {hostname} Community
                                     </span>
                                 </div>
                                 <button
@@ -660,7 +663,7 @@ export default function Community({
                         </div>
 
                         {/* Pricing Section */}
-                        <div id="pricing" className="mb-16 mt-16">
+                        <div id="pricing" className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
                             <div className="mb-12 text-center">
                                 <h2 className="mb-4 text-3xl font-bold text-slate-900">
                                     Choose Your Community Plan
@@ -1114,16 +1117,16 @@ export default function Community({
                     {/* Footer */}
                     <footer
                         id="contact"
-                        className="mt-16 bg-slate-900 text-white"
+                        className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16"
                     >
-                        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-                            <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+                        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+                            <div className="space-y-8">
                                 {/* Company Info */}
-                                <div className="col-span-1 md:col-span-2">
+                                <div className="md:col-span-2">
                                     <div className="mb-4 flex items-center">
                                         <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                         <span className="ml-2 text-xl font-bold">
-                                            Community
+                                            {hostname} Community
                                         </span>
                                     </div>
                                     <p className="mb-4 max-w-md text-slate-300">
@@ -1173,33 +1176,35 @@ export default function Community({
                                     </div>
                                 </div>
 
-                                {/* Quick Links */}
-                                <div>
-                                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
-                                        Quick Links
-                                    </h3>
-                                    <ul className="space-y-3">
-                                        <li>
-                                            <Link
-                                                href={route('community.about')}
-                                                className="text-sm text-slate-300 transition-colors hover:text-white"
-                                            >
-                                                About Us
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={route('community.help')}
-                                                className="text-sm text-slate-300 transition-colors hover:text-white"
-                                            >
-                                                Help Center
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </div>
+                                {/* Quick Links and Legal Links in one row */}
+                                <div className="mx-auto grid max-w-xl grid-cols-2 gap-6 md:max-w-2xl md:grid-cols-4 md:gap-8">
+                                    {/* Quick Links */}
+                                    <div>
+                                        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+                                            Quick Links
+                                        </h3>
+                                        <ul className="space-y-3">
+                                            <li>
+                                                <Link
+                                                    href={route('community.about')}
+                                                    className="text-sm text-slate-300 transition-colors hover:text-white"
+                                                >
+                                                    About Us
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link
+                                                    href={route('community.help')}
+                                                    className="text-sm text-slate-300 transition-colors hover:text-white"
+                                                >
+                                                    Help Center
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    </div>
 
-                                {/* Legal Links */}
-                                <div>
+                                    {/* Legal Links */}
+                                    <div>
                                     <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
                                         Legal
                                     </h3>
@@ -1240,13 +1245,14 @@ export default function Community({
                                         </li>
                                     </ul>
                                 </div>
+                                </div>
                             </div>
 
                             {/* Bottom Footer */}
-                            <div className="mt-12 border-t border-slate-800 pt-8">
+                            <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                                 <div className="flex flex-col items-center justify-between md:flex-row">
                                     <div className="text-sm text-slate-400">
-                                        © {new Date().getFullYear()} Komunidad.
+                                        © {new Date().getFullYear()} {hostname} Community.
                                         All rights reserved.
                                     </div>
                                     <div className="mt-4 flex items-center space-x-6 md:mt-0">

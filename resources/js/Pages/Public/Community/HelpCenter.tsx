@@ -94,7 +94,7 @@ export default function HelpCenter({ auth }: PageProps) {
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                 <div className="ml-3">
                                     <div className="text-2xl font-bold leading-tight text-white">
-                                        Komunidad
+                                        Community
                                     </div>
                                 </div>
                             </div>
@@ -114,7 +114,7 @@ export default function HelpCenter({ auth }: PageProps) {
                             <p className="mx-auto max-w-3xl text-xl text-slate-600">
                                 Find answers to your questions, learn how to use
                                 our platform, and get the support you need to
-                                succeed with Komunidad.
+                                succeed with Community.
                             </p>
                         </div>
 
@@ -414,7 +414,7 @@ export default function HelpCenter({ auth }: PageProps) {
                                 <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
                                     Can't find what you're looking for? Our
                                     support team is here to help you succeed
-                                    with Komunidad.
+                                    with Community.
                                 </p>
                                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                                     <a
@@ -446,7 +446,7 @@ export default function HelpCenter({ auth }: PageProps) {
                                 <div className="mb-4 flex items-center">
                                     <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                     <span className="ml-2 text-xl font-bold">
-                                        Komunidad
+                                        Community
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
@@ -567,7 +567,7 @@ export default function HelpCenter({ auth }: PageProps) {
                         <div className="mt-12 border-t border-slate-800 pt-8">
                             <div className="flex flex-col items-center justify-between md:flex-row">
                                 <div className="text-sm text-slate-400">
-                                    © {new Date().getFullYear()} Komunidad. All
+                                    © {new Date().getFullYear()} Community. All
                                     rights reserved.
                                 </div>
                                 <div className="mt-4 flex items-center space-x-6 md:mt-0">

@@ -94,7 +94,7 @@ export default function AboutUs({ auth }: PageProps) {
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                 <div className="ml-3">
                                     <div className="text-2xl font-bold leading-tight text-white">
-                                        Komunidad
+                                        Community
                                     </div>
                                 </div>
                             </div>
@@ -109,7 +109,7 @@ export default function AboutUs({ auth }: PageProps) {
                         <div className="mb-16 text-center">
                             <h1 className="mb-6 text-4xl font-bold text-slate-900 md:text-5xl">
                                 About{' '}
-                                <span className="text-blue-600">Komunidad</span>
+                                <span className="text-blue-600">Community</span>
                             </h1>
                             <p className="mx-auto max-w-3xl text-xl text-slate-600">
                                 Empowering communities and businesses with
@@ -197,7 +197,7 @@ export default function AboutUs({ auth }: PageProps) {
                             <div className="mx-auto max-w-4xl">
                                 <p className="mb-6 leading-relaxed text-slate-600">
                                     Founded with a passion for technology and
-                                    community building, Komunidad emerged from
+                                    community building, Community emerged from
                                     the recognition that modern organizations
                                     need comprehensive digital solutions to
                                     manage their operations effectively.
@@ -442,7 +442,7 @@ export default function AboutUs({ auth }: PageProps) {
                                 </h2>
                                 <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
                                     Join thousands of organizations that trust
-                                    Komunidad to manage their communities and
+                                    Community to manage their communities and
                                     streamline their operations.
                                 </p>
                                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -469,7 +469,7 @@ export default function AboutUs({ auth }: PageProps) {
                                 <div className="mb-4 flex items-center">
                                     <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                     <span className="ml-2 text-xl font-bold">
-                                        Komunidad
+                                        Community
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
@@ -590,7 +590,7 @@ export default function AboutUs({ auth }: PageProps) {
                         <div className="mt-12 border-t border-slate-800 pt-8">
                             <div className="flex flex-col items-center justify-between md:flex-row">
                                 <div className="text-sm text-slate-400">
-                                    © {new Date().getFullYear()} Komunidad. All
+                                    © {new Date().getFullYear()} Community. All
                                     rights reserved.
                                 </div>
                                 <div className="mt-4 flex items-center space-x-6 md:mt-0">
