@@ -20,6 +20,8 @@ import {
     ArrowRight,
     X,
     UtensilsCrossed,
+    GraduationCap,
+    Landmark,
 } from 'lucide-react';
 
 interface PageProps extends Record<string, any> {
@@ -112,6 +114,22 @@ export default function Welcome({ auth }: PageProps) {
             href: '/fnb',
             color: 'text-amber-600',
             bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+        },
+        {
+            name: 'Education',
+            description: 'Transform learning with comprehensive education management',
+            icon: GraduationCap,
+            href: '/education',
+            color: 'text-indigo-600',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+        },
+        {
+            name: 'Finance',
+            description: 'Manage your finances with powerful budgeting and reporting',
+            icon: Landmark,
+            href: '/finance',
+            color: 'text-emerald-600',
+            bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
         },
     ];
 
