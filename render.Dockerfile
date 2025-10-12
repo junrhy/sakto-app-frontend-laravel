@@ -6,14 +6,17 @@ WORKDIR /app
 # Copy composer files
 COPY composer.* ./
 
-# Install dependencies
+# Install dependencies (ignoring platform requirements for extensions that will be installed in production stage)
 RUN composer install \
     --no-dev \
     --no-scripts \
     --no-plugins \
     --no-interaction \
     --prefer-dist \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --ignore-platform-req=ext-pcntl \
+    --ignore-platform-req=ext-bcmath \
+    --ignore-platform-req=ext-intl
 
 # Copy the rest of the application
 COPY . .
@@ -46,6 +49,7 @@ RUN apk add --no-cache \
     pdo_mysql \
     pdo_pgsql \
     bcmath \
+    pcntl \
     gd \
     zip \
     opcache \
