@@ -18,10 +18,10 @@ import {
     ChevronRightIcon,
     SparklesIcon,
 } from '@heroicons/react/24/solid';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { CreditCard, History } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface Package {
@@ -99,19 +99,32 @@ export default function Buy({
     );
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    
+    // Get flash messages from Inertia
+    const { flash } = usePage<any>().props;
 
-    // Check if current team member has admin, manager, or user role
+    // Display flash messages from backend
+    useEffect(() => {
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+        if (flash?.message || flash?.success) {
+            toast.success(flash.message || flash.success);
+        }
+    }, [flash]);
+
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager') ||
                 auth.selectedTeamMember.roles.includes('user')
             );
         }
-        // If no team member is selected, check if the main user is admin
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
+        // No team member selected (main account) - allow all users to manage their own subscriptions
+        return true;
+    }, [auth.selectedTeamMember]);
 
     // Pagination values
     const recordsPerPage = 10;
@@ -138,26 +151,31 @@ export default function Buy({
     };
 
     const handleSubmit = async () => {
-        if (
-            !selectedPackage ||
-            !paymentMethod ||
-            !transactionId ||
-            !proofFile
-        ) {
-            toast.error('Please fill in all required fields');
+        if (!selectedPackage || !paymentMethod) {
+            toast.error('Please select a package and payment method');
             return;
         }
-
-        setIsSubmitting(true);
 
         const selectedPaymentMethod = paymentMethods.find(
             (m) => m.id === paymentMethod,
         );
         if (!selectedPaymentMethod) {
             toast.error('Selected payment method not found');
-            setIsSubmitting(false);
             return;
         }
+
+        // Handle Credit Card payment (Lemon Squeezy)
+        if (paymentMethod === 'card') {
+            return handleCardPayment();
+        }
+
+        // Handle manual payment methods (Bank Transfer)
+        if (!transactionId || !proofFile) {
+            toast.error('Please fill in all required fields');
+            return;
+        }
+
+        setIsSubmitting(true);
 
         // Construct payment method details
         const paymentMethodDetails = {
@@ -224,6 +242,55 @@ export default function Buy({
         } catch (error) {
             toast.error('An error occurred while processing your purchase');
         } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    const handleCardPayment = async () => {
+        if (!selectedPackage) return;
+        
+        // Check if package has Lemon Squeezy variant ID
+        if (!(selectedPackage as any).lemon_squeezy_variant_id) {
+            toast.error('This package is not available for card payment. Please contact support.');
+            return;
+        }
+        
+        setIsSubmitting(true);
+        toast.loading('Connecting to payment gateway...', { id: 'payment-loading' });
+        
+        try {
+            const response = await fetch('/credits/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    package_name: selectedPackage.name,
+                    package_credit: selectedPackage.credits,
+                    package_amount: selectedPackage.price,
+                    payment_method: 'Credit Card / Debit Card',
+                    lemon_squeezy_variant_id: (selectedPackage as any).lemon_squeezy_variant_id,
+                }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.checkout_url) {
+                toast.dismiss('payment-loading');
+                // Redirect to Lemon Squeezy checkout
+                window.location.href = data.checkout_url;
+            } else {
+                toast.dismiss('payment-loading');
+                toast.error(data.error || 'Failed to create checkout session');
+                setIsSubmitting(false);
+            }
+        } catch (error) {
+            toast.dismiss('payment-loading');
+            toast.error('An error occurred while processing your payment');
             setIsSubmitting(false);
         }
     };
@@ -497,46 +564,59 @@ export default function Buy({
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="transactionId">
-                                                        Transaction ID
-                                                    </Label>
-                                                    <Input
-                                                        id="transactionId"
-                                                        value={transactionId}
-                                                        onChange={(e) =>
-                                                            setTransactionId(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Enter your payment transaction ID"
-                                                    />
-                                                </div>
+                                                {/* Show manual payment fields only for non-card payments */}
+                                                {paymentMethod && paymentMethod !== 'card' && (
+                                                    <>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="transactionId">
+                                                                Transaction ID
+                                                            </Label>
+                                                            <Input
+                                                                id="transactionId"
+                                                                value={transactionId}
+                                                                onChange={(e) =>
+                                                                    setTransactionId(
+                                                                        e.target.value,
+                                                                    )
+                                                                }
+                                                                placeholder="Enter your payment transaction ID"
+                                                            />
+                                                        </div>
 
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="proofFile">
-                                                        Proof of Payment
-                                                    </Label>
-                                                    <Input
-                                                        id="proofFile"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={
-                                                            handleFileChange
-                                                        }
-                                                    />
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                        Upload a screenshot of
-                                                        your payment (max 5MB)
-                                                    </p>
-                                                </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="proofFile">
+                                                                Proof of Payment
+                                                            </Label>
+                                                            <Input
+                                                                id="proofFile"
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={
+                                                                    handleFileChange
+                                                                }
+                                                            />
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Upload a screenshot of
+                                                                your payment (max 5MB)
+                                                            </p>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                
+                                                {/* Show card payment info */}
+                                                {paymentMethod === 'card' && (
+                                                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                                                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                                                            You will be redirected to a secure payment page to complete your purchase with credit or debit card.
+                                                        </p>
+                                                    </div>
+                                                )}
 
                                                 <Button
                                                     onClick={handleSubmit}
                                                     disabled={
                                                         !paymentMethod ||
-                                                        !transactionId ||
-                                                        !proofFile ||
+                                                        (paymentMethod !== 'card' && (!transactionId || !proofFile)) ||
                                                         isSubmitting
                                                     }
                                                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-green-600 py-3 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:from-green-600 hover:to-green-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -548,7 +628,7 @@ export default function Buy({
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            Submit Payment
+                                                            {paymentMethod === 'card' ? 'Proceed to Checkout' : 'Submit Payment'}
                                                             <ArrowRightIcon className="h-4 w-4" />
                                                         </>
                                                     )}

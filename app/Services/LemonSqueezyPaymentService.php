@@ -22,19 +22,34 @@ class LemonSqueezyPaymentService
             
             // Use the billable user model to create checkout
             // Cast all custom data to strings as Lemon Squeezy requires string values
-            $checkoutUrl = $user->checkout($data['variant_id'], [
-                'name' => $data['user_name'],
-                'email' => $data['user_email'],
-            ], [
+            $customData = [
                 'user_identifier' => (string) $data['user_identifier'],
-                'plan_id' => (string) $data['plan_id'],
                 'reference_number' => (string) $referenceNumber,
                 'auto_renew' => (string) ($data['auto_renew'] ? 'true' : 'false'),
-            ])
+            ];
+            
+            // Add plan_id if it exists (for subscriptions)
+            if (isset($data['plan_id']) && $data['plan_id']) {
+                $customData['plan_id'] = (string) $data['plan_id'];
+            }
+            
+            // Add package details if provided (for credit purchases)
+            if (isset($data['package_credit'])) {
+                $customData['package_credit'] = (string) $data['package_credit'];
+                $customData['package_amount'] = (string) $data['package_amount'];
+            }
+            
+            $checkout = $user->checkout($data['variant_id'], [
+                'name' => $data['user_name'],
+                'email' => $data['user_email'],
+            ], $customData)
                 ->withProductName($data['plan_name'] ?? 'Subscription Plan')
-                ->withDescription($data['plan_description'] ?? '')
-                ->redirectTo(route('subscriptions.lemonsqueezy.success') . '?reference=' . $referenceNumber)
-                ->url();
+                ->withDescription($data['plan_description'] ?? '');
+            
+            // Use custom redirect URL if provided, otherwise use default subscription URL
+            $redirectUrl = $data['success_url'] ?? (route('subscriptions.lemonsqueezy.success') . '?reference=' . $referenceNumber);
+            
+            $checkoutUrl = $checkout->redirectTo($redirectUrl)->url();
             
             return [
                 'success' => true,

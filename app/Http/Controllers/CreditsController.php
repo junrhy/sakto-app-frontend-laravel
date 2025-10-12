@@ -7,15 +7,18 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Services\LemonSqueezyPaymentService;
 
 class CreditsController extends Controller
 {
     protected $apiUrl, $apiToken;
+    protected $lemonSqueezyPaymentService;
 
-    public function __construct()
+    public function __construct(LemonSqueezyPaymentService $lemonSqueezyPaymentService)
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
+        $this->lemonSqueezyPaymentService = $lemonSqueezyPaymentService;
     }
 
     public function buy()
@@ -38,6 +41,7 @@ class CreditsController extends Controller
                     'credits' => 100,
                     'price' => 100.00,
                     'popular' => false,
+                    'lemon_squeezy_variant_id' => '1035913',
                 ],
                 [
                     'id' => 2,
@@ -46,6 +50,7 @@ class CreditsController extends Controller
                     'price' => 450.00,
                     'popular' => true,
                     'savings' => '10%',
+                    'lemon_squeezy_variant_id' => '1035919',
                 ],
                 [
                     'id' => 3,
@@ -54,27 +59,24 @@ class CreditsController extends Controller
                     'price' => 800.00,
                     'popular' => false,
                     'savings' => '20%',
+                    'lemon_squeezy_variant_id' => '1035920',
                 ],
             ],
             'paymentMethods' => [
                 [
-                    'id' => 1,
-                    'name' => 'GCash',
-                    'accountName' => 'Jun Rhy Crodua',
-                    'accountNumber' => '09260049848',
-                ],
-                [
-                    'id' => 2,
-                    'name' => 'Maya',
-                    'accountName' => 'Jun Rhy Crodua',
-                    'accountNumber' => '09260049848',
+                    'id' => 'card',
+                    'name' => 'Credit Card / Debit Card',
+                    'accountName' => 'Lemon Squeezy',
+                    'accountNumber' => 'Secure online payment',
+                    'type' => 'online'
                 ],
                 [
                     'id' => 4,
                     'name' => 'Bank Transfer',
                     'accountName' => 'Jun Rhy Crodua',
                     'accountNumber' => '006996000660',
-                    'bankName' => 'BDO'
+                    'bankName' => 'BDO',
+                    'type' => 'manual'
                 ],
             ],
             'paymentHistory' => $paymentHistory
@@ -106,6 +108,14 @@ class CreditsController extends Controller
 
     public function requestCredit(Request $request)
     {
+        $user = auth()->user();
+        
+        // Check if payment method is card (Lemon Squeezy)
+        if ($request->payment_method === 'Credit Card / Debit Card') {
+            return $this->handleCardPayment($request, $user);
+        }
+        
+        // Handle manual payment methods (Bank Transfer, etc.)
         $validated = $request->validate([
             'package_name' => 'required|string',
             'package_credit' => 'required|numeric|min:0',
@@ -122,7 +132,7 @@ class CreditsController extends Controller
             $validated['proof_of_payment'] = Storage::disk('public')->url($path);
         }
         
-        $clientIdentifier = auth()->user()->identifier;
+        $clientIdentifier = $user->identifier;
         $validated['client_identifier'] = $clientIdentifier;
 
         $response = Http::withToken($this->apiToken)
@@ -135,6 +145,128 @@ class CreditsController extends Controller
         }
 
         return response()->json($response->json());
+    }
+    
+    /**
+     * Handle credit card payment via Lemon Squeezy
+     */
+    protected function handleCardPayment(Request $request, $user)
+    {
+        $validated = $request->validate([
+            'package_name' => 'required|string',
+            'package_credit' => 'required|numeric|min:0',
+            'package_amount' => 'required|numeric|min:0',
+            'lemon_squeezy_variant_id' => 'required|string',
+        ]);
+        
+        try {
+            // Generate a unique reference number
+            $referenceNumber = $this->lemonSqueezyPaymentService->generateReferenceNumber();
+            
+            // Build success URL with package details
+            $successUrl = route('credits.payment.success', [
+                'reference' => $referenceNumber,
+                'credits' => $validated['package_credit'],
+                'amount' => $validated['package_amount'],
+                'package' => $validated['package_name'],
+            ]);
+            
+            // Prepare checkout data
+            $checkoutData = [
+                'variant_id' => $validated['lemon_squeezy_variant_id'],
+                'reference_number' => $referenceNumber,
+                'plan_id' => null,
+                'plan_name' => $validated['package_name'],
+                'plan_description' => $validated['package_credit'] . ' credits package',
+                'user_identifier' => $user->identifier,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'auto_renew' => false,
+                'package_credit' => $validated['package_credit'],
+                'package_amount' => $validated['package_amount'],
+                'success_url' => $successUrl,
+                'cancel_url' => route('credits.payment.cancel'),
+            ];
+            
+            // Create one-time checkout  
+            $checkoutResult = $this->lemonSqueezyPaymentService->createCheckout($user, $checkoutData);
+            
+            if (!$checkoutResult['success']) {
+                return response()->json([
+                    'error' => $checkoutResult['message']
+                ], 500);
+            }
+            
+            // Return the checkout URL for redirect
+            return response()->json([
+                'success' => true,
+                'checkout_url' => $checkoutResult['checkout_url'],
+                'reference' => $referenceNumber,
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Lemon Squeezy credit payment failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'exception' => $e
+            ]);
+            
+            return response()->json([
+                'error' => 'An error occurred while processing your payment. Please try again later.'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Handle successful credit payment from Lemon Squeezy
+     */
+    public function creditPaymentSuccess(Request $request)
+    {
+        $reference = $request->query('reference');
+        $packageCredit = $request->query('credits');
+        $packageAmount = $request->query('amount');
+        $packageName = $request->query('package');
+        
+        if (!$reference) {
+            return redirect()->route('credits.buy')->with('error', 'Invalid payment reference.');
+        }
+        
+        try {
+            // Add credits to user's account via API
+            $user = auth()->user();
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/credits/add", [
+                    'client_identifier' => $user->identifier,
+                    'amount' => $packageCredit,
+                    'source' => 'purchase',
+                    'reference_id' => $reference,
+                ]);
+            
+            if ($response->successful()) {
+                return redirect()->route('credits.buy')->with('success', 'Payment successful! ' . $packageCredit . ' credits have been added to your account.');
+            } else {
+                Log::error('Failed to add credits after successful payment', [
+                    'reference' => $reference,
+                    'response' => $response->body(),
+                ]);
+                
+                return redirect()->route('credits.buy')->with('error', 'Payment was successful but failed to add credits. Please contact support with reference: ' . $reference);
+            }
+        } catch (\Exception $e) {
+            Log::error('Credit payment success handling failed: ' . $e->getMessage(), [
+                'reference' => $reference,
+                'exception' => $e
+            ]);
+            
+            return redirect()->route('credits.buy')->with('error', 'An error occurred. Please contact support with reference: ' . $reference);
+        }
+    }
+    
+    /**
+     * Handle cancelled credit payment from Lemon Squeezy
+     */
+    public function creditPaymentCancel(Request $request)
+    {
+        return redirect()->route('credits.buy')->with('error', 'Payment was cancelled. You can try again whenever you\'re ready.');
     }
 
     public function getCreditHistory($clientIdentifier)

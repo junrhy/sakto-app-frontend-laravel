@@ -38,6 +38,10 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/{clientIdentifier}/history', [CreditsController::class, 'getCreditHistory'])->name('credits.history');
         Route::get('/{clientIdentifier}/spent-history', [CreditsController::class, 'getSpentCreditHistory'])->name('credits.spent-history');
         Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
+        
+        // Lemon Squeezy payment callbacks for credits
+        Route::get('/payment/success', [CreditsController::class, 'creditPaymentSuccess'])->name('credits.payment.success');
+        Route::get('/payment/cancel', [CreditsController::class, 'creditPaymentCancel'])->name('credits.payment.cancel');
     });
 });
 

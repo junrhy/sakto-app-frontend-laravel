@@ -20,13 +20,54 @@ class LemonSqueezyEventListener
      */
     public function handleOrderCreated(OrderCreated $event): void
     {
+        $orderId = $event->payload['data']['id'] ?? null;
+        $customData = $event->payload['meta']['custom_data'] ?? [];
+        $userIdentifier = $customData['user_identifier'] ?? null;
+        $referenceNumber = $customData['reference_number'] ?? null;
+        
         Log::info('Lemon Squeezy Order Created', [
-            'order_id' => $event->payload['data']['id'] ?? null,
-            'user_identifier' => $event->payload['meta']['custom_data']['user_identifier'] ?? null,
+            'order_id' => $orderId,
+            'user_identifier' => $userIdentifier,
+            'reference_number' => $referenceNumber,
         ]);
         
-        // The order creation is handled by the payment success callback
-        // This is just for logging purposes
+        // Check if this is a credit purchase (has package_credit in custom data)
+        if (isset($customData['package_credit']) && $userIdentifier) {
+            $packageCredit = $customData['package_credit'];
+            
+            try {
+                $apiUrl = config('api.url');
+                $apiToken = config('api.token');
+                
+                // Add credits to user's account
+                $response = Http::withToken($apiToken)
+                    ->post("{$apiUrl}/credits/add", [
+                        'client_identifier' => $userIdentifier,
+                        'amount' => $packageCredit,
+                        'source' => 'purchase',
+                        'reference_id' => $referenceNumber,
+                    ]);
+                
+                if ($response->successful()) {
+                    Log::info('Credits added successfully via webhook', [
+                        'user_identifier' => $userIdentifier,
+                        'credits_added' => $packageCredit,
+                        'reference' => $referenceNumber,
+                    ]);
+                } else {
+                    Log::error('Failed to add credits via webhook', [
+                        'user_identifier' => $userIdentifier,
+                        'credits' => $packageCredit,
+                        'response' => $response->body(),
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Exception while adding credits via webhook', [
+                    'user_identifier' => $userIdentifier,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
     
     /**
