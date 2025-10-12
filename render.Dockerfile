@@ -41,13 +41,15 @@ RUN apk add --no-cache \
     unzip \
     postgresql-dev \
     dos2unix \
+    icu-dev \
     && docker-php-ext-install \
     pdo_mysql \
     pdo_pgsql \
     bcmath \
     gd \
     zip \
-    opcache
+    opcache \
+    intl
 
 # Configure PHP for production
 RUN { \
