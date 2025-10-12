@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
 use App\Services\StripePaymentService;
+use App\Services\LemonSqueezyPaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -16,12 +17,14 @@ class SubscriptionController extends Controller
 {
     protected $apiUrl, $apiToken;
     protected $stripePaymentService;
+    protected $lemonSqueezyPaymentService;
 
-    public function __construct(StripePaymentService $stripePaymentService)
+    public function __construct(StripePaymentService $stripePaymentService, LemonSqueezyPaymentService $lemonSqueezyPaymentService)
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
         $this->stripePaymentService = $stripePaymentService;
+        $this->lemonSqueezyPaymentService = $lemonSqueezyPaymentService;
     }
 
     /**
@@ -60,6 +63,11 @@ class SubscriptionController extends Controller
                 'id' => 'credits',
                 'name' => 'Pay with Credits',
                 'description' => 'Deduct amount from your available credits',
+            ],
+            [
+                'id' => 'lemonsqueezy',
+                'name' => 'Credit/Debit Card via Lemon Squeezy',
+                'description' => 'Secure online payment via Lemon Squeezy payment gateway',
             ],
             [
                 'id' => 'stripe',
@@ -108,6 +116,8 @@ class SubscriptionController extends Controller
                 return $this->handleCashPayment($user, $plan, $validated);
             case 'credits':
                 return $this->handleCreditsPayment($user, $plan, $validated);
+            case 'lemonsqueezy':
+                return $this->handleLemonSqueezyPayment($user, $plan, $validated);
             case 'stripe':
                 return $this->handleStripePayment($user, $plan, $validated);
             default:
@@ -270,6 +280,87 @@ class SubscriptionController extends Controller
             
         } catch (\Exception $e) {
             Log::error('Credits payment subscription failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'exception' => $e
+            ]);
+            
+            return redirect()->back()->with('error', 'An error occurred while processing your subscription. Please try again later.');
+        }
+    }
+    
+    /**
+     * Handle Lemon Squeezy payment for subscription.
+     */
+    protected function handleLemonSqueezyPayment($user, $plan, $validated)
+    {
+        try {
+            // Check if plan has a lemon_squeezy_variant_id
+            if (empty($plan->lemon_squeezy_variant_id)) {
+                Log::warning('Lemon Squeezy variant ID not set for plan', [
+                    'plan_id' => $plan->id,
+                    'plan_name' => $plan->name,
+                ]);
+                
+                return redirect()->back()
+                    ->with('error', 'This plan is not configured for Lemon Squeezy payment. Please set up the variant ID first or contact support.')
+                    ->withInput();
+            }
+            
+            // Generate a unique reference number for Lemon Squeezy payment
+            $referenceNumber = $this->lemonSqueezyPaymentService->generateReferenceNumber();
+            
+            // Prepare checkout data
+            $checkoutData = [
+                'variant_id' => (string) $plan->lemon_squeezy_variant_id,
+                'reference_number' => $referenceNumber,
+                'plan_id' => $plan->id,
+                'plan_name' => $plan->name,
+                'plan_description' => $plan->description ?? '',
+                'user_identifier' => $user->identifier,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'auto_renew' => $validated['auto_renew'] ?? false,
+            ];
+            
+            // Create checkout or subscription based on auto_renew setting
+            if ($validated['auto_renew'] ?? false) {
+                $checkoutResult = $this->lemonSqueezyPaymentService->createSubscription($user, $checkoutData);
+            } else {
+                $checkoutResult = $this->lemonSqueezyPaymentService->createCheckout($user, $checkoutData);
+            }
+            
+            if (!$checkoutResult['success']) {
+                return redirect()->back()->with('error', $checkoutResult['message']);
+            }
+            
+            // Create a pending subscription
+            $subscription = new UserSubscription([
+                'user_identifier' => $user->identifier,
+                'subscription_plan_id' => $plan->id,
+                'start_date' => now(),
+                'end_date' => now()->addDays($plan->duration_in_days),
+                'status' => 'pending',
+                'payment_method' => 'lemonsqueezy',
+                'payment_transaction_id' => $referenceNumber,
+                'amount_paid' => $plan->price,
+                'auto_renew' => $validated['auto_renew'] ?? false,
+            ]);
+            
+            $subscription->save();
+            
+            // Log the checkout creation
+            Log::info('Lemon Squeezy checkout created', [
+                'checkout_url' => $checkoutResult['checkout_url'],
+                'reference' => $referenceNumber,
+                'is_subscription' => $checkoutResult['is_subscription'] ?? false,
+            ]);
+            
+            // Redirect to Lemon Squeezy checkout page
+            return redirect($checkoutResult['checkout_url']);
+            
+        } catch (\Exception $e) {
+            Log::error('Lemon Squeezy payment subscription failed: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'exception' => $e
@@ -616,6 +707,95 @@ class SubscriptionController extends Controller
         $subscription->cancel($validated['cancellation_reason'] ?? null);
         
         return redirect()->route('subscriptions.index')->with('success', 'Subscription cancelled successfully');
+    }
+    
+    /**
+     * Handle successful payment from Lemon Squeezy.
+     */
+    public function lemonSqueezySuccess(Request $request)
+    {
+        $reference = $request->query('reference');
+        
+        if (!$reference) {
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'Invalid payment reference. Please contact support if you believe this is an error.',
+            ]);
+        }
+        
+        // Find the pending subscription
+        $subscription = UserSubscription::where('payment_transaction_id', $reference)
+            ->where('status', 'pending')
+            ->with('plan')
+            ->first();
+        
+        if (!$subscription) {
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'Subscription not found. Please contact support if you believe this is an error.',
+            ]);
+        }
+        
+        // Check if user already has an active subscription
+        $activeSubscription = UserSubscription::where('user_identifier', $subscription->user_identifier)
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->where('id', '!=', $subscription->id)
+            ->first();
+        
+        if ($activeSubscription) {
+            // Cancel the current subscription
+            $activeSubscription->cancel('Upgraded to a new plan');
+        }
+        
+        // Update subscription to active
+        $subscription->status = 'active';
+        $subscription->save();
+        
+        // Add credits to user's account based on the plan
+        try {
+            Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/credits/add", [
+                    'client_identifier' => $subscription->user_identifier,
+                    'amount' => $subscription->plan->credits_per_month,
+                    'source' => 'subscription',
+                    'reference_id' => $subscription->identifier,
+                ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to add subscription credits: ' . $e->getMessage());
+        }
+        
+        return Inertia::render('Subscriptions/PaymentStatus', [
+            'status' => 'success',
+            'message' => 'Your payment was successful and your subscription is now active.',
+            'subscription' => $subscription->load('plan'),
+        ]);
+    }
+    
+    /**
+     * Handle cancelled payment from Lemon Squeezy.
+     */
+    public function lemonSqueezyCancel(Request $request)
+    {
+        $reference = $request->query('reference');
+        
+        if ($reference) {
+            // Find the pending subscription
+            $subscription = UserSubscription::where('payment_transaction_id', $reference)
+                ->where('status', 'pending')
+                ->first();
+            
+            if ($subscription) {
+                // Update subscription to cancelled
+                $subscription->status = 'cancelled';
+                $subscription->save();
+            }
+        }
+        
+        return Inertia::render('Subscriptions/PaymentStatus', [
+            'status' => 'cancelled',
+            'message' => 'You cancelled the payment process. You can try again whenever you\'re ready.',
+        ]);
     }
     
     /**

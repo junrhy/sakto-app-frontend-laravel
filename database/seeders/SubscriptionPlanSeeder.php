@@ -29,6 +29,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'badge_text' => 'Starter',
                 'project_id' => 2, // Community project
+                'lemon_squeezy_variant_id' => '1035735',
             ],
             [
                 'name' => 'Pro Plan',
@@ -44,6 +45,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'badge_text' => 'Most Popular',
                 'project_id' => 2, // Community project
+                'lemon_squeezy_variant_id' => '1035748',
             ],
             [
                 'name' => 'Business Plan',
@@ -59,6 +61,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'badge_text' => 'Business',
                 'project_id' => 2, // Community project
+                'lemon_squeezy_variant_id' => '1035749',
             ],
             [
                 'name' => 'Annual Basic',
@@ -75,6 +78,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'badge_text' => 'Best Value',
                 'project_id' => 2, // Community project
+                'lemon_squeezy_variant_id' => '1035758',
             ],
             [
                 'name' => 'Annual Pro',

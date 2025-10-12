@@ -19,7 +19,7 @@ import {
     SparklesIcon,
     StarIcon,
 } from '@heroicons/react/24/solid';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -115,24 +115,41 @@ export default function Index({
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager') ||
                 auth.selectedTeamMember.roles.includes('user')
             );
         }
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
+        // No team member selected (main account) - allow all users to manage their own subscriptions
+        return true;
+    }, [auth.selectedTeamMember]);
 
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - only admin or manager can cancel
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager')
             );
         }
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
+        // No team member selected (main account) - allow all users to cancel their own subscriptions
+        return true;
+    }, [auth.selectedTeamMember]);
+
+    // Get flash messages from Inertia
+    const { flash } = usePage<any>().props;
+
+    // Display flash messages from backend
+    useEffect(() => {
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+        if (flash?.message || flash?.success) {
+            toast.success(flash.message || flash.success);
+        }
+    }, [flash]);
 
     // Check URL parameters for plan to highlight and set billing period based on active subscription
     useEffect(() => {
@@ -1091,6 +1108,33 @@ export default function Index({
                                                                             0)
                                                                             ? `Use your ${credits.toLocaleString()} available credits`
                                                                             : `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${selectedPlan?.price || 0} credits`}
+                                                                    </span>
+                                                                </div>
+                                                            </label>
+                                                            <label
+                                                                className={`flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all ${
+                                                                    paymentMethod === 'lemonsqueezy'
+                                                                        ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
+                                                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                                                                }`}
+                                                            >
+                                                                <input
+                                                                    type="radio"
+                                                                    name="payment_method"
+                                                                    value="lemonsqueezy"
+                                                                    checked={paymentMethod === 'lemonsqueezy'}
+                                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                                    className="h-4 w-4 text-blue-600"
+                                                                />
+                                                                <CreditCardIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                                <div>
+                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">
+                                                                        Credit/Debit
+                                                                        Card via
+                                                                        Lemon Squeezy
+                                                                    </span>
+                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">
+                                                                        Secure online payment gateway
                                                                     </span>
                                                                 </div>
                                                             </label>

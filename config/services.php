@@ -64,4 +64,11 @@ return [
         'environment' => env('STRIPE_ENVIRONMENT', 'sandbox'),
     ],
 
+    'lemon_squeezy' => [
+        'api_key' => env('LEMON_SQUEEZY_API_KEY'),
+        'store_id' => env('LEMON_SQUEEZY_STORE_ID'),
+        'signing_secret' => env('LEMON_SQUEEZY_SIGNING_SECRET'),
+        'environment' => env('LEMON_SQUEEZY_ENVIRONMENT', 'sandbox'),
+    ],
+
 ];

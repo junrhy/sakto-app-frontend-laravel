@@ -34,6 +34,8 @@ class UserSubscription extends Model
         'billing_cycle',
         'stripe_session_id',
         'stripe_subscription_id',
+        'lemonsqueezy_checkout_id',
+        'lemonsqueezy_subscription_id',
     ];
 
     /**
@@ -128,6 +130,14 @@ class UserSubscription extends Model
     public function hasStripeSubscription()
     {
         return !empty($this->stripe_subscription_id);
+    }
+
+    /**
+     * Check if the subscription has a Lemon Squeezy subscription ID
+     */
+    public function hasLemonSqueezySubscription()
+    {
+        return !empty($this->lemonsqueezy_subscription_id);
     }
 
     /**
