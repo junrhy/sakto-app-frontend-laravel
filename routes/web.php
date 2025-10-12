@@ -22,7 +22,6 @@ Route::group(['middleware' => ['web']], function () {
     require __DIR__.'/web/public/ContactsController.php';
     require __DIR__.'/web/public/EventController.php';
     require __DIR__.'/web/public/ChallengeController.php';
-    require __DIR__.'/web/public/MayaWebhookController.php';
     require __DIR__.'/web/public/PagesController.php';
     require __DIR__.'/web/public/HealthInsuranceController.php';
     require __DIR__.'/web/public/ProductOrderController.php';

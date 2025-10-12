@@ -1098,27 +1098,6 @@ export default function Index({
                                                                 <input
                                                                     type="radio"
                                                                     name="payment_method"
-                                                                    value="maya"
-                                                                    disabled
-                                                                    className="h-4 w-4 text-gray-400"
-                                                                />
-                                                                <CreditCardIcon className="h-5 w-5 text-gray-400" />
-                                                                <div>
-                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Credit/Debit
-                                                                        Card via
-                                                                        Maya
-                                                                    </span>
-                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Coming
-                                                                        soon
-                                                                    </span>
-                                                                </div>
-                                                            </label>
-                                                            <label className="flex cursor-not-allowed items-center space-x-3 rounded-lg border p-3 opacity-50 dark:border-gray-600">
-                                                                <input
-                                                                    type="radio"
-                                                                    name="payment_method"
                                                                     value="stripe"
                                                                     disabled
                                                                     className="h-4 w-4 text-gray-400"
