@@ -13,13 +13,16 @@ RUN apk add --no-cache \
     postgresql-dev \
     dos2unix \
     tzdata \
+    icu-dev \
     && docker-php-ext-install \
     pdo_mysql \
     pdo_pgsql \
     bcmath \
+    pcntl \
     gd \
     zip \
-    opcache
+    opcache \
+    intl
 
 # Set timezone to Asia/Manila (Philippines)
 ENV TZ=Asia/Manila
@@ -34,14 +37,17 @@ WORKDIR /var/www
 # Copy composer files
 COPY composer.* ./
 
-# Install dependencies
+# Install dependencies (ignoring platform requirements for extensions that will be installed in this stage)
 RUN composer install \
     --no-dev \
     --no-scripts \
     --no-plugins \
     --no-interaction \
     --prefer-dist \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --ignore-platform-req=ext-pcntl \
+    --ignore-platform-req=ext-bcmath \
+    --ignore-platform-req=ext-intl
 
 # Copy the rest of the application
 COPY . .
