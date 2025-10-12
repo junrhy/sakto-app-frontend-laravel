@@ -8,7 +8,7 @@
         <title inertia>
             @php
                 $routeName = request()->route()->getName();
-                $title = config('app.name', 'Sakto');
+                $title = config('app.name', 'Neulify');
     
                 // Get user slug name for community member routes
                 if (in_array($routeName, ['community.member', 'member.short'])) {

@@ -28,7 +28,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_popular' => false,
                 'is_active' => true,
                 'badge_text' => 'Starter',
-                'project_id' => 5, // Enterprise project
+                'project_id' => 2, // Community project
             ],
             [
                 'name' => 'Pro Plan',
@@ -43,7 +43,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_popular' => true,
                 'is_active' => true,
                 'badge_text' => 'Most Popular',
-                'project_id' => 5, // Enterprise project
+                'project_id' => 2, // Community project
             ],
             [
                 'name' => 'Business Plan',
@@ -58,7 +58,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_popular' => false,
                 'is_active' => true,
                 'badge_text' => 'Business',
-                'project_id' => 5, // Enterprise project
+                'project_id' => 2, // Community project
             ],
             [
                 'name' => 'Annual Basic',
@@ -74,7 +74,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_popular' => false,
                 'is_active' => true,
                 'badge_text' => 'Best Value',
-                'project_id' => 5, // Enterprise project
+                'project_id' => 2, // Community project
             ],
             [
                 'name' => 'Annual Pro',
@@ -90,7 +90,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_popular' => false,
                 'is_active' => true,
                 'badge_text' => null,
-                'project_id' => 5, // Enterprise project
+                'project_id' => 2, // Community project
             ],
         ];
 

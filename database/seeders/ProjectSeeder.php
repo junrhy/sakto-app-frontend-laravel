@@ -19,12 +19,6 @@ class ProjectSeeder extends Seeder
 
         $projects = [
             [
-                'id' => 1,
-                'name' => 'Trial',
-                'identifier' => 'trial',
-                'enabledModules' => json_encode(array_values($enabledModules)),
-            ],
-            [
                 'id' => 2,
                 'name' => 'Community',
                 'identifier' => 'community',
@@ -42,13 +36,6 @@ class ProjectSeeder extends Seeder
                 'identifier' => 'medical',
                 'enabledModules' => json_encode(array_values(['clinic', 'payroll', 'contacts', 'email', 'sms', 'queue-system'])),
             ],
-            [
-                'id' => 5,
-                'name' => 'Enterprise',
-                'identifier' => 'enterprise',
-                'enabledModules' => json_encode(array_values($enabledModules)),
-            ],
-            
         ];
 
         foreach ($projects as $project) {
