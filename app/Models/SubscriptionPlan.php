@@ -29,6 +29,7 @@ class SubscriptionPlan extends Model
         'is_active',
         'badge_text',
         'project_id',
+        'lemon_squeezy_variant_id',
     ];
 
     /**

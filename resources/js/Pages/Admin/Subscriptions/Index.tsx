@@ -73,6 +73,7 @@ export default function Index({
         is_active: true,
         badge_text: '',
         project_id: '',
+        lemon_squeezy_variant_id: '',
     });
 
     const editForm = useForm({
@@ -87,6 +88,7 @@ export default function Index({
         is_active: true,
         badge_text: '',
         project_id: '',
+        lemon_squeezy_variant_id: '',
     });
 
     const deleteForm = useForm({});
@@ -110,6 +112,7 @@ export default function Index({
             credits_per_month: plan.credits_per_month?.toString() || '0',
             features: plan.features || [],
             is_popular: plan.is_popular || false,
+            lemon_squeezy_variant_id: (plan as any).lemon_squeezy_variant_id || '',
             is_active: plan.is_active || true,
             badge_text: plan.badge_text || '',
             project_id: plan.project_id?.toString() || '',
@@ -830,6 +833,31 @@ export default function Index({
                         />
                     </div>
 
+                    <div className="mb-4">
+                        <InputLabel
+                            htmlFor="lemon_squeezy_variant_id"
+                            value="Lemon Squeezy Variant ID (Optional)"
+                            className="text-gray-700 dark:text-gray-300"
+                        />
+                        <TextInput
+                            id="lemon_squeezy_variant_id"
+                            type="text"
+                            className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            value={createForm.data.lemon_squeezy_variant_id}
+                            onChange={(e) =>
+                                createForm.setData('lemon_squeezy_variant_id', e.target.value)
+                            }
+                            placeholder="e.g., 1035735"
+                        />
+                        <InputError
+                            message={(createForm.errors as any).lemon_squeezy_variant_id}
+                            className="mt-2"
+                        />
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Enter the variant ID from your Lemon Squeezy dashboard (Products → Variants)
+                        </p>
+                    </div>
+
                     <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                             <InputLabel
@@ -1142,6 +1170,31 @@ export default function Index({
                             message={editForm.errors.project_id}
                             className="mt-2"
                         />
+                    </div>
+
+                    <div className="mb-4">
+                        <InputLabel
+                            htmlFor="edit_lemon_squeezy_variant_id"
+                            value="Lemon Squeezy Variant ID (Optional)"
+                            className="text-gray-700 dark:text-gray-300"
+                        />
+                        <TextInput
+                            id="edit_lemon_squeezy_variant_id"
+                            type="text"
+                            className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            value={editForm.data.lemon_squeezy_variant_id}
+                            onChange={(e) =>
+                                editForm.setData('lemon_squeezy_variant_id', e.target.value)
+                            }
+                            placeholder="e.g., 1035735"
+                        />
+                        <InputError
+                            message={(editForm.errors as any).lemon_squeezy_variant_id}
+                            className="mt-2"
+                        />
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Enter the variant ID from your Lemon Squeezy dashboard (Products → Variants)
+                        </p>
                     </div>
 
                     <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">

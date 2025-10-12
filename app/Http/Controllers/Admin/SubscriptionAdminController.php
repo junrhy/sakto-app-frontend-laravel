@@ -79,6 +79,7 @@ class SubscriptionAdminController extends Controller
             'is_active' => 'boolean',
             'badge_text' => 'nullable|string|max:255',
             'project_id' => 'nullable|exists:projects,id',
+            'lemon_squeezy_variant_id' => 'nullable|string|max:255',
         ]);
         
         // Convert slug to proper format
@@ -108,6 +109,7 @@ class SubscriptionAdminController extends Controller
             'is_active' => 'boolean',
             'badge_text' => 'nullable|string|max:255',
             'project_id' => 'nullable|exists:projects,id',
+            'lemon_squeezy_variant_id' => 'nullable|string|max:255',
         ]);
         
         // Convert slug to proper format
