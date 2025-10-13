@@ -39,6 +39,12 @@ class LemonSqueezyPaymentService
                 $customData['package_amount'] = (string) $data['package_amount'];
             }
             
+            // Add event details if provided (for event registrations)
+            if (isset($data['event_id'])) {
+                $customData['event_id'] = (string) $data['event_id'];
+                $customData['registrant_count'] = (string) ($data['registrant_count'] ?? 1);
+            }
+            
             $checkout = $user->checkout($data['variant_id'], [
                 'name' => $data['user_name'],
                 'email' => $data['user_email'],

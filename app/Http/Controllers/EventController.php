@@ -8,16 +8,19 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use App\Services\LemonSqueezyPaymentService;
 use Carbon\Carbon;
 
 class EventController extends Controller
 {
     protected $apiUrl, $apiToken;
+    protected $lemonSqueezyService;
 
-    public function __construct()
+    public function __construct(LemonSqueezyPaymentService $lemonSqueezyService)
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
+        $this->lemonSqueezyService = $lemonSqueezyService;
     }
 
     public function index()
@@ -623,5 +626,124 @@ class EventController extends Controller
         }
 
         return Inertia::location("/events/{$eventId}/participants");
+    }
+
+    /**
+     * Handle Lemon Squeezy checkout for event registration
+     */
+    public function checkout(Request $request, $id)
+    {
+        try {
+            // Get event data
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events/{$id}");
+            
+            if (!$response->successful()) {
+                return back()->withErrors(['error' => 'Event not found']);
+            }
+
+            $eventResponse = $response->json();
+            $event = isset($eventResponse['data']) ? $eventResponse['data'] : $eventResponse;
+
+            // Check if event has Lemon Squeezy integration
+            if (empty($event['lemon_squeezy_variant_id'])) {
+                return back()->withErrors(['error' => 'This event is not configured for online payment']);
+            }
+
+            // Validate registration data
+            if ($request->has('is_multiple') && $request->is_multiple) {
+                $validated = $request->validate([
+                    'registrants' => 'required|array|min:1',
+                    'registrants.*.name' => 'required|string|max:255',
+                    'registrants.*.email' => 'required|email|max:255',
+                    'registrants.*.phone' => 'nullable|string|max:20',
+                    'notes' => 'nullable|string',
+                    'payment_method' => 'required|string',
+                ]);
+
+                $registrantCount = count($validated['registrants']);
+                $registrantNames = implode(', ', array_column($validated['registrants'], 'name'));
+            } else {
+                $validated = $request->validate([
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|max:255',
+                    'phone' => 'nullable|string|max:20',
+                    'notes' => 'nullable|string',
+                    'payment_method' => 'required|string',
+                ]);
+
+                $registrantCount = 1;
+                $registrantNames = $validated['name'];
+            }
+
+            // Calculate total price
+            $totalPrice = $event['event_price'] * $registrantCount;
+
+            // Generate reference number
+            $referenceNumber = $this->lemonSqueezyService->generateReferenceNumber();
+
+            // Use authenticated user if available, otherwise use a default guest approach
+            // For public events, we'll use the first authenticated user or create guest flow
+            if (auth()->check()) {
+                $user = auth()->user();
+            } else {
+                // For guest users, we need to use an existing user as Lemon Squeezy requires a billable user
+                // Find a system user or admin user to facilitate guest checkouts
+                $user = \App\Models\User::where('is_admin', true)->first();
+                
+                if (!$user) {
+                    return back()->withErrors(['error' => 'System error: Unable to process payment. Please contact support.']);
+                }
+            }
+
+            // Prepare checkout data
+            $checkoutData = [
+                'variant_id' => (string) $event['lemon_squeezy_variant_id'],
+                'reference_number' => $referenceNumber,
+                'plan_name' => $event['title'] . ' - Registration',
+                'plan_description' => $event['description'] ?? 'Event registration fee',
+                'user_name' => $request->has('is_multiple') ? $registrantNames : $validated['name'],
+                'user_email' => $request->has('is_multiple') ? $validated['registrants'][0]['email'] : $validated['email'],
+                'user_identifier' => auth()->check() ? auth()->user()->identifier : ('guest_' . time()),
+                'auto_renew' => false,
+                'success_url' => route('events.public-register', $id) . '?payment=success',
+                'event_id' => $id,
+                'registrant_count' => $registrantCount,
+            ];
+
+            // Create checkout
+            $checkoutResult = $this->lemonSqueezyService->createCheckout($user, $checkoutData);
+
+            if (!$checkoutResult['success']) {
+                return back()->withErrors(['error' => $checkoutResult['message']]);
+            }
+
+            // Store registration data in session for later processing
+            session([
+                'event_registration_' . $referenceNumber => [
+                    'event_id' => $id,
+                    'registration_data' => $validated,
+                    'is_multiple' => $request->has('is_multiple'),
+                    'reference_number' => $referenceNumber,
+                ],
+            ]);
+
+            Log::info('Event Lemon Squeezy checkout created', [
+                'event_id' => $id,
+                'checkout_url' => $checkoutResult['checkout_url'],
+                'reference' => $referenceNumber,
+            ]);
+
+            // Use Inertia location for external redirect to Lemon Squeezy checkout
+            return Inertia::location($checkoutResult['checkout_url']);
+
+        } catch (\Exception $e) {
+            Log::error('Event checkout failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return back()->withErrors(['error' => 'Failed to initiate payment. Please try again.']);
+        }
     }
 }

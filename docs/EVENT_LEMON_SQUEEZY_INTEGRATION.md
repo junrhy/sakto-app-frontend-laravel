@@ -240,12 +240,63 @@ events
 - If you want Lemon Squeezy integration, both IDs should be provided
 - If left empty, the event works normally without Lemon Squeezy integration
 
+## Checkout Integration
+
+### Public Event Registration with Lemon Squeezy ✅
+
+**File**: `resources/js/Pages/Events/PublicRegister.tsx`
+
+When an event has Lemon Squeezy IDs configured, the public registration page will:
+
+1. **Detect Lemon Squeezy integration** - Checks if both product ID and variant ID exist
+2. **Show payment method selection** - Radio buttons for:
+   - Pay with Lemon Squeezy (Credit Card / Online Payment)
+   - Manual Payment (Follow payment instructions)
+3. **Handle checkout** - When Lemon Squeezy is selected:
+   - Validates registration form
+   - Redirects to Lemon Squeezy checkout
+   - User completes payment online
+   - Redirects back to registration page after payment
+
+### Checkout Flow
+
+1. **User fills registration form** on public register page
+2. **User selects "Pay with Lemon Squeezy"** payment method
+3. **User clicks submit button** (shows "Pay $XX with Lemon Squeezy")
+4. **System validates data** and creates checkout session
+5. **User is redirected** to Lemon Squeezy payment page
+6. **User completes payment** on Lemon Squeezy
+7. **User is redirected back** to event registration page with success message
+8. **Registration is completed** automatically via webhook
+
+### Backend Checkout Handler ✅
+
+**File**: `app/Http/Controllers/EventController.php`
+
+The `checkout()` method:
+- Validates registration data (single or multiple registrants)
+- Retrieves event details and validates Lemon Squeezy integration
+- Calculates total price based on number of registrants
+- Creates Lemon Squeezy checkout session
+- Stores registration data in session for webhook processing
+- Redirects user to Lemon Squeezy payment page
+
+### Routes ✅
+
+**File**: `routes/web/public/EventController.php`
+
+```php
+// Public event checkout (no authentication required)
+Route::post('/events/{id}/checkout', [EventController::class, 'checkout'])
+    ->name('events.checkout');
+```
+
 ## Future Enhancements
 
 Possible future improvements:
 
-1. **Checkout Integration**: Add checkout flow for event registration payments using the variant ID
-2. **Webhook Handling**: Listen to Lemon Squeezy webhooks for payment confirmations
+1. ✅ **Checkout Integration**: Implemented for event registration payments
+2. **Webhook Handling**: Listen to Lemon Squeezy webhooks for automatic registration after payment
 3. **Payment Tracking**: Link Lemon Squeezy orders to event participants
 4. **Discount Codes**: Use Lemon Squeezy discount codes for early bird registrations
 5. **API Product Listing**: Show dropdown of existing products/variants from Lemon Squeezy

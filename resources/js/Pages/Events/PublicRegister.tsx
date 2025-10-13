@@ -9,6 +9,7 @@ import {
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import { PageProps } from '@/types';
@@ -27,6 +28,7 @@ import {
     UserPlus,
     Users,
     Users as UsersIcon,
+    Wallet,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -50,6 +52,8 @@ interface Event {
         payment_instructions: string;
         category: string;
         image: string;
+        lemon_squeezy_product_id?: string;
+        lemon_squeezy_variant_id?: string;
     };
 }
 
@@ -63,6 +67,7 @@ export default function PublicRegister({ event }: Props) {
 
     const [isMultipleRegistration, setIsMultipleRegistration] = useState(false);
     const [numberOfRegistrants, setNumberOfRegistrants] = useState(2);
+    const [paymentMethod, setPaymentMethod] = useState<string>('manual');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -80,6 +85,9 @@ export default function PublicRegister({ event }: Props) {
     const isEventFull =
         eventData?.max_participants > 0 &&
         eventData?.current_participants >= eventData?.max_participants;
+    const hasLemonSqueezyIntegration =
+        eventData?.lemon_squeezy_product_id &&
+        eventData?.lemon_squeezy_variant_id;
 
     const formatPrice = (
         price: number | string | null | undefined,
@@ -141,6 +149,16 @@ export default function PublicRegister({ event }: Props) {
 
         if (isEventFull) {
             toast.error('This event is already full');
+            return;
+        }
+
+        // If paid event with Lemon Squeezy and user selected Lemon Squeezy payment
+        if (
+            eventData?.is_paid_event &&
+            hasLemonSqueezyIntegration &&
+            paymentMethod === 'lemonsqueezy'
+        ) {
+            handleLemonSqueezyPayment();
             return;
         }
 
@@ -229,6 +247,59 @@ export default function PublicRegister({ event }: Props) {
               ).length
             : 1;
         return price * registrantCount;
+    };
+
+    const handleLemonSqueezyPayment = () => {
+        // Validate form data first
+        if (isMultipleRegistration) {
+            const validRegistrants = multipleRegistrants.filter(
+                (r) => r.name.trim() && r.email.trim() && r.phone.trim(),
+            );
+            if (validRegistrants.length === 0) {
+                toast.error(
+                    'Please add at least one registrant with complete information',
+                );
+                return;
+            }
+        } else {
+            if (
+                !formData.name.trim() ||
+                !formData.email.trim() ||
+                !formData.phone.trim()
+            ) {
+                toast.error('Please fill in all required fields');
+                return;
+            }
+        }
+
+        // Redirect to Lemon Squeezy checkout
+        const submissionData = isMultipleRegistration
+            ? {
+                  registrants: multipleRegistrants.filter(
+                      (r) =>
+                          r.name.trim() &&
+                          r.email.trim() &&
+                          r.phone.trim(),
+                  ),
+                  notes: formData.notes,
+                  is_multiple: true,
+                  payment_method: 'lemonsqueezy',
+              }
+            : {
+                  ...formData,
+                  payment_method: 'lemonsqueezy',
+              };
+
+        router.post(
+            `/events/${eventData?.id}/checkout`,
+            submissionData,
+            {
+                onError: (errors) => {
+                    toast.error('Failed to initiate payment');
+                    console.error(errors);
+                },
+            },
+        );
     };
 
     return (
@@ -422,6 +493,112 @@ export default function PublicRegister({ event }: Props) {
                                                         </div>
                                                     </motion.div>
                                                 )}
+
+                                                {/* Payment Method Selection - Only show if paid event with Lemon Squeezy */}
+                                                {eventData?.is_paid_event &&
+                                                    hasLemonSqueezyIntegration && (
+                                                        <motion.div
+                                                            initial={{
+                                                                opacity: 0,
+                                                                y: 10,
+                                                            }}
+                                                            animate={{
+                                                                opacity: 1,
+                                                                y: 0,
+                                                            }}
+                                                            className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6"
+                                                        >
+                                                            <h3 className="mb-4 flex items-center font-semibold text-slate-900">
+                                                                <CreditCard className="mr-2 h-5 w-5 text-blue-600" />
+                                                                Select Payment Method
+                                                            </h3>
+                                                            <RadioGroup
+                                                                value={paymentMethod}
+                                                                onValueChange={
+                                                                    setPaymentMethod
+                                                                }
+                                                                className="grid grid-cols-1 gap-3 md:grid-cols-2"
+                                                            >
+                                                                <div
+                                                                    className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 ${
+                                                                        paymentMethod ===
+                                                                        'lemonsqueezy'
+                                                                            ? 'border-amber-500 bg-amber-50/50 shadow-md'
+                                                                            : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50/30 hover:shadow-sm'
+                                                                    }`}
+                                                                    onClick={() =>
+                                                                        setPaymentMethod(
+                                                                            'lemonsqueezy',
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <RadioGroupItem
+                                                                            value="lemonsqueezy"
+                                                                            id="lemonsqueezy"
+                                                                        />
+                                                                        <Label
+                                                                            htmlFor="lemonsqueezy"
+                                                                            className="flex flex-1 cursor-pointer items-center font-medium text-slate-900"
+                                                                        >
+                                                                            <CreditCard className="mr-2 h-5 w-5 text-amber-600" />
+                                                                            <div>
+                                                                                <div className="font-semibold">
+                                                                                    Pay
+                                                                                    with
+                                                                                    Card
+                                                                                </div>
+                                                                                <div className="text-sm font-normal text-slate-600">
+                                                                                    Credit
+                                                                                    Card
+                                                                                    /
+                                                                                    Online
+                                                                                    Payment
+                                                                                </div>
+                                                                            </div>
+                                                                        </Label>
+                                                                    </div>
+                                                                </div>
+                                                                <div
+                                                                    className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 ${
+                                                                        paymentMethod ===
+                                                                        'manual'
+                                                                            ? 'border-blue-500 bg-blue-50/50 shadow-md'
+                                                                            : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-sm'
+                                                                    }`}
+                                                                    onClick={() =>
+                                                                        setPaymentMethod(
+                                                                            'manual',
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <RadioGroupItem
+                                                                            value="manual"
+                                                                            id="manual"
+                                                                        />
+                                                                        <Label
+                                                                            htmlFor="manual"
+                                                                            className="flex flex-1 cursor-pointer items-center font-medium text-slate-900"
+                                                                        >
+                                                                            <Wallet className="mr-2 h-5 w-5 text-blue-600" />
+                                                                            <div>
+                                                                                <div className="font-semibold">
+                                                                                    Manual
+                                                                                    Payment
+                                                                                </div>
+                                                                                <div className="text-sm font-normal text-slate-600">
+                                                                                    Follow
+                                                                                    payment
+                                                                                    instructions
+                                                                                </div>
+                                                                            </div>
+                                                                        </Label>
+                                                                    </div>
+                                                                </div>
+                                                            </RadioGroup>
+                                                        </motion.div>
+                                                    )}
 
                                                 <motion.form
                                                     initial={{
@@ -755,10 +932,29 @@ export default function PublicRegister({ event }: Props) {
                                                             type="submit"
                                                             className="transform bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-3 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl"
                                                         >
-                                                            <UserPlus className="mr-2 h-4 w-4" />
-                                                            {isMultipleRegistration
-                                                                ? `Register ${multipleRegistrants.filter((r) => r.name.trim() && r.email.trim() && r.phone.trim()).length} Person(s)`
-                                                                : 'Register for Event'}
+                                                            {eventData?.is_paid_event &&
+                                                            hasLemonSqueezyIntegration &&
+                                                            paymentMethod ===
+                                                                'lemonsqueezy' ? (
+                                                                <>
+                                                                    <CreditCard className="mr-2 h-4 w-4" />
+                                                                    Pay{' '}
+                                                                    {formatPrice(
+                                                                        getTotalPrice(),
+                                                                        eventData?.currency,
+                                                                    )}
+                                                                    {' '}with (Credit
+                                                                    Card / Online
+                                                                    Payment)
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <UserPlus className="mr-2 h-4 w-4" />
+                                                                    {isMultipleRegistration
+                                                                        ? `Register ${multipleRegistrants.filter((r) => r.name.trim() && r.email.trim() && r.phone.trim()).length} Person(s)`
+                                                                        : 'Register for Event'}
+                                                                </>
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 </motion.form>
