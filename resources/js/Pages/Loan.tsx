@@ -268,24 +268,28 @@ export default function Loan({
 }) {
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager') ||
                 auth.selectedTeamMember.roles.includes('user')
             );
         }
-        return auth.user.is_admin || false;
-    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+        // No team member selected (main account) - allow all users
+        return true;
+    }, [auth.selectedTeamMember]);
 
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - only admin or manager can delete
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager')
             );
         }
-        return auth.user.is_admin || false;
-    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+        // No team member selected (main account) - allow all users
+        return true;
+    }, [auth.selectedTeamMember]);
 
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);

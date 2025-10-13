@@ -47,15 +47,16 @@ export default function Create({ auth }: Props) {
     // Check if current team member has admin, manager, or user role
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager') ||
                 auth.selectedTeamMember.roles.includes('user')
             );
         }
-        // If no team member is selected, check if the main user is admin
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
+        // No team member selected (main account) - allow all users
+        return true;
+    }, [auth.selectedTeamMember]);
 
     const { data, setData, post, processing, errors } = useForm<PageFormData>({
         title: '',

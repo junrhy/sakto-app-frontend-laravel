@@ -109,14 +109,16 @@ export default function MemberProfile({
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager') ||
                 auth.selectedTeamMember.roles.includes('user')
             );
         }
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
+        // No team member selected (main account) - allow all users
+        return true;
+    }, [auth.selectedTeamMember]);
 
     useEffect(() => {
         const fetchAllMembers = async () => {

@@ -151,14 +151,16 @@ export default function Form({ auth, event }: Props) {
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
             return (
                 auth.selectedTeamMember.roles.includes('admin') ||
                 auth.selectedTeamMember.roles.includes('manager') ||
                 auth.selectedTeamMember.roles.includes('user')
             );
         }
-        return (auth.user as any).is_admin;
-    }, [auth.selectedTeamMember, auth.user]);
+        // No team member selected (main account) - allow all users
+        return true;
+    }, [auth.selectedTeamMember]);
 
     const [imagePreview, setImagePreview] = useState<string | null>(
         event?.image || null,

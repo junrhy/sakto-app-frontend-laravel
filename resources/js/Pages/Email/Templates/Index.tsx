@@ -43,16 +43,26 @@ export default function Index({ templates: initialTemplates, auth }: Props) {
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
     const canEdit = useMemo(() => {
-        if (!auth.selectedTeamMember) return false;
-        return (
-            auth.selectedTeamMember.roles.includes('admin') ||
-            auth.selectedTeamMember.roles.includes('editor')
-        );
+        if (auth.selectedTeamMember) {
+            // Team member selected - check their roles
+            return (
+                auth.selectedTeamMember.roles.includes('admin') ||
+                auth.selectedTeamMember.roles.includes('editor')
+            );
+        }
+        // No team member selected (main account) - allow all users
+        return true;
     }, [auth.selectedTeamMember]);
 
     const canDelete = useMemo(() => {
-        if (!auth.selectedTeamMember) return false;
-        return auth.selectedTeamMember.roles.includes('admin');
+        if (auth.selectedTeamMember) {
+            // Team member selected - only admin can delete
+            return (
+                auth.selectedTeamMember.roles.includes('admin')
+            );
+        }
+        // No team member selected (main account) - allow all users
+        return true;
     }, [auth.selectedTeamMember]);
 
     const handleDelete = async (id: number) => {
