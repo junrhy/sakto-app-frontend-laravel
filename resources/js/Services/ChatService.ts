@@ -44,9 +44,13 @@ export class ChatService {
     /**
      * Listen for new messages in a conversation
      */
-    public listenForMessages(conversationId: number, userId: number, callback: (message: Message) => void) {
+    public listenForMessages(
+        conversationId: number,
+        userId: number,
+        callback: (message: Message) => void,
+    ) {
         const channelName = `chat-conversation-${conversationId}-user-${userId}`;
-        
+
         // Store the callback
         this.listeners.set(channelName, callback);
 
@@ -66,24 +70,33 @@ export class ChatService {
     /**
      * Listen for conversation updates
      */
-    public listenForConversationUpdates(conversationId: number, userId: number, callback: (conversation: Conversation) => void) {
+    public listenForConversationUpdates(
+        conversationId: number,
+        userId: number,
+        callback: (conversation: Conversation) => void,
+    ) {
         const channelName = `chat-conversation-${conversationId}-user-${userId}`;
-        
-        echo.private(channelName)
-            .listen('conversation-updated', (data: any) => {
+
+        echo.private(channelName).listen(
+            'conversation-updated',
+            (data: any) => {
                 console.log('Conversation updated:', data);
                 if (data.conversation) {
                     callback(data.conversation);
                 }
-            });
+            },
+        );
     }
 
     /**
      * Listen for user presence in conversations
      */
-    public listenForUserPresence(conversationId: number, callback: (data: any) => void) {
+    public listenForUserPresence(
+        conversationId: number,
+        callback: (data: any) => void,
+    ) {
         const channelName = `chat-conversation-${conversationId}`;
-        
+
         echo.join(channelName)
             .here((users: any[]) => {
                 console.log('Users currently in conversation:', users);
@@ -104,10 +117,10 @@ export class ChatService {
      */
     public stopListening(conversationId: number, userId: number) {
         const channelName = `chat-conversation-${conversationId}-user-${userId}`;
-        
+
         // Remove the callback
         this.listeners.delete(channelName);
-        
+
         // Leave the channel
         echo.leave(channelName);
     }
@@ -115,13 +128,20 @@ export class ChatService {
     /**
      * Send a message
      */
-    public async sendMessage(conversationId: number, content: string, messageType: string = 'text') {
+    public async sendMessage(
+        conversationId: number,
+        content: string,
+        messageType: string = 'text',
+    ) {
         try {
             const response = await fetch('/chat/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
                     conversation_id: conversationId,
@@ -147,7 +167,10 @@ export class ChatService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
                     conversation_id: conversationId,
@@ -179,13 +202,20 @@ export class ChatService {
     /**
      * Create a new conversation
      */
-    public async createConversation(title: string, participants: number[], type: string = 'direct') {
+    public async createConversation(
+        title: string,
+        participants: number[],
+        type: string = 'direct',
+    ) {
         try {
             const response = await fetch('/chat/conversations', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
                     title,

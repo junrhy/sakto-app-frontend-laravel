@@ -837,13 +837,15 @@ export default function Index({
                                                         </h4>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             After selecting your
-                                                            plan, visit any nearby
-                                                            Neulify partner location to
-                                                            complete your payment.
-                                                            Our partners will assist you with
-                                                            the payment process
-                                                            and activate your
-                                                            subscription.
+                                                            plan, visit any
+                                                            nearby Neulify
+                                                            partner location to
+                                                            complete your
+                                                            payment. Our
+                                                            partners will assist
+                                                            you with the payment
+                                                            process and activate
+                                                            your subscription.
                                                         </p>
                                                     </div>
 
@@ -859,8 +861,10 @@ export default function Index({
                                                                 )
                                                             }
                                                             disabled={
-                                                                paymentMethod === 'cash' ||
-                                                                paymentMethod === 'lemonsqueezy'
+                                                                paymentMethod ===
+                                                                    'cash' ||
+                                                                paymentMethod ===
+                                                                    'lemonsqueezy'
                                                             }
                                                         />
                                                         <Label
@@ -878,9 +882,12 @@ export default function Index({
                                                                     payments)
                                                                 </span>
                                                             )}
-                                                            {paymentMethod === 'lemonsqueezy' && (
+                                                            {paymentMethod ===
+                                                                'lemonsqueezy' && (
                                                                 <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
-                                                                    (Required for credit card)
+                                                                    (Required
+                                                                    for credit
+                                                                    card)
                                                                 </span>
                                                             )}
                                                         </Label>
@@ -901,8 +908,10 @@ export default function Index({
                                                                     Your payment
                                                                     will be
                                                                     processed
-                                                                    securely at any
-                                                                    Neulify partner location.
+                                                                    securely at
+                                                                    any Neulify
+                                                                    partner
+                                                                    location.
                                                                     Partners
                                                                     will provide
                                                                     you with an
@@ -1056,7 +1065,10 @@ export default function Index({
                                                                         Payment
                                                                     </span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Pay at nearby Neulify partners
+                                                                        Pay at
+                                                                        nearby
+                                                                        Neulify
+                                                                        partners
                                                                     </span>
                                                                 </div>
                                                             </label>
@@ -1118,7 +1130,8 @@ export default function Index({
                                                             </label>
                                                             <label
                                                                 className={`flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all ${
-                                                                    paymentMethod === 'lemonsqueezy'
+                                                                    paymentMethod ===
+                                                                    'lemonsqueezy'
                                                                         ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
                                                                         : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
                                                                 }`}
@@ -1127,20 +1140,37 @@ export default function Index({
                                                                     type="radio"
                                                                     name="payment_method"
                                                                     value="lemonsqueezy"
-                                                                    checked={paymentMethod === 'lemonsqueezy'}
-                                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                                    checked={
+                                                                        paymentMethod ===
+                                                                        'lemonsqueezy'
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setPaymentMethod(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
                                                                     className="h-4 w-4 text-blue-600"
                                                                 />
                                                                 <CreditCardIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Credit/Debit Card{' '}
+                                                                        Credit/Debit
+                                                                        Card{' '}
                                                                         <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
-                                                                            via Lemon Squeezy
+                                                                            via
+                                                                            Lemon
+                                                                            Squeezy
                                                                         </span>
                                                                     </span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Secure online payment gateway
+                                                                        Secure
+                                                                        online
+                                                                        payment
+                                                                        gateway
                                                                     </span>
                                                                 </div>
                                                             </label>
@@ -1155,13 +1185,16 @@ export default function Index({
                                                                 <CreditCardIcon className="h-5 w-5 text-gray-400" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Credit/Debit Card{' '}
+                                                                        Credit/Debit
+                                                                        Card{' '}
                                                                         <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
-                                                                            via Stripe
+                                                                            via
+                                                                            Stripe
                                                                         </span>
                                                                     </span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Coming soon
+                                                                        Coming
+                                                                        soon
                                                                     </span>
                                                                 </div>
                                                             </label>
@@ -1569,7 +1602,8 @@ export default function Index({
                                         Visit a Neulify Partner
                                     </p>
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Visit any nearby Neulify partner location during their business hours
+                                        Visit any nearby Neulify partner
+                                        location during their business hours
                                     </p>
                                 </div>
                             </li>

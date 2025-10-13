@@ -1,30 +1,29 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { getHost } from '@/lib/utils';
-import { Head, Link } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
-import { Card, CardContent } from '@/Components/ui/card';
+import { getHost } from '@/lib/utils';
+import { Head, Link } from '@inertiajs/react';
 import {
-    Users,
+    ArrowRight,
+    Briefcase,
+    GraduationCap,
+    HardHat,
+    Landmark,
+    Package,
+    Plane,
+    ShoppingBag,
+    Sprout,
     Stethoscope,
     Truck,
-    ShoppingBag,
-    Package,
-    Briefcase,
-    Plane,
-    ArrowRight,
-    X,
+    Users,
     UtensilsCrossed,
-    GraduationCap,
-    Landmark,
-    Sprout,
-    HardHat,
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface PageProps extends Record<string, any> {
     auth: {
@@ -54,8 +53,11 @@ export default function Welcome({ auth }: PageProps) {
 
     // Country-specific currency configuration
     // Easily add more countries here in the future
-    const countryCurrencyMap: Record<string, { currency: string; symbol: string }> = {
-        'PH': { currency: 'php', symbol: '₱' },
+    const countryCurrencyMap: Record<
+        string,
+        { currency: string; symbol: string }
+    > = {
+        PH: { currency: 'php', symbol: '₱' },
         // Add more countries as needed:
         // 'US': { currency: 'usd', symbol: '$' },
         // 'GB': { currency: 'gbp', symbol: '£' },
@@ -81,21 +83,24 @@ export default function Welcome({ auth }: PageProps) {
     }, []);
 
     // Function to get URL with currency parameters if applicable
-    const getUrlWithCurrency = (baseUrl: string, additionalParams: Record<string, string> = {}): string => {
+    const getUrlWithCurrency = (
+        baseUrl: string,
+        additionalParams: Record<string, string> = {},
+    ): string => {
         const params = new URLSearchParams();
-        
+
         // Add currency params if applicable
         if (userCountry && countryCurrencyMap[userCountry]) {
             const { currency, symbol } = countryCurrencyMap[userCountry];
             params.append('currency', currency);
             params.append('symbol', symbol);
         }
-        
+
         // Add any additional params
         Object.entries(additionalParams).forEach(([key, value]) => {
             params.append(key, value);
         });
-        
+
         const queryString = params.toString();
         return queryString ? `${baseUrl}?${queryString}` : baseUrl;
     };
@@ -104,7 +109,8 @@ export default function Welcome({ auth }: PageProps) {
     const solutions = [
         {
             name: 'Community',
-            description: 'Connect with your community, manage events, and stay informed',
+            description:
+                'Connect with your community, manage events, and stay informed',
             icon: Users,
             href: '/community',
             color: 'text-blue-600',
@@ -112,7 +118,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Medical',
-            description: 'Book appointments, manage health records, and access healthcare',
+            description:
+                'Book appointments, manage health records, and access healthcare',
             icon: Stethoscope,
             href: '/medical',
             color: 'text-green-600',
@@ -120,7 +127,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Logistics',
-            description: 'Track shipments, manage deliveries, and optimize transportation',
+            description:
+                'Track shipments, manage deliveries, and optimize transportation',
             icon: Truck,
             href: '/logistics',
             color: 'text-orange-600',
@@ -128,7 +136,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Shop',
-            description: 'Browse products, place orders, and manage your shopping',
+            description:
+                'Browse products, place orders, and manage your shopping',
             icon: ShoppingBag,
             href: '/shop',
             color: 'text-purple-600',
@@ -136,7 +145,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Delivery',
-            description: 'Order food and groceries with fast delivery to your door',
+            description:
+                'Order food and groceries with fast delivery to your door',
             icon: Package,
             href: '/delivery',
             color: 'text-red-600',
@@ -144,7 +154,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Jobs',
-            description: 'Find opportunities, post listings, and grow your career',
+            description:
+                'Find opportunities, post listings, and grow your career',
             icon: Briefcase,
             href: '/jobs',
             color: 'text-indigo-600',
@@ -168,7 +179,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Education',
-            description: 'Transform learning with comprehensive education management',
+            description:
+                'Transform learning with comprehensive education management',
             icon: GraduationCap,
             href: '/education',
             color: 'text-indigo-600',
@@ -176,7 +188,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Finance',
-            description: 'Manage your finances with powerful budgeting and reporting',
+            description:
+                'Manage your finances with powerful budgeting and reporting',
             icon: Landmark,
             href: '/finance',
             color: 'text-emerald-600',
@@ -184,7 +197,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Agriculture',
-            description: 'Modern farm management for increased productivity and yields',
+            description:
+                'Modern farm management for increased productivity and yields',
             icon: Sprout,
             href: '/agriculture',
             color: 'text-green-600',
@@ -192,7 +206,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Construction',
-            description: 'Manage construction projects with efficiency and precision',
+            description:
+                'Manage construction projects with efficiency and precision',
             icon: HardHat,
             href: '/construction',
             color: 'text-orange-600',
@@ -450,7 +465,9 @@ export default function Welcome({ auth }: PageProps) {
                                                     (item) => (
                                                         <Link
                                                             key={item.name}
-                                                            href={getUrlWithCurrency(item.href)}
+                                                            href={getUrlWithCurrency(
+                                                                item.href,
+                                                            )}
                                                             className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                             onClick={() =>
                                                                 setIsProductsDropdownOpen(
@@ -585,7 +602,9 @@ export default function Welcome({ auth }: PageProps) {
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
-                                                    href={getUrlWithCurrency(item.href)}
+                                                    href={getUrlWithCurrency(
+                                                        item.href,
+                                                    )}
                                                     className="block rounded-md px-3 py-2 text-base font-medium text-[#334155] hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsMenuOpen(false)
@@ -879,7 +898,8 @@ export default function Welcome({ auth }: PageProps) {
                                                 {[
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Community`
                                                                 : 'Community',
                                                         color: 'from-pink-500 to-rose-500',
@@ -910,7 +930,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Logistics`
                                                                 : 'Logistics',
                                                         color: 'from-cyan-500 to-blue-500',
@@ -941,7 +962,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Medical`
                                                                 : 'Medical',
                                                         color: 'from-emerald-500 to-teal-500',
@@ -970,7 +992,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Travel`
                                                                 : 'Travel',
                                                         color: 'from-[#06B6D4] to-[#1E3A8A]',
@@ -999,7 +1022,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Delivery`
                                                                 : 'Delivery',
                                                         color: 'from-[#14B8A6] to-[#1E3A8A]',
@@ -1028,7 +1052,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Job Board`
                                                                 : 'Jobs',
                                                         color: 'from-[#1E3A8A] to-[#14B8A6]',
@@ -1057,7 +1082,8 @@ export default function Welcome({ auth }: PageProps) {
                                                     },
                                                     {
                                                         name:
-                                                            hostname !== 'Neulify'
+                                                            hostname !==
+                                                            'Neulify'
                                                                 ? `${hostname} Marketplace`
                                                                 : 'Shop',
                                                         color: 'from-green-500 to-emerald-600',
@@ -1572,18 +1598,21 @@ export default function Welcome({ auth }: PageProps) {
             </div>
 
             {/* Solutions Dialog */}
-            <Dialog open={isSolutionsDialogOpen} onOpenChange={setIsSolutionsDialogOpen}>
+            <Dialog
+                open={isSolutionsDialogOpen}
+                onOpenChange={setIsSolutionsDialogOpen}
+            >
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white text-center">
+                        <DialogTitle className="text-center text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
                             Neulify
                         </DialogTitle>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 text-center mt-2">
+                        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 sm:text-base">
                             Choose a solution to get started
                         </p>
                     </DialogHeader>
 
-                    <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="custom-scrollbar max-h-[60vh] overflow-y-auto pr-2">
                         <style>{`
                             .custom-scrollbar::-webkit-scrollbar {
                                 width: 8px;
@@ -1626,7 +1655,7 @@ export default function Welcome({ auth }: PageProps) {
                                 scrollbar-color: rgb(75 85 99) rgb(31 41 55);
                             }
                         `}</style>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                             {solutions.map((solution) => {
                                 const Icon = solution.icon;
                                 return (
@@ -1634,26 +1663,34 @@ export default function Welcome({ auth }: PageProps) {
                                         key={solution.name}
                                         href={getUrlWithCurrency(solution.href)}
                                         className="group"
-                                        onClick={() => setIsSolutionsDialogOpen(false)}
+                                        onClick={() =>
+                                            setIsSolutionsDialogOpen(false)
+                                        }
                                     >
-                                        <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-gray-300 dark:hover:border-gray-600">
+                                        <Card className="h-full border-2 transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg dark:hover:border-gray-600">
                                             <CardContent className="p-6">
                                                 <div className="flex items-start space-x-4">
                                                     {/* Icon */}
-                                                    <div className={`flex-shrink-0 p-3 rounded-xl ${solution.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                                                        <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${solution.color}`} />
+                                                    <div
+                                                        className={`flex-shrink-0 rounded-xl p-3 ${solution.bgColor} transition-transform duration-300 group-hover:scale-110`}
+                                                    >
+                                                        <Icon
+                                                            className={`h-6 w-6 sm:h-8 sm:w-8 ${solution.color}`}
+                                                        />
                                                     </div>
-                                                    
+
                                                     {/* Content */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="mb-2 flex items-center justify-between">
+                                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
                                                                 {solution.name}
                                                             </h3>
-                                                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                                                            <ArrowRight className="h-5 w-5 flex-shrink-0 text-gray-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
                                                         </div>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                            {solution.description}
+                                                        <p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
+                                                            {
+                                                                solution.description
+                                                            }
                                                         </p>
                                                     </div>
                                                 </div>

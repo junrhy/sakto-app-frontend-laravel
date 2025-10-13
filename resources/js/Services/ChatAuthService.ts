@@ -55,7 +55,7 @@ export class ChatAuthService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify(userData),
             });
@@ -92,7 +92,7 @@ export class ChatAuthService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify(credentials),
             });
@@ -127,9 +127,9 @@ export class ChatAuthService {
             await fetch(`${this.baseUrl}/logout`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
             });
 
@@ -153,8 +153,8 @@ export class ChatAuthService {
 
             const response = await fetch(`${this.baseUrl}/profile`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
                 },
             });
 
@@ -187,9 +187,9 @@ export class ChatAuthService {
             const response = await fetch(`${this.baseUrl}/profile`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify(profileData),
             });
@@ -226,9 +226,9 @@ export class ChatAuthService {
             const response = await fetch(`${this.baseUrl}/change-password`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify(passwordData),
             });
@@ -260,9 +260,9 @@ export class ChatAuthService {
             await fetch(`${this.baseUrl}/update-online-status`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify({ is_online: isOnline }),
             });
@@ -276,11 +276,14 @@ export class ChatAuthService {
      */
     public async getOnlineUsers(clientIdentifier: string): Promise<ChatUser[]> {
         try {
-            const response = await fetch(`${this.baseUrl}/online-users?client_identifier=${clientIdentifier}`, {
-                headers: {
-                    'Accept': 'application/json',
+            const response = await fetch(
+                `${this.baseUrl}/online-users?client_identifier=${clientIdentifier}`,
+                {
+                    headers: {
+                        Accept: 'application/json',
+                    },
                 },
-            });
+            );
 
             const data = await response.json();
 
@@ -344,7 +347,7 @@ export class ChatAuthService {
      */
     public getAuthHeaders(): Record<string, string> {
         const token = this.getToken();
-        return token ? { 'Authorization': `Bearer ${token}` } : {};
+        return token ? { Authorization: `Bearer ${token}` } : {};
     }
 }
 

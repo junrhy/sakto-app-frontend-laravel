@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -24,7 +24,10 @@ export default function AgricultureIndex({ auth }: PageProps) {
     const hostname = getHost();
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
@@ -35,7 +38,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title={`${hostname} Agriculture - Farm Management Platform`} />
+            <Head
+                title={`${hostname} Agriculture - Farm Management Platform`}
+            />
             <div className="min-h-screen bg-gradient-to-br from-lime-50 via-green-50 to-emerald-50">
                 {/* Header */}
                 <div className="border-b border-green-700 bg-gradient-to-r from-green-700 to-lime-700 shadow-lg">
@@ -77,13 +82,17 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('login', { project: 'agriculture' })}
+                                            href={route('login', {
+                                                project: 'agriculture',
+                                            })}
                                             className="text-green-100 transition-colors hover:text-white"
                                         >
                                             Log in
                                         </Link>
                                         <Link
-                                            href={route('register', { project: 'agriculture' })}
+                                            href={route('register', {
+                                                project: 'agriculture',
+                                            })}
                                             className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-md transition-all hover:bg-green-50"
                                         >
                                             Get Started
@@ -97,7 +106,7 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                 onClick={() =>
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }
-                                className="md:hidden rounded-lg p-2 text-white hover:bg-green-600"
+                                className="rounded-lg p-2 text-white hover:bg-green-600 md:hidden"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -150,13 +159,17 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     ) : (
                                         <>
                                             <Link
-                                                href={route('login', { project: 'agriculture' })}
+                                                href={route('login', {
+                                                    project: 'agriculture',
+                                                })}
                                                 className="text-green-100 transition-colors hover:text-white"
                                             >
                                                 Log in
                                             </Link>
                                             <Link
-                                                href={route('register', { project: 'agriculture' })}
+                                                href={route('register', {
+                                                    project: 'agriculture',
+                                                })}
                                                 className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-green-700 shadow-md transition-all hover:bg-green-50"
                                             >
                                                 Get Started
@@ -178,13 +191,15 @@ export default function AgricultureIndex({ auth }: PageProps) {
                             </h1>
                             <p className="mx-auto mt-4 max-w-2xl text-base text-green-100 sm:mt-6 sm:text-lg md:text-xl">
                                 Modernize your farming operations with our
-                                comprehensive agriculture management platform. Track
-                                crops, manage inventory, and optimize yields with
-                                data-driven insights.
+                                comprehensive agriculture management platform.
+                                Track crops, manage inventory, and optimize
+                                yields with data-driven insights.
                             </p>
                             <div className="mt-8 flex flex-col justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
                                 <Link
-                                    href={route('register', { project: 'agriculture' })}
+                                    href={route('register', {
+                                        project: 'agriculture',
+                                    })}
                                     className="rounded-lg bg-white px-6 py-3 text-base font-semibold text-green-700 shadow-lg transition-all hover:bg-green-50 hover:shadow-xl sm:px-8 sm:text-lg"
                                 >
                                     Start Free Trial
@@ -233,15 +248,18 @@ export default function AgricultureIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Features Section */}
-                <div id="features" className="bg-gray-50 py-12 sm:py-16 lg:py-24">
+                <div
+                    id="features"
+                    className="bg-gray-50 py-12 sm:py-16 lg:py-24"
+                >
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl lg:text-4xl">
                                 Modern Farm Management Tools
                             </h2>
                             <p className="mt-3 text-base text-gray-600 sm:mt-4 sm:text-lg lg:text-xl">
-                                Everything you need to run a successful agricultural
-                                operation
+                                Everything you need to run a successful
+                                agricultural operation
                             </p>
                         </div>
 
@@ -258,8 +276,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     Crop Management
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Track crop growth, planting schedules, and harvest
-                                    times with precision.
+                                    Track crop growth, planting schedules, and
+                                    harvest times with precision.
                                 </p>
                             </div>
 
@@ -275,8 +293,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     Equipment Tracking
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Manage farm equipment, maintenance schedules, and
-                                    usage logs efficiently.
+                                    Manage farm equipment, maintenance
+                                    schedules, and usage logs efficiently.
                                 </p>
                             </div>
 
@@ -301,8 +319,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     Weather Monitoring
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Get real-time weather updates and forecasts to plan
-                                    your farming activities.
+                                    Get real-time weather updates and forecasts
+                                    to plan your farming activities.
                                 </p>
                             </div>
 
@@ -344,8 +362,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     Yield Analytics
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Analyze crop yields and identify optimization
-                                    opportunities with AI-powered insights.
+                                    Analyze crop yields and identify
+                                    optimization opportunities with AI-powered
+                                    insights.
                                 </p>
                             </div>
 
@@ -370,8 +389,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     Financial Tracking
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Monitor farm expenses, revenues, and profitability
-                                    with detailed reports.
+                                    Monitor farm expenses, revenues, and
+                                    profitability with detailed reports.
                                 </p>
                             </div>
                         </div>
@@ -402,7 +421,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {basicPlan.currency}{basicPlan.price}
+                                            {basicPlan.currency}
+                                            {basicPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -427,7 +447,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'agriculture' })}
+                                        href={route('register', {
+                                            project: 'agriculture',
+                                        })}
                                         className="mt-6 block rounded-lg border-2 border-green-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-green-600 transition-all hover:bg-green-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -451,7 +473,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {proPlan.currency}{proPlan.price}
+                                            {proPlan.currency}
+                                            {proPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -476,7 +499,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'agriculture' })}
+                                        href={route('register', {
+                                            project: 'agriculture',
+                                        })}
                                         className="mt-6 block rounded-lg bg-green-600 px-6 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-green-700 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -495,7 +520,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {businessPlan.currency}{businessPlan.price}
+                                            {businessPlan.currency}
+                                            {businessPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -520,7 +546,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'agriculture' })}
+                                        href={route('register', {
+                                            project: 'agriculture',
+                                        })}
                                         className="mt-6 block rounded-lg border-2 border-green-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-green-600 transition-all hover:bg-green-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -546,9 +574,10 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                         What size farms can use this platform?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Our platform scales from small family farms to
-                                        large commercial operations. Choose the plan
-                                        that matches your farm size and needs.
+                                        Our platform scales from small family
+                                        farms to large commercial operations.
+                                        Choose the plan that matches your farm
+                                        size and needs.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -556,9 +585,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                         Does it work offline?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes! Our mobile app includes offline mode for
-                                        field work. Data syncs automatically when
-                                        you're back online.
+                                        Yes! Our mobile app includes offline
+                                        mode for field work. Data syncs
+                                        automatically when you're back online.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -566,9 +595,9 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                         Can I track multiple farms?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes, Pro and Business plans support multiple
-                                        farm locations with centralized management and
-                                        reporting.
+                                        Yes, Pro and Business plans support
+                                        multiple farm locations with centralized
+                                        management and reporting.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -577,8 +606,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
                                         All plans include email support. Pro and
-                                        Business plans get priority phone support and
-                                        dedicated account managers.
+                                        Business plans get priority phone
+                                        support and dedicated account managers.
                                     </dd>
                                 </div>
                             </dl>
@@ -587,7 +616,10 @@ export default function AgricultureIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer id="contact" className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16">
+                <footer
+                    id="contact"
+                    className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16"
+                >
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
                         {/* Main Footer Content */}
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -605,10 +637,10 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Modern farm management platform designed to help
-                                    farmers increase productivity and profitability.
-                                    Track crops, equipment, and finances all in one
-                                    place.
+                                    Modern farm management platform designed to
+                                    help farmers increase productivity and
+                                    profitability. Track crops, equipment, and
+                                    finances all in one place.
                                 </p>
                             </div>
 
@@ -691,8 +723,8 @@ export default function AgricultureIndex({ auth }: PageProps) {
                         <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                 <div className="text-center text-sm text-slate-400 md:text-left">
-                                    © {new Date().getFullYear()} {hostname} Agriculture. All
-                                    rights reserved.
+                                    © {new Date().getFullYear()} {hostname}{' '}
+                                    Agriculture. All rights reserved.
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                                     <div className="flex items-center text-sm text-slate-400">
@@ -737,4 +769,3 @@ export default function AgricultureIndex({ auth }: PageProps) {
         </>
     );
 }
-

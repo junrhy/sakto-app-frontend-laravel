@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -24,7 +24,10 @@ export default function FnbIndex({ auth }: PageProps) {
     const hostname = getHost();
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
@@ -707,21 +710,23 @@ export default function FnbIndex({ auth }: PageProps) {
                                             system?
                                         </dt>
                                         <dd className="text-red-700">
-                                            Yes, our platform supports integration
-                                            with most major POS systems. Contact
-                                            our support team for specific
-                                            integration details.
+                                            Yes, our platform supports
+                                            integration with most major POS
+                                            systems. Contact our support team
+                                            for specific integration details.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-red-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-red-900">
-                                            Do you provide training for my staff?
+                                            Do you provide training for my
+                                            staff?
                                         </dt>
                                         <dd className="text-red-700">
-                                            Yes, we provide comprehensive training
-                                            materials, video tutorials, and live
-                                            training sessions. Business customers
-                                            receive dedicated onboarding support.
+                                            Yes, we provide comprehensive
+                                            training materials, video tutorials,
+                                            and live training sessions. Business
+                                            customers receive dedicated
+                                            onboarding support.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-red-200 bg-white p-6">
@@ -741,7 +746,10 @@ export default function FnbIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer id="contact" className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16">
+                <footer
+                    id="contact"
+                    className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16"
+                >
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
                         {/* Main Footer Content */}
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -759,10 +767,10 @@ export default function FnbIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Transform your restaurant operations with our
-                                    comprehensive F&B management platform. Manage
-                                    orders, inventory, reservations, and analytics
-                                    with precision and efficiency.
+                                    Transform your restaurant operations with
+                                    our comprehensive F&B management platform.
+                                    Manage orders, inventory, reservations, and
+                                    analytics with precision and efficiency.
                                 </p>
                             </div>
 
@@ -845,8 +853,8 @@ export default function FnbIndex({ auth }: PageProps) {
                         <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                 <div className="text-center text-sm text-slate-400 md:text-left">
-                                    © {new Date().getFullYear()} {hostname} F&B. All
-                                    rights reserved.
+                                    © {new Date().getFullYear()} {hostname}{' '}
+                                    F&B. All rights reserved.
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                                     <div className="flex items-center text-sm text-slate-400">
@@ -891,4 +899,3 @@ export default function FnbIndex({ auth }: PageProps) {
         </>
     );
 }
-

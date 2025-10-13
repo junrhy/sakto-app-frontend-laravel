@@ -199,9 +199,7 @@ export default function Index({ auth, content }: Props) {
                                 </p>
                                 <div className="mt-6">
                                     <Link
-                                        href={route(
-                                            'content-creator.create',
-                                        )}
+                                        href={route('content-creator.create')}
                                     >
                                         <Button>
                                             <Plus className="mr-2 h-4 w-4" />
@@ -215,177 +213,171 @@ export default function Index({ auth, content }: Props) {
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                         {filteredContent.map((item) => (
-                                <Card
-                                    key={item.id}
-                                    className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
-                                >
-                                    {item.featured_image ? (
-                                        <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
-                                            <img
-                                                src={item.featured_image}
-                                                alt={item.title}
-                                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            <Card
+                                key={item.id}
+                                className="group overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                            >
+                                {item.featured_image ? (
+                                    <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                        <img
+                                            src={item.featured_image}
+                                            alt={item.title}
+                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                    </div>
+                                ) : (
+                                    <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                        <svg
+                                            className="h-16 w-16 text-gray-400 dark:text-gray-600"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                                        </div>
-                                    ) : (
-                                        <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-                                            <svg
-                                                className="h-16 w-16 text-gray-400 dark:text-gray-600"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1.5}
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                />
-                                            </svg>
-                                        </div>
-                                    )}
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <CardTitle className="line-clamp-2 text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
-                                                {item.title}
-                                            </CardTitle>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 flex-shrink-0 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                        </svg>
+                                    </div>
+                                )}
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <CardTitle className="line-clamp-2 text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
+                                            {item.title}
+                                        </CardTitle>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 flex-shrink-0 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                                >
+                                                    <span className="sr-only">
+                                                        Open menu
+                                                    </span>
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
                                                     >
-                                                        <span className="sr-only">
-                                                            Open menu
-                                                        </span>
-                                                        <svg
-                                                            className="h-4 w-4"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                                                            />
-                                                        </svg>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                                        />
+                                                    </svg>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem asChild>
+                                                    <Link
+                                                        href={route(
+                                                            'content-creator.preview',
+                                                            item.id,
+                                                        )}
+                                                    >
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        View
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                {item.status ===
+                                                    'published' && (
                                                     <DropdownMenuItem asChild>
                                                         <Link
                                                             href={route(
-                                                                'content-creator.preview',
+                                                                'content-creator.public',
+                                                                item.slug,
+                                                            )}
+                                                            target="_blank"
+                                                        >
+                                                            <Share2 className="mr-2 h-4 w-4" />
+                                                            Share
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                )}
+                                                {canEdit && (
+                                                    <DropdownMenuItem asChild>
+                                                        <Link
+                                                            href={route(
+                                                                'content-creator.edit',
                                                                 item.id,
                                                             )}
                                                         >
-                                                            <Eye className="mr-2 h-4 w-4" />
-                                                            View
+                                                            <Edit className="mr-2 h-4 w-4" />
+                                                            Edit
                                                         </Link>
                                                     </DropdownMenuItem>
-                                                    {item.status ===
-                                                        'published' && (
-                                                        <DropdownMenuItem
-                                                            asChild
-                                                        >
-                                                            <Link
-                                                                href={route(
-                                                                    'content-creator.public',
-                                                                    item.slug,
-                                                                )}
-                                                                target="_blank"
-                                                            >
-                                                                <Share2 className="mr-2 h-4 w-4" />
-                                                                Share
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {canEdit && (
-                                                        <DropdownMenuItem
-                                                            asChild
-                                                        >
-                                                            <Link
-                                                                href={route(
-                                                                    'content-creator.edit',
-                                                                    item.id,
-                                                                )}
-                                                            >
-                                                                <Edit className="mr-2 h-4 w-4" />
-                                                                Edit
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {canDelete && (
-                                                        <DropdownMenuItem
-                                                            className="text-red-600"
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    item.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                        <div className="mt-3 flex items-center justify-between">
-                                            <Badge
-                                                variant={getStatusBadgeColor(
-                                                    item.status,
                                                 )}
-                                                className="capitalize text-xs font-medium"
-                                            >
-                                                {item.status}
-                                            </Badge>
-                                            {item.status === 'published' && (
-                                                <Link
-                                                    href={route(
-                                                        'content-creator.public',
-                                                        item.slug,
-                                                    )}
-                                                    target="_blank"
-                                                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                                                >
-                                                    <Share2 className="h-3 w-3" />
-                                                    <span>Share</span>
-                                                </Link>
+                                                {canDelete && (
+                                                    <DropdownMenuItem
+                                                        className="text-red-600"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                item.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <Badge
+                                            variant={getStatusBadgeColor(
+                                                item.status,
                                             )}
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4 pt-0">
-                                        {item.excerpt && (
-                                            <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                                                {item.excerpt}
-                                            </p>
+                                            className="text-xs font-medium capitalize"
+                                        >
+                                            {item.status}
+                                        </Badge>
+                                        {item.status === 'published' && (
+                                            <Link
+                                                href={route(
+                                                    'content-creator.public',
+                                                    item.slug,
+                                                )}
+                                                target="_blank"
+                                                className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                            >
+                                                <Share2 className="h-3 w-3" />
+                                                <span>Share</span>
+                                            </Link>
                                         )}
-                                        <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                                            <div className="flex items-center gap-1.5">
-                                                <User className="h-3.5 w-3.5" />
-                                                <span className="font-medium">
-                                                    {item.author || 'Unknown'}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Calendar className="h-3.5 w-3.5" />
-                                                <span>
-                                                    {format(
-                                                        new Date(
-                                                            item.created_at,
-                                                        ),
-                                                        'MMM d, yyyy',
-                                                    )}
-                                                </span>
-                                            </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-4 pt-0">
+                                    {item.excerpt && (
+                                        <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                                            {item.excerpt}
+                                        </p>
+                                    )}
+                                    <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                        <div className="flex items-center gap-1.5">
+                                            <User className="h-3.5 w-3.5" />
+                                            <span className="font-medium">
+                                                {item.author || 'Unknown'}
+                                            </span>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="h-3.5 w-3.5" />
+                                            <span>
+                                                {format(
+                                                    new Date(item.created_at),
+                                                    'MMM d, yyyy',
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                 )}

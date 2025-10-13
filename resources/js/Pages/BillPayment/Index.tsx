@@ -533,7 +533,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                 Add Bill
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                                        <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
                                             <DialogHeader>
                                                 <DialogTitle>
                                                     Create New Bill
@@ -543,222 +543,232 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                     your system
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <div className="overflow-y-auto flex-1 space-y-4 pr-2">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="bill_title">
-                                                        Bill Title *
-                                                    </Label>
-                                                    <Input
-                                                        id="bill_title"
-                                                        value={
-                                                            formData.bill_title
-                                                        }
-                                                        onChange={(e) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                bill_title:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="biller_id">
-                                                        Biller
-                                                    </Label>
-                                                    <Select
-                                                        value={
-                                                            formData.biller_id
-                                                        }
-                                                        onValueChange={(
-                                                            value,
-                                                        ) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                biller_id:
-                                                                    value,
-                                                            })
-                                                        }
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select a biller" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="none">
-                                                                No Biller
-                                                            </SelectItem>
-                                                            {billers.map(
-                                                                (biller) => (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            biller.id
-                                                                        }
-                                                                        value={biller.id.toString()}
-                                                                    >
-                                                                        {
-                                                                            biller.name
-                                                                        }
-                                                                    </SelectItem>
-                                                                ),
-                                                            )}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <div className="h-5">
-                                                        {formData.biller_id !==
-                                                            'none' &&
-                                                            (() => {
-                                                                const selectedBiller =
-                                                                    billers.find(
-                                                                        (b) =>
-                                                                            b.id.toString() ===
-                                                                            formData.biller_id,
-                                                                    );
-                                                                return (
-                                                                    selectedBiller?.account_number && (
-                                                                        <div className="text-sm text-muted-foreground">
-                                                                            Account
-                                                                            Number:{' '}
-                                                                            {
-                                                                                selectedBiller.account_number
-                                                                            }
-                                                                        </div>
-                                                                    )
-                                                                );
-                                                            })()}
+                                            <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+                                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="bill_title">
+                                                            Bill Title *
+                                                        </Label>
+                                                        <Input
+                                                            id="bill_title"
+                                                            value={
+                                                                formData.bill_title
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    bill_title:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            }
+                                                        />
                                                     </div>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="amount">
-                                                        Amount *
-                                                    </Label>
-                                                    <Input
-                                                        id="amount"
-                                                        type="number"
-                                                        step="0.01"
-                                                        value={formData.amount}
-                                                        onChange={(e) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                amount: e.target
-                                                                    .value,
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="due_date">
-                                                        Due Date *
-                                                    </Label>
-                                                    <Input
-                                                        id="due_date"
-                                                        type="date"
-                                                        value={
-                                                            formData.due_date
-                                                        }
-                                                        onChange={(e) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                due_date:
-                                                                    e.target
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="biller_id">
+                                                            Biller
+                                                        </Label>
+                                                        <Select
+                                                            value={
+                                                                formData.biller_id
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    biller_id:
+                                                                        value,
+                                                                })
+                                                            }
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select a biller" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="none">
+                                                                    No Biller
+                                                                </SelectItem>
+                                                                {billers.map(
+                                                                    (
+                                                                        biller,
+                                                                    ) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                biller.id
+                                                                            }
+                                                                            value={biller.id.toString()}
+                                                                        >
+                                                                            {
+                                                                                biller.name
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <div className="h-5">
+                                                            {formData.biller_id !==
+                                                                'none' &&
+                                                                (() => {
+                                                                    const selectedBiller =
+                                                                        billers.find(
+                                                                            (
+                                                                                b,
+                                                                            ) =>
+                                                                                b.id.toString() ===
+                                                                                formData.biller_id,
+                                                                        );
+                                                                    return (
+                                                                        selectedBiller?.account_number && (
+                                                                            <div className="text-sm text-muted-foreground">
+                                                                                Account
+                                                                                Number:{' '}
+                                                                                {
+                                                                                    selectedBiller.account_number
+                                                                                }
+                                                                            </div>
+                                                                        )
+                                                                    );
+                                                                })()}
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="amount">
+                                                            Amount *
+                                                        </Label>
+                                                        <Input
+                                                            id="amount"
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={
+                                                                formData.amount
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    amount: e
+                                                                        .target
                                                                         .value,
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="category">
-                                                        Category
-                                                    </Label>
-                                                    <Input
-                                                        id="category"
-                                                        value={
-                                                            formData.category
-                                                        }
-                                                        onChange={(e) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                category:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="priority">
-                                                        Priority
-                                                    </Label>
-                                                    <Select
-                                                        value={
-                                                            formData.priority
-                                                        }
-                                                        onValueChange={(
-                                                            value,
-                                                        ) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                priority: value,
-                                                            })
-                                                        }
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="low">
-                                                                Low
-                                                            </SelectItem>
-                                                            <SelectItem value="medium">
-                                                                Medium
-                                                            </SelectItem>
-                                                            <SelectItem value="high">
-                                                                High
-                                                            </SelectItem>
-                                                            <SelectItem value="urgent">
-                                                                Urgent
-                                                            </SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="status">
-                                                        Status
-                                                    </Label>
-                                                    <Select
-                                                        value={formData.status}
-                                                        onValueChange={(
-                                                            value,
-                                                        ) =>
-                                                            setFormData({
-                                                                ...formData,
-                                                                status: value,
-                                                            })
-                                                        }
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="pending">
-                                                                Pending
-                                                            </SelectItem>
-                                                            <SelectItem value="paid">
-                                                                Paid
-                                                            </SelectItem>
-                                                            <SelectItem value="overdue">
-                                                                Overdue
-                                                            </SelectItem>
-                                                            <SelectItem value="cancelled">
-                                                                Cancelled
-                                                            </SelectItem>
-                                                            <SelectItem value="partial">
-                                                                Partial
-                                                            </SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                                                })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="due_date">
+                                                            Due Date *
+                                                        </Label>
+                                                        <Input
+                                                            id="due_date"
+                                                            type="date"
+                                                            value={
+                                                                formData.due_date
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    due_date:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="category">
+                                                            Category
+                                                        </Label>
+                                                        <Input
+                                                            id="category"
+                                                            value={
+                                                                formData.category
+                                                            }
+                                                            onChange={(e) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    category:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="priority">
+                                                            Priority
+                                                        </Label>
+                                                        <Select
+                                                            value={
+                                                                formData.priority
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    priority:
+                                                                        value,
+                                                                })
+                                                            }
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="low">
+                                                                    Low
+                                                                </SelectItem>
+                                                                <SelectItem value="medium">
+                                                                    Medium
+                                                                </SelectItem>
+                                                                <SelectItem value="high">
+                                                                    High
+                                                                </SelectItem>
+                                                                <SelectItem value="urgent">
+                                                                    Urgent
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="status">
+                                                            Status
+                                                        </Label>
+                                                        <Select
+                                                            value={
+                                                                formData.status
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) =>
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    status: value,
+                                                                })
+                                                            }
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="pending">
+                                                                    Pending
+                                                                </SelectItem>
+                                                                <SelectItem value="paid">
+                                                                    Paid
+                                                                </SelectItem>
+                                                                <SelectItem value="overdue">
+                                                                    Overdue
+                                                                </SelectItem>
+                                                                <SelectItem value="cancelled">
+                                                                    Cancelled
+                                                                </SelectItem>
+                                                                <SelectItem value="partial">
+                                                                    Partial
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label htmlFor="bill_description">
@@ -773,7 +783,8 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                             setFormData({
                                                                 ...formData,
                                                                 bill_description:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                     />
@@ -791,7 +802,8 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                             setFormData({
                                                                 ...formData,
                                                                 reference_number:
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                             })
                                                         }
                                                         placeholder="Enter reference number"
@@ -818,7 +830,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                     </Label>
                                                 </div>
                                                 {formData.is_recurring && (
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                         <div className="space-y-2">
                                                             <Label htmlFor="recurring_frequency">
                                                                 Frequency
@@ -830,11 +842,13 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                                 onValueChange={(
                                                                     value,
                                                                 ) =>
-                                                                    setFormData({
-                                                                        ...formData,
-                                                                        recurring_frequency:
-                                                                            value,
-                                                                    })
+                                                                    setFormData(
+                                                                        {
+                                                                            ...formData,
+                                                                            recurring_frequency:
+                                                                                value,
+                                                                        },
+                                                                    )
                                                                 }
                                                             >
                                                                 <SelectTrigger>
@@ -870,12 +884,15 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                                     formData.next_due_date
                                                                 }
                                                                 onChange={(e) =>
-                                                                    setFormData({
-                                                                        ...formData,
-                                                                        next_due_date:
-                                                                            e.target
-                                                                                .value,
-                                                                    })
+                                                                    setFormData(
+                                                                        {
+                                                                            ...formData,
+                                                                            next_due_date:
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                        },
+                                                                    )
                                                                 }
                                                             />
                                                         </div>
@@ -1377,206 +1394,215 @@ export default function BillPayment({ auth }: { auth: any }) {
 
             {/* Edit Dialog */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
                     <DialogHeader>
                         <DialogTitle>Edit Bill</DialogTitle>
                         <DialogDescription>
                             Update the bill payment information
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="overflow-y-auto flex-1 space-y-4 pr-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_bill_title">
-                                Bill Title *
-                            </Label>
-                            <Input
-                                id="edit_bill_title"
-                                value={formData.bill_title}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        bill_title: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_biller_id">Biller</Label>
-                            <Select
-                                value={formData.biller_id}
-                                onValueChange={(value) =>
-                                    setFormData({
-                                        ...formData,
-                                        biller_id: value,
-                                    })
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a biller" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">
-                                        No Biller
-                                    </SelectItem>
-                                    {billers.map((biller) => (
-                                        <SelectItem
-                                            key={biller.id}
-                                            value={biller.id.toString()}
-                                        >
-                                            {biller.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <div className="h-5">
-                                {formData.biller_id !== 'none' &&
-                                    (() => {
-                                        const selectedBiller = billers.find(
-                                            (b) =>
-                                                b.id.toString() ===
-                                                formData.biller_id,
-                                        );
-                                        return (
-                                            selectedBiller?.account_number && (
-                                                <div className="text-sm text-muted-foreground">
-                                                    Account Number:{' '}
-                                                    {
-                                                        selectedBiller.account_number
-                                                    }
-                                                </div>
-                                            )
-                                        );
-                                    })()}
+                    <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_bill_title">
+                                    Bill Title *
+                                </Label>
+                                <Input
+                                    id="edit_bill_title"
+                                    value={formData.bill_title}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            bill_title: e.target.value,
+                                        })
+                                    }
+                                />
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_amount">Amount *</Label>
-                            <Input
-                                id="edit_amount"
-                                type="number"
-                                step="0.01"
-                                value={formData.amount}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        amount: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_due_date">Due Date *</Label>
-                            <Input
-                                id="edit_due_date"
-                                type="date"
-                                value={formData.due_date}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        due_date: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_payment_date">
-                                Payment Date
-                            </Label>
-                            <Input
-                                id="edit_payment_date"
-                                type="date"
-                                value={formData.payment_date}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        payment_date: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_category">Category</Label>
-                            <Input
-                                id="edit_category"
-                                value={formData.category}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        category: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_priority">Priority</Label>
-                            <Select
-                                value={formData.priority}
-                                onValueChange={(value) =>
-                                    setFormData({
-                                        ...formData,
-                                        priority: value,
-                                    })
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="medium">
-                                        Medium
-                                    </SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                    <SelectItem value="urgent">
-                                        Urgent
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_status">Status</Label>
-                            <Select
-                                value={formData.status}
-                                onValueChange={(value) =>
-                                    setFormData({ ...formData, status: value })
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="pending">
-                                        Pending
-                                    </SelectItem>
-                                    <SelectItem value="paid">Paid</SelectItem>
-                                    <SelectItem value="overdue">
-                                        Overdue
-                                    </SelectItem>
-                                    <SelectItem value="cancelled">
-                                        Cancelled
-                                    </SelectItem>
-                                    <SelectItem value="partial">
-                                        Partial
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_payment_method">
-                                Payment Method
-                            </Label>
-                            <Input
-                                id="edit_payment_method"
-                                value={formData.payment_method}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        payment_method: e.target.value,
-                                    })
-                                }
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_biller_id">Biller</Label>
+                                <Select
+                                    value={formData.biller_id}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            biller_id: value,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a biller" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">
+                                            No Biller
+                                        </SelectItem>
+                                        {billers.map((biller) => (
+                                            <SelectItem
+                                                key={biller.id}
+                                                value={biller.id.toString()}
+                                            >
+                                                {biller.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <div className="h-5">
+                                    {formData.biller_id !== 'none' &&
+                                        (() => {
+                                            const selectedBiller = billers.find(
+                                                (b) =>
+                                                    b.id.toString() ===
+                                                    formData.biller_id,
+                                            );
+                                            return (
+                                                selectedBiller?.account_number && (
+                                                    <div className="text-sm text-muted-foreground">
+                                                        Account Number:{' '}
+                                                        {
+                                                            selectedBiller.account_number
+                                                        }
+                                                    </div>
+                                                )
+                                            );
+                                        })()}
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_amount">Amount *</Label>
+                                <Input
+                                    id="edit_amount"
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.amount}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            amount: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_due_date">
+                                    Due Date *
+                                </Label>
+                                <Input
+                                    id="edit_due_date"
+                                    type="date"
+                                    value={formData.due_date}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            due_date: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_payment_date">
+                                    Payment Date
+                                </Label>
+                                <Input
+                                    id="edit_payment_date"
+                                    type="date"
+                                    value={formData.payment_date}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            payment_date: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_category">Category</Label>
+                                <Input
+                                    id="edit_category"
+                                    value={formData.category}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            category: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_priority">Priority</Label>
+                                <Select
+                                    value={formData.priority}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            priority: value,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">
+                                            Medium
+                                        </SelectItem>
+                                        <SelectItem value="high">
+                                            High
+                                        </SelectItem>
+                                        <SelectItem value="urgent">
+                                            Urgent
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_status">Status</Label>
+                                <Select
+                                    value={formData.status}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            status: value,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="pending">
+                                            Pending
+                                        </SelectItem>
+                                        <SelectItem value="paid">
+                                            Paid
+                                        </SelectItem>
+                                        <SelectItem value="overdue">
+                                            Overdue
+                                        </SelectItem>
+                                        <SelectItem value="cancelled">
+                                            Cancelled
+                                        </SelectItem>
+                                        <SelectItem value="partial">
+                                            Partial
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_payment_method">
+                                    Payment Method
+                                </Label>
+                                <Input
+                                    id="edit_payment_method"
+                                    value={formData.payment_method}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            payment_method: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="edit_bill_description">

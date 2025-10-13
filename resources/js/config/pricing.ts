@@ -823,7 +823,7 @@ export const getPricingForService = (
 
     // Update price based on currency and add symbol for all plans
     return {
-        plans: config.plans.map(plan => ({
+        plans: config.plans.map((plan) => ({
             ...plan,
             price: plan.prices[currency.toLowerCase()] || plan.prices.usd,
             currency: symbol,

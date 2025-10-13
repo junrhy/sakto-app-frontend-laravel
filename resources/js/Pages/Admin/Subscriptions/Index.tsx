@@ -113,7 +113,8 @@ export default function Index({
             credits_per_month: plan.credits_per_month?.toString() || '0',
             features: plan.features || [],
             is_popular: plan.is_popular || false,
-            lemon_squeezy_variant_id: (plan as any).lemon_squeezy_variant_id || '',
+            lemon_squeezy_variant_id:
+                (plan as any).lemon_squeezy_variant_id || '',
             is_active: plan.is_active || true,
             badge_text: plan.badge_text || '',
             project_id: plan.project_id?.toString() || '',
@@ -840,9 +841,14 @@ export default function Index({
                                 id="auto_create_lemon_squeezy"
                                 type="checkbox"
                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-                                checked={createForm.data.auto_create_lemon_squeezy}
+                                checked={
+                                    createForm.data.auto_create_lemon_squeezy
+                                }
                                 onChange={(e) =>
-                                    createForm.setData('auto_create_lemon_squeezy', e.target.checked)
+                                    createForm.setData(
+                                        'auto_create_lemon_squeezy',
+                                        e.target.checked,
+                                    )
                                 }
                             />
                             <InputLabel
@@ -852,7 +858,8 @@ export default function Index({
                             />
                         </div>
                         <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
-                            Automatically create a product variant in Lemon Squeezy for this plan
+                            Automatically create a product variant in Lemon
+                            Squeezy for this plan
                         </p>
                     </div>
 
@@ -869,16 +876,23 @@ export default function Index({
                                 className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 value={createForm.data.lemon_squeezy_variant_id}
                                 onChange={(e) =>
-                                    createForm.setData('lemon_squeezy_variant_id', e.target.value)
+                                    createForm.setData(
+                                        'lemon_squeezy_variant_id',
+                                        e.target.value,
+                                    )
                                 }
                                 placeholder="e.g., 1035735"
                             />
                             <InputError
-                                message={(createForm.errors as any).lemon_squeezy_variant_id}
+                                message={
+                                    (createForm.errors as any)
+                                        .lemon_squeezy_variant_id
+                                }
                                 className="mt-2"
                             />
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Enter the variant ID from your Lemon Squeezy dashboard (Products → Variants)
+                                Enter the variant ID from your Lemon Squeezy
+                                dashboard (Products → Variants)
                             </p>
                         </div>
                     )}
@@ -1209,23 +1223,32 @@ export default function Index({
                             className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             value={editForm.data.lemon_squeezy_variant_id}
                             onChange={(e) =>
-                                editForm.setData('lemon_squeezy_variant_id', e.target.value)
+                                editForm.setData(
+                                    'lemon_squeezy_variant_id',
+                                    e.target.value,
+                                )
                             }
                             placeholder="e.g., 1035735"
                         />
                         <InputError
-                            message={(editForm.errors as any).lemon_squeezy_variant_id}
+                            message={
+                                (editForm.errors as any)
+                                    .lemon_squeezy_variant_id
+                            }
                             className="mt-2"
                         />
                         {editForm.data.lemon_squeezy_variant_id ? (
                             <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 p-2 dark:border-blue-800 dark:bg-blue-900/20">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                                    ℹ️ Changes to name, description, price, and duration will be automatically synced with Lemon Squeezy
+                                    ℹ️ Changes to name, description, price, and
+                                    duration will be automatically synced with
+                                    Lemon Squeezy
                                 </p>
                             </div>
                         ) : (
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Enter the variant ID from your Lemon Squeezy dashboard (Products → Variants)
+                                Enter the variant ID from your Lemon Squeezy
+                                dashboard (Products → Variants)
                             </p>
                         )}
                     </div>

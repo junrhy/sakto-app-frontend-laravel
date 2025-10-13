@@ -74,13 +74,23 @@ interface Props extends PageProps {
     hasActiveAccount: boolean;
 }
 
-export default function Index({ auth, messages, stats, accounts, hasActiveAccount }: Props) {
+export default function Index({
+    auth,
+    messages,
+    stats,
+    accounts,
+    hasActiveAccount,
+}: Props) {
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [isLoadingPricing, setIsLoadingPricing] = useState(false);
     const [pricing, setPricing] = useState<any>(null);
 
     // Debug logging
-    console.log('Semaphore Index Props:', { accounts, hasActiveAccount, accountsCount: accounts?.length });
+    console.log('Semaphore Index Props:', {
+        accounts,
+        hasActiveAccount,
+        accountsCount: accounts?.length,
+    });
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -99,7 +109,6 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
         to: '',
         message: '',
     });
-
 
     const [recipients, setRecipients] = useState<string[]>([]);
     const [newRecipient, setNewRecipient] = useState<string>('');
@@ -412,7 +421,9 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
                                             Semaphore Account Setup Required
                                         </h3>
                                         <p className="text-sm text-amber-700 dark:text-amber-300">
-                                            Connect your Semaphore account to start sending Philippine SMS messages
+                                            Connect your Semaphore account to
+                                            start sending Philippine SMS
+                                            messages
                                         </p>
                                     </div>
                                 </div>
@@ -440,7 +451,8 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
                                         Select Account
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        Choose which account to use for sending messages
+                                        Choose which account to use for sending
+                                        messages
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -454,15 +466,19 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
                                         className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     >
                                         {accounts.length === 0 ? (
-                                            <option value="">No accounts available</option>
+                                            <option value="">
+                                                No accounts available
+                                            </option>
                                         ) : (
                                             accounts.map((account) => (
                                                 <option
                                                     key={account.id}
                                                     value={account.id}
                                                 >
-                                                    {account.account_name} ({account.sender_name})
-                                                    {!account.is_verified && ' - Not Verified'}
+                                                    {account.account_name} (
+                                                    {account.sender_name})
+                                                    {!account.is_verified &&
+                                                        ' - Not Verified'}
                                                 </option>
                                             ))
                                         )}
@@ -485,441 +501,424 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        {/* Total Sent Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
-                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Total Sent
-                                        </p>
-                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                            {stats.sent}
-                                        </p>
-                                        <p className="text-xs text-blue-600 dark:text-blue-400">
-                                            All messages sent
-                                        </p>
-                                    </div>
-                                    <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
-                                        <svg
-                                            className="h-6 w-6 text-blue-600 dark:text-blue-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Delivered Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
-                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Delivered
-                                        </p>
-                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                            {stats.delivered}
-                                        </p>
-                                        <p className="text-xs text-green-600 dark:text-green-400">
-                                            {stats.sent > 0
-                                                ? `${Math.round((stats.delivered / stats.sent) * 100)}% success rate`
-                                                : '0% success rate'}
-                                        </p>
-                                    </div>
-                                    <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
-                                        <svg
-                                            className="h-6 w-6 text-green-600 dark:text-green-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Failed Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
-                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Failed
-                                        </p>
-                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                            {stats.failed}
-                                        </p>
-                                        <p className="text-xs text-red-600 dark:text-red-400">
-                                            {stats.sent > 0
-                                                ? `${Math.round((stats.failed / stats.sent) * 100)}% failure rate`
-                                                : '0% failure rate'}
-                                        </p>
-                                    </div>
-                                    <div className="rounded-full bg-red-100 p-3 dark:bg-red-900/30">
-                                        <svg
-                                            className="h-6 w-6 text-red-600 dark:text-red-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Credits Card */}
-                        <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
-                            <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Available Credits
-                                        </p>
-                                        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                            {credits.toLocaleString()}
-                                        </p>
-                                        <p className="text-xs text-blue-600 dark:text-blue-400">
-                                            Credits available
-                                        </p>
-                                    </div>
-                                    <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
-                                        <svg
-                                            className="h-6 w-6 text-blue-600 dark:text-blue-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Send Message Form */}
-                    <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-                        <div className="lg:col-span-2">
-                            <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                                <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
-                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        Send Message
-                                    </CardTitle>
-                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                        Send SMS messages (Max 160 characters)
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
-                                    <form
-                                        onSubmit={submit}
-                                        className="space-y-6"
-                                    >
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label
-                                                    htmlFor="newRecipient"
-                                                    className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Add Philippine Phone Number
-                                                </label>
-                                                <div className="flex gap-2">
-                                                    <Input
-                                                        id="newRecipient"
-                                                        type="text"
-                                                        value={newRecipient}
-                                                        onChange={(e) =>
-                                                            setNewRecipient(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="+639123456789"
-                                                        className="flex-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                                        onKeyPress={(e) => {
-                                                            if (
-                                                                e.key ===
-                                                                'Enter'
-                                                            ) {
-                                                                e.preventDefault();
-                                                                addRecipient();
-                                                            }
-                                                        }}
-                                                    />
-                                                    <Button
-                                                        type="button"
-                                                        onClick={addRecipient}
-                                                        className="bg-indigo-600 text-white hover:bg-indigo-700"
-                                                    >
-                                                        Add
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setShowContactSelector(
-                                                                true,
-                                                            )
-                                                        }
-                                                        className="bg-green-600 text-white hover:bg-green-700"
-                                                    >
-                                                        Select from Contacts
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            {recipients.length > 0 && (
-                                                <div className="space-y-2">
-                                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                        Recipients (
-                                                        {recipients.length})
-                                                    </label>
-                                                    <div className="max-h-32 space-y-2 overflow-y-auto">
-                                                        {recipients.map(
-                                                            (
-                                                                recipient,
-                                                                index,
-                                                            ) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700"
-                                                                >
-                                                                    <span className="text-sm text-gray-900 dark:text-gray-100">
-                                                                        {
-                                                                            recipient
-                                                                        }
-                                                                    </span>
-                                                                    <Button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            removeRecipient(
-                                                                                index,
-                                                                            )
-                                                                        }
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                </div>
-                                                            ),
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {errors.to && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {errors.to}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label
-                                                htmlFor="message"
-                                                className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
-                                            >
-                                                Message
-                                            </label>
-                                            <div className="space-y-2">
-                                                <Textarea
-                                                    id="message"
-                                                    value={data.message}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'message',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    placeholder="Type your message here..."
-                                                    className="min-h-[100px] border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
-                                                    maxLength={160}
-                                                />
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {data.message.length}/160
-                                                    characters
-                                                </p>
-                                            </div>
-                                            {errors.message && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {errors.message}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex flex-col space-y-1">
-                                                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                                    <svg
-                                                        className="mr-2 h-5 w-5 text-yellow-500"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 20 20"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                    Sending this SMS will cost{' '}
-                                                    {recipients.length > 0
-                                                        ? recipients.length * 2
-                                                        : 2}{' '}
-                                                    credits per recipient from
-                                                    your balance
-                                                </div>
-                                                {recipients.length > 0 &&
-                                                    credits <
-                                                        recipients.length *
-                                                            2 && (
-                                                        <div className="flex items-center text-sm text-red-600 dark:text-red-400">
-                                                            <svg
-                                                                className="mr-2 h-4 w-4"
-                                                                fill="currentColor"
-                                                                viewBox="0 0 20 20"
-                                                            >
-                                                                <path
-                                                                    fillRule="evenodd"
-                                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                                                    clipRule="evenodd"
-                                                                />
-                                                            </svg>
-                                                            Insufficient
-                                                            credits. You need{' '}
-                                                            {recipients.length *
-                                                                2}{' '}
-                                                            credits but only
-                                                            have {credits}.
-                                                        </div>
-                                                    )}
-                                            </div>
-                                            {canEdit && (
-                                                <Button
-                                                    type="submit"
-                                                    disabled={
-                                                        processing ||
-                                                        recipients.length ===
-                                                            0 ||
-                                                        credits <
-                                                            recipients.length *
-                                                                2
-                                                    }
-                                                    className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                >
-                                                    {processing ? (
-                                                        <>
-                                                            <Loader2 className="-ml-1 mr-3 h-5 w-5 animate-spin text-white" />
-                                                            Sending...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <svg
-                                                                className="mr-2 h-5 w-5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={
-                                                                        2
-                                                                    }
-                                                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                                                                />
-                                                            </svg>
-                                                            Send Message
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </form>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-
-                    {/* Message History */}
-                    <Card className="mt-8 overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
-                        <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
-                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                Message History
-                            </CardTitle>
-                            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                Recent messages sent through Philippine SMS
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="bg-slate-50 p-6 dark:bg-slate-800/50">
-                            <div className="space-y-4">
-                                {messages.length === 0 ? (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        No messages sent yet
+                    {/* Total Sent Card */}
+                    <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
+                        <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Total Sent
                                     </p>
-                                ) : (
-                                    messages.map((message) => (
-                                        <div
-                                            key={message.id}
-                                            className="space-y-2 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-700"
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div>
-                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                        {message.to}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {message.body}
-                                                    </p>
-                                                </div>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={`${getStatusColor(
-                                                        message.status,
-                                                    )} text-white`}
-                                                >
-                                                    {message.status}
-                                                </Badge>
-                                            </div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {new Date(
-                                                    message.created_at,
-                                                ).toLocaleString()}
-                                            </p>
-                                        </div>
-                                    ))
-                                )}
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                        {stats.sent}
+                                    </p>
+                                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                                        All messages sent
+                                    </p>
+                                </div>
+                                <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+                                    <svg
+                                        className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Delivered Card */}
+                    <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
+                        <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Delivered
+                                    </p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                        {stats.delivered}
+                                    </p>
+                                    <p className="text-xs text-green-600 dark:text-green-400">
+                                        {stats.sent > 0
+                                            ? `${Math.round((stats.delivered / stats.sent) * 100)}% success rate`
+                                            : '0% success rate'}
+                                    </p>
+                                </div>
+                                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
+                                    <svg
+                                        className="h-6 w-6 text-green-600 dark:text-green-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Failed Card */}
+                    <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
+                        <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Failed
+                                    </p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                        {stats.failed}
+                                    </p>
+                                    <p className="text-xs text-red-600 dark:text-red-400">
+                                        {stats.sent > 0
+                                            ? `${Math.round((stats.failed / stats.sent) * 100)}% failure rate`
+                                            : '0% failure rate'}
+                                    </p>
+                                </div>
+                                <div className="rounded-full bg-red-100 p-3 dark:bg-red-900/30">
+                                    <svg
+                                        className="h-6 w-6 text-red-600 dark:text-red-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Credits Card */}
+                    <Card className="relative overflow-hidden border border-gray-200 bg-slate-50 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-slate-800/50">
+                        <CardContent className="relative bg-slate-50 p-6 dark:bg-slate-800/50">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Available Credits
+                                    </p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                        {credits.toLocaleString()}
+                                    </p>
+                                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                                        Credits available
+                                    </p>
+                                </div>
+                                <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/30">
+                                    <svg
+                                        className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                        />
+                                    </svg>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Send Message Form */}
+                <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    <div className="lg:col-span-2">
+                        <Card className="overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
+                            <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    Send Message
+                                </CardTitle>
+                                <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                                    Send SMS messages (Max 160 characters)
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6 bg-slate-50 p-6 dark:bg-slate-800/50">
+                                <form onSubmit={submit} className="space-y-6">
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label
+                                                htmlFor="newRecipient"
+                                                className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                            >
+                                                Add Philippine Phone Number
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="newRecipient"
+                                                    type="text"
+                                                    value={newRecipient}
+                                                    onChange={(e) =>
+                                                        setNewRecipient(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="+639123456789"
+                                                    className="flex-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addRecipient();
+                                                        }
+                                                    }}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={addRecipient}
+                                                    className="bg-indigo-600 text-white hover:bg-indigo-700"
+                                                >
+                                                    Add
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setShowContactSelector(
+                                                            true,
+                                                        )
+                                                    }
+                                                    className="bg-green-600 text-white hover:bg-green-700"
+                                                >
+                                                    Select from Contacts
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {recipients.length > 0 && (
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                    Recipients (
+                                                    {recipients.length})
+                                                </label>
+                                                <div className="max-h-32 space-y-2 overflow-y-auto">
+                                                    {recipients.map(
+                                                        (recipient, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700"
+                                                            >
+                                                                <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {recipient}
+                                                                </span>
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        removeRecipient(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {errors.to && (
+                                            <p className="text-sm text-red-600 dark:text-red-400">
+                                                {errors.to}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label
+                                            htmlFor="message"
+                                            className="block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                                        >
+                                            Message
+                                        </label>
+                                        <div className="space-y-2">
+                                            <Textarea
+                                                id="message"
+                                                value={data.message}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'message',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="Type your message here..."
+                                                className="min-h-[100px] border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                                maxLength={160}
+                                            />
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {data.message.length}/160
+                                                characters
+                                            </p>
+                                        </div>
+                                        {errors.message && (
+                                            <p className="text-sm text-red-600 dark:text-red-400">
+                                                {errors.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col space-y-1">
+                                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                                <svg
+                                                    className="mr-2 h-5 w-5 text-yellow-500"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                Sending this SMS will cost{' '}
+                                                {recipients.length > 0
+                                                    ? recipients.length * 2
+                                                    : 2}{' '}
+                                                credits per recipient from your
+                                                balance
+                                            </div>
+                                            {recipients.length > 0 &&
+                                                credits <
+                                                    recipients.length * 2 && (
+                                                    <div className="flex items-center text-sm text-red-600 dark:text-red-400">
+                                                        <svg
+                                                            className="mr-2 h-4 w-4"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                        Insufficient credits.
+                                                        You need{' '}
+                                                        {recipients.length * 2}{' '}
+                                                        credits but only have{' '}
+                                                        {credits}.
+                                                    </div>
+                                                )}
+                                        </div>
+                                        {canEdit && (
+                                            <Button
+                                                type="submit"
+                                                disabled={
+                                                    processing ||
+                                                    recipients.length === 0 ||
+                                                    credits <
+                                                        recipients.length * 2
+                                                }
+                                                className="inline-flex items-center rounded-lg border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                {processing ? (
+                                                    <>
+                                                        <Loader2 className="-ml-1 mr-3 h-5 w-5 animate-spin text-white" />
+                                                        Sending...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg
+                                                            className="mr-2 h-5 w-5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                                                            />
+                                                        </svg>
+                                                        Send Message
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                {/* Message History */}
+                <Card className="mt-8 overflow-hidden border border-gray-200 shadow-lg dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 bg-slate-50 px-6 py-4 dark:border-gray-700 dark:bg-slate-800">
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Message History
+                        </CardTitle>
+                        <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                            Recent messages sent through Philippine SMS
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="bg-slate-50 p-6 dark:bg-slate-800/50">
+                        <div className="space-y-4">
+                            {messages.length === 0 ? (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    No messages sent yet
+                                </p>
+                            ) : (
+                                messages.map((message) => (
+                                    <div
+                                        key={message.id}
+                                        className="space-y-2 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-700"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {message.to}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {message.body}
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                variant="secondary"
+                                                className={`${getStatusColor(
+                                                    message.status,
+                                                )} text-white`}
+                                            >
+                                                {message.status}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {new Date(
+                                                message.created_at,
+                                            ).toLocaleString()}
+                                        </p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
 
             {/* Contact Selector Modal */}
             {showContactSelector && (
@@ -1149,7 +1148,6 @@ export default function Index({ auth, messages, stats, accounts, hasActiveAccoun
                     </div>
                 </div>
             )}
-
         </AuthenticatedLayout>
     );
 }

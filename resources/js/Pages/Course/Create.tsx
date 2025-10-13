@@ -16,11 +16,12 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
-import { ArrowLeft, Plus, Save, X } from 'lucide-react';
+import { Plus, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -157,39 +158,35 @@ export default function Create({ auth }: Props) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Create Course
-                </h2>
-            }
-        >
+        <AuthenticatedLayout user={auth.user}>
             <Head title="Create Course" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="mb-6 flex items-center gap-4">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.history.back()}
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back
-                        </Button>
-                        <div>
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="mb-6">
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                                 Create New Course
                             </h1>
                             <p className="mt-1 text-gray-600 dark:text-gray-400">
                                 Set up your course details and structure
                             </p>
-                        </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                    <Tabs defaultValue="basic" className="w-full">
+                        <TabsList className="grid w-full grid-cols-6">
+                            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                            <TabsTrigger value="content">Content</TabsTrigger>
+                            <TabsTrigger value="pricing">Pricing</TabsTrigger>
+                            <TabsTrigger value="instructor">
+                                Instructor
+                            </TabsTrigger>
+                            <TabsTrigger value="details">Details</TabsTrigger>
+                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                        </TabsList>
+
+                        {/* Basic Info Tab */}
+                        <TabsContent value="basic" className="space-y-6">
                         {/* Basic Information */}
                         <Card>
                             <CardHeader>
@@ -328,11 +325,16 @@ export default function Create({ auth }: Props) {
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="status">Status *</Label>
+                                            <Label htmlFor="status">
+                                                Status *
+                                            </Label>
                                         <Select
                                             value={formData.status}
                                             onValueChange={(value: any) =>
-                                                updateFormData('status', value)
+                                                    updateFormData(
+                                                        'status',
+                                                        value,
+                                                    )
                                             }
                                         >
                                             <SelectTrigger>
@@ -364,12 +366,15 @@ export default function Create({ auth }: Props) {
                                         <Input
                                             id="duration"
                                             type="number"
-                                            value={formData.duration_minutes}
+                                                value={
+                                                    formData.duration_minutes
+                                                }
                                             onChange={(e) =>
                                                 updateFormData(
                                                     'duration_minutes',
-                                                    parseInt(e.target.value) ||
-                                                        0,
+                                                        parseInt(
+                                                            e.target.value,
+                                                        ) || 0,
                                                 )
                                             }
                                             placeholder="120"
@@ -384,7 +389,175 @@ export default function Create({ auth }: Props) {
                             </CardContent>
                         </Card>
 
-                        {/* Pricing */}
+                            {/* Categories */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Categories</CardTitle>
+                                    <CardDescription>
+                                        Organize your course with categories
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div>
+                                            <Label htmlFor="category">
+                                                Category
+                                            </Label>
+                                            <Input
+                                                id="category"
+                                                value={formData.category}
+                                                onChange={(e) =>
+                                                    updateFormData(
+                                                        'category',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g., Technology, Business, Health"
+                                            />
+                                            {errors.category && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.category}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="subcategory">
+                                                Subcategory
+                                            </Label>
+                                            <Input
+                                                id="subcategory"
+                                                value={formData.subcategory}
+                                                onChange={(e) =>
+                                                    updateFormData(
+                                                        'subcategory',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g., Programming, Marketing, Fitness"
+                                            />
+                                            {errors.subcategory && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.subcategory}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* Content Tab */}
+                        <TabsContent value="content" className="space-y-6">
+                            {/* Media */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Media</CardTitle>
+                                    <CardDescription>
+                                        Add images and videos for your course
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <Label htmlFor="thumbnail_url">
+                                            Thumbnail URL
+                                        </Label>
+                                        <Input
+                                            id="thumbnail_url"
+                                            value={formData.thumbnail_url}
+                                            onChange={(e) =>
+                                                updateFormData(
+                                                    'thumbnail_url',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="https://example.com/thumbnail.jpg"
+                                        />
+                                        {errors.thumbnail_url && (
+                                            <p className="mt-1 text-sm text-red-500">
+                                                {errors.thumbnail_url}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="video_url">
+                                            Preview Video URL
+                                        </Label>
+                                        <Input
+                                            id="video_url"
+                                            value={formData.video_url}
+                                            onChange={(e) =>
+                                                updateFormData(
+                                                    'video_url',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="https://youtube.com/watch?v=..."
+                                        />
+                                        {errors.video_url && (
+                                            <p className="mt-1 text-sm text-red-500">
+                                                {errors.video_url}
+                                            </p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Tags */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Tags</CardTitle>
+                                    <CardDescription>
+                                        Add tags to help students find your
+                                        course
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={newTag}
+                                            onChange={(e) =>
+                                                setNewTag(e.target.value)
+                                            }
+                                            placeholder="Add a tag..."
+                                            onKeyPress={(e) =>
+                                                e.key === 'Enter' &&
+                                                (e.preventDefault(), addTag())
+                                            }
+                                        />
+                                        <Button type="button" onClick={addTag}>
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+
+                                    {formData.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {formData.tags.map((tag, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                >
+                                                    <span>{tag}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            removeTag(index)
+                                                        }
+                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* Pricing Tab */}
+                        <TabsContent value="pricing" className="space-y-6">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Pricing</CardTitle>
@@ -398,10 +571,15 @@ export default function Create({ auth }: Props) {
                                         id="is_free"
                                         checked={formData.is_free}
                                         onCheckedChange={(checked) =>
-                                            updateFormData('is_free', checked)
+                                                updateFormData(
+                                                    'is_free',
+                                                    checked,
+                                                )
                                         }
                                     />
-                                    <Label htmlFor="is_free">Free Course</Label>
+                                        <Label htmlFor="is_free">
+                                            Free Course
+                                        </Label>
                                 </div>
 
                                 {!formData.is_free && (
@@ -470,66 +648,109 @@ export default function Create({ auth }: Props) {
                                 )}
                             </CardContent>
                         </Card>
+                        </TabsContent>
 
-                        {/* Media */}
+                        {/* Pricing Tab */}
+                        <TabsContent value="pricing" className="space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Media</CardTitle>
+                                    <CardTitle>Pricing</CardTitle>
                                 <CardDescription>
-                                    Add images and videos for your course
+                                        Set the pricing for your course
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            id="is_free"
+                                            checked={formData.is_free}
+                                            onCheckedChange={(checked) =>
+                                                updateFormData(
+                                                    'is_free',
+                                                    checked,
+                                                )
+                                            }
+                                        />
+                                        <Label htmlFor="is_free">
+                                            Free Course
+                                        </Label>
+                                    </div>
+
+                                    {!formData.is_free && (
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="thumbnail_url">
-                                        Thumbnail URL
+                                                <Label htmlFor="price">
+                                                    Price *
                                     </Label>
                                     <Input
-                                        id="thumbnail_url"
-                                        value={formData.thumbnail_url}
+                                                    id="price"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={formData.price}
                                         onChange={(e) =>
                                             updateFormData(
-                                                'thumbnail_url',
+                                                            'price',
+                                                            parseFloat(
                                                 e.target.value,
-                                            )
-                                        }
-                                        placeholder="https://example.com/thumbnail.jpg"
-                                    />
-                                    {errors.thumbnail_url && (
+                                                            ) || 0,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                    className={
+                                                        errors.price
+                                                            ? 'border-red-500'
+                                                            : ''
+                                                    }
+                                                />
+                                                {errors.price && (
                                         <p className="mt-1 text-sm text-red-500">
-                                            {errors.thumbnail_url}
+                                                        {errors.price}
                                         </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="video_url">
-                                        Preview Video URL
+                                                <Label htmlFor="currency">
+                                                    Currency
                                     </Label>
-                                    <Input
-                                        id="video_url"
-                                        value={formData.video_url}
-                                        onChange={(e) =>
+                                                <Select
+                                                    value={formData.currency}
+                                                    onValueChange={(value) =>
                                             updateFormData(
-                                                'video_url',
-                                                e.target.value,
-                                            )
-                                        }
-                                        placeholder="https://youtube.com/watch?v=..."
-                                    />
-                                    {errors.video_url && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.video_url}
-                                        </p>
-                                    )}
+                                                            'currency',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="PHP">
+                                                            PHP
+                                                        </SelectItem>
+                                                        <SelectItem value="USD">
+                                                            USD
+                                                        </SelectItem>
+                                                        <SelectItem value="EUR">
+                                                            EUR
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                 </div>
+                                        </div>
+                                    )}
                             </CardContent>
                         </Card>
+                        </TabsContent>
 
-                        {/* Instructor */}
+                        {/* Instructor Tab */}
+                        <TabsContent value="instructor" className="space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Instructor Information</CardTitle>
+                                    <CardTitle>
+                                        Instructor Information
+                                    </CardTitle>
                                 <CardDescription>
                                     Details about the course instructor
                                 </CardDescription>
@@ -564,7 +785,9 @@ export default function Create({ auth }: Props) {
                                         </Label>
                                         <Input
                                             id="instructor_avatar"
-                                            value={formData.instructor_avatar}
+                                                value={
+                                                    formData.instructor_avatar
+                                                }
                                             onChange={(e) =>
                                                 updateFormData(
                                                     'instructor_avatar',
@@ -605,114 +828,10 @@ export default function Create({ auth }: Props) {
                                 </div>
                             </CardContent>
                         </Card>
+                        </TabsContent>
 
-                        {/* Categories */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Categories</CardTitle>
-                                <CardDescription>
-                                    Organize your course with categories
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div>
-                                        <Label htmlFor="category">
-                                            Category
-                                        </Label>
-                                        <Input
-                                            id="category"
-                                            value={formData.category}
-                                            onChange={(e) =>
-                                                updateFormData(
-                                                    'category',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g., Technology, Business, Health"
-                                        />
-                                        {errors.category && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.category}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="subcategory">
-                                            Subcategory
-                                        </Label>
-                                        <Input
-                                            id="subcategory"
-                                            value={formData.subcategory}
-                                            onChange={(e) =>
-                                                updateFormData(
-                                                    'subcategory',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g., Programming, Marketing, Fitness"
-                                        />
-                                        {errors.subcategory && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.subcategory}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Tags */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Tags</CardTitle>
-                                <CardDescription>
-                                    Add tags to help students find your course
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newTag}
-                                        onChange={(e) =>
-                                            setNewTag(e.target.value)
-                                        }
-                                        placeholder="Add a tag..."
-                                        onKeyPress={(e) =>
-                                            e.key === 'Enter' &&
-                                            (e.preventDefault(), addTag())
-                                        }
-                                    />
-                                    <Button type="button" onClick={addTag}>
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-
-                                {formData.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                        {formData.tags.map((tag, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-blue-800"
-                                            >
-                                                <span>{tag}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        removeTag(index)
-                                                    }
-                                                    className="text-blue-600 hover:text-blue-800"
-                                                >
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
+                        {/* Details Tab */}
+                        <TabsContent value="details" className="space-y-6">
                         {/* Requirements */}
                         <Card>
                             <CardHeader>
@@ -727,7 +846,9 @@ export default function Create({ auth }: Props) {
                                     <Input
                                         value={newRequirement}
                                         onChange={(e) =>
-                                            setNewRequirement(e.target.value)
+                                                setNewRequirement(
+                                                    e.target.value,
+                                                )
                                         }
                                         placeholder="Add a requirement..."
                                         onKeyPress={(e) =>
@@ -752,8 +873,8 @@ export default function Create({ auth }: Props) {
                                                     key={index}
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <span className="h-2 w-2 rounded-full bg-gray-400"></span>
-                                                    <span className="flex-1">
+                                                        <span className="h-2 w-2 rounded-full bg-gray-400 dark:bg-gray-500"></span>
+                                                        <span className="flex-1 text-gray-900 dark:text-white">
                                                         {requirement}
                                                     </span>
                                                     <button
@@ -763,7 +884,7 @@ export default function Create({ auth }: Props) {
                                                                 index,
                                                             )
                                                         }
-                                                        className="text-red-500 hover:text-red-700"
+                                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                                     >
                                                         <X className="h-4 w-4" />
                                                     </button>
@@ -780,7 +901,8 @@ export default function Create({ auth }: Props) {
                             <CardHeader>
                                 <CardTitle>Learning Outcomes</CardTitle>
                                 <CardDescription>
-                                    What students will learn from this course
+                                        What students will learn from this
+                                        course
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -793,10 +915,14 @@ export default function Create({ auth }: Props) {
                                         placeholder="Add a learning outcome..."
                                         onKeyPress={(e) =>
                                             e.key === 'Enter' &&
-                                            (e.preventDefault(), addOutcome())
+                                                (e.preventDefault(),
+                                                addOutcome())
                                         }
                                     />
-                                    <Button type="button" onClick={addOutcome}>
+                                        <Button
+                                            type="button"
+                                            onClick={addOutcome}
+                                        >
                                         <Plus className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -809,16 +935,18 @@ export default function Create({ auth }: Props) {
                                                     key={index}
                                                     className="flex items-center gap-2"
                                                 >
-                                                    <span className="h-2 w-2 rounded-full bg-green-400"></span>
-                                                    <span className="flex-1">
+                                                        <span className="h-2 w-2 rounded-full bg-green-400 dark:bg-green-500"></span>
+                                                        <span className="flex-1 text-gray-900 dark:text-white">
                                                         {outcome}
                                                     </span>
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            removeOutcome(index)
+                                                                removeOutcome(
+                                                                    index,
+                                                                )
                                                         }
-                                                        className="text-red-500 hover:text-red-700"
+                                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                                     >
                                                         <X className="h-4 w-4" />
                                                     </button>
@@ -829,8 +957,10 @@ export default function Create({ auth }: Props) {
                                 )}
                             </CardContent>
                         </Card>
+                        </TabsContent>
 
-                        {/* Settings */}
+                        {/* Settings Tab */}
+                        <TabsContent value="settings" className="space-y-6">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Settings</CardTitle>
@@ -856,8 +986,10 @@ export default function Create({ auth }: Props) {
                                 </div>
                             </CardContent>
                         </Card>
+                        </TabsContent>
+                    </Tabs>
 
-                        {/* Submit */}
+                    {/* Submit Buttons */}
                         <div className="flex justify-end gap-4">
                             <Button
                                 type="button"
@@ -876,7 +1008,6 @@ export default function Create({ auth }: Props) {
                             </Button>
                         </div>
                     </form>
-                </div>
             </div>
         </AuthenticatedLayout>
     );

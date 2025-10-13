@@ -120,8 +120,8 @@ export default function CreditsLayout({
                 <div className="hidden border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 sm:flex sm:items-center sm:justify-between">
                     <div className="container mx-auto px-4 py-3">
                         <div className="flex items-center justify-between">
-                            <a 
-                                href={route('home')} 
+                            <a
+                                href={route('home')}
                                 className="flex items-center transition-opacity hover:opacity-80"
                             >
                                 <div className="flex shrink-0 items-center">
@@ -172,9 +172,7 @@ export default function CreditsLayout({
                                             align="right"
                                             width="48"
                                         >
-                                            <Dropdown.Link
-                                                href={route('home')}
-                                            >
+                                            <Dropdown.Link href={route('home')}>
                                                 Home
                                             </Dropdown.Link>
                                             <Dropdown.Link

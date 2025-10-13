@@ -4,13 +4,20 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Content } from '@/types/content';
 import { Project, User } from '@/types/index';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import {
+    ArrowLeft,
+    FileText,
+    Image as ImageIcon,
+    Save,
+    Settings,
+} from 'lucide-react';
 import React, { FormEvent, useMemo, useState } from 'react';
 
 interface Props extends PageProps {
@@ -172,130 +179,158 @@ export default function Edit({ auth, content }: Props) {
             <div className="space-y-6">
                 {canEdit ? (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
-                            {/* Main Content */}
-                            <div className="space-y-6 xl:col-span-3">
-                                    <Card className="shadow-md">
-                                        <CardHeader className="border-b border-gray-100 dark:border-gray-700">
-                                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                Post Content
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-6 pt-6">
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="title"
-                                                    value="Title"
-                                                />
+                        <Tabs defaultValue="content" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger
+                                    value="content"
+                                    className="flex items-center gap-2"
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    Content
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="media"
+                                    className="flex items-center gap-2"
+                                >
+                                    <ImageIcon className="h-4 w-4" />
+                                    Media
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="settings"
+                                    className="flex items-center gap-2"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    Settings
+                                </TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent
+                                value="content"
+                                className="mt-6 space-y-6"
+                            >
+                                <Card className="shadow-md">
+                                    <CardHeader className="border-b border-gray-100 dark:border-gray-700">
+                                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            Post Content
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6 pt-6">
+                                        <div>
+                                            <InputLabel
+                                                htmlFor="title"
+                                                value="Title"
+                                            />
+                                            <Input
+                                                id="title"
+                                                type="text"
+                                                value={data.title}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'title',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="mt-1 block w-full text-lg font-medium"
+                                                placeholder="Enter your post title..."
+                                                required
+                                            />
+                                            <InputError
+                                                message={errors.title}
+                                                className="mt-2"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel
+                                                htmlFor="slug"
+                                                value="Slug"
+                                            />
+                                            <div className="flex space-x-2">
                                                 <Input
-                                                    id="title"
+                                                    id="slug"
                                                     type="text"
-                                                    value={data.title}
+                                                    value={data.slug}
                                                     onChange={(e) =>
                                                         setData(
-                                                            'title',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="mt-1 block w-full text-lg font-medium"
-                                                    placeholder="Enter your post title..."
-                                                    required
-                                                />
-                                                <InputError
-                                                    message={errors.title}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="slug"
-                                                    value="Slug"
-                                                />
-                                                <div className="flex space-x-2">
-                                                    <Input
-                                                        id="slug"
-                                                        type="text"
-                                                        value={data.slug}
-                                                        onChange={(e) =>
-                                                            setData(
-                                                                'slug',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        className="mt-1 block w-full"
-                                                        placeholder="post-url-slug"
-                                                        required
-                                                    />
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={generateSlug}
-                                                        className="mt-1"
-                                                    >
-                                                        Generate
-                                                    </Button>
-                                                </div>
-                                                <InputError
-                                                    message={errors.slug}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="excerpt"
-                                                    value="Excerpt"
-                                                />
-                                                <Textarea
-                                                    id="excerpt"
-                                                    value={data.excerpt}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'excerpt',
+                                                            'slug',
                                                             e.target.value,
                                                         )
                                                     }
                                                     className="mt-1 block w-full"
-                                                    rows={3}
-                                                    placeholder="Brief summary of your post..."
-                                                />
-                                                <InputError
-                                                    message={errors.excerpt}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="content"
-                                                    value="Content"
-                                                />
-                                                <Textarea
-                                                    id="content"
-                                                    value={data.content}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'content',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="mt-1 block w-full font-mono text-sm"
-                                                    rows={20}
-                                                    placeholder="Write your post content here..."
+                                                    placeholder="post-url-slug"
                                                     required
                                                 />
-                                                <InputError
-                                                    message={errors.content}
-                                                    className="mt-2"
-                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={generateSlug}
+                                                    className="mt-1"
+                                                >
+                                                    Generate
+                                                </Button>
                                             </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
+                                            <InputError
+                                                message={errors.slug}
+                                                className="mt-2"
+                                            />
+                                        </div>
 
-                            {/* Sidebar */}
-                            <div className="space-y-6">
+                                        <div>
+                                            <InputLabel
+                                                htmlFor="excerpt"
+                                                value="Excerpt"
+                                            />
+                                            <Textarea
+                                                id="excerpt"
+                                                value={data.excerpt}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'excerpt',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="mt-1 block w-full"
+                                                rows={3}
+                                                placeholder="Brief summary of your post..."
+                                            />
+                                            <InputError
+                                                message={errors.excerpt}
+                                                className="mt-2"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel
+                                                htmlFor="content"
+                                                value="Content"
+                                            />
+                                            <Textarea
+                                                id="content"
+                                                value={data.content}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'content',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="mt-1 block w-full font-mono text-sm"
+                                                rows={20}
+                                                placeholder="Write your post content here..."
+                                                required
+                                            />
+                                            <InputError
+                                                message={errors.content}
+                                                className="mt-2"
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent
+                                value="media"
+                                className="mt-6 space-y-6"
+                            >
                                 <Card className="shadow-md">
                                     <CardHeader className="border-b border-gray-100 dark:border-gray-700">
                                         <CardTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -303,38 +338,39 @@ export default function Edit({ auth, content }: Props) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="pt-6">
-                                            {content.featured_image && (
-                                                <div className="mb-4 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                                                    <img
-                                                        src={
-                                                            content.featured_image
-                                                        }
-                                                        alt="Current featured image"
-                                                        className="aspect-video w-full object-cover"
-                                                    />
-                                                </div>
-                                            )}
-                                            <div>
-                                                <Input
-                                                    id="featured_image"
-                                                    type="file"
-                                                    onChange={handleImageChange}
-                                                    className="block w-full"
-                                                    accept="image/*"
-                                                />
-                                                <p className="mt-1 text-xs text-gray-500">
-                                                    Recommended size: 1200x630px
-                                                </p>
-                                                <InputError
-                                                    message={
-                                                        errors.featured_image
-                                                    }
-                                                    className="mt-2"
+                                        {content.featured_image && (
+                                            <div className="mb-4 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                                                <img
+                                                    src={content.featured_image}
+                                                    alt="Current featured image"
+                                                    className="aspect-video w-full object-cover"
                                                 />
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        )}
+                                        <div>
+                                            <Input
+                                                id="featured_image"
+                                                type="file"
+                                                onChange={handleImageChange}
+                                                className="block w-full"
+                                                accept="image/*"
+                                            />
+                                            <p className="mt-1 text-xs text-gray-500">
+                                                Recommended size: 1200x630px
+                                            </p>
+                                            <InputError
+                                                message={errors.featured_image}
+                                                className="mt-2"
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
 
+                            <TabsContent
+                                value="settings"
+                                className="mt-6 space-y-6"
+                            >
                                 <Card className="shadow-md">
                                     <CardHeader className="border-b border-gray-100 dark:border-gray-700">
                                         <CardTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -342,73 +378,76 @@ export default function Edit({ auth, content }: Props) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4 pt-6">
-                                            <div>
-                                                <Label htmlFor="status">
-                                                    Status
-                                                </Label>
-                                                <select
-                                                    id="status"
-                                                    value={data.status}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'status',
-                                                            e.target.value as
-                                                                | 'draft'
-                                                                | 'published',
-                                                        )
-                                                    }
-                                                    className="mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                >
-                                                    <option value="draft">
-                                                        Draft
-                                                    </option>
-                                                    <option value="published">
-                                                        Published
-                                                    </option>
-                                                </select>
-                                                <InputError
-                                                    message={errors.status}
-                                                    className="mt-2"
-                                                />
-                                            </div>
+                                        <div>
+                                            <Label htmlFor="status">
+                                                Status
+                                            </Label>
+                                            <select
+                                                id="status"
+                                                value={data.status}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'status',
+                                                        e.target.value as
+                                                            | 'draft'
+                                                            | 'published',
+                                                    )
+                                                }
+                                                className="mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                                            >
+                                                <option value="draft">
+                                                    Draft
+                                                </option>
+                                                <option value="published">
+                                                    Published
+                                                </option>
+                                            </select>
+                                            <InputError
+                                                message={errors.status}
+                                                className="mt-2"
+                                            />
+                                        </div>
 
-                                            <div className="space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="font-medium text-gray-700 dark:text-gray-300">
-                                                        Author:
-                                                    </span>
-                                                    <span className="text-gray-600 dark:text-gray-400">
-                                                        {auth.user.name}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="font-medium text-gray-700 dark:text-gray-300">
-                                                        Last Updated:
-                                                    </span>
-                                                    <span className="text-gray-600 dark:text-gray-400">
-                                                        {new Date().toLocaleDateString()}
-                                                    </span>
-                                                </div>
+                                        <div className="space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                    Author:
+                                                </span>
+                                                <span className="text-gray-600 dark:text-gray-400">
+                                                    {auth.user.name}
+                                                </span>
                                             </div>
-                                        </CardContent>
-                                    </Card>
-
-                                {/* Submit Button */}
-                                <Card className="shadow-md">
-                                    <CardContent className="pt-6">
-                                        <Button
-                                            type="submit"
-                                            disabled={processing}
-                                            className="w-full"
-                                            size="lg"
-                                        >
-                                            <Save className="mr-2 h-5 w-5" />
-                                            {processing
-                                                ? 'Saving...'
-                                                : 'Update Post'}
-                                        </Button>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                    Last Updated:
+                                                </span>
+                                                <span className="text-gray-600 dark:text-gray-400">
+                                                    {new Date().toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </CardContent>
                                 </Card>
+                            </TabsContent>
+                        </Tabs>
+
+                        {/* Fixed Submit Bar */}
+                        <div className="sticky bottom-0 z-10 border-t border-gray-200 bg-white/95 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95">
+                            <div className="flex items-center justify-between">
+                                <Link href={route('content-creator.index')}>
+                                    <Button variant="outline" type="button">
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        Cancel
+                                    </Button>
+                                </Link>
+                                <Button
+                                    type="submit"
+                                    disabled={processing}
+                                    size="lg"
+                                >
+                                    <Save className="mr-2 h-5 w-5" />
+                                    {processing ? 'Saving...' : 'Update Post'}
+                                </Button>
                             </div>
                         </div>
                     </form>

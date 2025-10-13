@@ -99,8 +99,10 @@ export default function Register({ projectParam, projectExists }: Props) {
                                                 Project Not Configured
                                             </h3>
                                             <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-400">
-                                                The project "{projectParam}" is not yet configured in our system. 
-                                                Please contact support for assistance.
+                                                The project "{projectParam}" is
+                                                not yet configured in our
+                                                system. Please contact support
+                                                for assistance.
                                             </p>
                                         </div>
                                     </div>

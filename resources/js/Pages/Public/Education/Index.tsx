@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -24,7 +24,10 @@ export default function EducationIndex({ auth }: PageProps) {
     const hostname = getHost();
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
@@ -35,7 +38,9 @@ export default function EducationIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title={`${hostname} Education - Learning Management Platform`} />
+            <Head
+                title={`${hostname} Education - Learning Management Platform`}
+            />
             <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
                 {/* Header */}
                 <div className="border-b border-indigo-700 bg-gradient-to-r from-indigo-700 to-purple-700 shadow-lg">
@@ -77,13 +82,17 @@ export default function EducationIndex({ auth }: PageProps) {
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('login', { project: 'education' })}
+                                            href={route('login', {
+                                                project: 'education',
+                                            })}
                                             className="text-indigo-100 transition-colors hover:text-white"
                                         >
                                             Log in
                                         </Link>
                                         <Link
-                                            href={route('register', { project: 'education' })}
+                                            href={route('register', {
+                                                project: 'education',
+                                            })}
                                             className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-indigo-700 shadow-md transition-all hover:bg-indigo-50"
                                         >
                                             Get Started
@@ -97,7 +106,7 @@ export default function EducationIndex({ auth }: PageProps) {
                                 onClick={() =>
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }
-                                className="md:hidden rounded-lg p-2 text-white hover:bg-indigo-600"
+                                className="rounded-lg p-2 text-white hover:bg-indigo-600 md:hidden"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -150,13 +159,17 @@ export default function EducationIndex({ auth }: PageProps) {
                                     ) : (
                                         <>
                                             <Link
-                                                href={route('login', { project: 'education' })}
+                                                href={route('login', {
+                                                    project: 'education',
+                                                })}
                                                 className="text-indigo-100 transition-colors hover:text-white"
                                             >
                                                 Log in
                                             </Link>
                                             <Link
-                                                href={route('register', { project: 'education' })}
+                                                href={route('register', {
+                                                    project: 'education',
+                                                })}
                                                 className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-indigo-700 shadow-md transition-all hover:bg-indigo-50"
                                             >
                                                 Get Started
@@ -178,12 +191,15 @@ export default function EducationIndex({ auth }: PageProps) {
                             </h1>
                             <p className="mx-auto mt-4 max-w-2xl text-base text-indigo-100 sm:mt-6 sm:text-lg md:text-xl">
                                 Empower educators and engage students with our
-                                comprehensive learning management platform. Create,
-                                deliver, and track educational content seamlessly.
+                                comprehensive learning management platform.
+                                Create, deliver, and track educational content
+                                seamlessly.
                             </p>
                             <div className="mt-8 flex flex-col justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
                                 <Link
-                                    href={route('register', { project: 'education' })}
+                                    href={route('register', {
+                                        project: 'education',
+                                    })}
                                     className="rounded-lg bg-white px-6 py-3 text-base font-semibold text-indigo-700 shadow-lg transition-all hover:bg-indigo-50 hover:shadow-xl sm:px-8 sm:text-lg"
                                 >
                                     Start Free Trial
@@ -232,7 +248,10 @@ export default function EducationIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Features Section */}
-                <div id="features" className="bg-gray-50 py-12 sm:py-16 lg:py-24">
+                <div
+                    id="features"
+                    className="bg-gray-50 py-12 sm:py-16 lg:py-24"
+                >
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl lg:text-4xl">
@@ -274,8 +293,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     Student Management
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Track student progress, grades, and engagement
-                                    with powerful analytics.
+                                    Track student progress, grades, and
+                                    engagement with powerful analytics.
                                 </p>
                             </div>
 
@@ -291,8 +310,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     Analytics & Reporting
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Gain insights with detailed reports on student
-                                    performance and engagement.
+                                    Gain insights with detailed reports on
+                                    student performance and engagement.
                                 </p>
                             </div>
 
@@ -334,8 +353,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     Discussion Forums
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Foster collaboration with integrated discussion
-                                    boards and chat.
+                                    Foster collaboration with integrated
+                                    discussion boards and chat.
                                 </p>
                             </div>
 
@@ -360,8 +379,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     Virtual Classrooms
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Host live classes with video conferencing and
-                                    screen sharing.
+                                    Host live classes with video conferencing
+                                    and screen sharing.
                                 </p>
                             </div>
                         </div>
@@ -376,7 +395,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                 Simple, Transparent Pricing
                             </h2>
                             <p className="mt-3 text-base text-gray-600 sm:mt-4 sm:text-lg lg:text-xl">
-                                Choose the plan that's right for your institution
+                                Choose the plan that's right for your
+                                institution
                             </p>
                         </div>
 
@@ -392,7 +412,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {basicPlan.currency}{basicPlan.price}
+                                            {basicPlan.currency}
+                                            {basicPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -417,7 +438,9 @@ export default function EducationIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'education' })}
+                                        href={route('register', {
+                                            project: 'education',
+                                        })}
                                         className="mt-6 block rounded-lg border-2 border-indigo-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-indigo-600 transition-all hover:bg-indigo-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -441,7 +464,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {proPlan.currency}{proPlan.price}
+                                            {proPlan.currency}
+                                            {proPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -466,7 +490,9 @@ export default function EducationIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'education' })}
+                                        href={route('register', {
+                                            project: 'education',
+                                        })}
                                         className="mt-6 block rounded-lg bg-indigo-600 px-6 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-indigo-700 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -485,7 +511,8 @@ export default function EducationIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {businessPlan.currency}{businessPlan.price}
+                                            {businessPlan.currency}
+                                            {businessPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -510,7 +537,9 @@ export default function EducationIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'education' })}
+                                        href={route('register', {
+                                            project: 'education',
+                                        })}
                                         className="mt-6 block rounded-lg border-2 border-indigo-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-indigo-600 transition-all hover:bg-indigo-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -536,9 +565,9 @@ export default function EducationIndex({ auth }: PageProps) {
                                         Can I try before purchasing?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes! We offer a 14-day free trial with full
-                                        access to all features. No credit card
-                                        required to get started.
+                                        Yes! We offer a 14-day free trial with
+                                        full access to all features. No credit
+                                        card required to get started.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -547,8 +576,9 @@ export default function EducationIndex({ auth }: PageProps) {
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
                                         Our plans scale with your needs. Basic
-                                        supports up to 50 students, Pro up to 500,
-                                        and Business offers unlimited students.
+                                        supports up to 50 students, Pro up to
+                                        500, and Business offers unlimited
+                                        students.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -566,9 +596,10 @@ export default function EducationIndex({ auth }: PageProps) {
                                         Can I integrate with other tools?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes, our platform integrates with popular
-                                        tools like Zoom, Google Classroom, and many
-                                        more through our API and webhooks.
+                                        Yes, our platform integrates with
+                                        popular tools like Zoom, Google
+                                        Classroom, and many more through our API
+                                        and webhooks.
                                     </dd>
                                 </div>
                             </dl>
@@ -577,7 +608,10 @@ export default function EducationIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer id="contact" className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16">
+                <footer
+                    id="contact"
+                    className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16"
+                >
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
                         {/* Main Footer Content */}
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -596,9 +630,9 @@ export default function EducationIndex({ auth }: PageProps) {
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
                                     Transform learning with our comprehensive
-                                    education management platform. Empower educators
-                                    and engage students with modern tools and
-                                    technology.
+                                    education management platform. Empower
+                                    educators and engage students with modern
+                                    tools and technology.
                                 </p>
                             </div>
 
@@ -681,8 +715,8 @@ export default function EducationIndex({ auth }: PageProps) {
                         <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                 <div className="text-center text-sm text-slate-400 md:text-left">
-                                    © {new Date().getFullYear()} {hostname} Education. All
-                                    rights reserved.
+                                    © {new Date().getFullYear()} {hostname}{' '}
+                                    Education. All rights reserved.
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                                     <div className="flex items-center text-sm text-slate-400">
@@ -727,4 +761,3 @@ export default function EducationIndex({ auth }: PageProps) {
         </>
     );
 }
-

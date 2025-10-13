@@ -213,22 +213,33 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     </li>
                                     <li>
                                         Navigate to the{' '}
-                                        <strong>Channels &gt; Viber</strong> section in your Infobip dashboard
+                                        <strong>Channels &gt; Viber</strong>{' '}
+                                        section in your Infobip dashboard
                                     </li>
                                     <li>
                                         Enable Viber messaging and get your{' '}
-                                        <strong>API Key</strong> from the API Keys section
+                                        <strong>API Key</strong> from the API
+                                        Keys section
                                     </li>
                                     <li>
-                                        Use your Infobip API Key as the Auth Token below
+                                        Use your Infobip API Key as the Auth
+                                        Token below
                                     </li>
                                     <li>
-                                        <strong>Note:</strong> The sender will be automatically set to "IBSelfServe" for Infobip Viber
+                                        <strong>Note:</strong> The sender will
+                                        be automatically set to "IBSelfServe"
+                                        for Infobip Viber
                                     </li>
                                 </ol>
                                 <div className="mt-4 rounded-lg bg-green-100 p-3 dark:bg-green-800/30">
                                     <p className="text-sm text-green-800 dark:text-green-200">
-                                        <strong>✅ Working Configuration:</strong> Your Infobip Viber account is now properly configured to send messages using the Infobip API with the correct sender format.
+                                        <strong>
+                                            ✅ Working Configuration:
+                                        </strong>{' '}
+                                        Your Infobip Viber account is now
+                                        properly configured to send messages
+                                        using the Infobip API with the correct
+                                        sender format.
                                     </p>
                                 </div>
                             </div>
@@ -262,7 +273,6 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                         </div>
                     </CardContent>
                 </Card>
-
 
                 {/* Setup Form Modal */}
                 {showAddForm && (
@@ -514,49 +524,68 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                                     : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                                                             }
                                                         >
-                                                            {account.is_active ? 'Active' : 'Inactive'}
+                                                            {account.is_active
+                                                                ? 'Active'
+                                                                : 'Inactive'}
                                                         </Badge>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                                    <p>URI: {account.uri}</p>
                                                     <p>
-                                                        URI: {account.uri}
+                                                        Public Account ID:{' '}
+                                                        {
+                                                            account.public_account_id
+                                                        }
                                                     </p>
                                                     <p>
-                                                        Public Account ID: {account.public_account_id}
-                                                    </p>
-                                                    <p>
-                                                        Created: {new Date(account.created_at).toLocaleDateString()}
+                                                        Created:{' '}
+                                                        {new Date(
+                                                            account.created_at,
+                                                        ).toLocaleDateString()}
                                                     </p>
                                                     {account.last_verified_at && (
                                                         <p>
-                                                            Last verified: {new Date(account.last_verified_at).toLocaleDateString()}
+                                                            Last verified:{' '}
+                                                            {new Date(
+                                                                account.last_verified_at,
+                                                            ).toLocaleDateString()}
                                                         </p>
                                                     )}
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <Button
-                                                    onClick={() => handleTest(account.id)}
-                                                    disabled={testingAccount === account.id}
+                                                    onClick={() =>
+                                                        handleTest(account.id)
+                                                    }
+                                                    disabled={
+                                                        testingAccount ===
+                                                        account.id
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                 >
-                                                    {testingAccount === account.id ? (
+                                                    {testingAccount ===
+                                                    account.id ? (
                                                         <Loader2 className="h-4 w-4 animate-spin" />
                                                     ) : (
                                                         <Wifi className="h-4 w-4" />
                                                     )}
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleEdit(account)}
+                                                    onClick={() =>
+                                                        handleEdit(account)
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
                                                 <Button
-                                                    onClick={() => handleDelete(account.id)}
+                                                    onClick={() =>
+                                                        handleDelete(account.id)
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                     className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"

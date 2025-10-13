@@ -57,9 +57,7 @@ export default function Index({ templates: initialTemplates, auth }: Props) {
     const canDelete = useMemo(() => {
         if (auth.selectedTeamMember) {
             // Team member selected - only admin can delete
-            return (
-                auth.selectedTeamMember.roles.includes('admin')
-            );
+            return auth.selectedTeamMember.roles.includes('admin');
         }
         // No team member selected (main account) - allow all users
         return true;

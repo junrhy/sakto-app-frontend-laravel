@@ -9,7 +9,13 @@ import {
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -76,7 +82,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
         useState<WhatsAppAccount | null>(null);
     const [testingAccount, setTestingAccount] = useState<number | null>(null);
     const [showTemplateManager, setShowTemplateManager] = useState(false);
-    const [selectedAccountForTemplates, setSelectedAccountForTemplates] = useState<number | null>(null);
+    const [selectedAccountForTemplates, setSelectedAccountForTemplates] =
+        useState<number | null>(null);
     const [newTemplate, setNewTemplate] = useState({
         name: '',
         language: 'en',
@@ -86,10 +93,10 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 type: 'BODY',
                 text: '',
                 example: {
-                    body_text: ['']
-                }
-            }
-        ]
+                    body_text: [''],
+                },
+            },
+        ],
     });
 
     const {
@@ -270,15 +277,18 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                     type: 'BODY',
                     text: '',
                     example: {
-                        body_text: ['']
-                    }
-                }
-            ]
+                        body_text: [''],
+                    },
+                },
+            ],
         });
     };
 
     const createTemplate = async () => {
-        if (!newTemplate.name.trim() || !newTemplate.components[0].text.trim()) {
+        if (
+            !newTemplate.name.trim() ||
+            !newTemplate.components[0].text.trim()
+        ) {
             toast.error('Please fill in template name and body text');
             return;
         }
@@ -286,7 +296,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
         try {
             const response = await axios.post('/whatsapp-accounts/templates', {
                 account_id: selectedAccountForTemplates,
-                template: newTemplate
+                template: newTemplate,
             });
 
             if (response.data.success) {
@@ -295,37 +305,52 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 // Refresh accounts data
                 window.location.reload();
             } else {
-                toast.error(response.data.message || 'Failed to create template');
+                toast.error(
+                    response.data.message || 'Failed to create template',
+                );
             }
         } catch (error: any) {
             console.error('Template creation error:', error);
-            toast.error(error.response?.data?.message || 'Failed to create template');
+            toast.error(
+                error.response?.data?.message || 'Failed to create template',
+            );
         }
     };
 
     const deleteTemplate = async (accountId: number, templateName: string) => {
-        if (!confirm(`Are you sure you want to delete the template "${templateName}"?`)) {
+        if (
+            !confirm(
+                `Are you sure you want to delete the template "${templateName}"?`,
+            )
+        ) {
             return;
         }
 
         try {
-            const response = await axios.delete('/whatsapp-accounts/templates', {
-                data: {
-                    account_id: accountId,
-                    template_name: templateName
-                }
-            });
+            const response = await axios.delete(
+                '/whatsapp-accounts/templates',
+                {
+                    data: {
+                        account_id: accountId,
+                        template_name: templateName,
+                    },
+                },
+            );
 
             if (response.data.success) {
                 toast.success('Template deleted successfully!');
                 // Refresh accounts data
                 window.location.reload();
             } else {
-                toast.error(response.data.message || 'Failed to delete template');
+                toast.error(
+                    response.data.message || 'Failed to delete template',
+                );
             }
         } catch (error: any) {
             console.error('Template deletion error:', error);
-            toast.error(error.response?.data?.message || 'Failed to delete template');
+            toast.error(
+                error.response?.data?.message || 'Failed to delete template',
+            );
         }
     };
 
@@ -349,8 +374,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                             WhatsApp Business API Setup
                         </CardTitle>
                         <CardDescription className="text-blue-700 dark:text-blue-300">
-                            Connect your WhatsApp account to send messages through the platform. 
-                            Choose between Facebook WhatsApp Business API or Infobip WhatsApp API.
+                            Connect your WhatsApp account to send messages
+                            through the platform. Choose between Facebook
+                            WhatsApp Business API or Infobip WhatsApp API.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -361,21 +387,63 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                 </h4>
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div className="rounded-lg bg-white p-3 dark:bg-gray-800">
-                                        <h5 className="font-semibold text-blue-900 dark:text-blue-100">Facebook WhatsApp Business API</h5>
+                                        <h5 className="font-semibold text-blue-900 dark:text-blue-100">
+                                            Facebook WhatsApp Business API
+                                        </h5>
                                         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-blue-800 dark:text-blue-200">
-                                            <li>Go to <a href="https://developers.facebook.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">Facebook Developers</a></li>
-                                            <li>Create a new app or use existing one</li>
-                                            <li>Add WhatsApp Business API to your app</li>
-                                            <li>Get Access Token, Phone Number ID, and Business Account ID</li>
+                                            <li>
+                                                Go to{' '}
+                                                <a
+                                                    href="https://developers.facebook.com/"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                                >
+                                                    Facebook Developers
+                                                </a>
+                                            </li>
+                                            <li>
+                                                Create a new app or use existing
+                                                one
+                                            </li>
+                                            <li>
+                                                Add WhatsApp Business API to
+                                                your app
+                                            </li>
+                                            <li>
+                                                Get Access Token, Phone Number
+                                                ID, and Business Account ID
+                                            </li>
                                         </ol>
                                     </div>
                                     <div className="rounded-lg bg-white p-3 dark:bg-gray-800">
-                                        <h5 className="font-semibold text-blue-900 dark:text-blue-100">Infobip WhatsApp API</h5>
+                                        <h5 className="font-semibold text-blue-900 dark:text-blue-100">
+                                            Infobip WhatsApp API
+                                        </h5>
                                         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-blue-800 dark:text-blue-200">
-                                            <li>Sign up at <a href="https://portal.infobip.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">Infobip Portal</a></li>
-                                            <li>Navigate to Channels &gt; WhatsApp</li>
-                                            <li>Get your API Key and Sender Number</li>
-                                            <li>Use template messages for better deliverability</li>
+                                            <li>
+                                                Sign up at{' '}
+                                                <a
+                                                    href="https://portal.infobip.com"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                                >
+                                                    Infobip Portal
+                                                </a>
+                                            </li>
+                                            <li>
+                                                Navigate to Channels &gt;
+                                                WhatsApp
+                                            </li>
+                                            <li>
+                                                Get your API Key and Sender
+                                                Number
+                                            </li>
+                                            <li>
+                                                Use template messages for better
+                                                deliverability
+                                            </li>
                                         </ol>
                                     </div>
                                 </div>
@@ -431,8 +499,14 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                     <h4 className="font-semibold text-gray-900 dark:text-white">
                                                         {account.account_name}
                                                     </h4>
-                                                    <Badge variant="outline" className="text-xs">
-                                                        {account.provider === 'infobip' ? 'Infobip' : 'Facebook'}
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        {account.provider ===
+                                                        'infobip'
+                                                            ? 'Infobip'
+                                                            : 'Facebook'}
                                                     </Badge>
                                                     <div className="flex space-x-2">
                                                         <Badge
@@ -535,10 +609,13 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
-                                                {account.provider === 'infobip' && (
+                                                {account.provider ===
+                                                    'infobip' && (
                                                     <Button
                                                         onClick={() =>
-                                                            openTemplateManager(account.id)
+                                                            openTemplateManager(
+                                                                account.id,
+                                                            )
                                                         }
                                                         variant="outline"
                                                         size="sm"
@@ -645,14 +722,20 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     </Label>
                                     <Select
                                         value={data.provider}
-                                        onValueChange={(value) => setData('provider', value)}
+                                        onValueChange={(value) =>
+                                            setData('provider', value)
+                                        }
                                     >
                                         <SelectTrigger className="mt-1 border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
                                             <SelectValue placeholder="Select provider" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="facebook">Facebook WhatsApp Business API</SelectItem>
-                                            <SelectItem value="infobip">Infobip WhatsApp API</SelectItem>
+                                            <SelectItem value="facebook">
+                                                Facebook WhatsApp Business API
+                                            </SelectItem>
+                                            <SelectItem value="infobip">
+                                                Infobip WhatsApp API
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     {errors.provider && (
@@ -723,7 +806,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                             </Label>
                                             <Input
                                                 id="infobip_sender_number"
-                                                value={data.infobip_sender_number}
+                                                value={
+                                                    data.infobip_sender_number
+                                                }
                                                 onChange={(e) =>
                                                     setData(
                                                         'infobip_sender_number',
@@ -736,7 +821,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                             />
                                             {errors.infobip_sender_number && (
                                                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                                    {errors.infobip_sender_number}
+                                                    {
+                                                        errors.infobip_sender_number
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -857,8 +944,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 {/* Template Management Modal */}
                 {showTemplateManager && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
-                            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl dark:bg-gray-800">
+                            <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
                                 <div className="flex items-center space-x-3">
                                     <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
                                         <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -871,27 +958,44 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     onClick={closeTemplateManager}
                                     className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                                 >
-                                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    <svg
+                                        className="h-6 w-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
                                     </svg>
                                 </button>
                             </div>
 
-                            <div className="p-6 space-y-6">
+                            <div className="space-y-6 p-6">
                                 {/* Current Templates */}
                                 <div>
-                                    <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                    <h4 className="text-md mb-3 font-semibold text-gray-900 dark:text-gray-100">
                                         Current Templates
                                     </h4>
                                     {(() => {
-                                        const account = accounts.find(acc => acc.id === selectedAccountForTemplates);
-                                        const templates = account?.available_templates || [];
-                                        
+                                        const account = accounts.find(
+                                            (acc) =>
+                                                acc.id ===
+                                                selectedAccountForTemplates,
+                                        );
+                                        const templates =
+                                            account?.available_templates || [];
+
                                         if (templates.length === 0) {
                                             return (
-                                                <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                        No custom templates available. Create your first template below.
+                                                        No custom templates
+                                                        available. Create your
+                                                        first template below.
                                                     </p>
                                                 </div>
                                             );
@@ -899,29 +1003,63 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
                                         return (
                                             <div className="space-y-2">
-                                                {templates.map((template: any, index: number) => (
-                                                    <div key={index} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                                                        <div>
-                                                            <p className="font-medium text-gray-900 dark:text-gray-100">{template.name}</p>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {template.language} • {template.category}
-                                                            </p>
-                                                            {template.components && template.components[0] && template.components[0].text && (
-                                                                <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 italic">
-                                                                    "{template.components[0].text}"
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <Button
-                                                            onClick={() => deleteTemplate(selectedAccountForTemplates!, template.name)}
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                                {templates.map(
+                                                    (
+                                                        template: any,
+                                                        index: number,
+                                                    ) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
                                                         >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                ))}
+                                                            <div>
+                                                                <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                                    {
+                                                                        template.name
+                                                                    }
+                                                                </p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {
+                                                                        template.language
+                                                                    }{' '}
+                                                                    •{' '}
+                                                                    {
+                                                                        template.category
+                                                                    }
+                                                                </p>
+                                                                {template.components &&
+                                                                    template
+                                                                        .components[0] &&
+                                                                    template
+                                                                        .components[0]
+                                                                        .text && (
+                                                                        <p className="mt-1 text-xs italic text-gray-600 dark:text-gray-300">
+                                                                            "
+                                                                            {
+                                                                                template
+                                                                                    .components[0]
+                                                                                    .text
+                                                                            }
+                                                                            "
+                                                                        </p>
+                                                                    )}
+                                                            </div>
+                                                            <Button
+                                                                onClick={() =>
+                                                                    deleteTemplate(
+                                                                        selectedAccountForTemplates!,
+                                                                        template.name,
+                                                                    )
+                                                                }
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    ),
+                                                )}
                                             </div>
                                         );
                                     })()}
@@ -929,89 +1067,158 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
                                 {/* Create New Template */}
                                 <div>
-                                    <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                    <h4 className="text-md mb-3 font-semibold text-gray-900 dark:text-gray-100">
                                         Create New Template
                                     </h4>
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="template_name">Template Name</Label>
+                                                <Label htmlFor="template_name">
+                                                    Template Name
+                                                </Label>
                                                 <Input
                                                     id="template_name"
                                                     value={newTemplate.name}
-                                                    onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
+                                                    onChange={(e) =>
+                                                        setNewTemplate({
+                                                            ...newTemplate,
+                                                            name: e.target
+                                                                .value,
+                                                        })
+                                                    }
                                                     placeholder="e.g., appointment_reminder"
                                                     className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="template_language">Language</Label>
+                                                <Label htmlFor="template_language">
+                                                    Language
+                                                </Label>
                                                 <Select
                                                     value={newTemplate.language}
-                                                    onValueChange={(value) => setNewTemplate({...newTemplate, language: value})}
+                                                    onValueChange={(value) =>
+                                                        setNewTemplate({
+                                                            ...newTemplate,
+                                                            language: value,
+                                                        })
+                                                    }
                                                 >
                                                     <SelectTrigger className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="en">English</SelectItem>
-                                                        <SelectItem value="es">Spanish</SelectItem>
-                                                        <SelectItem value="fr">French</SelectItem>
-                                                        <SelectItem value="de">German</SelectItem>
-                                                        <SelectItem value="it">Italian</SelectItem>
-                                                        <SelectItem value="pt">Portuguese</SelectItem>
-                                                        <SelectItem value="ru">Russian</SelectItem>
-                                                        <SelectItem value="ja">Japanese</SelectItem>
-                                                        <SelectItem value="ko">Korean</SelectItem>
-                                                        <SelectItem value="zh">Chinese</SelectItem>
+                                                        <SelectItem value="en">
+                                                            English
+                                                        </SelectItem>
+                                                        <SelectItem value="es">
+                                                            Spanish
+                                                        </SelectItem>
+                                                        <SelectItem value="fr">
+                                                            French
+                                                        </SelectItem>
+                                                        <SelectItem value="de">
+                                                            German
+                                                        </SelectItem>
+                                                        <SelectItem value="it">
+                                                            Italian
+                                                        </SelectItem>
+                                                        <SelectItem value="pt">
+                                                            Portuguese
+                                                        </SelectItem>
+                                                        <SelectItem value="ru">
+                                                            Russian
+                                                        </SelectItem>
+                                                        <SelectItem value="ja">
+                                                            Japanese
+                                                        </SelectItem>
+                                                        <SelectItem value="ko">
+                                                            Korean
+                                                        </SelectItem>
+                                                        <SelectItem value="zh">
+                                                            Chinese
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <Label htmlFor="template_category">Category</Label>
+                                            <Label htmlFor="template_category">
+                                                Category
+                                            </Label>
                                             <Select
                                                 value={newTemplate.category}
-                                                onValueChange={(value) => setNewTemplate({...newTemplate, category: value})}
+                                                onValueChange={(value) =>
+                                                    setNewTemplate({
+                                                        ...newTemplate,
+                                                        category: value,
+                                                    })
+                                                }
                                             >
                                                 <SelectTrigger className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="UTILITY">Utility</SelectItem>
-                                                    <SelectItem value="MARKETING">Marketing</SelectItem>
-                                                    <SelectItem value="AUTHENTICATION">Authentication</SelectItem>
+                                                    <SelectItem value="UTILITY">
+                                                        Utility
+                                                    </SelectItem>
+                                                    <SelectItem value="MARKETING">
+                                                        Marketing
+                                                    </SelectItem>
+                                                    <SelectItem value="AUTHENTICATION">
+                                                        Authentication
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div>
-                                            <Label htmlFor="template_body">Message Body</Label>
+                                            <Label htmlFor="template_body">
+                                                Message Body
+                                            </Label>
                                             <Textarea
                                                 id="template_body"
-                                                value={newTemplate.components[0].text}
-                                                onChange={(e) => setNewTemplate({
-                                                    ...newTemplate,
-                                                    components: [{
-                                                        ...newTemplate.components[0],
-                                                        text: e.target.value
-                                                    }]
-                                                })}
+                                                value={
+                                                    newTemplate.components[0]
+                                                        .text
+                                                }
+                                                onChange={(e) =>
+                                                    setNewTemplate({
+                                                        ...newTemplate,
+                                                        components: [
+                                                            {
+                                                                ...newTemplate
+                                                                    .components[0],
+                                                                text: e.target
+                                                                    .value,
+                                                            },
+                                                        ],
+                                                    })
+                                                }
                                                 placeholder="Enter your template message. Use {{1}}, {{2}}, etc. for variables."
                                                 className="min-h-[100px] border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                             />
-                                            <div className="space-y-2 mt-2">
+                                            <div className="mt-2 space-y-2">
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    Use placeholders like {'{{1}}'}, {'{{2}}'} for dynamic content
+                                                    Use placeholders like{' '}
+                                                    {'{{1}}'}, {'{{2}}'} for
+                                                    dynamic content
                                                 </p>
-                                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Example:</p>
-                                                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                                                        "Hello {'{{1}}'}, your appointment with Dr. {'{{2}}'} is scheduled for {'{{3}}'} at {'{{4}}'}."
+                                                <div className="rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                                                    <p className="mb-2 text-sm font-medium text-blue-900 dark:text-blue-100">
+                                                        Example:
                                                     </p>
-                                                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                                        This will create 4 input fields: Name, Doctor, Date, Time
+                                                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                                                        "Hello {'{{1}}'}, your
+                                                        appointment with Dr.{' '}
+                                                        {'{{2}}'} is scheduled
+                                                        for {'{{3}}'} at{' '}
+                                                        {'{{4}}'}."
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                                                        This will create 4 input
+                                                        fields: Name, Doctor,
+                                                        Date, Time
                                                     </p>
                                                 </div>
                                             </div>

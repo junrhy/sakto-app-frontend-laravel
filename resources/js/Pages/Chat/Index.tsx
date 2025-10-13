@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
-import { Plus, Search, MessageCircle, Users, Clock, Menu, X, ArrowLeft } from 'lucide-react';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { Menu, MessageCircle, Plus, Search, Users, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface Conversation {
@@ -59,17 +59,24 @@ interface Props extends PageProps {
 export default function ChatIndex({ conversations, user }: Props) {
     const [searchTerm, setSearchTerm] = useState('');
     const [showNewChatModal, setShowNewChatModal] = useState(false);
-    const [availableChatUsers, setAvailableChatUsers] = useState<ChatUser[]>([]);
+    const [availableChatUsers, setAvailableChatUsers] = useState<ChatUser[]>(
+        [],
+    );
     const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
     const [newChatTitle, setNewChatTitle] = useState('');
     const [loading, setLoading] = useState(false);
     const [showSidebar, setShowSidebar] = useState(false);
 
-    const filteredConversations = conversations.filter(conversation =>
-        conversation.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conversation.participant_users?.some(participant =>
-            participant.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+    const filteredConversations = conversations.filter(
+        (conversation) =>
+            conversation.title
+                ?.toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+            conversation.participant_users?.some((participant) =>
+                participant.name
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase()),
+            ),
     );
 
     const formatLastMessageTime = (dateString: string) => {
@@ -91,20 +98,21 @@ export default function ChatIndex({ conversations, user }: Props) {
         if (conversation.title) {
             return conversation.title;
         }
-        
+
         if (conversation.type === 'direct' && conversation.participant_users) {
             const otherParticipant = conversation.participant_users.find(
-                participant => participant.id !== user.id
+                (participant) => participant.id !== user.id,
             );
             return otherParticipant?.name || 'Direct Message';
         }
-        
+
         return 'Group Chat';
     };
 
     const getConversationSubtitle = (conversation: Conversation) => {
         if (conversation.latest_message) {
-            const isOwnMessage = conversation.latest_message.sender_id === user.id;
+            const isOwnMessage =
+                conversation.latest_message.sender_id === user.id;
             const prefix = isOwnMessage ? 'You: ' : '';
             return `${prefix}${conversation.latest_message.content}`;
         }
@@ -135,7 +143,10 @@ export default function ChatIndex({ conversations, user }: Props) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
                     title: newChatTitle || null,
@@ -164,10 +175,10 @@ export default function ChatIndex({ conversations, user }: Props) {
     };
 
     const toggleContactSelection = (contactId: number) => {
-        setSelectedContacts(prev =>
+        setSelectedContacts((prev) =>
             prev.includes(contactId)
-                ? prev.filter(id => id !== contactId)
-                : [...prev, contactId]
+                ? prev.filter((id) => id !== contactId)
+                : [...prev, contactId],
         );
     };
 
@@ -180,10 +191,10 @@ export default function ChatIndex({ conversations, user }: Props) {
     return (
         <>
             <Head title="Chat" />
-            
+
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 {/* Mobile Header */}
-                <div className="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+                <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800 lg:hidden">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                             <Button
@@ -194,7 +205,9 @@ export default function ChatIndex({ conversations, user }: Props) {
                             >
                                 <Menu className="h-5 w-5" />
                             </Button>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Chat</h1>
+                            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                                Chat
+                            </h1>
                         </div>
                         <Button
                             onClick={() => setShowNewChatModal(true)}
@@ -207,10 +220,12 @@ export default function ChatIndex({ conversations, user }: Props) {
                 </div>
 
                 {/* Desktop Header */}
-                <div className="hidden lg:block max-w-7xl mx-auto px-6 py-6">
+                <div className="mx-auto hidden max-w-7xl px-6 py-6 lg:block">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Chat</h1>
-                        <p className="text-gray-600 dark:text-gray-400 mt-2">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            Chat
+                        </h1>
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Connect and communicate with your team members
                         </p>
                     </div>
@@ -219,11 +234,16 @@ export default function ChatIndex({ conversations, user }: Props) {
                 <div className="flex h-screen lg:h-auto">
                     {/* Mobile Sidebar Overlay */}
                     {showSidebar && (
-                        <div className="lg:hidden fixed inset-0 z-50">
-                            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowSidebar(false)} />
-                            <div className="fixed inset-y-0 left-0 w-80 bg-white dark:bg-gray-800 shadow-lg">
-                                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Conversations</h2>
+                        <div className="fixed inset-0 z-50 lg:hidden">
+                            <div
+                                className="fixed inset-0 bg-black bg-opacity-50"
+                                onClick={() => setShowSidebar(false)}
+                            />
+                            <div className="fixed inset-y-0 left-0 w-80 bg-white shadow-lg dark:bg-gray-800">
+                                <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Conversations
+                                    </h2>
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -235,56 +255,75 @@ export default function ChatIndex({ conversations, user }: Props) {
                                 </div>
                                 <div className="p-4">
                                     <div className="relative mb-4">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                                         <Input
                                             placeholder="Search conversations..."
                                             value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            onChange={(e) =>
+                                                setSearchTerm(e.target.value)
+                                            }
                                             className="pl-10"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         {filteredConversations.length === 0 ? (
                                             <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                                                {searchTerm ? 'No conversations found' : 'No conversations yet'}
+                                                {searchTerm
+                                                    ? 'No conversations found'
+                                                    : 'No conversations yet'}
                                             </div>
                                         ) : (
-                                            filteredConversations.map((conversation) => (
-                                                <Link
-                                                    key={conversation.id}
-                                                    href={`/chat/${conversation.id}`}
-                                                    onClick={() => setShowSidebar(false)}
-                                                    className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                                >
-                                                    <div className="flex items-center space-x-3">
-                                                        <Avatar className="h-12 w-12">
-                                                            <AvatarImage src="" />
-                                                            <AvatarFallback>
-                                                                {conversation.type === 'direct' ? (
-                                                                    conversation.participant_users?.[0]?.name?.charAt(0) || 'U'
-                                                                ) : (
-                                                                    <Users className="h-5 w-5" />
-                                                                )}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center justify-between">
-                                                                <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                                    {getConversationTitle(conversation)}
-                                                                </h3>
-                                                                {conversation.last_message_at && (
-                                                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                                                        {formatLastMessageTime(conversation.last_message_at)}
-                                                                    </span>
-                                                                )}
+                                            filteredConversations.map(
+                                                (conversation) => (
+                                                    <Link
+                                                        key={conversation.id}
+                                                        href={`/chat/${conversation.id}`}
+                                                        onClick={() =>
+                                                            setShowSidebar(
+                                                                false,
+                                                            )
+                                                        }
+                                                        className="block rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+                                                    >
+                                                        <div className="flex items-center space-x-3">
+                                                            <Avatar className="h-12 w-12">
+                                                                <AvatarImage src="" />
+                                                                <AvatarFallback>
+                                                                    {conversation.type ===
+                                                                    'direct' ? (
+                                                                        conversation.participant_users?.[0]?.name?.charAt(
+                                                                            0,
+                                                                        ) || 'U'
+                                                                    ) : (
+                                                                        <Users className="h-5 w-5" />
+                                                                    )}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <h3 className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                                                        {getConversationTitle(
+                                                                            conversation,
+                                                                        )}
+                                                                    </h3>
+                                                                    {conversation.last_message_at && (
+                                                                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                            {formatLastMessageTime(
+                                                                                conversation.last_message_at,
+                                                                            )}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <p className="mt-1 truncate text-sm text-gray-600 dark:text-gray-400">
+                                                                    {getConversationSubtitle(
+                                                                        conversation,
+                                                                    )}
+                                                                </p>
                                                             </div>
-                                                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-                                                                {getConversationSubtitle(conversation)}
-                                                            </p>
                                                         </div>
-                                                    </div>
-                                                </Link>
-                                            ))
+                                                    </Link>
+                                                ),
+                                            )
                                         )}
                                     </div>
                                 </div>
@@ -293,79 +332,104 @@ export default function ChatIndex({ conversations, user }: Props) {
                     )}
 
                     {/* Desktop Sidebar */}
-                    <div className="hidden lg:block w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+                    <div className="hidden w-80 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 lg:block">
                         <div className="p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Conversations</h2>
+                            <div className="mb-6 flex items-center justify-between">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Conversations
+                                </h2>
                                 <Button
                                     onClick={() => setShowNewChatModal(true)}
                                     size="sm"
                                     className="bg-blue-600 hover:bg-blue-700"
                                 >
-                                    <Plus className="h-4 w-4 mr-1" />
+                                    <Plus className="mr-1 h-4 w-4" />
                                     New Chat
                                 </Button>
                             </div>
                             <div className="relative mb-4">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                                 <Input
                                     placeholder="Search conversations..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
                                     className="pl-10"
                                 />
                             </div>
-                            <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+                            <div className="max-h-[calc(100vh-200px)] space-y-2 overflow-y-auto">
                                 {filteredConversations.length === 0 ? (
                                     <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                                        {searchTerm ? 'No conversations found' : 'No conversations yet'}
+                                        {searchTerm
+                                            ? 'No conversations found'
+                                            : 'No conversations yet'}
                                     </div>
                                 ) : (
-                                    filteredConversations.map((conversation) => (
-                                        <Link
-                                            key={conversation.id}
-                                            href={`/chat/${conversation.id}`}
-                                            className="block p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                <Avatar className="h-12 w-12">
-                                                    <AvatarImage src="" />
-                                                    <AvatarFallback>
-                                                        {conversation.type === 'direct' ? (
-                                                            conversation.participant_users?.[0]?.name?.charAt(0) || 'U'
-                                                        ) : (
-                                                            <Users className="h-5 w-5" />
-                                                        )}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                            {getConversationTitle(conversation)}
-                                                        </h3>
-                                                        {conversation.last_message_at && (
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                                                {formatLastMessageTime(conversation.last_message_at)}
+                                    filteredConversations.map(
+                                        (conversation) => (
+                                            <Link
+                                                key={conversation.id}
+                                                href={`/chat/${conversation.id}`}
+                                                className="block rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    <Avatar className="h-12 w-12">
+                                                        <AvatarImage src="" />
+                                                        <AvatarFallback>
+                                                            {conversation.type ===
+                                                            'direct' ? (
+                                                                conversation.participant_users?.[0]?.name?.charAt(
+                                                                    0,
+                                                                ) || 'U'
+                                                            ) : (
+                                                                <Users className="h-5 w-5" />
+                                                            )}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <h3 className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                                                {getConversationTitle(
+                                                                    conversation,
+                                                                )}
+                                                            </h3>
+                                                            {conversation.last_message_at && (
+                                                                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                    {formatLastMessageTime(
+                                                                        conversation.last_message_at,
+                                                                    )}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="mt-1 truncate text-sm text-gray-600 dark:text-gray-400">
+                                                            {getConversationSubtitle(
+                                                                conversation,
+                                                            )}
+                                                        </p>
+                                                        <div className="mt-1 flex items-center">
+                                                            {conversation.type ===
+                                                                'group' && (
+                                                                <Badge
+                                                                    variant="secondary"
+                                                                    className="text-xs"
+                                                                >
+                                                                    Group
+                                                                </Badge>
+                                                            )}
+                                                            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                {conversation
+                                                                    .participant_users
+                                                                    ?.length ||
+                                                                    0}{' '}
+                                                                participants
                                                             </span>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-                                                        {getConversationSubtitle(conversation)}
-                                                    </p>
-                                                    <div className="flex items-center mt-1">
-                                                        {conversation.type === 'group' && (
-                                                            <Badge variant="secondary" className="text-xs">
-                                                                Group
-                                                            </Badge>
-                                                        )}
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                                            {conversation.participant_users?.length || 0} participants
-                                                        </span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </Link>
-                                    ))
+                                            </Link>
+                                        ),
+                                    )
                                 )}
                             </div>
                         </div>
@@ -373,25 +437,33 @@ export default function ChatIndex({ conversations, user }: Props) {
 
                     {/* Main Content */}
                     <div className="flex-1 bg-white dark:bg-gray-800">
-                        <div className="h-full flex items-center justify-center p-6">
-                            <div className="text-center max-w-md">
-                                <MessageCircle className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-                                <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
+                        <div className="flex h-full items-center justify-center p-6">
+                            <div className="max-w-md text-center">
+                                <MessageCircle className="mx-auto mb-6 h-20 w-20 text-gray-400" />
+                                <h3 className="mb-3 text-xl font-medium text-gray-900 dark:text-white">
                                     Welcome to Chat
                                 </h3>
-                                <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
-                                    Select a conversation from the sidebar or start a new chat to begin messaging with your team.
+                                <p className="mb-8 leading-relaxed text-gray-600 dark:text-gray-400">
+                                    Select a conversation from the sidebar or
+                                    start a new chat to begin messaging with
+                                    your team.
                                 </p>
                                 <div className="space-y-3">
                                     <Button
-                                        onClick={() => setShowNewChatModal(true)}
-                                        className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base"
+                                        onClick={() =>
+                                            setShowNewChatModal(true)
+                                        }
+                                        className="h-12 w-full bg-blue-600 text-base hover:bg-blue-700"
                                     >
-                                        <Plus className="h-5 w-5 mr-2" />
+                                        <Plus className="mr-2 h-5 w-5" />
                                         Start New Chat
                                     </Button>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {conversations.length} conversation{conversations.length !== 1 ? 's' : ''} available
+                                        {conversations.length} conversation
+                                        {conversations.length !== 1
+                                            ? 's'
+                                            : ''}{' '}
+                                        available
                                     </p>
                                 </div>
                             </div>
@@ -402,11 +474,13 @@ export default function ChatIndex({ conversations, user }: Props) {
 
             {/* New Chat Modal */}
             {showNewChatModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md max-h-[90vh] overflow-hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <Card className="max-h-[90vh] w-full max-w-md overflow-hidden">
                         <CardHeader className="pb-4">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg">Start New Chat</CardTitle>
+                                <CardTitle className="text-lg">
+                                    Start New Chat
+                                </CardTitle>
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -419,22 +493,25 @@ export default function ChatIndex({ conversations, user }: Props) {
                         </CardHeader>
                         <CardContent className="space-y-4 pb-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Chat Title (Optional)
                                 </label>
                                 <Input
                                     placeholder="Enter chat title..."
                                     value={newChatTitle}
-                                    onChange={(e) => setNewChatTitle(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewChatTitle(e.target.value)
+                                    }
                                     className="h-11"
                                 />
                             </div>
-                            
+
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Select Contacts ({selectedContacts.length} selected)
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Select Contacts ({selectedContacts.length}{' '}
+                                    selected)
                                 </label>
-                                <div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                                <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
                                     {availableChatUsers.length === 0 ? (
                                         <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                                             No contacts available
@@ -443,15 +520,25 @@ export default function ChatIndex({ conversations, user }: Props) {
                                         availableChatUsers.map((chatUser) => (
                                             <div
                                                 key={chatUser.id}
-                                                className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                                onClick={() => toggleContactSelection(chatUser.id)}
+                                                className="flex cursor-pointer items-center border-b border-gray-100 p-3 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                                                onClick={() =>
+                                                    toggleContactSelection(
+                                                        chatUser.id,
+                                                    )
+                                                }
                                             >
                                                 <div className="relative">
                                                     <input
                                                         type="checkbox"
-                                                        checked={selectedContacts.includes(chatUser.id)}
-                                                        onChange={() => toggleContactSelection(chatUser.id)}
-                                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                        checked={selectedContacts.includes(
+                                                            chatUser.id,
+                                                        )}
+                                                        onChange={() =>
+                                                            toggleContactSelection(
+                                                                chatUser.id,
+                                                            )
+                                                        }
+                                                        className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
                                                     />
                                                 </div>
                                                 <div className="ml-3 flex-1">
@@ -461,12 +548,14 @@ export default function ChatIndex({ conversations, user }: Props) {
                                                         </div>
                                                         {chatUser.is_online && (
                                                             <div className="flex items-center">
-                                                                <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                                                                <span className="text-xs text-green-600 dark:text-green-400">Online</span>
+                                                                <div className="mr-1 h-2 w-2 rounded-full bg-green-500"></div>
+                                                                <span className="text-xs text-green-600 dark:text-green-400">
+                                                                    Online
+                                                                </span>
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                                    <div className="truncate text-sm text-gray-500 dark:text-gray-400">
                                                         {chatUser.email}
                                                     </div>
                                                 </div>
@@ -476,20 +565,24 @@ export default function ChatIndex({ conversations, user }: Props) {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
                                 <Button
                                     variant="outline"
                                     onClick={() => setShowNewChatModal(false)}
-                                    className="flex-1 h-11"
+                                    className="h-11 flex-1"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     onClick={createNewConversation}
-                                    disabled={loading || selectedContacts.length === 0}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 h-11"
+                                    disabled={
+                                        loading || selectedContacts.length === 0
+                                    }
+                                    className="h-11 flex-1 bg-blue-600 hover:bg-blue-700"
                                 >
-                                    {loading ? 'Creating...' : `Create Chat${selectedContacts.length > 1 ? ' (Group)' : ''}`}
+                                    {loading
+                                        ? 'Creating...'
+                                        : `Create Chat${selectedContacts.length > 1 ? ' (Group)' : ''}`}
                                 </Button>
                             </div>
                         </CardContent>

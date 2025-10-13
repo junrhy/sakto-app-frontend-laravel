@@ -282,7 +282,7 @@ export default function Biller({ auth }: { auth: any }) {
                                 Add Biller
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                        <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
                             <DialogHeader>
                                 <DialogTitle>Create New Biller</DialogTitle>
                                 <DialogDescription>
@@ -290,8 +290,8 @@ export default function Biller({ auth }: { auth: any }) {
                                     system
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="overflow-y-auto flex-1 space-y-4 pr-2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Name *</Label>
                                         <Input
@@ -307,7 +307,9 @@ export default function Biller({ auth }: { auth: any }) {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="category">Category</Label>
+                                        <Label htmlFor="category">
+                                            Category
+                                        </Label>
                                         <Select
                                             value={formData.category}
                                             onValueChange={(value) =>
@@ -342,7 +344,8 @@ export default function Biller({ auth }: { auth: any }) {
                                             onChange={(e) =>
                                                 setFormData({
                                                     ...formData,
-                                                    contact_person: e.target.value,
+                                                    contact_person:
+                                                        e.target.value,
                                                 })
                                             }
                                             placeholder="Contact person name"
@@ -401,14 +404,17 @@ export default function Biller({ auth }: { auth: any }) {
                                             onChange={(e) =>
                                                 setFormData({
                                                     ...formData,
-                                                    account_number: e.target.value,
+                                                    account_number:
+                                                        e.target.value,
                                                 })
                                             }
                                             placeholder="Account number"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="is_active">Status</Label>
+                                        <Label htmlFor="is_active">
+                                            Status
+                                        </Label>
                                         <Select
                                             value={
                                                 formData.is_active
@@ -418,7 +424,8 @@ export default function Biller({ auth }: { auth: any }) {
                                             onValueChange={(value) =>
                                                 setFormData({
                                                     ...formData,
-                                                    is_active: value === 'active',
+                                                    is_active:
+                                                        value === 'active',
                                                 })
                                             }
                                         >
@@ -452,7 +459,9 @@ export default function Biller({ auth }: { auth: any }) {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="description">Description</Label>
+                                    <Label htmlFor="description">
+                                        Description
+                                    </Label>
                                     <Textarea
                                         id="description"
                                         value={formData.description}
@@ -758,15 +767,15 @@ export default function Biller({ auth }: { auth: any }) {
 
             {/* Edit Dialog */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
                     <DialogHeader>
                         <DialogTitle>Edit Biller</DialogTitle>
                         <DialogDescription>
                             Update the biller information
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="overflow-y-auto flex-1 space-y-4 pr-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="edit_name">Name *</Label>
                                 <Input
@@ -886,7 +895,9 @@ export default function Biller({ auth }: { auth: any }) {
                                 <Label htmlFor="edit_is_active">Status</Label>
                                 <Select
                                     value={
-                                        formData.is_active ? 'active' : 'inactive'
+                                        formData.is_active
+                                            ? 'active'
+                                            : 'inactive'
                                     }
                                     onValueChange={(value) =>
                                         setFormData({
@@ -925,7 +936,9 @@ export default function Biller({ auth }: { auth: any }) {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit_description">Description</Label>
+                            <Label htmlFor="edit_description">
+                                Description
+                            </Label>
                             <Textarea
                                 id="edit_description"
                                 value={formData.description}

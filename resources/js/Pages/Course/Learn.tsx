@@ -643,14 +643,12 @@ export default function Learn({
                     </h2>
                 }
             >
-                <div className="py-12">
-                    <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                        <div className="text-center">
-                            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-gray-100"></div>
-                            <p className="mt-2 text-gray-600 dark:text-gray-400">
-                                Loading course content...
-                            </p>
-                        </div>
+                <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-gray-100"></div>
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">
+                            Loading course content...
+                        </p>
                     </div>
                 </div>
 
@@ -676,537 +674,524 @@ export default function Learn({
         >
             <Head title={`Learning - ${course.title}`} />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {viewingContact ? (
-                        <div className="mb-6">
-                            <div
-                                className={`rounded-md border p-4 ${
-                                    isEnrolled
-                                        ? 'border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
-                                        : 'border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-900/20'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <User
-                                            className={`h-5 w-5 ${
+            <div className="space-y-6">
+                {viewingContact ? (
+                    <div className="mb-6">
+                        <div
+                            className={`rounded-md border p-4 ${
+                                isEnrolled
+                                    ? 'border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20'
+                                    : 'border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-900/20'
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <User
+                                        className={`h-5 w-5 ${
+                                            isEnrolled
+                                                ? 'text-blue-600 dark:text-blue-400'
+                                                : 'text-orange-600 dark:text-orange-400'
+                                        }`}
+                                    />
+                                    <div>
+                                        <div
+                                            className={`font-medium ${
                                                 isEnrolled
-                                                    ? 'text-blue-600 dark:text-blue-400'
-                                                    : 'text-orange-600 dark:text-orange-400'
+                                                    ? 'text-blue-900 dark:text-blue-100'
+                                                    : 'text-orange-900 dark:text-orange-100'
                                             }`}
-                                        />
-                                        <div>
-                                            <div
-                                                className={`font-medium ${
-                                                    isEnrolled
-                                                        ? 'text-blue-900 dark:text-blue-100'
-                                                        : 'text-orange-900 dark:text-orange-100'
-                                                }`}
-                                            >
-                                                Viewing as{' '}
-                                                {viewingContact.first_name}{' '}
-                                                {viewingContact.last_name}
-                                            </div>
-                                            <div
-                                                className={`text-sm ${
-                                                    isEnrolled
-                                                        ? 'text-blue-700 dark:text-blue-300'
-                                                        : 'text-orange-700 dark:text-orange-300'
-                                                }`}
-                                            >
-                                                {isCheckingEnrollment ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-current"></div>
-                                                        Checking enrollment...
-                                                    </div>
-                                                ) : isEnrolled ? (
-                                                    viewingContact.email
-                                                ) : (
-                                                    'Not enrolled in this course'
-                                                )}
-                                            </div>
+                                        >
+                                            Viewing as{' '}
+                                            {viewingContact.first_name}{' '}
+                                            {viewingContact.last_name}
+                                        </div>
+                                        <div
+                                            className={`text-sm ${
+                                                isEnrolled
+                                                    ? 'text-blue-700 dark:text-blue-300'
+                                                    : 'text-orange-700 dark:text-orange-300'
+                                            }`}
+                                        >
+                                            {isCheckingEnrollment ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-current"></div>
+                                                    Checking enrollment...
+                                                </div>
+                                            ) : isEnrolled ? (
+                                                viewingContact.email
+                                            ) : (
+                                                'Not enrolled in this course'
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        {!isEnrolled &&
-                                            !isCheckingEnrollment && (
-                                                <Link
-                                                    href={`/courses/${course.id}?contact_id=${viewingContact.id}`}
-                                                >
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-900/20"
-                                                    >
-                                                        Enroll Contact
-                                                    </Button>
-                                                </Link>
-                                            )}
-                                        {isEnrolled &&
-                                            !isCheckingEnrollment && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled
-                                                    className="cursor-not-allowed border-green-300 bg-green-50 text-green-600 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400"
-                                                >
-                                                    Already Enrolled
-                                                </Button>
-                                            )}
+                                </div>
+                                <div className="flex gap-2">
+                                    {!isEnrolled && !isCheckingEnrollment && (
+                                        <Link
+                                            href={`/courses/${course.id}?contact_id=${viewingContact.id}`}
+                                        >
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-900/20"
+                                            >
+                                                Enroll Contact
+                                            </Button>
+                                        </Link>
+                                    )}
+                                    {isEnrolled && !isCheckingEnrollment && (
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                setShowContactSelector(true)
-                                            }
+                                            disabled
+                                            className="cursor-not-allowed border-green-300 bg-green-50 text-green-600 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400"
                                         >
-                                            Change Contact
+                                            Already Enrolled
                                         </Button>
-                                        <Link href="/courses">
-                                            <Button variant="outline" size="sm">
-                                                View as Admin
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="mb-6">
-                            <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <User className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                                        <div>
-                                            <div className="font-medium text-yellow-900 dark:text-yellow-100">
-                                                No contact selected
-                                            </div>
-                                            <div className="text-sm text-yellow-700 dark:text-yellow-300">
-                                                Select a contact to track lesson
-                                                progress
-                                            </div>
-                                        </div>
-                                    </div>
+                                    )}
                                     <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() =>
                                             setShowContactSelector(true)
                                         }
-                                        className="flex items-center gap-2"
                                     >
-                                        <User className="h-4 w-4" />
-                                        Select Contact
+                                        Change Contact
                                     </Button>
+                                    <Link href="/courses">
+                                        <Button variant="outline" size="sm">
+                                            View as Admin
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                    <div className="mb-6">
-                        <Link
-                            href={`/courses/${course.id}${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}
-                        >
-                            <Button variant="outline" className="mb-4">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Course
-                            </Button>
-                        </Link>
                     </div>
+                ) : (
+                    <div className="mb-6">
+                        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <User className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                    <div>
+                                        <div className="font-medium text-yellow-900 dark:text-yellow-100">
+                                            No contact selected
+                                        </div>
+                                        <div className="text-sm text-yellow-700 dark:text-yellow-300">
+                                            Select a contact to track lesson
+                                            progress
+                                        </div>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={() => setShowContactSelector(true)}
+                                    className="flex items-center gap-2"
+                                >
+                                    <User className="h-4 w-4" />
+                                    Select Contact
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-                        {/* Main Content */}
-                        <div className="lg:col-span-3">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                        {course.title}
-                                    </CardTitle>
-                                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                                        {course.description}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {currentLesson ? (
-                                        <div>
-                                            <div className="mb-6">
-                                                <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
-                                                    {currentLesson.title}
-                                                </h3>
-                                                <p className="mb-4 text-gray-600 dark:text-gray-400">
-                                                    {currentLesson.description}
-                                                </p>
+                <div className="mb-6">
+                    <Link
+                        href={`/courses/${course.id}${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}
+                    >
+                        <Button variant="outline" className="mb-4">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Course
+                        </Button>
+                    </Link>
+                </div>
 
-                                                <div className="mb-4 flex items-center gap-4">
-                                                    {getLessonIcon(
-                                                        currentLesson,
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+                    {/* Main Content */}
+                    <div className="lg:col-span-3">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                    {course.title}
+                                </CardTitle>
+                                <CardDescription className="text-gray-600 dark:text-gray-400">
+                                    {course.description}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {currentLesson ? (
+                                    <div>
+                                        <div className="mb-6">
+                                            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                                {currentLesson.title}
+                                            </h3>
+                                            <p className="mb-4 text-gray-600 dark:text-gray-400">
+                                                {currentLesson.description}
+                                            </p>
+
+                                            <div className="mb-4 flex items-center gap-4">
+                                                {getLessonIcon(currentLesson)}
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {formatDuration(
+                                                        currentLesson.duration_minutes,
                                                     )}
-                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {formatDuration(
-                                                            currentLesson.duration_minutes,
-                                                        )}
-                                                    </span>
-                                                    <Badge
-                                                        className={getDifficultyColor(
-                                                            course.difficulty,
-                                                        )}
-                                                    >
-                                                        {course.difficulty}
-                                                    </Badge>
-                                                </div>
+                                                </span>
+                                                <Badge
+                                                    className={getDifficultyColor(
+                                                        course.difficulty,
+                                                    )}
+                                                >
+                                                    {course.difficulty}
+                                                </Badge>
                                             </div>
+                                        </div>
 
-                                            {currentLesson.video_url && (
-                                                <div className="mb-6">
-                                                    {(() => {
-                                                        console.log(
-                                                            'Processing video URL:',
+                                        {currentLesson.video_url && (
+                                            <div className="mb-6">
+                                                {(() => {
+                                                    console.log(
+                                                        'Processing video URL:',
+                                                        currentLesson.video_url,
+                                                    ); // Debug log
+                                                    const embedUrl =
+                                                        getYouTubeEmbedUrl(
                                                             currentLesson.video_url,
-                                                        ); // Debug log
-                                                        const embedUrl =
-                                                            getYouTubeEmbedUrl(
-                                                                currentLesson.video_url,
-                                                            );
-                                                        console.log(
-                                                            'Generated embed URL:',
-                                                            embedUrl,
-                                                        ); // Debug log
+                                                        );
+                                                    console.log(
+                                                        'Generated embed URL:',
+                                                        embedUrl,
+                                                    ); // Debug log
 
-                                                        if (embedUrl) {
-                                                            return (
-                                                                <div>
-                                                                    <YouTubeVideoPlayer
-                                                                        videoUrl={
-                                                                            currentLesson.video_url
-                                                                        }
-                                                                        title={
-                                                                            currentLesson.title
-                                                                        }
-                                                                        lessonId={
-                                                                            currentLesson.id
-                                                                        }
-                                                                        onProgress={
-                                                                            handleVideoProgress
-                                                                        }
-                                                                    />
+                                                    if (embedUrl) {
+                                                        return (
+                                                            <div>
+                                                                <YouTubeVideoPlayer
+                                                                    videoUrl={
+                                                                        currentLesson.video_url
+                                                                    }
+                                                                    title={
+                                                                        currentLesson.title
+                                                                    }
+                                                                    lessonId={
+                                                                        currentLesson.id
+                                                                    }
+                                                                    onProgress={
+                                                                        handleVideoProgress
+                                                                    }
+                                                                />
 
-                                                                    {/* Video Progress Indicator */}
-                                                                    {videoProgress[
-                                                                        currentLesson
-                                                                            .id
-                                                                    ] !==
-                                                                        undefined && (
-                                                                        <div className="mt-3">
-                                                                            <div className="mb-1 flex items-center justify-between">
-                                                                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                                                    Video
-                                                                                    Progress
-                                                                                </span>
-                                                                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                                                    {Math.round(
-                                                                                        videoProgress[
-                                                                                            currentLesson
-                                                                                                .id
-                                                                                        ],
-                                                                                    )}
-
-                                                                                    %
-                                                                                </span>
-                                                                            </div>
-                                                                            <Progress
-                                                                                value={
+                                                                {/* Video Progress Indicator */}
+                                                                {videoProgress[
+                                                                    currentLesson
+                                                                        .id
+                                                                ] !==
+                                                                    undefined && (
+                                                                    <div className="mt-3">
+                                                                        <div className="mb-1 flex items-center justify-between">
+                                                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                                                Video
+                                                                                Progress
+                                                                            </span>
+                                                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                                                {Math.round(
                                                                                     videoProgress[
                                                                                         currentLesson
                                                                                             .id
-                                                                                    ]
-                                                                                }
-                                                                                className="h-2"
-                                                                            />
-                                                                            {videoWatched[
-                                                                                currentLesson
-                                                                                    .id
-                                                                            ] && (
-                                                                                <div className="mt-2 text-center">
-                                                                                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                                                        <CheckCircle className="mr-1 h-3 w-3" />
-                                                                                        Video
-                                                                                        Watched
-                                                                                    </Badge>
-                                                                                </div>
-                                                                            )}
+                                                                                    ],
+                                                                                )}
+
+                                                                                %
+                                                                            </span>
                                                                         </div>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        } else {
-                                                            return (
-                                                                <div className="flex aspect-video items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                                                                    <div className="text-center">
-                                                                        <Video className="mx-auto mb-2 h-16 w-16 text-gray-400 dark:text-gray-500" />
-                                                                        <p className="text-gray-600 dark:text-gray-400">
-                                                                            Invalid
-                                                                            video
-                                                                            URL
-                                                                        </p>
-                                                                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">
-                                                                            {
-                                                                                currentLesson.video_url
+                                                                        <Progress
+                                                                            value={
+                                                                                videoProgress[
+                                                                                    currentLesson
+                                                                                        .id
+                                                                                ]
                                                                             }
-                                                                        </p>
+                                                                            className="h-2"
+                                                                        />
+                                                                        {videoWatched[
+                                                                            currentLesson
+                                                                                .id
+                                                                        ] && (
+                                                                            <div className="mt-2 text-center">
+                                                                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                                                    <CheckCircle className="mr-1 h-3 w-3" />
+                                                                                    Video
+                                                                                    Watched
+                                                                                </Badge>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
-                                                                </div>
-                                                            );
-                                                        }
-                                                    })()}
-
-                                                    <div className="mt-4 flex justify-center gap-2">
-                                                        <Button
-                                                            onClick={() =>
-                                                                markLessonAsStarted(
-                                                                    currentLesson.id,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                !viewingContact ||
-                                                                !isEnrolled ||
-                                                                isCheckingEnrollment ||
-                                                                currentLesson.status ===
-                                                                    'in_progress' ||
-                                                                currentLesson.status ===
-                                                                    'completed'
-                                                            }
-                                                        >
-                                                            <Play className="mr-2 h-4 w-4" />
-                                                            {currentLesson.status ===
-                                                            'not_started'
-                                                                ? 'Mark as Started'
-                                                                : currentLesson.status ===
-                                                                    'in_progress'
-                                                                  ? 'Video In Progress'
-                                                                  : currentLesson.status ===
-                                                                      'completed'
-                                                                    ? 'Video Completed'
-                                                                    : 'Mark as Started'}
-                                                        </Button>
-
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={() =>
-                                                                window.open(
-                                                                    currentLesson.video_url,
-                                                                    '_blank',
-                                                                )
-                                                            }
-                                                        >
-                                                            <Video className="mr-2 h-4 w-4" />
-                                                            Open in YouTube
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            <div className="prose mb-6 max-w-none">
-                                                <div
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: currentLesson.content,
-                                                    }}
-                                                />
-                                            </div>
-
-                                            <div className="flex items-center justify-between border-t pt-4">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        markLessonAsStarted(
-                                                            currentLesson.id,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        !viewingContact ||
-                                                        !isEnrolled ||
-                                                        isCheckingEnrollment ||
-                                                        currentLesson.status ===
-                                                            'in_progress' ||
-                                                        currentLesson.status ===
-                                                            'completed'
-                                                    }
-                                                >
-                                                    <Play className="mr-2 h-4 w-4" />
-                                                    {currentLesson.status ===
-                                                    'not_started'
-                                                        ? 'Mark as Started'
-                                                        : currentLesson.status ===
-                                                            'in_progress'
-                                                          ? 'In Progress'
-                                                          : currentLesson.status ===
-                                                              'completed'
-                                                            ? 'Completed'
-                                                            : 'Mark as Started'}
-                                                </Button>
-
-                                                <Button
-                                                    onClick={() =>
-                                                        markLessonAsCompleted(
-                                                            currentLesson.id,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        currentLesson.status ===
-                                                            'completed' ||
-                                                        !viewingContact ||
-                                                        !isEnrolled ||
-                                                        isCheckingEnrollment ||
-                                                        currentLesson.status ===
-                                                            'not_started' ||
-                                                        (!!currentLesson.video_url &&
-                                                            !videoWatched[
-                                                                currentLesson.id
-                                                            ])
-                                                    }
-                                                >
-                                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                                    {(() => {
-                                                        if (
-                                                            currentLesson.status ===
-                                                            'completed'
-                                                        ) {
-                                                            return 'Completed';
-                                                        } else if (
-                                                            currentLesson.video_url &&
-                                                            !videoWatched[
-                                                                currentLesson.id
-                                                            ]
-                                                        ) {
-                                                            return 'Watch Video First';
-                                                        } else {
-                                                            return 'Mark as Complete';
-                                                        }
-                                                    })()}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="py-12 text-center">
-                                            <BookOpen className="mx-auto mb-4 h-16 w-16 text-gray-400 dark:text-gray-500" />
-                                            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                No lessons available
-                                            </h3>
-                                            <p className="text-gray-600 dark:text-gray-400">
-                                                This course doesn't have any
-                                                lessons yet.
-                                            </p>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Sidebar */}
-                        <div className="lg:col-span-1">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-gray-900 dark:text-gray-100">
-                                        Course Progress
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {currentProgress && (
-                                        <div>
-                                            <div className="mb-2 flex items-center justify-between">
-                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    Progress
-                                                </span>
-                                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                    {
-                                                        currentProgress.progress_percentage
-                                                    }
-                                                    %
-                                                </span>
-                                            </div>
-                                            <Progress
-                                                value={
-                                                    currentProgress.progress_percentage
-                                                }
-                                                className="mb-4"
-                                            />
-                                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                {
-                                                    currentProgress.lessons_completed
-                                                }{' '}
-                                                of{' '}
-                                                {currentProgress.total_lessons}{' '}
-                                                lessons completed
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="border-t pt-4 dark:border-gray-700">
-                                        <h4 className="mb-3 font-medium text-gray-900 dark:text-gray-100">
-                                            Lessons
-                                        </h4>
-                                        <div className="space-y-2">
-                                            {lessons.map((lesson) => (
-                                                <button
-                                                    key={lesson.id}
-                                                    onClick={() =>
-                                                        handleLessonClick(
-                                                            lesson,
-                                                        )
-                                                    }
-                                                    className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                                                        currentLesson?.id ===
-                                                        lesson.id
-                                                            ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
-                                                            : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
-                                                    }`}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        {getLessonStatusIcon(
-                                                            lesson,
-                                                        )}
-                                                        <div className="flex-1">
-                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                {lesson.title}
-                                                            </div>
-                                                            <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                                {formatDuration(
-                                                                    lesson.duration_minutes,
                                                                 )}
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </button>
-                                            ))}
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <div className="flex aspect-video items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                                                                <div className="text-center">
+                                                                    <Video className="mx-auto mb-2 h-16 w-16 text-gray-400 dark:text-gray-500" />
+                                                                    <p className="text-gray-600 dark:text-gray-400">
+                                                                        Invalid
+                                                                        video
+                                                                        URL
+                                                                    </p>
+                                                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">
+                                                                        {
+                                                                            currentLesson.video_url
+                                                                        }
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                })()}
+
+                                                <div className="mt-4 flex justify-center gap-2">
+                                                    <Button
+                                                        onClick={() =>
+                                                            markLessonAsStarted(
+                                                                currentLesson.id,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            !viewingContact ||
+                                                            !isEnrolled ||
+                                                            isCheckingEnrollment ||
+                                                            currentLesson.status ===
+                                                                'in_progress' ||
+                                                            currentLesson.status ===
+                                                                'completed'
+                                                        }
+                                                    >
+                                                        <Play className="mr-2 h-4 w-4" />
+                                                        {currentLesson.status ===
+                                                        'not_started'
+                                                            ? 'Mark as Started'
+                                                            : currentLesson.status ===
+                                                                'in_progress'
+                                                              ? 'Video In Progress'
+                                                              : currentLesson.status ===
+                                                                  'completed'
+                                                                ? 'Video Completed'
+                                                                : 'Mark as Started'}
+                                                    </Button>
+
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            window.open(
+                                                                currentLesson.video_url,
+                                                                '_blank',
+                                                            )
+                                                        }
+                                                    >
+                                                        <Video className="mr-2 h-4 w-4" />
+                                                        Open in YouTube
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="prose mb-6 max-w-none">
+                                            <div
+                                                dangerouslySetInnerHTML={{
+                                                    __html: currentLesson.content,
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center justify-between border-t pt-4">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() =>
+                                                    markLessonAsStarted(
+                                                        currentLesson.id,
+                                                    )
+                                                }
+                                                disabled={
+                                                    !viewingContact ||
+                                                    !isEnrolled ||
+                                                    isCheckingEnrollment ||
+                                                    currentLesson.status ===
+                                                        'in_progress' ||
+                                                    currentLesson.status ===
+                                                        'completed'
+                                                }
+                                            >
+                                                <Play className="mr-2 h-4 w-4" />
+                                                {currentLesson.status ===
+                                                'not_started'
+                                                    ? 'Mark as Started'
+                                                    : currentLesson.status ===
+                                                        'in_progress'
+                                                      ? 'In Progress'
+                                                      : currentLesson.status ===
+                                                          'completed'
+                                                        ? 'Completed'
+                                                        : 'Mark as Started'}
+                                            </Button>
+
+                                            <Button
+                                                onClick={() =>
+                                                    markLessonAsCompleted(
+                                                        currentLesson.id,
+                                                    )
+                                                }
+                                                disabled={
+                                                    currentLesson.status ===
+                                                        'completed' ||
+                                                    !viewingContact ||
+                                                    !isEnrolled ||
+                                                    isCheckingEnrollment ||
+                                                    currentLesson.status ===
+                                                        'not_started' ||
+                                                    (!!currentLesson.video_url &&
+                                                        !videoWatched[
+                                                            currentLesson.id
+                                                        ])
+                                                }
+                                            >
+                                                <CheckCircle className="mr-2 h-4 w-4" />
+                                                {(() => {
+                                                    if (
+                                                        currentLesson.status ===
+                                                        'completed'
+                                                    ) {
+                                                        return 'Completed';
+                                                    } else if (
+                                                        currentLesson.video_url &&
+                                                        !videoWatched[
+                                                            currentLesson.id
+                                                        ]
+                                                    ) {
+                                                        return 'Watch Video First';
+                                                    } else {
+                                                        return 'Mark as Complete';
+                                                    }
+                                                })()}
+                                            </Button>
                                         </div>
                                     </div>
+                                ) : (
+                                    <div className="py-12 text-center">
+                                        <BookOpen className="mx-auto mb-4 h-16 w-16 text-gray-400 dark:text-gray-500" />
+                                        <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-gray-100">
+                                            No lessons available
+                                        </h3>
+                                        <p className="text-gray-600 dark:text-gray-400">
+                                            This course doesn't have any lessons
+                                            yet.
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                                    {currentProgress?.progress_percentage ===
-                                        100 && (
-                                        <div className="border-t pt-4 dark:border-gray-700">
-                                            <div className="text-center">
-                                                <Award className="mx-auto mb-2 h-8 w-8 text-yellow-500 dark:text-yellow-400" />
-                                                <h4 className="font-medium text-green-600 dark:text-green-400">
-                                                    Course Completed!
-                                                </h4>
-                                                <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-                                                    Congratulations on
-                                                    completing this course!
-                                                </p>
-                                                <Button
-                                                    variant="outline"
-                                                    className="w-full"
-                                                    onClick={
-                                                        handleDownloadCertificate
-                                                    }
-                                                >
-                                                    <Download className="mr-2 h-4 w-4" />
-                                                    Download Certificate
-                                                </Button>
-                                            </div>
+                    {/* Sidebar */}
+                    <div className="lg:col-span-1">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-gray-900 dark:text-gray-100">
+                                    Course Progress
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {currentProgress && (
+                                    <div>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                Progress
+                                            </span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                {
+                                                    currentProgress.progress_percentage
+                                                }
+                                                %
+                                            </span>
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
+                                        <Progress
+                                            value={
+                                                currentProgress.progress_percentage
+                                            }
+                                            className="mb-4"
+                                        />
+                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                            {currentProgress.lessons_completed}{' '}
+                                            of {currentProgress.total_lessons}{' '}
+                                            lessons completed
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="border-t pt-4 dark:border-gray-700">
+                                    <h4 className="mb-3 font-medium text-gray-900 dark:text-gray-100">
+                                        Lessons
+                                    </h4>
+                                    <div className="space-y-2">
+                                        {lessons.map((lesson) => (
+                                            <button
+                                                key={lesson.id}
+                                                onClick={() =>
+                                                    handleLessonClick(lesson)
+                                                }
+                                                className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                                                    currentLesson?.id ===
+                                                    lesson.id
+                                                        ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
+                                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {getLessonStatusIcon(
+                                                        lesson,
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                            {lesson.title}
+                                                        </div>
+                                                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                                                            {formatDuration(
+                                                                lesson.duration_minutes,
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {currentProgress?.progress_percentage ===
+                                    100 && (
+                                    <div className="border-t pt-4 dark:border-gray-700">
+                                        <div className="text-center">
+                                            <Award className="mx-auto mb-2 h-8 w-8 text-yellow-500 dark:text-yellow-400" />
+                                            <h4 className="font-medium text-green-600 dark:text-green-400">
+                                                Course Completed!
+                                            </h4>
+                                            <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                                                Congratulations on completing
+                                                this course!
+                                            </p>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full"
+                                                onClick={
+                                                    handleDownloadCertificate
+                                                }
+                                            >
+                                                <Download className="mr-2 h-4 w-4" />
+                                                Download Certificate
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>

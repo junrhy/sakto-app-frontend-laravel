@@ -29,8 +29,11 @@ export default function Features({ auth }: PageProps) {
     const legalDropdownRef = useRef<HTMLDivElement>(null);
 
     // Country-specific currency configuration
-    const countryCurrencyMap: Record<string, { currency: string; symbol: string }> = {
-        'PH': { currency: 'php', symbol: '₱' },
+    const countryCurrencyMap: Record<
+        string,
+        { currency: string; symbol: string }
+    > = {
+        PH: { currency: 'php', symbol: '₱' },
         // Add more countries as needed:
         // 'US': { currency: 'usd', symbol: '$' },
         // 'GB': { currency: 'gbp', symbol: '£' },
@@ -75,21 +78,24 @@ export default function Features({ auth }: PageProps) {
     }, []);
 
     // Function to get URL with currency parameters if applicable
-    const getUrlWithCurrency = (baseUrl: string, additionalParams: Record<string, string> = {}): string => {
+    const getUrlWithCurrency = (
+        baseUrl: string,
+        additionalParams: Record<string, string> = {},
+    ): string => {
         const params = new URLSearchParams();
-        
+
         // Add currency params if applicable
         if (userCountry && countryCurrencyMap[userCountry]) {
             const { currency, symbol } = countryCurrencyMap[userCountry];
             params.append('currency', currency);
             params.append('symbol', symbol);
         }
-        
+
         // Add any additional params
         Object.entries(additionalParams).forEach(([key, value]) => {
             params.append(key, value);
         });
-        
+
         const queryString = params.toString();
         return queryString ? `${baseUrl}?${queryString}` : baseUrl;
     };
@@ -134,7 +140,8 @@ export default function Features({ auth }: PageProps) {
 
     const projectFeatures = {
         [hostname !== 'Neulify' ? `${hostname} Community` : 'Community']: {
-            name: hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
+            name:
+                hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
             project: 'community',
             icon: UserGroupIcon,
             features: [
@@ -186,7 +193,8 @@ export default function Features({ auth }: PageProps) {
             ],
         },
         [hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics']: {
-            name: hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics',
+            name:
+                hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics',
             project: 'logistics',
             icon: TruckIcon,
             features: [
@@ -440,7 +448,8 @@ export default function Features({ auth }: PageProps) {
             ],
         },
         [hostname !== 'Neulify' ? `${hostname} Education` : 'Education']: {
-            name: hostname !== 'Neulify' ? `${hostname} Education` : 'Education',
+            name:
+                hostname !== 'Neulify' ? `${hostname} Education` : 'Education',
             project: 'education',
             icon: UserGroupIcon,
             features: [
@@ -514,7 +523,10 @@ export default function Features({ auth }: PageProps) {
             ],
         },
         [hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture']: {
-            name: hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture',
+            name:
+                hostname !== 'Neulify'
+                    ? `${hostname} Agriculture`
+                    : 'Agriculture',
             project: 'agriculture',
             icon: TruckIcon,
             features: [
@@ -550,43 +562,47 @@ export default function Features({ auth }: PageProps) {
                 },
             ],
         },
-        [hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction']: {
-            name: hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction',
-            project: 'construction',
-            icon: TruckIcon,
-            features: [
-                {
-                    title: 'Project Management',
-                    description:
-                        'Comprehensive project management with timelines, milestones, and resource allocation.',
-                },
-                {
-                    title: 'Bid Management',
-                    description:
-                        'Create and manage bids, proposals, and quotations for construction projects.',
-                },
-                {
-                    title: 'Subcontractor Management',
-                    description:
-                        'Manage subcontractors, contracts, work orders, and payment tracking.',
-                },
-                {
-                    title: 'Equipment Tracking',
-                    description:
-                        'Track equipment, maintenance schedules, and utilization across job sites.',
-                },
-                {
-                    title: 'Document Management',
-                    description:
-                        'Store and manage blueprints, permits, contracts, and project documentation.',
-                },
-                {
-                    title: 'Financial Tracking',
-                    description:
-                        'Track project costs, budgets, expenses, and profitability in real-time.',
-                },
-            ],
-        },
+        [hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction']:
+            {
+                name:
+                    hostname !== 'Neulify'
+                        ? `${hostname} Construction`
+                        : 'Construction',
+                project: 'construction',
+                icon: TruckIcon,
+                features: [
+                    {
+                        title: 'Project Management',
+                        description:
+                            'Comprehensive project management with timelines, milestones, and resource allocation.',
+                    },
+                    {
+                        title: 'Bid Management',
+                        description:
+                            'Create and manage bids, proposals, and quotations for construction projects.',
+                    },
+                    {
+                        title: 'Subcontractor Management',
+                        description:
+                            'Manage subcontractors, contracts, work orders, and payment tracking.',
+                    },
+                    {
+                        title: 'Equipment Tracking',
+                        description:
+                            'Track equipment, maintenance schedules, and utilization across job sites.',
+                    },
+                    {
+                        title: 'Document Management',
+                        description:
+                            'Store and manage blueprints, permits, contracts, and project documentation.',
+                    },
+                    {
+                        title: 'Financial Tracking',
+                        description:
+                            'Track project costs, budgets, expenses, and profitability in real-time.',
+                    },
+                ],
+            },
     };
 
     return (
@@ -647,7 +663,9 @@ export default function Features({ auth }: PageProps) {
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
-                                                    href={getUrlWithCurrency(item.href)}
+                                                    href={getUrlWithCurrency(
+                                                        item.href,
+                                                    )}
                                                     className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsProductsDropdownOpen(
@@ -750,7 +768,10 @@ export default function Features({ auth }: PageProps) {
                     {/* Solution Selector */}
                     <div className="mt-12 flex justify-center">
                         <div className="w-full max-w-md">
-                            <label htmlFor="solution-select" className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label
+                                htmlFor="solution-select"
+                                className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Select a Solution
                             </label>
                             <select
@@ -759,11 +780,13 @@ export default function Features({ auth }: PageProps) {
                                 onChange={(e) => setActiveTab(e.target.value)}
                                 className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-900 shadow-sm transition-colors focus:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#14B8A6]"
                             >
-                                {Object.entries(projectFeatures).map(([key, project]) => (
-                                    <option key={key} value={key}>
-                                        {project.name}
-                                    </option>
-                                ))}
+                                {Object.entries(projectFeatures).map(
+                                    ([key, project]) => (
+                                        <option key={key} value={key}>
+                                            {project.name}
+                                        </option>
+                                    ),
+                                )}
                             </select>
                         </div>
                     </div>
@@ -786,7 +809,9 @@ export default function Features({ auth }: PageProps) {
                                             </h2>
                                         </div>
                                         <Link
-                                            href={getUrlWithCurrency(`/${project.project}`)}
+                                            href={getUrlWithCurrency(
+                                                `/${project.project}`,
+                                            )}
                                             className="inline-flex items-center rounded-md bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-[#0D9488] hover:to-[#0891B2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:ring-offset-2"
                                         >
                                             Learn More

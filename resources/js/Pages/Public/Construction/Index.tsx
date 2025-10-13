@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -24,7 +24,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
     const hostname = getHost();
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
@@ -35,7 +38,9 @@ export default function ConstructionIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title={`${hostname} Construction - Project Management Platform`} />
+            <Head
+                title={`${hostname} Construction - Project Management Platform`}
+            />
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50">
                 {/* Header */}
                 <div className="border-b border-slate-700 bg-gradient-to-r from-slate-700 to-gray-800 shadow-lg">
@@ -77,13 +82,17 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('login', { project: 'construction' })}
+                                            href={route('login', {
+                                                project: 'construction',
+                                            })}
                                             className="text-slate-100 transition-colors hover:text-white"
                                         >
                                             Log in
                                         </Link>
                                         <Link
-                                            href={route('register', { project: 'construction' })}
+                                            href={route('register', {
+                                                project: 'construction',
+                                            })}
                                             className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-orange-600 shadow-md transition-all hover:bg-orange-50"
                                         >
                                             Get Started
@@ -97,7 +106,7 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                 onClick={() =>
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }
-                                className="md:hidden rounded-lg p-2 text-white hover:bg-slate-600"
+                                className="rounded-lg p-2 text-white hover:bg-slate-600 md:hidden"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -150,13 +159,17 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     ) : (
                                         <>
                                             <Link
-                                                href={route('login', { project: 'construction' })}
+                                                href={route('login', {
+                                                    project: 'construction',
+                                                })}
                                                 className="text-slate-100 transition-colors hover:text-white"
                                             >
                                                 Log in
                                             </Link>
                                             <Link
-                                                href={route('register', { project: 'construction' })}
+                                                href={route('register', {
+                                                    project: 'construction',
+                                                })}
                                                 className="rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-orange-600 shadow-md transition-all hover:bg-orange-50"
                                             >
                                                 Get Started
@@ -178,13 +191,15 @@ export default function ConstructionIndex({ auth }: PageProps) {
                             </h1>
                             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-100 sm:mt-6 sm:text-lg md:text-xl">
                                 Streamline your construction projects with our
-                                comprehensive project management platform. Manage
-                                projects, teams, budgets, and timelines all in one
-                                place.
+                                comprehensive project management platform.
+                                Manage projects, teams, budgets, and timelines
+                                all in one place.
                             </p>
                             <div className="mt-8 flex flex-col justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
                                 <Link
-                                    href={route('register', { project: 'construction' })}
+                                    href={route('register', {
+                                        project: 'construction',
+                                    })}
                                     className="rounded-lg bg-orange-600 px-6 py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-orange-700 hover:shadow-xl sm:px-8 sm:text-lg"
                                 >
                                     Start Free Trial
@@ -233,15 +248,18 @@ export default function ConstructionIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Features Section */}
-                <div id="features" className="bg-gray-50 py-12 sm:py-16 lg:py-24">
+                <div
+                    id="features"
+                    className="bg-gray-50 py-12 sm:py-16 lg:py-24"
+                >
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl lg:text-4xl">
                                 Complete Construction Management
                             </h2>
                             <p className="mt-3 text-base text-gray-600 sm:mt-4 sm:text-lg lg:text-xl">
-                                Everything you need to manage construction projects
-                                efficiently
+                                Everything you need to manage construction
+                                projects efficiently
                             </p>
                         </div>
 
@@ -267,8 +285,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     Project Planning
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Plan and schedule construction projects with Gantt
-                                    charts and timelines.
+                                    Plan and schedule construction projects with
+                                    Gantt charts and timelines.
                                 </p>
                             </div>
 
@@ -293,8 +311,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     Team Management
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Manage crews, subcontractors, and assign tasks with
-                                    real-time updates.
+                                    Manage crews, subcontractors, and assign
+                                    tasks with real-time updates.
                                 </p>
                             </div>
 
@@ -310,8 +328,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     Equipment Tracking
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Track equipment usage, maintenance, and availability
-                                    across job sites.
+                                    Track equipment usage, maintenance, and
+                                    availability across job sites.
                                 </p>
                             </div>
 
@@ -336,8 +354,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     Material Management
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Track material inventory, orders, and deliveries
-                                    with automated alerts.
+                                    Track material inventory, orders, and
+                                    deliveries with automated alerts.
                                 </p>
                             </div>
 
@@ -353,8 +371,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     Budget Tracking
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Monitor project costs, track expenses, and stay
-                                    within budget with real-time insights.
+                                    Monitor project costs, track expenses, and
+                                    stay within budget with real-time insights.
                                 </p>
                             </div>
 
@@ -379,8 +397,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     Safety Compliance
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-600 sm:text-base">
-                                    Track safety inspections, certifications, and
-                                    maintain compliance records.
+                                    Track safety inspections, certifications,
+                                    and maintain compliance records.
                                 </p>
                             </div>
                         </div>
@@ -411,7 +429,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {basicPlan.currency}{basicPlan.price}
+                                            {basicPlan.currency}
+                                            {basicPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -436,7 +455,9 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'construction' })}
+                                        href={route('register', {
+                                            project: 'construction',
+                                        })}
                                         className="mt-6 block rounded-lg border-2 border-orange-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-orange-600 transition-all hover:bg-orange-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -460,7 +481,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {proPlan.currency}{proPlan.price}
+                                            {proPlan.currency}
+                                            {proPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -485,7 +507,9 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'construction' })}
+                                        href={route('register', {
+                                            project: 'construction',
+                                        })}
                                         className="mt-6 block rounded-lg bg-orange-600 px-6 py-2.5 text-center text-sm font-semibold text-white transition-all hover:bg-orange-700 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -504,7 +528,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {businessPlan.currency}{businessPlan.price}
+                                            {businessPlan.currency}
+                                            {businessPlan.price}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -529,7 +554,9 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                         )}
                                     </ul>
                                     <Link
-                                        href={route('register', { project: 'construction' })}
+                                        href={route('register', {
+                                            project: 'construction',
+                                        })}
                                         className="mt-6 block rounded-lg border-2 border-orange-600 bg-white px-6 py-2.5 text-center text-sm font-semibold text-orange-600 transition-all hover:bg-orange-50 sm:mt-8 sm:py-3 sm:text-base"
                                     >
                                         Get Started
@@ -552,12 +579,14 @@ export default function ConstructionIndex({ auth }: PageProps) {
                             <dl className="space-y-4 sm:space-y-6">
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
                                     <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                                        Can I manage multiple construction sites?
+                                        Can I manage multiple construction
+                                        sites?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes! Pro and Business plans support unlimited
-                                        construction sites with centralized project
-                                        management and reporting.
+                                        Yes! Pro and Business plans support
+                                        unlimited construction sites with
+                                        centralized project management and
+                                        reporting.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -565,9 +594,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                         Does it work on mobile devices?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Absolutely! Our platform is fully responsive and
-                                        includes a mobile app for field work. Access
-                                        your projects anywhere, anytime.
+                                        Absolutely! Our platform is fully
+                                        responsive and includes a mobile app for
+                                        field work. Access your projects
+                                        anywhere, anytime.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -575,9 +605,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                         Can I track subcontractor work?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Yes, you can assign tasks to subcontractors,
-                                        track their progress, and manage payments all
-                                        within the platform.
+                                        Yes, you can assign tasks to
+                                        subcontractors, track their progress,
+                                        and manage payments all within the
+                                        platform.
                                     </dd>
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
@@ -585,9 +616,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                         What about project documentation?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        Store and organize all project documents,
-                                        blueprints, permits, and photos in secure cloud
-                                        storage with easy access for your team.
+                                        Store and organize all project
+                                        documents, blueprints, permits, and
+                                        photos in secure cloud storage with easy
+                                        access for your team.
                                     </dd>
                                 </div>
                             </dl>
@@ -596,7 +628,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer id="contact" className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16">
+                <footer
+                    id="contact"
+                    className="mt-8 bg-slate-900 text-white sm:mt-12 lg:mt-16"
+                >
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
                         {/* Main Footer Content */}
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -615,9 +650,9 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
                                     Professional construction project management
-                                    platform designed for builders, contractors, and
-                                    construction companies. Build better projects
-                                    on time and within budget.
+                                    platform designed for builders, contractors,
+                                    and construction companies. Build better
+                                    projects on time and within budget.
                                 </p>
                             </div>
 
@@ -700,8 +735,8 @@ export default function ConstructionIndex({ auth }: PageProps) {
                         <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                 <div className="text-center text-sm text-slate-400 md:text-left">
-                                    © {new Date().getFullYear()} {hostname} Construction. All
-                                    rights reserved.
+                                    © {new Date().getFullYear()} {hostname}{' '}
+                                    Construction. All rights reserved.
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                                     <div className="flex items-center text-sm text-slate-400">
@@ -746,4 +781,3 @@ export default function ConstructionIndex({ auth }: PageProps) {
         </>
     );
 }
-

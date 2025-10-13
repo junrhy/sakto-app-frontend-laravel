@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Head, Link } from '@inertiajs/react';
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -24,7 +24,10 @@ export default function Medical({ auth }: PageProps) {
     const hostname = getHost();
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
@@ -35,7 +38,9 @@ export default function Medical({ auth }: PageProps) {
 
     return (
         <React.Fragment>
-            <Head title={`${hostname} Medical - Professional Healthcare Management`} />
+            <Head
+                title={`${hostname} Medical - Professional Healthcare Management`}
+            />
             <div className="min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-100">
                 {/* Header */}
                 <div className="border-b border-teal-700 bg-gradient-to-r from-teal-800 to-emerald-900 shadow-lg">
@@ -467,7 +472,8 @@ export default function Medical({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            {basicPlan?.currency}{basicPlan?.price}
+                                            {basicPlan?.currency}
+                                            {basicPlan?.price}
                                         </span>
                                         <span className="text-sm text-teal-600">
                                             /month
@@ -568,7 +574,8 @@ export default function Medical({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            {proPlan?.currency}{proPlan?.price}
+                                            {proPlan?.currency}
+                                            {proPlan?.price}
                                         </span>
                                         <span className="text-sm text-teal-600">
                                             /month
@@ -664,7 +671,8 @@ export default function Medical({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            {businessPlan?.currency}{businessPlan?.price}
+                                            {businessPlan?.currency}
+                                            {businessPlan?.price}
                                         </span>
                                         <span className="text-sm text-teal-600">
                                             /month
@@ -802,7 +810,10 @@ export default function Medical({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer id="contact" className="mt-8 bg-teal-900 text-white sm:mt-12 lg:mt-16">
+                <footer
+                    id="contact"
+                    className="mt-8 bg-teal-900 text-white sm:mt-12 lg:mt-16"
+                >
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
                         {/* Main Footer Content */}
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -907,8 +918,8 @@ export default function Medical({ auth }: PageProps) {
                         <div className="mt-8 border-t border-teal-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                 <div className="text-center text-sm text-teal-400 md:text-left">
-                                    © {new Date().getFullYear()} {hostname} Medical. All
-                                    rights reserved.
+                                    © {new Date().getFullYear()} {hostname}{' '}
+                                    Medical. All rights reserved.
                                 </div>
                                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                                     <div className="flex items-center text-sm text-teal-400">

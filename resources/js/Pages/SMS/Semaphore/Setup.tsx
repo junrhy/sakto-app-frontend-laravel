@@ -60,9 +60,8 @@ interface Props extends PageProps {
 
 export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     const [showSetupForm, setShowSetupForm] = useState(false);
-    const [editingAccount, setEditingAccount] = useState<SemaphoreAccount | null>(
-        null,
-    );
+    const [editingAccount, setEditingAccount] =
+        useState<SemaphoreAccount | null>(null);
     const [testingAccount, setTestingAccount] = useState<number | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -120,7 +119,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     };
 
     const deleteAccount = async (accountId: number) => {
-        if (!confirm('Are you sure you want to delete this Semaphore account?')) {
+        if (
+            !confirm('Are you sure you want to delete this Semaphore account?')
+        ) {
             return;
         }
 
@@ -134,7 +135,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
 
     const toggleActive = async (accountId: number) => {
         try {
-            const response = await axios.post(`/semaphore-accounts/${accountId}/toggle`);
+            const response = await axios.post(
+                `/semaphore-accounts/${accountId}/toggle`,
+            );
             if (response.data.success) {
                 toast.success(response.data.message);
             }
@@ -146,7 +149,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
     const testConnection = async (accountId: number) => {
         setTestingAccount(accountId);
         try {
-            const response = await axios.post(`/semaphore-accounts/${accountId}/test`);
+            const response = await axios.post(
+                `/semaphore-accounts/${accountId}/test`,
+            );
             if (response.data.success) {
                 toast.success('Semaphore account connection test successful!');
                 if (response.data.account_balance !== undefined) {
@@ -160,7 +165,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
         } catch (error: any) {
             console.error('Test error:', error);
             toast.error(
-                error.response?.data?.error || 'Failed to test Semaphore account',
+                error.response?.data?.error ||
+                    'Failed to test Semaphore account',
             );
         } finally {
             setTestingAccount(null);
@@ -210,17 +216,17 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                         </a>{' '}
                                         and create an account
                                     </li>
-                                    <li>
-                                        Log in to your Semaphore dashboard
-                                    </li>
+                                    <li>Log in to your Semaphore dashboard</li>
                                     <li>
                                         Go to API Settings and get your API Key
                                     </li>
                                     <li>
-                                        Set up your sender name (maximum 11 characters)
+                                        Set up your sender name (maximum 11
+                                        characters)
                                     </li>
                                     <li>
-                                        Ensure you have sufficient credits for sending messages
+                                        Ensure you have sufficient credits for
+                                        sending messages
                                     </li>
                                 </ol>
                             </div>
@@ -239,7 +245,8 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                         <>
                                             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                                             <span className="text-sm text-amber-700 dark:text-amber-300">
-                                                No active Semaphore account found
+                                                No active Semaphore account
+                                                found
                                             </span>
                                         </>
                                     )}
@@ -309,46 +316,67 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                                     : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                                                             }
                                                         >
-                                                            {account.is_active ? 'Active' : 'Inactive'}
+                                                            {account.is_active
+                                                                ? 'Active'
+                                                                : 'Inactive'}
                                                         </Badge>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                                     <p>
-                                                        Sender: {account.sender_name}
+                                                        Sender:{' '}
+                                                        {account.sender_name}
                                                     </p>
                                                     <p>
-                                                        Created: {new Date(account.created_at).toLocaleDateString()}
+                                                        Created:{' '}
+                                                        {new Date(
+                                                            account.created_at,
+                                                        ).toLocaleDateString()}
                                                     </p>
                                                     {account.last_verified_at && (
                                                         <p>
-                                                            Last verified: {new Date(account.last_verified_at).toLocaleDateString()}
+                                                            Last verified:{' '}
+                                                            {new Date(
+                                                                account.last_verified_at,
+                                                            ).toLocaleDateString()}
                                                         </p>
                                                     )}
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <Button
-                                                    onClick={() => testConnection(account.id)}
-                                                    disabled={testingAccount === account.id}
+                                                    onClick={() =>
+                                                        testConnection(
+                                                            account.id,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        testingAccount ===
+                                                        account.id
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                 >
-                                                    {testingAccount === account.id ? (
+                                                    {testingAccount ===
+                                                    account.id ? (
                                                         <Loader2 className="h-4 w-4 animate-spin" />
                                                     ) : (
                                                         <Wifi className="h-4 w-4" />
                                                     )}
                                                 </Button>
                                                 <Button
-                                                    onClick={() => editAccount(account)}
+                                                    onClick={() =>
+                                                        editAccount(account)
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
                                                 <Button
-                                                    onClick={() => toggleActive(account.id)}
+                                                    onClick={() =>
+                                                        toggleActive(account.id)
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                     className={
@@ -357,10 +385,16 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                             : 'text-green-600 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300'
                                                     }
                                                 >
-                                                    {account.is_active ? 'Deactivate' : 'Activate'}
+                                                    {account.is_active
+                                                        ? 'Deactivate'
+                                                        : 'Activate'}
                                                 </Button>
                                                 <Button
-                                                    onClick={() => deleteAccount(account.id)}
+                                                    onClick={() =>
+                                                        deleteAccount(
+                                                            account.id,
+                                                        )
+                                                    }
                                                     variant="outline"
                                                     size="sm"
                                                     className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
@@ -418,15 +452,16 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="api_key">
-                                            API Key
-                                        </Label>
+                                        <Label htmlFor="api_key">API Key</Label>
                                         <Input
                                             id="api_key"
                                             type="password"
                                             value={data.api_key}
                                             onChange={(e) =>
-                                                setData('api_key', e.target.value)
+                                                setData(
+                                                    'api_key',
+                                                    e.target.value,
+                                                )
                                             }
                                             placeholder="Enter your Semaphore API key"
                                             required

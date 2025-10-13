@@ -2,7 +2,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getPricingForService } from '@/config/pricing';
 import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -29,7 +29,10 @@ export default function Community({
     const hostname = getHost();
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const currency = urlParams.get('currency') || 'usd';
     const symbol = urlParams.get('symbol') || '$';
 
@@ -669,7 +672,10 @@ export default function Community({
                         </div>
 
                         {/* Pricing Section */}
-                        <div id="pricing" className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
+                        <div
+                            id="pricing"
+                            className="mb-16 mt-16 px-4 sm:px-6 lg:px-8"
+                        >
                             <div className="mb-12 text-center">
                                 <h2 className="mb-4 text-3xl font-bold text-slate-900">
                                     Choose Your Community Plan
@@ -1136,11 +1142,11 @@ export default function Community({
                                             {hostname} Community
                                         </span>
                                     </div>
-                                <p className="mb-4 max-w-md text-slate-300">
-                                    Connecting communities and fostering
-                                    meaningful relationships through our
-                                    secure and trusted platform.
-                                </p>
+                                    <p className="mb-4 max-w-md text-slate-300">
+                                        Connecting communities and fostering
+                                        meaningful relationships through our
+                                        secure and trusted platform.
+                                    </p>
                                 </div>
 
                                 {/* Quick Links */}
@@ -1216,8 +1222,8 @@ export default function Community({
                             <div className="mt-8 border-t border-slate-800 pt-6 sm:mt-10 sm:pt-8 lg:mt-12">
                                 <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
                                     <div className="text-center text-sm text-slate-400 md:text-left">
-                                        © {new Date().getFullYear()} {hostname} Community.
-                                        All rights reserved.
+                                        © {new Date().getFullYear()} {hostname}{' '}
+                                        Community. All rights reserved.
                                     </div>
                                     <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                                         <div className="flex items-center text-sm text-slate-400">

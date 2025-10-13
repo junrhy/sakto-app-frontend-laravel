@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { getPricingForService } from '@/config/pricing';
 import { getHost } from '@/lib/utils';
 import {
     HeartIcon,
@@ -6,8 +7,7 @@ import {
     UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect, useRef, useState, useMemo } from 'react';
-import { getPricingForService } from '@/config/pricing';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -30,13 +30,19 @@ export default function Pricing({ auth }: PageProps) {
     const legalDropdownRef = useRef<HTMLDivElement>(null);
 
     // Get currency and symbol from URL params, default to USD and $
-    const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+    const urlParams = useMemo(
+        () => new URLSearchParams(window.location.search),
+        [],
+    );
     const urlCurrency = urlParams.get('currency') || 'usd';
     const urlSymbol = urlParams.get('symbol') || '$';
 
     // Country-specific currency configuration
-    const countryCurrencyMap: Record<string, { currency: string; symbol: string }> = {
-        'PH': { currency: 'php', symbol: '₱' },
+    const countryCurrencyMap: Record<
+        string,
+        { currency: string; symbol: string }
+    > = {
+        PH: { currency: 'php', symbol: '₱' },
         // Add more countries as needed:
         // 'US': { currency: 'usd', symbol: '$' },
         // 'GB': { currency: 'gbp', symbol: '£' },
@@ -81,21 +87,24 @@ export default function Pricing({ auth }: PageProps) {
     }, []);
 
     // Function to get URL with currency parameters if applicable
-    const getUrlWithCurrency = (baseUrl: string, additionalParams: Record<string, string> = {}): string => {
+    const getUrlWithCurrency = (
+        baseUrl: string,
+        additionalParams: Record<string, string> = {},
+    ): string => {
         const params = new URLSearchParams();
-        
+
         // Add currency params if applicable
         if (userCountry && countryCurrencyMap[userCountry]) {
             const { currency, symbol } = countryCurrencyMap[userCountry];
             params.append('currency', currency);
             params.append('symbol', symbol);
         }
-        
+
         // Add any additional params
         Object.entries(additionalParams).forEach(([key, value]) => {
             params.append(key, value);
         });
-        
+
         const queryString = params.toString();
         return queryString ? `${baseUrl}?${queryString}` : baseUrl;
     };
@@ -139,152 +148,210 @@ export default function Pricing({ auth }: PageProps) {
     ];
 
     // Use pricing config to get dynamic pricing based on URL currency
-    const communityPricing = getPricingForService('community', urlCurrency, urlSymbol);
-    const logisticsPricing = getPricingForService('logistics', urlCurrency, urlSymbol);
-    const medicalPricing = getPricingForService('medical', urlCurrency, urlSymbol);
-    const travelPricing = getPricingForService('travel', urlCurrency, urlSymbol);
-    const deliveryPricing = getPricingForService('delivery', urlCurrency, urlSymbol);
+    const communityPricing = getPricingForService(
+        'community',
+        urlCurrency,
+        urlSymbol,
+    );
+    const logisticsPricing = getPricingForService(
+        'logistics',
+        urlCurrency,
+        urlSymbol,
+    );
+    const medicalPricing = getPricingForService(
+        'medical',
+        urlCurrency,
+        urlSymbol,
+    );
+    const travelPricing = getPricingForService(
+        'travel',
+        urlCurrency,
+        urlSymbol,
+    );
+    const deliveryPricing = getPricingForService(
+        'delivery',
+        urlCurrency,
+        urlSymbol,
+    );
     const jobsPricing = getPricingForService('jobs', urlCurrency, urlSymbol);
     const shopPricing = getPricingForService('shop', urlCurrency, urlSymbol);
     const fnbPricing = getPricingForService('fnb', urlCurrency, urlSymbol);
-    const educationPricing = getPricingForService('education', urlCurrency, urlSymbol);
-    const financePricing = getPricingForService('finance', urlCurrency, urlSymbol);
-    const agriculturePricing = getPricingForService('agriculture', urlCurrency, urlSymbol);
-    const constructionPricing = getPricingForService('construction', urlCurrency, urlSymbol);
+    const educationPricing = getPricingForService(
+        'education',
+        urlCurrency,
+        urlSymbol,
+    );
+    const financePricing = getPricingForService(
+        'finance',
+        urlCurrency,
+        urlSymbol,
+    );
+    const agriculturePricing = getPricingForService(
+        'agriculture',
+        urlCurrency,
+        urlSymbol,
+    );
+    const constructionPricing = getPricingForService(
+        'construction',
+        urlCurrency,
+        urlSymbol,
+    );
 
     const projectPlans = {
         [hostname !== 'Neulify' ? `${hostname} Community` : 'Community']: {
-            name: hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
+            name:
+                hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
             icon: UserGroupIcon,
-            plans: communityPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'community',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                communityPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'community',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics']: {
-            name: hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics',
+            name:
+                hostname !== 'Neulify' ? `${hostname} Logistics` : 'Logistics',
             icon: TruckIcon,
-            plans: logisticsPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'logistics',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                logisticsPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'logistics',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Medical` : 'Medical']: {
             name: hostname !== 'Neulify' ? `${hostname} Medical` : 'Medical',
             icon: HeartIcon,
-            plans: medicalPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'medical',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                medicalPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'medical',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Travel` : 'Travel']: {
             name: hostname !== 'Neulify' ? `${hostname} Travel` : 'Travel',
             icon: TruckIcon,
-            plans: travelPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'travel',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                travelPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'travel',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Delivery` : 'Delivery']: {
             name: hostname !== 'Neulify' ? `${hostname} Delivery` : 'Delivery',
             icon: TruckIcon,
-            plans: deliveryPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'delivery',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                deliveryPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'delivery',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Job Board` : 'Jobs']: {
             name: hostname !== 'Neulify' ? `${hostname} Job Board` : 'Jobs',
             icon: UserGroupIcon,
-            plans: jobsPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'jobs',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                jobsPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'jobs',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Marketplace` : 'Shop']: {
             name: hostname !== 'Neulify' ? `${hostname} Marketplace` : 'Shop',
             icon: TruckIcon,
-            plans: shopPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'shop',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                shopPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'shop',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} F&B` : 'F&B']: {
             name: hostname !== 'Neulify' ? `${hostname} F&B` : 'F&B',
             icon: TruckIcon,
-            plans: fnbPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'fnb',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                fnbPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'fnb',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Education` : 'Education']: {
-            name: hostname !== 'Neulify' ? `${hostname} Education` : 'Education',
+            name:
+                hostname !== 'Neulify' ? `${hostname} Education` : 'Education',
             icon: UserGroupIcon,
-            plans: educationPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'education',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                educationPricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'education',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Finance` : 'Finance']: {
             name: hostname !== 'Neulify' ? `${hostname} Finance` : 'Finance',
             icon: TruckIcon,
-            plans: financePricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'finance',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                financePricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'finance',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
         [hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture']: {
-            name: hostname !== 'Neulify' ? `${hostname} Agriculture` : 'Agriculture',
+            name:
+                hostname !== 'Neulify'
+                    ? `${hostname} Agriculture`
+                    : 'Agriculture',
             icon: TruckIcon,
-            plans: agriculturePricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'agriculture',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
+            plans:
+                agriculturePricing?.plans.map((plan) => ({
+                    name: plan.name,
+                    price: plan.price,
+                    project: 'agriculture',
+                    description: plan.description,
+                    features: plan.features,
+                })) || [],
         },
-        [hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction']: {
-            name: hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction',
-            icon: TruckIcon,
-            plans: constructionPricing?.plans.map(plan => ({
-                name: plan.name,
-                price: plan.price,
-                project: 'construction',
-                description: plan.description,
-                features: plan.features,
-            })) || [],
-        },
+        [hostname !== 'Neulify' ? `${hostname} Construction` : 'Construction']:
+            {
+                name:
+                    hostname !== 'Neulify'
+                        ? `${hostname} Construction`
+                        : 'Construction',
+                icon: TruckIcon,
+                plans:
+                    constructionPricing?.plans.map((plan) => ({
+                        name: plan.name,
+                        price: plan.price,
+                        project: 'construction',
+                        description: plan.description,
+                        features: plan.features,
+                    })) || [],
+            },
     };
 
     return (
@@ -343,7 +410,9 @@ export default function Pricing({ auth }: PageProps) {
                                             {productsMenuItems.map((item) => (
                                                 <Link
                                                     key={item.name}
-                                                    href={getUrlWithCurrency(item.href)}
+                                                    href={getUrlWithCurrency(
+                                                        item.href,
+                                                    )}
                                                     className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                                                     onClick={() =>
                                                         setIsProductsDropdownOpen(
@@ -445,7 +514,10 @@ export default function Pricing({ auth }: PageProps) {
                     {/* Solution Selector */}
                     <div className="mt-12 flex justify-center">
                         <div className="w-full max-w-md">
-                            <label htmlFor="solution-select" className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label
+                                htmlFor="solution-select"
+                                className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
                                 Select a Solution
                             </label>
                             <select
@@ -454,11 +526,13 @@ export default function Pricing({ auth }: PageProps) {
                                 onChange={(e) => setActiveTab(e.target.value)}
                                 className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-900 shadow-sm transition-colors focus:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#14B8A6]"
                             >
-                                {Object.entries(projectPlans).map(([key, project]) => (
-                                    <option key={key} value={key}>
-                                        {project.name}
-                                    </option>
-                                ))}
+                                {Object.entries(projectPlans).map(
+                                    ([key, project]) => (
+                                        <option key={key} value={key}>
+                                            {project.name}
+                                        </option>
+                                    ),
+                                )}
                             </select>
                         </div>
                     </div>
@@ -510,7 +584,8 @@ export default function Pricing({ auth }: PageProps) {
                                                     </p>
                                                     <p className="mt-4">
                                                         <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                                                            {urlSymbol}{plan.price}
+                                                            {urlSymbol}
+                                                            {plan.price}
                                                         </span>
                                                         <span className="text-sm text-gray-600 dark:text-gray-300">
                                                             /month
@@ -518,7 +593,12 @@ export default function Pricing({ auth }: PageProps) {
                                                     </p>
                                                     {!auth.user && (
                                                         <Link
-                                                            href={getUrlWithCurrency(`/${plan.project}`, { plan: plan.name.toLowerCase() })}
+                                                            href={getUrlWithCurrency(
+                                                                `/${plan.project}`,
+                                                                {
+                                                                    plan: plan.name.toLowerCase(),
+                                                                },
+                                                            )}
                                                             className="mt-4 block w-full rounded-md border border-transparent bg-gradient-to-r from-[#14B8A6] to-[#0D9488] px-4 py-2 text-center text-sm font-medium text-white shadow transition-all duration-200 hover:from-[#0D9488] hover:to-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/25 dark:bg-[#14B8A6] dark:hover:bg-[#0D9488]"
                                                         >
                                                             Choose Plan
