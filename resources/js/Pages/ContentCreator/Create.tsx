@@ -156,18 +156,19 @@ export default function Create({ auth, client_identifier }: Props) {
         >
             <Head title="Create New Post" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
-                    {canEdit ? (
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                                {/* Main Content */}
-                                <div className="space-y-6 lg:col-span-2">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Post Content</CardTitle>
+            <div className="space-y-6">
+                {canEdit ? (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+                            {/* Main Content */}
+                            <div className="space-y-6 xl:col-span-3">
+                                    <Card className="shadow-md">
+                                        <CardHeader className="border-b border-gray-100 dark:border-gray-700">
+                                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                Post Content
+                                            </CardTitle>
                                         </CardHeader>
-                                        <CardContent className="space-y-4">
+                                        <CardContent className="space-y-6 pt-6">
                                             <div>
                                                 <InputLabel
                                                     htmlFor="title"
@@ -266,8 +267,8 @@ export default function Create({ auth, client_identifier }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="mt-1 block w-full"
-                                                    rows={15}
+                                                    className="mt-1 block w-full font-mono text-sm"
+                                                    rows={20}
                                                     placeholder="Write your post content here..."
                                                     required
                                                 />
@@ -280,15 +281,15 @@ export default function Create({ auth, client_identifier }: Props) {
                                     </Card>
                                 </div>
 
-                                {/* Sidebar */}
-                                <div className="space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>
-                                                Featured Image
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
+                            {/* Sidebar */}
+                            <div className="space-y-6">
+                                <Card className="shadow-md">
+                                    <CardHeader className="border-b border-gray-100 dark:border-gray-700">
+                                        <CardTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                            Featured Image
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-6">
                                             <div>
                                                 <Input
                                                     id="featured_image"
@@ -310,13 +311,13 @@ export default function Create({ auth, client_identifier }: Props) {
                                         </CardContent>
                                     </Card>
 
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>
-                                                Publish Settings
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
+                                <Card className="shadow-md">
+                                    <CardHeader className="border-b border-gray-100 dark:border-gray-700">
+                                        <CardTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                            Publish Settings
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4 pt-6">
                                             <div>
                                                 <Label htmlFor="status">
                                                     Status
@@ -347,49 +348,55 @@ export default function Create({ auth, client_identifier }: Props) {
                                                 />
                                             </div>
 
-                                            <div className="border-t pt-4">
-                                                <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                    <p>
-                                                        <strong>Author:</strong>{' '}
+                                            <div className="space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                        Author:
+                                                    </span>
+                                                    <span className="text-gray-600 dark:text-gray-400">
                                                         {auth.user.name}
-                                                    </p>
-                                                    <p>
-                                                        <strong>
-                                                            Created:
-                                                        </strong>{' '}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                        Created:
+                                                    </span>
+                                                    <span className="text-gray-600 dark:text-gray-400">
                                                         {new Date().toLocaleDateString()}
-                                                    </p>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </CardContent>
                                     </Card>
 
-                                    {/* Submit Button */}
-                                    <Card>
-                                        <CardContent className="pt-6">
-                                            <Button
-                                                type="submit"
-                                                disabled={processing}
-                                                className="w-full"
-                                            >
-                                                <Save className="mr-2 h-4 w-4" />
-                                                {processing
-                                                    ? 'Saving...'
-                                                    : 'Save Post'}
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                </div>
+                                {/* Submit Button */}
+                                <Card className="shadow-md">
+                                    <CardContent className="pt-6">
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="w-full"
+                                            size="lg"
+                                        >
+                                            <Save className="mr-2 h-5 w-5" />
+                                            {processing
+                                                ? 'Saving...'
+                                                : 'Save Post'}
+                                        </Button>
+                                    </CardContent>
+                                </Card>
                             </div>
-                        </form>
-                    ) : (
-                        <div className="py-8 text-center">
+                        </div>
+                    </form>
+                ) : (
+                    <Card>
+                        <CardContent className="flex items-center justify-center py-12">
                             <p className="text-gray-500 dark:text-gray-400">
                                 You don't have permission to create posts.
                             </p>
-                        </div>
-                    )}
-                </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </AuthenticatedLayout>
     );

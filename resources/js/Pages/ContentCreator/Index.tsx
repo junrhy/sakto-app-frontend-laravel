@@ -172,73 +172,90 @@ export default function Index({ auth, content }: Props) {
         >
             <Head title="Posts" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {filteredContent.length === 0 ? (
-                        <Card>
-                            <CardContent className="flex flex-col items-center justify-center py-12">
-                                <div className="text-center">
-                                    <div className="mx-auto h-12 w-12 text-gray-400">
-                                        <svg
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        No posts
-                                    </h3>
-                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Get started by creating your first post.
-                                    </p>
-                                    <div className="mt-6">
-                                        <Link
-                                            href={route(
-                                                'content-creator.create',
-                                            )}
-                                        >
-                                            <Button>
-                                                <Plus className="mr-2 h-4 w-4" />
-                                                Create Post
-                                            </Button>
-                                        </Link>
-                                    </div>
+            <div className="space-y-6">
+                {filteredContent.length === 0 ? (
+                    <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-12">
+                            <div className="text-center">
+                                <div className="mx-auto h-12 w-12 text-gray-400">
+                                    <svg
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                    </svg>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredContent.map((item) => (
+                                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    No posts
+                                </h3>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Get started by creating your first post.
+                                </p>
+                                <div className="mt-6">
+                                    <Link
+                                        href={route(
+                                            'content-creator.create',
+                                        )}
+                                    >
+                                        <Button>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Create Post
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                        {filteredContent.map((item) => (
                                 <Card
                                     key={item.id}
-                                    className="overflow-hidden transition-shadow hover:shadow-lg"
+                                    className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
                                 >
-                                    {item.featured_image && (
-                                        <div className="aspect-video overflow-hidden">
+                                    {item.featured_image ? (
+                                        <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
                                             <img
                                                 src={item.featured_image}
                                                 alt={item.title}
-                                                className="h-full w-full object-cover"
+                                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                             />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                        </div>
+                                    ) : (
+                                        <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                            <svg
+                                                className="h-16 w-16 text-gray-400 dark:text-gray-600"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={1.5}
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
                                         </div>
                                     )}
                                     <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between">
-                                            <CardTitle className="line-clamp-2 text-lg font-semibold">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <CardTitle className="line-clamp-2 text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
                                                 {item.title}
                                             </CardTitle>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
                                                         variant="ghost"
-                                                        className="h-8 w-8 p-0"
+                                                        size="sm"
+                                                        className="h-8 w-8 flex-shrink-0 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                                                     >
                                                         <span className="sr-only">
                                                             Open menu
@@ -318,17 +335,15 @@ export default function Index({ auth, content }: Props) {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                                                <Badge
-                                                    variant={getStatusBadgeColor(
-                                                        item.status,
-                                                    )}
-                                                    className="capitalize"
-                                                >
-                                                    {item.status}
-                                                </Badge>
-                                            </div>
+                                        <div className="mt-3 flex items-center justify-between">
+                                            <Badge
+                                                variant={getStatusBadgeColor(
+                                                    item.status,
+                                                )}
+                                                className="capitalize text-xs font-medium"
+                                            >
+                                                {item.status}
+                                            </Badge>
                                             {item.status === 'published' && (
                                                 <Link
                                                     href={route(
@@ -336,7 +351,7 @@ export default function Index({ auth, content }: Props) {
                                                         item.slug,
                                                     )}
                                                     target="_blank"
-                                                    className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                                 >
                                                     <Share2 className="h-3 w-3" />
                                                     <span>Share</span>
@@ -344,21 +359,21 @@ export default function Index({ auth, content }: Props) {
                                             )}
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="pt-0">
+                                    <CardContent className="space-y-4 pt-0">
                                         {item.excerpt && (
-                                            <p className="mb-4 line-clamp-3 text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                                                 {item.excerpt}
                                             </p>
                                         )}
-                                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                            <div className="flex items-center space-x-2">
-                                                <User className="h-3 w-3" />
-                                                <span>
+                                        <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                            <div className="flex items-center gap-1.5">
+                                                <User className="h-3.5 w-3.5" />
+                                                <span className="font-medium">
                                                     {item.author || 'Unknown'}
                                                 </span>
                                             </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Calendar className="h-3 w-3" />
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5" />
                                                 <span>
                                                     {format(
                                                         new Date(
@@ -371,10 +386,9 @@ export default function Index({ auth, content }: Props) {
                                         </div>
                                     </CardContent>
                                 </Card>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </AuthenticatedLayout>
     );

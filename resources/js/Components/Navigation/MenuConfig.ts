@@ -186,8 +186,19 @@ export const shouldShowMenuItem = (
 ) => {
     const checkUrl = item.urlCheck || item.id;
 
+    // List of standalone modules that have dashes but are not submenus
+    const standaloneModules = [
+        'content-creator',
+        'rental-items',
+        'rental-properties',
+        'bill-payments',
+        'queue-system',
+        'health-insurance',
+    ];
+
     // Handle submenu items (like clinic-settings) that should be visible when parent module is accessible
-    if (item.id.includes('-')) {
+    // Skip this logic for standalone modules that happen to have dashes in their names
+    if (item.id.includes('-') && !standaloneModules.includes(item.id)) {
         const parentModule = item.id.split('-')[0];
         const hasParentAccess = hasModuleAccess(parentModule);
         // Check if we're in the parent module context - either via appParam or URL contains the module
