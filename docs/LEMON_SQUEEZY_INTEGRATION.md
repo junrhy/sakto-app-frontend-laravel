@@ -6,6 +6,16 @@ This document outlines the complete Lemon Squeezy payment integration for the Sa
 
 Lemon Squeezy has been integrated as a payment gateway option for subscription purchases. The integration uses the [official Lemon Squeezy Laravel package](https://github.com/lmsqueezy/laravel) and provides a seamless checkout experience with webhook support for subscription management.
 
+## Important Note: API Limitations
+
+**Lemon Squeezy API does not support creating or updating products/variants programmatically**. Products and variants must be created manually in the Lemon Squeezy dashboard, then their IDs can be linked in the application.
+
+This integration focuses on:
+- ✅ Using existing products/variants for checkout
+- ✅ Webhook handling for payment processing
+- ✅ Subscription management
+- ❌ Automatic product/variant creation (not supported by API)
+
 ## What Was Implemented
 
 ### 1. Package Installation ✅
@@ -111,18 +121,22 @@ LEMON_SQUEEZY_ENVIRONMENT=sandbox  # Change to 'production' for live
 
 ### 3. Set Up Products and Variants
 
+**CRITICAL**: Products and variants must be created manually in Lemon Squeezy dashboard.
+
 In your Lemon Squeezy dashboard:
 
-1. Create products for each subscription plan
-2. Create variants for each plan (e.g., Monthly, Annual)
-3. Copy the Variant ID for each plan
-4. Update your `subscription_plans` table:
-
-```sql
-UPDATE subscription_plans 
-SET lemon_squeezy_variant_id = 'YOUR_VARIANT_ID' 
-WHERE id = 1;
-```
+1. **Create a product** (e.g., "Subscription Plans")
+2. **Create variants** for each subscription plan:
+   - Set the variant name (e.g., "Basic Plan - Monthly")
+   - Set the price (e.g., $149.00)
+   - Set interval (e.g., monthly, yearly)
+   - Mark as subscription
+3. **Copy the Variant ID** from the variant details
+4. **Add to subscription plan** in Sakto App:
+   - Go to Admin → Subscriptions
+   - Create or edit a plan
+   - Paste the Variant ID in the "Lemon Squeezy Variant ID" field
+   - Save the plan
 
 ### 4. Configure Webhooks
 

@@ -164,15 +164,15 @@ export default function Create({ auth }: Props) {
             <div className="space-y-6">
                 {/* Header */}
                 <div className="mb-6">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                Create New Course
-                            </h1>
-                            <p className="mt-1 text-gray-600 dark:text-gray-400">
-                                Set up your course details and structure
-                            </p>
-                    </div>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        Create New Course
+                    </h1>
+                    <p className="mt-1 text-gray-600 dark:text-gray-400">
+                        Set up your course details and structure
+                    </p>
+                </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <Tabs defaultValue="basic" className="w-full">
                         <TabsList className="grid w-full grid-cols-6">
                             <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -187,207 +187,207 @@ export default function Create({ auth }: Props) {
 
                         {/* Basic Info Tab */}
                         <TabsContent value="basic" className="space-y-6">
-                        {/* Basic Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Basic Information</CardTitle>
-                                <CardDescription>
-                                    Provide the essential details about your
-                                    course
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div>
-                                        <Label htmlFor="title">
-                                            Course Title *
-                                        </Label>
-                                        <Input
-                                            id="title"
-                                            value={formData.title}
-                                            onChange={(e) =>
-                                                updateFormData(
-                                                    'title',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="Enter course title"
-                                            className={
-                                                errors.title
-                                                    ? 'border-red-500'
-                                                    : ''
-                                            }
-                                        />
-                                        {errors.title && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.title}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="slug">Slug</Label>
-                                        <div className="flex gap-2">
+                            {/* Basic Information */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Basic Information</CardTitle>
+                                    <CardDescription>
+                                        Provide the essential details about your
+                                        course
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div>
+                                            <Label htmlFor="title">
+                                                Course Title *
+                                            </Label>
                                             <Input
-                                                id="slug"
-                                                value={formData.slug}
+                                                id="title"
+                                                value={formData.title}
                                                 onChange={(e) =>
                                                     updateFormData(
-                                                        'slug',
+                                                        'title',
                                                         e.target.value,
                                                     )
                                                 }
-                                                placeholder="course-slug"
+                                                placeholder="Enter course title"
                                                 className={
-                                                    errors.slug
+                                                    errors.title
                                                         ? 'border-red-500'
                                                         : ''
                                                 }
                                             />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={generateSlug}
-                                            >
-                                                Generate
-                                            </Button>
+                                            {errors.title && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.title}
+                                                </p>
+                                            )}
                                         </div>
-                                        {errors.slug && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.slug}
-                                            </p>
-                                        )}
+
+                                        <div>
+                                            <Label htmlFor="slug">Slug</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="slug"
+                                                    value={formData.slug}
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'slug',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="course-slug"
+                                                    className={
+                                                        errors.slug
+                                                            ? 'border-red-500'
+                                                            : ''
+                                                    }
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={generateSlug}
+                                                >
+                                                    Generate
+                                                </Button>
+                                            </div>
+                                            {errors.slug && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.slug}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <Label htmlFor="description">
-                                        Description *
-                                    </Label>
-                                    <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={(e) =>
-                                            updateFormData(
-                                                'description',
-                                                e.target.value,
-                                            )
-                                        }
-                                        placeholder="Describe your course..."
-                                        rows={4}
-                                        className={
-                                            errors.description
-                                                ? 'border-red-500'
-                                                : ''
-                                        }
-                                    />
-                                    {errors.description && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.description}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <div>
-                                        <Label htmlFor="difficulty">
-                                            Difficulty *
+                                        <Label htmlFor="description">
+                                            Description *
                                         </Label>
-                                        <Select
-                                            value={formData.difficulty}
-                                            onValueChange={(value: any) =>
+                                        <Textarea
+                                            id="description"
+                                            value={formData.description}
+                                            onChange={(e) =>
                                                 updateFormData(
-                                                    'difficulty',
-                                                    value,
+                                                    'description',
+                                                    e.target.value,
                                                 )
                                             }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="beginner">
-                                                    Beginner
-                                                </SelectItem>
-                                                <SelectItem value="intermediate">
-                                                    Intermediate
-                                                </SelectItem>
-                                                <SelectItem value="advanced">
-                                                    Advanced
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.difficulty && (
+                                            placeholder="Describe your course..."
+                                            rows={4}
+                                            className={
+                                                errors.description
+                                                    ? 'border-red-500'
+                                                    : ''
+                                            }
+                                        />
+                                        {errors.description && (
                                             <p className="mt-1 text-sm text-red-500">
-                                                {errors.difficulty}
+                                                {errors.description}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div>
+                                            <Label htmlFor="difficulty">
+                                                Difficulty *
+                                            </Label>
+                                            <Select
+                                                value={formData.difficulty}
+                                                onValueChange={(value: any) =>
+                                                    updateFormData(
+                                                        'difficulty',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="beginner">
+                                                        Beginner
+                                                    </SelectItem>
+                                                    <SelectItem value="intermediate">
+                                                        Intermediate
+                                                    </SelectItem>
+                                                    <SelectItem value="advanced">
+                                                        Advanced
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.difficulty && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.difficulty}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
                                             <Label htmlFor="status">
                                                 Status *
                                             </Label>
-                                        <Select
-                                            value={formData.status}
-                                            onValueChange={(value: any) =>
+                                            <Select
+                                                value={formData.status}
+                                                onValueChange={(value: any) =>
                                                     updateFormData(
                                                         'status',
                                                         value,
                                                     )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="draft">
-                                                    Draft
-                                                </SelectItem>
-                                                <SelectItem value="published">
-                                                    Published
-                                                </SelectItem>
-                                                <SelectItem value="archived">
-                                                    Archived
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.status && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.status}
-                                            </p>
-                                        )}
-                                    </div>
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="draft">
+                                                        Draft
+                                                    </SelectItem>
+                                                    <SelectItem value="published">
+                                                        Published
+                                                    </SelectItem>
+                                                    <SelectItem value="archived">
+                                                        Archived
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.status && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.status}
+                                                </p>
+                                            )}
+                                        </div>
 
-                                    <div>
-                                        <Label htmlFor="duration">
-                                            Duration (minutes)
-                                        </Label>
-                                        <Input
-                                            id="duration"
-                                            type="number"
+                                        <div>
+                                            <Label htmlFor="duration">
+                                                Duration (minutes)
+                                            </Label>
+                                            <Input
+                                                id="duration"
+                                                type="number"
                                                 value={
                                                     formData.duration_minutes
                                                 }
-                                            onChange={(e) =>
-                                                updateFormData(
-                                                    'duration_minutes',
+                                                onChange={(e) =>
+                                                    updateFormData(
+                                                        'duration_minutes',
                                                         parseInt(
                                                             e.target.value,
                                                         ) || 0,
-                                                )
-                                            }
-                                            placeholder="120"
-                                        />
-                                        {errors.duration_minutes && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.duration_minutes}
-                                            </p>
-                                        )}
+                                                    )
+                                                }
+                                                placeholder="120"
+                                            />
+                                            {errors.duration_minutes && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.duration_minutes}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
 
                             {/* Categories */}
                             <Card>
@@ -558,108 +558,14 @@ export default function Create({ auth }: Props) {
 
                         {/* Pricing Tab */}
                         <TabsContent value="pricing" className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Pricing</CardTitle>
-                                <CardDescription>
-                                    Set the pricing for your course
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="is_free"
-                                        checked={formData.is_free}
-                                        onCheckedChange={(checked) =>
-                                                updateFormData(
-                                                    'is_free',
-                                                    checked,
-                                                )
-                                        }
-                                    />
-                                        <Label htmlFor="is_free">
-                                            Free Course
-                                        </Label>
-                                </div>
-
-                                {!formData.is_free && (
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <div>
-                                            <Label htmlFor="price">
-                                                Price *
-                                            </Label>
-                                            <Input
-                                                id="price"
-                                                type="number"
-                                                step="0.01"
-                                                value={formData.price}
-                                                onChange={(e) =>
-                                                    updateFormData(
-                                                        'price',
-                                                        parseFloat(
-                                                            e.target.value,
-                                                        ) || 0,
-                                                    )
-                                                }
-                                                placeholder="0.00"
-                                                className={
-                                                    errors.price
-                                                        ? 'border-red-500'
-                                                        : ''
-                                                }
-                                            />
-                                            {errors.price && (
-                                                <p className="mt-1 text-sm text-red-500">
-                                                    {errors.price}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="currency">
-                                                Currency
-                                            </Label>
-                                            <Select
-                                                value={formData.currency}
-                                                onValueChange={(value) =>
-                                                    updateFormData(
-                                                        'currency',
-                                                        value,
-                                                    )
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="PHP">
-                                                        PHP
-                                                    </SelectItem>
-                                                    <SelectItem value="USD">
-                                                        USD
-                                                    </SelectItem>
-                                                    <SelectItem value="EUR">
-                                                        EUR
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                        </TabsContent>
-
-                        {/* Pricing Tab */}
-                        <TabsContent value="pricing" className="space-y-6">
-                        <Card>
-                            <CardHeader>
+                            <Card>
+                                <CardHeader>
                                     <CardTitle>Pricing</CardTitle>
-                                <CardDescription>
+                                    <CardDescription>
                                         Set the pricing for your course
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
                                     <div className="flex items-center space-x-2">
                                         <Switch
                                             id="is_free"
@@ -678,20 +584,20 @@ export default function Create({ auth }: Props) {
 
                                     {!formData.is_free && (
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
+                                            <div>
                                                 <Label htmlFor="price">
                                                     Price *
-                                    </Label>
-                                    <Input
+                                                </Label>
+                                                <Input
                                                     id="price"
                                                     type="number"
                                                     step="0.01"
                                                     value={formData.price}
-                                        onChange={(e) =>
-                                            updateFormData(
+                                                    onChange={(e) =>
+                                                        updateFormData(
                                                             'price',
                                                             parseFloat(
-                                                e.target.value,
+                                                                e.target.value,
                                                             ) || 0,
                                                         )
                                                     }
@@ -703,20 +609,20 @@ export default function Create({ auth }: Props) {
                                                     }
                                                 />
                                                 {errors.price && (
-                                        <p className="mt-1 text-sm text-red-500">
+                                                    <p className="mt-1 text-sm text-red-500">
                                                         {errors.price}
-                                        </p>
-                                    )}
-                                </div>
+                                                    </p>
+                                                )}
+                                            </div>
 
-                                <div>
+                                            <div>
                                                 <Label htmlFor="currency">
                                                     Currency
-                                    </Label>
+                                                </Label>
                                                 <Select
                                                     value={formData.currency}
                                                     onValueChange={(value) =>
-                                            updateFormData(
+                                                        updateFormData(
                                                             'currency',
                                                             value,
                                                         )
@@ -737,277 +643,371 @@ export default function Create({ auth }: Props) {
                                                         </SelectItem>
                                                     </SelectContent>
                                                 </Select>
-                                </div>
+                                            </div>
                                         </div>
                                     )}
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* Pricing Tab */}
+                        <TabsContent value="pricing" className="space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Pricing</CardTitle>
+                                    <CardDescription>
+                                        Set the pricing for your course
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            id="is_free"
+                                            checked={formData.is_free}
+                                            onCheckedChange={(checked) =>
+                                                updateFormData(
+                                                    'is_free',
+                                                    checked,
+                                                )
+                                            }
+                                        />
+                                        <Label htmlFor="is_free">
+                                            Free Course
+                                        </Label>
+                                    </div>
+
+                                    {!formData.is_free && (
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div>
+                                                <Label htmlFor="price">
+                                                    Price *
+                                                </Label>
+                                                <Input
+                                                    id="price"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={formData.price}
+                                                    onChange={(e) =>
+                                                        updateFormData(
+                                                            'price',
+                                                            parseFloat(
+                                                                e.target.value,
+                                                            ) || 0,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                    className={
+                                                        errors.price
+                                                            ? 'border-red-500'
+                                                            : ''
+                                                    }
+                                                />
+                                                {errors.price && (
+                                                    <p className="mt-1 text-sm text-red-500">
+                                                        {errors.price}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="currency">
+                                                    Currency
+                                                </Label>
+                                                <Select
+                                                    value={formData.currency}
+                                                    onValueChange={(value) =>
+                                                        updateFormData(
+                                                            'currency',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="PHP">
+                                                            PHP
+                                                        </SelectItem>
+                                                        <SelectItem value="USD">
+                                                            USD
+                                                        </SelectItem>
+                                                        <SelectItem value="EUR">
+                                                            EUR
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         {/* Instructor Tab */}
                         <TabsContent value="instructor" className="space-y-6">
-                        <Card>
-                            <CardHeader>
+                            <Card>
+                                <CardHeader>
                                     <CardTitle>
                                         Instructor Information
                                     </CardTitle>
-                                <CardDescription>
-                                    Details about the course instructor
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div>
-                                        <Label htmlFor="instructor_name">
-                                            Instructor Name
-                                        </Label>
-                                        <Input
-                                            id="instructor_name"
-                                            value={formData.instructor_name}
-                                            onChange={(e) =>
-                                                updateFormData(
-                                                    'instructor_name',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="John Doe"
-                                        />
-                                        {errors.instructor_name && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.instructor_name}
-                                            </p>
-                                        )}
-                                    </div>
+                                    <CardDescription>
+                                        Details about the course instructor
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <div>
+                                            <Label htmlFor="instructor_name">
+                                                Instructor Name
+                                            </Label>
+                                            <Input
+                                                id="instructor_name"
+                                                value={formData.instructor_name}
+                                                onChange={(e) =>
+                                                    updateFormData(
+                                                        'instructor_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="John Doe"
+                                            />
+                                            {errors.instructor_name && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.instructor_name}
+                                                </p>
+                                            )}
+                                        </div>
 
-                                    <div>
-                                        <Label htmlFor="instructor_avatar">
-                                            Instructor Avatar URL
-                                        </Label>
-                                        <Input
-                                            id="instructor_avatar"
+                                        <div>
+                                            <Label htmlFor="instructor_avatar">
+                                                Instructor Avatar URL
+                                            </Label>
+                                            <Input
+                                                id="instructor_avatar"
                                                 value={
                                                     formData.instructor_avatar
                                                 }
+                                                onChange={(e) =>
+                                                    updateFormData(
+                                                        'instructor_avatar',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="https://example.com/avatar.jpg"
+                                            />
+                                            {errors.instructor_avatar && (
+                                                <p className="mt-1 text-sm text-red-500">
+                                                    {errors.instructor_avatar}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="instructor_bio">
+                                            Instructor Bio
+                                        </Label>
+                                        <Textarea
+                                            id="instructor_bio"
+                                            value={formData.instructor_bio}
                                             onChange={(e) =>
                                                 updateFormData(
-                                                    'instructor_avatar',
+                                                    'instructor_bio',
                                                     e.target.value,
                                                 )
                                             }
-                                            placeholder="https://example.com/avatar.jpg"
+                                            placeholder="Tell us about the instructor..."
+                                            rows={3}
                                         />
-                                        {errors.instructor_avatar && (
+                                        {errors.instructor_bio && (
                                             <p className="mt-1 text-sm text-red-500">
-                                                {errors.instructor_avatar}
+                                                {errors.instructor_bio}
                                             </p>
                                         )}
                                     </div>
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="instructor_bio">
-                                        Instructor Bio
-                                    </Label>
-                                    <Textarea
-                                        id="instructor_bio"
-                                        value={formData.instructor_bio}
-                                        onChange={(e) =>
-                                            updateFormData(
-                                                'instructor_bio',
-                                                e.target.value,
-                                            )
-                                        }
-                                        placeholder="Tell us about the instructor..."
-                                        rows={3}
-                                    />
-                                    {errors.instructor_bio && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.instructor_bio}
-                                        </p>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         {/* Details Tab */}
                         <TabsContent value="details" className="space-y-6">
-                        {/* Requirements */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Requirements</CardTitle>
-                                <CardDescription>
-                                    What students need to know before taking
-                                    this course
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newRequirement}
-                                        onChange={(e) =>
+                            {/* Requirements */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Requirements</CardTitle>
+                                    <CardDescription>
+                                        What students need to know before taking
+                                        this course
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={newRequirement}
+                                            onChange={(e) =>
                                                 setNewRequirement(
                                                     e.target.value,
                                                 )
-                                        }
-                                        placeholder="Add a requirement..."
-                                        onKeyPress={(e) =>
-                                            e.key === 'Enter' &&
-                                            (e.preventDefault(),
-                                            addRequirement())
-                                        }
-                                    />
-                                    <Button
-                                        type="button"
-                                        onClick={addRequirement}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                            }
+                                            placeholder="Add a requirement..."
+                                            onKeyPress={(e) =>
+                                                e.key === 'Enter' &&
+                                                (e.preventDefault(),
+                                                addRequirement())
+                                            }
+                                        />
+                                        <Button
+                                            type="button"
+                                            onClick={addRequirement}
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
 
-                                {formData.requirements.length > 0 && (
-                                    <ul className="space-y-2">
-                                        {formData.requirements.map(
-                                            (requirement, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="flex items-center gap-2"
-                                                >
+                                    {formData.requirements.length > 0 && (
+                                        <ul className="space-y-2">
+                                            {formData.requirements.map(
+                                                (requirement, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className="flex items-center gap-2"
+                                                    >
                                                         <span className="h-2 w-2 rounded-full bg-gray-400 dark:bg-gray-500"></span>
                                                         <span className="flex-1 text-gray-900 dark:text-white">
-                                                        {requirement}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            removeRequirement(
-                                                                index,
-                                                            )
-                                                        }
+                                                            {requirement}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                removeRequirement(
+                                                                    index,
+                                                                )
+                                                            }
                                                             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                </li>
-                                            ),
-                                        )}
-                                    </ul>
-                                )}
-                            </CardContent>
-                        </Card>
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    )}
+                                </CardContent>
+                            </Card>
 
-                        {/* Learning Outcomes */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Learning Outcomes</CardTitle>
-                                <CardDescription>
+                            {/* Learning Outcomes */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Learning Outcomes</CardTitle>
+                                    <CardDescription>
                                         What students will learn from this
                                         course
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newOutcome}
-                                        onChange={(e) =>
-                                            setNewOutcome(e.target.value)
-                                        }
-                                        placeholder="Add a learning outcome..."
-                                        onKeyPress={(e) =>
-                                            e.key === 'Enter' &&
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={newOutcome}
+                                            onChange={(e) =>
+                                                setNewOutcome(e.target.value)
+                                            }
+                                            placeholder="Add a learning outcome..."
+                                            onKeyPress={(e) =>
+                                                e.key === 'Enter' &&
                                                 (e.preventDefault(),
                                                 addOutcome())
-                                        }
-                                    />
+                                            }
+                                        />
                                         <Button
                                             type="button"
                                             onClick={addOutcome}
                                         >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
 
-                                {formData.learning_outcomes.length > 0 && (
-                                    <ul className="space-y-2">
-                                        {formData.learning_outcomes.map(
-                                            (outcome, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="flex items-center gap-2"
-                                                >
+                                    {formData.learning_outcomes.length > 0 && (
+                                        <ul className="space-y-2">
+                                            {formData.learning_outcomes.map(
+                                                (outcome, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className="flex items-center gap-2"
+                                                    >
                                                         <span className="h-2 w-2 rounded-full bg-green-400 dark:bg-green-500"></span>
                                                         <span className="flex-1 text-gray-900 dark:text-white">
-                                                        {outcome}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
+                                                            {outcome}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
                                                                 removeOutcome(
                                                                     index,
                                                                 )
-                                                        }
+                                                            }
                                                             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                </li>
-                                            ),
-                                        )}
-                                    </ul>
-                                )}
-                            </CardContent>
-                        </Card>
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         {/* Settings Tab */}
                         <TabsContent value="settings" className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Settings</CardTitle>
-                                <CardDescription>
-                                    Additional course settings
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        id="is_featured"
-                                        checked={formData.is_featured}
-                                        onCheckedChange={(checked) =>
-                                            updateFormData(
-                                                'is_featured',
-                                                checked,
-                                            )
-                                        }
-                                    />
-                                    <Label htmlFor="is_featured">
-                                        Featured Course
-                                    </Label>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Settings</CardTitle>
+                                    <CardDescription>
+                                        Additional course settings
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            id="is_featured"
+                                            checked={formData.is_featured}
+                                            onCheckedChange={(checked) =>
+                                                updateFormData(
+                                                    'is_featured',
+                                                    checked,
+                                                )
+                                            }
+                                        />
+                                        <Label htmlFor="is_featured">
+                                            Featured Course
+                                        </Label>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
                     </Tabs>
 
                     {/* Submit Buttons */}
-                        <div className="flex justify-end gap-4">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => window.history.back()}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={processing}
-                                className="flex items-center gap-2"
-                            >
-                                <Save className="h-4 w-4" />
-                                {processing ? 'Creating...' : 'Create Course'}
-                            </Button>
-                        </div>
-                    </form>
+                    <div className="flex justify-end gap-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => window.history.back()}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            className="flex items-center gap-2"
+                        >
+                            <Save className="h-4 w-4" />
+                            {processing ? 'Creating...' : 'Create Course'}
+                        </Button>
+                    </div>
+                </form>
             </div>
         </AuthenticatedLayout>
     );

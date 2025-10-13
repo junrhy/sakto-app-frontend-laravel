@@ -15,15 +15,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import {
-    Calendar,
-    Clock,
-    CreditCard,
-    FileImage,
-    Info,
-    Settings,
-    Users,
-} from 'lucide-react';
+import { Clock, CreditCard, FileImage, Info, Users } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -44,6 +36,8 @@ interface Event {
     category: string;
     image: string;
     status: string;
+    lemon_squeezy_product_id?: string;
+    lemon_squeezy_variant_id?: string;
 }
 
 interface Props extends PageProps {
@@ -81,6 +75,8 @@ interface FormData {
     category: string;
     image: string | File;
     status: string;
+    lemon_squeezy_product_id: string;
+    lemon_squeezy_variant_id: string;
 }
 
 export default function Form({ auth, event }: Props) {
@@ -149,6 +145,8 @@ export default function Form({ auth, event }: Props) {
             category: event?.category || '',
             image: event?.image || '',
             status: event?.status || 'draft',
+            lemon_squeezy_product_id: event?.lemon_squeezy_product_id || '',
+            lemon_squeezy_variant_id: event?.lemon_squeezy_variant_id || '',
         });
 
     const canEdit = useMemo(() => {
@@ -191,6 +189,10 @@ export default function Form({ auth, event }: Props) {
                     category: event.category || '',
                     image: event.image || '',
                     status: event.status || 'draft',
+                    lemon_squeezy_product_id:
+                        event.lemon_squeezy_product_id || '',
+                    lemon_squeezy_variant_id:
+                        event.lemon_squeezy_variant_id || '',
                 });
                 setImagePreview(event.image || null);
             } catch (error) {
@@ -212,6 +214,8 @@ export default function Form({ auth, event }: Props) {
                     category: '',
                     image: '',
                     status: 'draft',
+                    lemon_squeezy_product_id: '',
+                    lemon_squeezy_variant_id: '',
                 });
                 setImagePreview(null);
             }
@@ -378,139 +382,144 @@ export default function Form({ auth, event }: Props) {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label
-                                                htmlFor="title"
-                                                className="text-gray-700 dark:text-gray-300"
-                                            >
-                                                Event Title *
-                                            </Label>
-                                            <Input
-                                                id="title"
-                                                value={data.title}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'title',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                required
-                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
-                                                placeholder="Enter event title"
-                                            />
-                                            {errors.title && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {errors.title}
-                                                </p>
-                                            )}
-                                        </div>
+                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                <div className="space-y-2">
+                                                    <Label
+                                                        htmlFor="title"
+                                                        className="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Event Title *
+                                                    </Label>
+                                                    <Input
+                                                        id="title"
+                                                        value={data.title}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'title',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                        className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
+                                                        placeholder="Enter event title"
+                                                    />
+                                                    {errors.title && (
+                                                        <p className="text-sm text-red-600 dark:text-red-400">
+                                                            {errors.title}
+                                                        </p>
+                                                    )}
+                                                </div>
 
-                                        <div className="space-y-2">
-                                            <Label
-                                                htmlFor="category"
-                                                className="text-gray-700 dark:text-gray-300"
-                                            >
-                                                Category *
-                                            </Label>
-                                            <Select
-                                                value={data.category}
-                                                onValueChange={(value) =>
-                                                    setData('category', value)
-                                                }
-                                            >
-                                                <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
-                                                    <SelectValue placeholder="Select category" />
-                                                </SelectTrigger>
-                                                <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                                    <SelectItem value="conference">
-                                                        Conference
-                                                    </SelectItem>
-                                                    <SelectItem value="workshop">
-                                                        Workshop
-                                                    </SelectItem>
-                                                    <SelectItem value="seminar">
-                                                        Seminar
-                                                    </SelectItem>
-                                                    <SelectItem value="meetup">
-                                                        Meetup
-                                                    </SelectItem>
-                                                    <SelectItem value="webinar">
-                                                        Webinar
-                                                    </SelectItem>
-                                                    <SelectItem value="training">
-                                                        Training
-                                                    </SelectItem>
-                                                    <SelectItem value="networking">
-                                                        Networking
-                                                    </SelectItem>
-                                                    <SelectItem value="other">
-                                                        Other
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.category && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {errors.category}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
+                                                <div className="space-y-2">
+                                                    <Label
+                                                        htmlFor="category"
+                                                        className="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Category *
+                                                    </Label>
+                                                    <Select
+                                                        value={data.category}
+                                                        onValueChange={(
+                                                            value,
+                                                        ) =>
+                                                            setData(
+                                                                'category',
+                                                                value,
+                                                            )
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                                            <SelectValue placeholder="Select category" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                                            <SelectItem value="conference">
+                                                                Conference
+                                                            </SelectItem>
+                                                            <SelectItem value="workshop">
+                                                                Workshop
+                                                            </SelectItem>
+                                                            <SelectItem value="seminar">
+                                                                Seminar
+                                                            </SelectItem>
+                                                            <SelectItem value="meetup">
+                                                                Meetup
+                                                            </SelectItem>
+                                                            <SelectItem value="webinar">
+                                                                Webinar
+                                                            </SelectItem>
+                                                            <SelectItem value="training">
+                                                                Training
+                                                            </SelectItem>
+                                                            <SelectItem value="networking">
+                                                                Networking
+                                                            </SelectItem>
+                                                            <SelectItem value="other">
+                                                                Other
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {errors.category && (
+                                                        <p className="text-sm text-red-600 dark:text-red-400">
+                                                            {errors.category}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
 
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="description"
-                                            className="text-gray-700 dark:text-gray-300"
-                                        >
-                                            Description *
-                                        </Label>
-                                        <Textarea
-                                            id="description"
-                                            value={data.description}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'description',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            required
-                                            rows={4}
-                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
-                                            placeholder="Describe your event..."
-                                        />
-                                        {errors.description && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.description}
-                                            </p>
-                                        )}
-                                    </div>
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="description"
+                                                    className="text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Description *
+                                                </Label>
+                                                <Textarea
+                                                    id="description"
+                                                    value={data.description}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'description',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                    rows={4}
+                                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
+                                                    placeholder="Describe your event..."
+                                                />
+                                                {errors.description && (
+                                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                                        {errors.description}
+                                                    </p>
+                                                )}
+                                            </div>
 
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="location"
-                                            className="text-gray-700 dark:text-gray-300"
-                                        >
-                                            Location *
-                                        </Label>
-                                        <Input
-                                            id="location"
-                                            value={data.location}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'location',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            required
-                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
-                                            placeholder="Enter event location"
-                                        />
-                                        {errors.location && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.location}
-                                            </p>
-                                        )}
-                                    </div>
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="location"
+                                                    className="text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Location *
+                                                </Label>
+                                                <Input
+                                                    id="location"
+                                                    value={data.location}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'location',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
+                                                    placeholder="Enter event location"
+                                                />
+                                                {errors.location && (
+                                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                                        {errors.location}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </TabsContent>
@@ -524,98 +533,101 @@ export default function Form({ auth, event }: Props) {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                        <div className="space-y-2">
-                                            <Label
-                                                htmlFor="start_date"
-                                                className="text-gray-700 dark:text-gray-300"
-                                            >
-                                                Start Date & Time *
-                                            </Label>
-                                            <Input
-                                                id="start_date"
-                                                type="datetime-local"
-                                                value={data.start_date}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'start_date',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                required
-                                                className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                            />
-                                            {errors.start_date && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {errors.start_date}
-                                                </p>
-                                            )}
-                                        </div>
+                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                                                <div className="space-y-2">
+                                                    <Label
+                                                        htmlFor="start_date"
+                                                        className="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Start Date & Time *
+                                                    </Label>
+                                                    <Input
+                                                        id="start_date"
+                                                        type="datetime-local"
+                                                        value={data.start_date}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'start_date',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                        className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                    />
+                                                    {errors.start_date && (
+                                                        <p className="text-sm text-red-600 dark:text-red-400">
+                                                            {errors.start_date}
+                                                        </p>
+                                                    )}
+                                                </div>
 
-                                        <div className="space-y-2">
-                                            <Label
-                                                htmlFor="end_date"
-                                                className="text-gray-700 dark:text-gray-300"
-                                            >
-                                                End Date & Time *
-                                            </Label>
-                                            <Input
-                                                id="end_date"
-                                                type="datetime-local"
-                                                value={data.end_date}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'end_date',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                required
-                                                className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                            />
-                                            {errors.end_date && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {errors.end_date}
-                                                </p>
-                                            )}
-                                        </div>
+                                                <div className="space-y-2">
+                                                    <Label
+                                                        htmlFor="end_date"
+                                                        className="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        End Date & Time *
+                                                    </Label>
+                                                    <Input
+                                                        id="end_date"
+                                                        type="datetime-local"
+                                                        value={data.end_date}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'end_date',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                        className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                    />
+                                                    {errors.end_date && (
+                                                        <p className="text-sm text-red-600 dark:text-red-400">
+                                                            {errors.end_date}
+                                                        </p>
+                                                    )}
+                                                </div>
 
-                                        <div className="space-y-2">
-                                            <Label
-                                                htmlFor="registration_deadline"
-                                                className="text-gray-700 dark:text-gray-300"
-                                            >
-                                                Registration Deadline *
-                                            </Label>
-                                            <Input
-                                                id="registration_deadline"
-                                                type="datetime-local"
-                                                value={
-                                                    data.registration_deadline
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'registration_deadline',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                required
-                                                className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                            />
-                                            {errors.registration_deadline && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {
-                                                        errors.registration_deadline
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
+                                                <div className="space-y-2">
+                                                    <Label
+                                                        htmlFor="registration_deadline"
+                                                        className="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Registration Deadline *
+                                                    </Label>
+                                                    <Input
+                                                        id="registration_deadline"
+                                                        type="datetime-local"
+                                                        value={
+                                                            data.registration_deadline
+                                                        }
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'registration_deadline',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                        className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                    />
+                                                    {errors.registration_deadline && (
+                                                        <p className="text-sm text-red-600 dark:text-red-400">
+                                                            {
+                                                                errors.registration_deadline
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </TabsContent>
 
                                 {/* Tab 3: Registration Settings */}
-                                <TabsContent value="registration" className="mt-6">
+                                <TabsContent
+                                    value="registration"
+                                    className="mt-6"
+                                >
                                     <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                                         <CardHeader>
                                             <CardTitle className="text-gray-900 dark:text-gray-100">
@@ -623,90 +635,102 @@ export default function Form({ auth, event }: Props) {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="max_participants"
-                                            className="text-gray-700 dark:text-gray-300"
-                                        >
-                                            Maximum Participants
-                                        </Label>
-                                        <Input
-                                            id="max_participants"
-                                            type="number"
-                                            min="0"
-                                            value={data.max_participants}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'max_participants',
-                                                    parseInt(e.target.value) ||
-                                                        0,
-                                                )
-                                            }
-                                            className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                            placeholder="0 for unlimited"
-                                        />
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Set to 0 for unlimited participants
-                                        </p>
-                                        {errors.max_participants && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.max_participants}
-                                            </p>
-                                        )}
-                                    </div>
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="max_participants"
+                                                    className="text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Maximum Participants
+                                                </Label>
+                                                <Input
+                                                    id="max_participants"
+                                                    type="number"
+                                                    min="0"
+                                                    value={
+                                                        data.max_participants
+                                                    }
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'max_participants',
+                                                            parseInt(
+                                                                e.target.value,
+                                                            ) || 0,
+                                                        )
+                                                    }
+                                                    className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                    placeholder="0 for unlimited"
+                                                />
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    Set to 0 for unlimited
+                                                    participants
+                                                </p>
+                                                {errors.max_participants && (
+                                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                                        {
+                                                            errors.max_participants
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-1">
-                                            <Label className="text-gray-700 dark:text-gray-300">
-                                                Public Event
-                                            </Label>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                Allow public registration for
-                                                this event
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={data.is_public}
-                                            onCheckedChange={(checked) =>
-                                                setData('is_public', checked)
-                                            }
-                                        />
-                                    </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <Label className="text-gray-700 dark:text-gray-300">
+                                                        Public Event
+                                                    </Label>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        Allow public
+                                                        registration for this
+                                                        event
+                                                    </p>
+                                                </div>
+                                                <Switch
+                                                    checked={data.is_public}
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        setData(
+                                                            'is_public',
+                                                            checked,
+                                                        )
+                                                    }
+                                                />
+                                            </div>
 
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="status"
-                                            className="text-gray-700 dark:text-gray-300"
-                                        >
-                                            Event Status
-                                        </Label>
-                                        <Select
-                                            value={data.status}
-                                            onValueChange={(value) =>
-                                                setData('status', value)
-                                            }
-                                        >
-                                            <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                                <SelectItem value="draft">
-                                                    Draft
-                                                </SelectItem>
-                                                <SelectItem value="published">
-                                                    Published
-                                                </SelectItem>
-                                                <SelectItem value="cancelled">
-                                                    Cancelled
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.status && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.status}
-                                            </p>
-                                        )}
-                                    </div>
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="status"
+                                                    className="text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Event Status
+                                                </Label>
+                                                <Select
+                                                    value={data.status}
+                                                    onValueChange={(value) =>
+                                                        setData('status', value)
+                                                    }
+                                                >
+                                                    <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                                        <SelectItem value="draft">
+                                                            Draft
+                                                        </SelectItem>
+                                                        <SelectItem value="published">
+                                                            Published
+                                                        </SelectItem>
+                                                        <SelectItem value="cancelled">
+                                                            Cancelled
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.status && (
+                                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                                        {errors.status}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </TabsContent>
@@ -720,147 +744,239 @@ export default function Form({ auth, event }: Props) {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-1">
-                                            <Label className="text-gray-700 dark:text-gray-300">
-                                                Paid Event
-                                            </Label>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                Enable if this event requires
-                                                payment
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={data.is_paid_event}
-                                            onCheckedChange={(checked) =>
-                                                setData(
-                                                    'is_paid_event',
-                                                    checked,
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    {data.is_paid_event && (
-                                        <div className="space-y-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
-                                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                                <div className="space-y-2">
-                                                    <Label
-                                                        htmlFor="event_price"
-                                                        className="text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Event Price
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <Label className="text-gray-700 dark:text-gray-300">
+                                                        Paid Event
                                                     </Label>
-                                                    <Input
-                                                        id="event_price"
-                                                        type="number"
-                                                        min="0"
-                                                        step="0.01"
-                                                        value={data.event_price}
-                                                        onChange={(e) =>
-                                                            setData(
-                                                                'event_price',
-                                                                parseFloat(
-                                                                    e.target
-                                                                        .value,
-                                                                ) || 0,
-                                                            )
-                                                        }
-                                                        className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                                        placeholder="0.00"
-                                                    />
-                                                    {errors.event_price && (
-                                                        <p className="text-sm text-red-600 dark:text-red-400">
-                                                            {errors.event_price}
-                                                        </p>
-                                                    )}
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        Enable if this event
+                                                        requires payment
+                                                    </p>
                                                 </div>
-
-                                                <div className="space-y-2">
-                                                    <Label
-                                                        htmlFor="currency"
-                                                        className="text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Currency
-                                                    </Label>
-                                                    <Select
-                                                        value={data.currency}
-                                                        onValueChange={(
-                                                            value,
-                                                        ) =>
-                                                            setData(
-                                                                'currency',
-                                                                value,
-                                                            )
-                                                        }
-                                                    >
-                                                        <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
-                                                            <SelectValue placeholder="Select currency" />
-                                                        </SelectTrigger>
-                                                        <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                                            <SelectItem value="USD">
-                                                                USD ($)
-                                                            </SelectItem>
-                                                            <SelectItem value="EUR">
-                                                                EUR (€)
-                                                            </SelectItem>
-                                                            <SelectItem value="GBP">
-                                                                GBP (£)
-                                                            </SelectItem>
-                                                            <SelectItem value="PHP">
-                                                                PHP (₱)
-                                                            </SelectItem>
-                                                            <SelectItem value="JPY">
-                                                                JPY (¥)
-                                                            </SelectItem>
-                                                            <SelectItem value="CAD">
-                                                                CAD (C$)
-                                                            </SelectItem>
-                                                            <SelectItem value="AUD">
-                                                                AUD (A$)
-                                                            </SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {errors.currency && (
-                                                        <p className="text-sm text-red-600 dark:text-red-400">
-                                                            {errors.currency}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label
-                                                    htmlFor="payment_instructions"
-                                                    className="text-gray-700 dark:text-gray-300"
-                                                >
-                                                    Payment Instructions
-                                                </Label>
-                                                <Textarea
-                                                    id="payment_instructions"
-                                                    value={
-                                                        data.payment_instructions
-                                                    }
-                                                    onChange={(e) =>
+                                                <Switch
+                                                    checked={data.is_paid_event}
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
                                                         setData(
-                                                            'payment_instructions',
-                                                            e.target.value,
+                                                            'is_paid_event',
+                                                            checked,
                                                         )
                                                     }
-                                                    rows={3}
-                                                    className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
-                                                    placeholder="Provide payment instructions for participants..."
                                                 />
-                                                {errors.payment_instructions && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">
-                                                        {
-                                                            errors.payment_instructions
-                                                        }
-                                                    </p>
-                                                )}
                                             </div>
-                                        </div>
-                                    )}
+
+                                            {data.is_paid_event && (
+                                                <div className="space-y-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+                                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                        <div className="space-y-2">
+                                                            <Label
+                                                                htmlFor="event_price"
+                                                                className="text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Event Price
+                                                            </Label>
+                                                            <Input
+                                                                id="event_price"
+                                                                type="number"
+                                                                min="0"
+                                                                step="0.01"
+                                                                value={
+                                                                    data.event_price
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'event_price',
+                                                                        parseFloat(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        ) || 0,
+                                                                    )
+                                                                }
+                                                                className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                                placeholder="0.00"
+                                                            />
+                                                            {errors.event_price && (
+                                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                                    {
+                                                                        errors.event_price
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label
+                                                                htmlFor="currency"
+                                                                className="text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Currency
+                                                            </Label>
+                                                            <Select
+                                                                value={
+                                                                    data.currency
+                                                                }
+                                                                onValueChange={(
+                                                                    value,
+                                                                ) =>
+                                                                    setData(
+                                                                        'currency',
+                                                                        value,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                                                    <SelectValue placeholder="Select currency" />
+                                                                </SelectTrigger>
+                                                                <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                                                    <SelectItem value="USD">
+                                                                        USD ($)
+                                                                    </SelectItem>
+                                                                    <SelectItem value="EUR">
+                                                                        EUR (€)
+                                                                    </SelectItem>
+                                                                    <SelectItem value="GBP">
+                                                                        GBP (£)
+                                                                    </SelectItem>
+                                                                    <SelectItem value="PHP">
+                                                                        PHP (₱)
+                                                                    </SelectItem>
+                                                                    <SelectItem value="JPY">
+                                                                        JPY (¥)
+                                                                    </SelectItem>
+                                                                    <SelectItem value="CAD">
+                                                                        CAD (C$)
+                                                                    </SelectItem>
+                                                                    <SelectItem value="AUD">
+                                                                        AUD (A$)
+                                                                    </SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                            {errors.currency && (
+                                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                                    {
+                                                                        errors.currency
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label
+                                                            htmlFor="payment_instructions"
+                                                            className="text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            Payment Instructions
+                                                        </Label>
+                                                        <Textarea
+                                                            id="payment_instructions"
+                                                            value={
+                                                                data.payment_instructions
+                                                            }
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    'payment_instructions',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            rows={3}
+                                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
+                                                            placeholder="Provide payment instructions for participants..."
+                                                        />
+                                                        {errors.payment_instructions && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400">
+                                                                {
+                                                                    errors.payment_instructions
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                        <div className="space-y-2">
+                                                            <Label
+                                                                htmlFor="lemon_squeezy_product_id"
+                                                                className="text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Lemon Squeezy
+                                                                Product ID
+                                                            </Label>
+                                                            <Input
+                                                                id="lemon_squeezy_product_id"
+                                                                type="text"
+                                                                value={
+                                                                    data.lemon_squeezy_product_id
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'lemon_squeezy_product_id',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                                placeholder="e.g., 123456"
+                                                            />
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Create product
+                                                                in Lemon Squeezy
+                                                                dashboard and
+                                                                paste ID here
+                                                            </p>
+                                                            {errors.lemon_squeezy_product_id && (
+                                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                                    {
+                                                                        errors.lemon_squeezy_product_id
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label
+                                                                htmlFor="lemon_squeezy_variant_id"
+                                                                className="text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Lemon Squeezy
+                                                                Variant ID
+                                                            </Label>
+                                                            <Input
+                                                                id="lemon_squeezy_variant_id"
+                                                                type="text"
+                                                                value={
+                                                                    data.lemon_squeezy_variant_id
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'lemon_squeezy_variant_id',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                                                placeholder="e.g., 789012"
+                                                            />
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Create variant
+                                                                with event price
+                                                                and paste ID
+                                                                here
+                                                            </p>
+                                                            {errors.lemon_squeezy_variant_id && (
+                                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                                    {
+                                                                        errors.lemon_squeezy_variant_id
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 </TabsContent>
@@ -874,50 +990,53 @@ export default function Form({ auth, event }: Props) {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="image"
-                                            className="text-gray-700 dark:text-gray-300"
-                                        >
-                                            Upload Image
-                                        </Label>
-                                        <Input
-                                            id="image"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="border-gray-300 bg-white text-gray-900 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:file:bg-blue-900/20 dark:file:text-blue-300 dark:hover:file:bg-blue-900/30"
-                                        />
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Recommended size: 1200x630 pixels
-                                        </p>
-                                        {errors.image && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.image}
-                                            </p>
-                                        )}
-                                    </div>
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="image"
+                                                    className="text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Upload Image
+                                                </Label>
+                                                <Input
+                                                    id="image"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageChange}
+                                                    className="border-gray-300 bg-white text-gray-900 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:file:bg-blue-900/20 dark:file:text-blue-300 dark:hover:file:bg-blue-900/30"
+                                                />
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    Recommended size: 1200x630
+                                                    pixels
+                                                </p>
+                                                {errors.image && (
+                                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                                        {errors.image}
+                                                    </p>
+                                                )}
+                                            </div>
 
-                                    {imagePreview && (
-                                        <div className="relative">
-                                            <img
-                                                src={imagePreview}
-                                                alt="Event preview"
-                                                className="h-48 w-full max-w-md rounded-lg border border-gray-200 object-cover dark:border-gray-700"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setImagePreview(null)
-                                                }
-                                                className="absolute right-2 top-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
-                                    )}
+                                            {imagePreview && (
+                                                <div className="relative">
+                                                    <img
+                                                        src={imagePreview}
+                                                        alt="Event preview"
+                                                        className="h-48 w-full max-w-md rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            setImagePreview(
+                                                                null,
+                                                            )
+                                                        }
+                                                        className="absolute right-2 top-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                                    >
+                                                        Remove
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 </TabsContent>

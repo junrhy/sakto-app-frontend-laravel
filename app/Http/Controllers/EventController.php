@@ -8,19 +8,16 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use App\Services\LemonSqueezyPaymentService;
 use Carbon\Carbon;
 
 class EventController extends Controller
 {
     protected $apiUrl, $apiToken;
-    protected $lemonSqueezyService;
 
-    public function __construct(LemonSqueezyPaymentService $lemonSqueezyService)
+    public function __construct()
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
-        $this->lemonSqueezyService = $lemonSqueezyService;
     }
 
     public function index()
@@ -101,6 +98,8 @@ class EventController extends Controller
             'category' => 'required|string',
             'image' => 'nullable|image|max:2048',
             'status' => 'nullable|in:draft,published,archived',
+            'lemon_squeezy_product_id' => 'nullable|string',
+            'lemon_squeezy_variant_id' => 'nullable|string',
         ]);
 
         if ($request->hasFile('image')) {
@@ -110,30 +109,6 @@ class EventController extends Controller
 
         $clientIdentifier = auth()->user()->identifier;
         $validated['client_identifier'] = $clientIdentifier;
-
-        // Create product in Lemon Squeezy if it's a paid event
-        if ($validated['is_paid_event'] && isset($validated['event_price']) && $validated['event_price'] > 0) {
-            $lemonSqueezyResult = $this->lemonSqueezyService->createEventProduct([
-                'name' => $validated['title'],
-                'description' => $validated['description'] ?? '',
-                'price' => $validated['event_price'],
-                'status' => $validated['status'] === 'published' ? 'published' : 'draft',
-            ]);
-
-            if ($lemonSqueezyResult['success']) {
-                $validated['lemon_squeezy_product_id'] = $lemonSqueezyResult['product_id'];
-                $validated['lemon_squeezy_variant_id'] = $lemonSqueezyResult['variant_id'] ?? null;
-
-                Log::info('Lemon Squeezy product created for event', [
-                    'product_id' => $lemonSqueezyResult['product_id'],
-                    'variant_id' => $lemonSqueezyResult['variant_id'] ?? null,
-                ]);
-            } else {
-                Log::warning('Failed to create Lemon Squeezy product for event', [
-                    'error' => $lemonSqueezyResult['message'] ?? 'Unknown error',
-                ]);
-            }
-        }
 
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/events", $validated);
@@ -189,6 +164,8 @@ class EventController extends Controller
             'category' => 'required|string',
             'image' => 'nullable|image|max:2048',
             'status' => 'nullable|in:draft,published,archived',
+            'lemon_squeezy_product_id' => 'nullable|string',
+            'lemon_squeezy_variant_id' => 'nullable|string',
         ]);
 
         // Add client_identifier to the validated data
@@ -216,59 +193,6 @@ class EventController extends Controller
             $validated['image'] = Storage::disk('public')->url($path);
         }
 
-        // Update product in Lemon Squeezy if it's a paid event
-        if ($validated['is_paid_event'] && isset($validated['event_price']) && $validated['event_price'] > 0) {
-            // Check if event already has a Lemon Squeezy product
-            if ($existingEvent && isset($existingEvent['lemon_squeezy_product_id'])) {
-                // Update existing product
-                $updateData = [
-                    'name' => $validated['title'],
-                    'description' => $validated['description'] ?? '',
-                    'status' => $validated['status'] === 'published' ? 'published' : 'draft',
-                    'price' => $validated['event_price'],
-                    'variant_id' => $existingEvent['lemon_squeezy_variant_id'] ?? null,
-                ];
-
-                $lemonSqueezyResult = $this->lemonSqueezyService->updateEventProduct(
-                    $existingEvent['lemon_squeezy_product_id'],
-                    $updateData
-                );
-
-                if ($lemonSqueezyResult['success']) {
-                    $validated['lemon_squeezy_product_id'] = $existingEvent['lemon_squeezy_product_id'];
-                    $validated['lemon_squeezy_variant_id'] = $existingEvent['lemon_squeezy_variant_id'];
-
-                    Log::info('Lemon Squeezy product updated for event', [
-                        'event_id' => $id,
-                        'product_id' => $existingEvent['lemon_squeezy_product_id'],
-                    ]);
-                } else {
-                    Log::warning('Failed to update Lemon Squeezy product for event', [
-                        'event_id' => $id,
-                        'error' => $lemonSqueezyResult['message'] ?? 'Unknown error',
-                    ]);
-                }
-            } else {
-                // Create new product if it doesn't exist
-                $lemonSqueezyResult = $this->lemonSqueezyService->createEventProduct([
-                    'name' => $validated['title'],
-                    'description' => $validated['description'] ?? '',
-                    'price' => $validated['event_price'],
-                    'status' => $validated['status'] === 'published' ? 'published' : 'draft',
-                ]);
-
-                if ($lemonSqueezyResult['success']) {
-                    $validated['lemon_squeezy_product_id'] = $lemonSqueezyResult['product_id'];
-                    $validated['lemon_squeezy_variant_id'] = $lemonSqueezyResult['variant_id'] ?? null;
-
-                    Log::info('Lemon Squeezy product created for existing event', [
-                        'event_id' => $id,
-                        'product_id' => $lemonSqueezyResult['product_id'],
-                    ]);
-                }
-            }
-        }
-
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/events/{$id}", $validated);
 
@@ -285,7 +209,7 @@ class EventController extends Controller
 
     public function destroy($id)
     {
-        // Get event data first to get the image path and Lemon Squeezy product ID
+        // Get event data first to get the image path
         $getResponse = Http::withToken($this->apiToken)
             ->get("{$this->apiUrl}/events/{$id}");
         
@@ -298,26 +222,6 @@ class EventController extends Controller
                 $path = str_replace(Storage::disk('public')->url(''), '', $eventData['image']);
                 if (Storage::disk('public')->exists($path)) {
                     Storage::disk('public')->delete($path);
-                }
-            }
-
-            // Delete Lemon Squeezy product if it exists
-            if (!empty($eventData['lemon_squeezy_product_id'])) {
-                $lemonSqueezyResult = $this->lemonSqueezyService->deleteEventProduct(
-                    $eventData['lemon_squeezy_product_id']
-                );
-
-                if ($lemonSqueezyResult['success']) {
-                    Log::info('Lemon Squeezy product deleted for event', [
-                        'event_id' => $id,
-                        'product_id' => $eventData['lemon_squeezy_product_id'],
-                    ]);
-                } else {
-                    Log::warning('Failed to delete Lemon Squeezy product for event', [
-                        'event_id' => $id,
-                        'product_id' => $eventData['lemon_squeezy_product_id'],
-                        'error' => $lemonSqueezyResult['message'] ?? 'Unknown error',
-                    ]);
                 }
             }
         }

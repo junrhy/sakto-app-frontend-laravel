@@ -146,8 +146,9 @@ export default function Index({ auth }: Props) {
 
         try {
             // Calculate total number of recipients
-            const totalRecipients = data.to.length + data.cc.length + data.bcc.length;
-            
+            const totalRecipients =
+                data.to.length + data.cc.length + data.bcc.length;
+
             // First, try to spend credits based on number of recipients
             const creditResponse = await axios.post('/credits/spend', {
                 amount: totalRecipients,
@@ -977,8 +978,17 @@ export default function Index({ auth }: Props) {
                                                     clipRule="evenodd"
                                                 />
                                             </svg>
-                                            Sending this email will cost {data.to.length + data.cc.length + data.bcc.length}
-                                            {data.to.length + data.cc.length + data.bcc.length === 1 ? ' credit' : ' credits'} from your balance
+                                            Sending this email will cost{' '}
+                                            {data.to.length +
+                                                data.cc.length +
+                                                data.bcc.length}
+                                            {data.to.length +
+                                                data.cc.length +
+                                                data.bcc.length ===
+                                            1
+                                                ? ' credit'
+                                                : ' credits'}{' '}
+                                            from your balance
                                         </div>
                                         <button
                                             type="submit"
