@@ -134,9 +134,9 @@ export default function Calendar({ auth }: Props) {
         >
             <Head title="Events Calendar" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:rounded-lg">
+            <div>
+                <div className="mx-auto">
+                    <div className="overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
                         <div className="p-6">
                             <div className="mb-6 flex items-center justify-between">
                                 <div className="flex items-center space-x-4">

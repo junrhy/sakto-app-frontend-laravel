@@ -368,8 +368,8 @@ export default function Participants({ auth, event, participants }: Props) {
         >
             <Head title={`Participants - ${event.title}`} />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div>
+                <div className="mx-auto">
                     {/* Event Info Card */}
                     <Card className="mb-8 border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                         <CardHeader>

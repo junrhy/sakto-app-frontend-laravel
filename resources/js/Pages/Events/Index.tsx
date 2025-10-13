@@ -182,10 +182,10 @@ export default function Index({ auth, events }: Props) {
         >
             <Head title="Events" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div>
+                <div className="mx-auto">
                     {/* Header Section */}
-                    <div className="mb-8 overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:rounded-lg">
+                    <div className="mb-8 overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
                         <div className="p-6">
                             <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
                                 <div className="flex flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">

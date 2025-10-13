@@ -10,6 +10,7 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, User } from '@/types';
@@ -17,10 +18,11 @@ import { Head, useForm } from '@inertiajs/react';
 import {
     Calendar,
     Clock,
+    CreditCard,
     FileImage,
-    Globe,
-    MapPin,
+    Info,
     Settings,
+    Users,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -324,19 +326,58 @@ export default function Form({ auth, event }: Props) {
         >
             <Head title={event ? 'Edit Event' : 'Create Event'} />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
+            <div>
+                <div className="mx-auto">
                     {canEdit ? (
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Basic Information Section */}
-                            <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-                                        <Calendar className="mr-2 h-5 w-5" />
-                                        Basic Information
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
+                        <form onSubmit={handleSubmit}>
+                            <Tabs defaultValue="details" className="w-full">
+                                <TabsList className="grid w-full grid-cols-5 border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-900">
+                                    <TabsTrigger
+                                        value="details"
+                                        className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                                    >
+                                        <Info className="h-4 w-4" />
+                                        <span>Details</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="schedule"
+                                        className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                                    >
+                                        <Clock className="h-4 w-4" />
+                                        <span>Schedule</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="registration"
+                                        className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                                    >
+                                        <Users className="h-4 w-4" />
+                                        <span>Registration</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="payment"
+                                        className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                                    >
+                                        <CreditCard className="h-4 w-4" />
+                                        <span>Payment</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="media"
+                                        className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                                    >
+                                        <FileImage className="h-4 w-4" />
+                                        <span>Media</span>
+                                    </TabsTrigger>
+                                </TabsList>
+
+                                {/* Tab 1: Event Details */}
+                                <TabsContent value="details" className="mt-6">
+                                    <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                        <CardHeader>
+                                            <CardTitle className="text-gray-900 dark:text-gray-100">
+                                                Event Details
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label
@@ -470,18 +511,19 @@ export default function Form({ auth, event }: Props) {
                                             </p>
                                         )}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
 
-                            {/* Date & Time Section */}
-                            <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-                                        <Clock className="mr-2 h-5 w-5" />
-                                        Date & Time
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
+                                {/* Tab 2: Schedule */}
+                                <TabsContent value="schedule" className="mt-6">
+                                    <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                        <CardHeader>
+                                            <CardTitle className="text-gray-900 dark:text-gray-100">
+                                                Event Schedule
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                         <div className="space-y-2">
                                             <Label
@@ -568,18 +610,19 @@ export default function Form({ auth, event }: Props) {
                                             )}
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
 
-                            {/* Location & Participants Section */}
-                            <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-                                        <MapPin className="mr-2 h-5 w-5" />
-                                        Location & Participants
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
+                                {/* Tab 3: Registration Settings */}
+                                <TabsContent value="registration" className="mt-6">
+                                    <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                        <CardHeader>
+                                            <CardTitle className="text-gray-900 dark:text-gray-100">
+                                                Registration Settings
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
                                     <div className="space-y-2">
                                         <Label
                                             htmlFor="max_participants"
@@ -611,18 +654,72 @@ export default function Form({ auth, event }: Props) {
                                             </p>
                                         )}
                                     </div>
-                                </CardContent>
-                            </Card>
 
-                            {/* Payment Information Section */}
-                            <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-                                        <Settings className="mr-2 h-5 w-5" />
-                                        Payment Information
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">
+                                                Public Event
+                                            </Label>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                Allow public registration for
+                                                this event
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={data.is_public}
+                                            onCheckedChange={(checked) =>
+                                                setData('is_public', checked)
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="status"
+                                            className="text-gray-700 dark:text-gray-300"
+                                        >
+                                            Event Status
+                                        </Label>
+                                        <Select
+                                            value={data.status}
+                                            onValueChange={(value) =>
+                                                setData('status', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                                <SelectItem value="draft">
+                                                    Draft
+                                                </SelectItem>
+                                                <SelectItem value="published">
+                                                    Published
+                                                </SelectItem>
+                                                <SelectItem value="cancelled">
+                                                    Cancelled
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.status && (
+                                            <p className="text-sm text-red-600 dark:text-red-400">
+                                                {errors.status}
+                                            </p>
+                                        )}
+                                    </div>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                {/* Tab 4: Payment Settings */}
+                                <TabsContent value="payment" className="mt-6">
+                                    <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                        <CardHeader>
+                                            <CardTitle className="text-gray-900 dark:text-gray-100">
+                                                Payment Settings
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">
                                             <Label className="text-gray-700 dark:text-gray-300">
@@ -764,82 +861,19 @@ export default function Form({ auth, event }: Props) {
                                             </div>
                                         </div>
                                     )}
-                                </CardContent>
-                            </Card>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
 
-                            {/* Media & Settings Section */}
-                            <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-                                        <Globe className="mr-2 h-5 w-5" />
-                                        Media & Settings
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-1">
-                                            <Label className="text-gray-700 dark:text-gray-300">
-                                                Public Event
-                                            </Label>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                Allow public registration for
-                                                this event
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={data.is_public}
-                                            onCheckedChange={(checked) =>
-                                                setData('is_public', checked)
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="status"
-                                            className="text-gray-700 dark:text-gray-300"
-                                        >
-                                            Event Status
-                                        </Label>
-                                        <Select
-                                            value={data.status}
-                                            onValueChange={(value) =>
-                                                setData('status', value)
-                                            }
-                                        >
-                                            <SelectTrigger className="border-gray-300 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                                <SelectItem value="draft">
-                                                    Draft
-                                                </SelectItem>
-                                                <SelectItem value="published">
-                                                    Published
-                                                </SelectItem>
-                                                <SelectItem value="cancelled">
-                                                    Cancelled
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.status && (
-                                            <p className="text-sm text-red-600 dark:text-red-400">
-                                                {errors.status}
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Event Image */}
-                            <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
-                                        <FileImage className="mr-2 h-5 w-5" />
-                                        Event Image
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
+                                {/* Tab 5: Media */}
+                                <TabsContent value="media" className="mt-6">
+                                    <Card className="border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                                        <CardHeader>
+                                            <CardTitle className="text-gray-900 dark:text-gray-100">
+                                                Event Image
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
                                     <div className="space-y-2">
                                         <Label
                                             htmlFor="image"
@@ -884,11 +918,13 @@ export default function Form({ auth, event }: Props) {
                                             </Button>
                                         </div>
                                     )}
-                                </CardContent>
-                            </Card>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                            </Tabs>
 
                             {/* Action Buttons */}
-                            <div className="flex justify-end space-x-4 rounded-lg border border-gray-200 bg-white p-6 pt-6 shadow-lg dark:border-gray-800 dark:bg-gray-900">
+                            <div className="mt-6 flex justify-end space-x-4 rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-900">
                                 <Button
                                     type="button"
                                     variant="outline"
