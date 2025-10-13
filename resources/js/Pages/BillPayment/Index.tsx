@@ -533,7 +533,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                 Add Bill
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-2xl">
+                                        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                                             <DialogHeader>
                                                 <DialogTitle>
                                                     Create New Bill
@@ -543,7 +543,8 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                     your system
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="overflow-y-auto flex-1 space-y-4 pr-2">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="bill_title">
                                                         Bill Title *
@@ -758,128 +759,129 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="bill_description">
-                                                    Description
-                                                </Label>
-                                                <Textarea
-                                                    id="bill_description"
-                                                    value={
-                                                        formData.bill_description
-                                                    }
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            bill_description:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="reference_number">
-                                                    Reference Number
-                                                </Label>
-                                                <Input
-                                                    id="reference_number"
-                                                    value={
-                                                        formData.reference_number
-                                                    }
-                                                    onChange={(e) =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            reference_number:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    placeholder="Enter reference number"
-                                                />
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id="is_recurring"
-                                                    checked={
-                                                        formData.is_recurring
-                                                    }
-                                                    onCheckedChange={(
-                                                        checked,
-                                                    ) =>
-                                                        setFormData({
-                                                            ...formData,
-                                                            is_recurring:
-                                                                checked as boolean,
-                                                        })
-                                                    }
-                                                />
-                                                <Label htmlFor="is_recurring">
-                                                    Recurring Bill
-                                                </Label>
-                                            </div>
-                                            {formData.is_recurring && (
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="recurring_frequency">
-                                                            Frequency
-                                                        </Label>
-                                                        <Select
-                                                            value={
-                                                                formData.recurring_frequency
-                                                            }
-                                                            onValueChange={(
-                                                                value,
-                                                            ) =>
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    recurring_frequency:
-                                                                        value,
-                                                                })
-                                                            }
-                                                        >
-                                                            <SelectTrigger>
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="daily">
-                                                                    Daily
-                                                                </SelectItem>
-                                                                <SelectItem value="weekly">
-                                                                    Weekly
-                                                                </SelectItem>
-                                                                <SelectItem value="monthly">
-                                                                    Monthly
-                                                                </SelectItem>
-                                                                <SelectItem value="quarterly">
-                                                                    Quarterly
-                                                                </SelectItem>
-                                                                <SelectItem value="yearly">
-                                                                    Yearly
-                                                                </SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="next_due_date">
-                                                            Next Due Date
-                                                        </Label>
-                                                        <Input
-                                                            id="next_due_date"
-                                                            type="date"
-                                                            value={
-                                                                formData.next_due_date
-                                                            }
-                                                            onChange={(e) =>
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    next_due_date:
-                                                                        e.target
-                                                                            .value,
-                                                                })
-                                                            }
-                                                        />
-                                                    </div>
                                                 </div>
-                                            )}
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="bill_description">
+                                                        Description
+                                                    </Label>
+                                                    <Textarea
+                                                        id="bill_description"
+                                                        value={
+                                                            formData.bill_description
+                                                        }
+                                                        onChange={(e) =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                bill_description:
+                                                                    e.target.value,
+                                                            })
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="reference_number">
+                                                        Reference Number
+                                                    </Label>
+                                                    <Input
+                                                        id="reference_number"
+                                                        value={
+                                                            formData.reference_number
+                                                        }
+                                                        onChange={(e) =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                reference_number:
+                                                                    e.target.value,
+                                                            })
+                                                        }
+                                                        placeholder="Enter reference number"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id="is_recurring"
+                                                        checked={
+                                                            formData.is_recurring
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked,
+                                                        ) =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                is_recurring:
+                                                                    checked as boolean,
+                                                            })
+                                                        }
+                                                    />
+                                                    <Label htmlFor="is_recurring">
+                                                        Recurring Bill
+                                                    </Label>
+                                                </div>
+                                                {formData.is_recurring && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="recurring_frequency">
+                                                                Frequency
+                                                            </Label>
+                                                            <Select
+                                                                value={
+                                                                    formData.recurring_frequency
+                                                                }
+                                                                onValueChange={(
+                                                                    value,
+                                                                ) =>
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        recurring_frequency:
+                                                                            value,
+                                                                    })
+                                                                }
+                                                            >
+                                                                <SelectTrigger>
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="daily">
+                                                                        Daily
+                                                                    </SelectItem>
+                                                                    <SelectItem value="weekly">
+                                                                        Weekly
+                                                                    </SelectItem>
+                                                                    <SelectItem value="monthly">
+                                                                        Monthly
+                                                                    </SelectItem>
+                                                                    <SelectItem value="quarterly">
+                                                                        Quarterly
+                                                                    </SelectItem>
+                                                                    <SelectItem value="yearly">
+                                                                        Yearly
+                                                                    </SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="next_due_date">
+                                                                Next Due Date
+                                                            </Label>
+                                                            <Input
+                                                                id="next_due_date"
+                                                                type="date"
+                                                                value={
+                                                                    formData.next_due_date
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        next_due_date:
+                                                                            e.target
+                                                                                .value,
+                                                                    })
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                             <DialogFooter>
                                                 <Button
                                                     variant="outline"
@@ -1375,14 +1377,15 @@ export default function BillPayment({ auth }: { auth: any }) {
 
             {/* Edit Dialog */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle>Edit Bill</DialogTitle>
                         <DialogDescription>
                             Update the bill payment information
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="overflow-y-auto flex-1 space-y-4 pr-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit_bill_title">
                                 Bill Title *
@@ -1574,50 +1577,51 @@ export default function BillPayment({ auth }: { auth: any }) {
                                 }
                             />
                         </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_bill_description">
-                            Description
-                        </Label>
-                        <Textarea
-                            id="edit_bill_description"
-                            value={formData.bill_description}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    bill_description: e.target.value,
-                                })
-                            }
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_notes">Notes</Label>
-                        <Textarea
-                            id="edit_notes"
-                            value={formData.notes}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    notes: e.target.value,
-                                })
-                            }
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_reference_number">
-                            Reference Number
-                        </Label>
-                        <Input
-                            id="edit_reference_number"
-                            value={formData.reference_number}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    reference_number: e.target.value,
-                                })
-                            }
-                            placeholder="Enter reference number"
-                        />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_bill_description">
+                                Description
+                            </Label>
+                            <Textarea
+                                id="edit_bill_description"
+                                value={formData.bill_description}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        bill_description: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_notes">Notes</Label>
+                            <Textarea
+                                id="edit_notes"
+                                value={formData.notes}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        notes: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_reference_number">
+                                Reference Number
+                            </Label>
+                            <Input
+                                id="edit_reference_number"
+                                value={formData.reference_number}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        reference_number: e.target.value,
+                                    })
+                                }
+                                placeholder="Enter reference number"
+                            />
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button

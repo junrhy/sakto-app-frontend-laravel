@@ -282,7 +282,7 @@ export default function Biller({ auth }: { auth: any }) {
                                 Add Biller
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                             <DialogHeader>
                                 <DialogTitle>Create New Biller</DialogTitle>
                                 <DialogDescription>
@@ -290,180 +290,182 @@ export default function Biller({ auth }: { auth: any }) {
                                     system
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Name *</Label>
-                                    <Input
-                                        id="name"
-                                        value={formData.name}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                name: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Enter biller name"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="category">Category</Label>
-                                    <Select
-                                        value={formData.category}
-                                        onValueChange={(value) =>
-                                            setFormData({
-                                                ...formData,
-                                                category: value,
-                                            })
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem
-                                                    key={category}
-                                                    value={category}
-                                                >
-                                                    {category}
+                            <div className="overflow-y-auto flex-1 space-y-4 pr-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Name *</Label>
+                                        <Input
+                                            id="name"
+                                            value={formData.name}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    name: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Enter biller name"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="category">Category</Label>
+                                        <Select
+                                            value={formData.category}
+                                            onValueChange={(value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    category: value,
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {categories.map((category) => (
+                                                    <SelectItem
+                                                        key={category}
+                                                        value={category}
+                                                    >
+                                                        {category}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contact_person">
+                                            Contact Person
+                                        </Label>
+                                        <Input
+                                            id="contact_person"
+                                            value={formData.contact_person}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    contact_person: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Contact person name"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    email: e.target.value,
+                                                })
+                                            }
+                                            placeholder="biller@example.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone">Phone</Label>
+                                        <Input
+                                            id="phone"
+                                            value={formData.phone}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    phone: e.target.value,
+                                                })
+                                            }
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="website">Website</Label>
+                                        <Input
+                                            id="website"
+                                            value={formData.website}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    website: e.target.value,
+                                                })
+                                            }
+                                            placeholder="https://example.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="account_number">
+                                            Account Number
+                                        </Label>
+                                        <Input
+                                            id="account_number"
+                                            value={formData.account_number}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    account_number: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Account number"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="is_active">Status</Label>
+                                        <Select
+                                            value={
+                                                formData.is_active
+                                                    ? 'active'
+                                                    : 'inactive'
+                                            }
+                                            onValueChange={(value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    is_active: value === 'active',
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="active">
+                                                    Active
                                                 </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                                <SelectItem value="inactive">
+                                                    Inactive
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="contact_person">
-                                        Contact Person
-                                    </Label>
-                                    <Input
-                                        id="contact_person"
-                                        value={formData.contact_person}
+                                    <Label htmlFor="address">Address</Label>
+                                    <Textarea
+                                        id="address"
+                                        value={formData.address}
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                contact_person: e.target.value,
+                                                address: e.target.value,
                                             })
                                         }
-                                        placeholder="Contact person name"
+                                        placeholder="Enter full address"
+                                        rows={3}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={formData.email}
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={formData.description}
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                email: e.target.value,
+                                                description: e.target.value,
                                             })
                                         }
-                                        placeholder="biller@example.com"
+                                        placeholder="Additional notes or description"
+                                        rows={3}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone</Label>
-                                    <Input
-                                        id="phone"
-                                        value={formData.phone}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                phone: e.target.value,
-                                            })
-                                        }
-                                        placeholder="+1 (555) 123-4567"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="website">Website</Label>
-                                    <Input
-                                        id="website"
-                                        value={formData.website}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                website: e.target.value,
-                                            })
-                                        }
-                                        placeholder="https://example.com"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="account_number">
-                                        Account Number
-                                    </Label>
-                                    <Input
-                                        id="account_number"
-                                        value={formData.account_number}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                account_number: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Account number"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="is_active">Status</Label>
-                                    <Select
-                                        value={
-                                            formData.is_active
-                                                ? 'active'
-                                                : 'inactive'
-                                        }
-                                        onValueChange={(value) =>
-                                            setFormData({
-                                                ...formData,
-                                                is_active: value === 'active',
-                                            })
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="active">
-                                                Active
-                                            </SelectItem>
-                                            <SelectItem value="inactive">
-                                                Inactive
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Textarea
-                                    id="address"
-                                    value={formData.address}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            address: e.target.value,
-                                        })
-                                    }
-                                    placeholder="Enter full address"
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            description: e.target.value,
-                                        })
-                                    }
-                                    placeholder="Additional notes or description"
-                                    rows={3}
-                                />
                             </div>
                             <DialogFooter>
                                 <Button
@@ -756,185 +758,187 @@ export default function Biller({ auth }: { auth: any }) {
 
             {/* Edit Dialog */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle>Edit Biller</DialogTitle>
                         <DialogDescription>
                             Update the biller information
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_name">Name *</Label>
-                            <Input
-                                id="edit_name"
-                                value={formData.name}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        name: e.target.value,
-                                    })
-                                }
-                                placeholder="Enter biller name"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_category">Category</Label>
-                            <Select
-                                value={formData.category}
-                                onValueChange={(value) =>
-                                    setFormData({
-                                        ...formData,
-                                        category: value,
-                                    })
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {categories.map((category) => (
-                                        <SelectItem
-                                            key={category}
-                                            value={category}
-                                        >
-                                            {category}
+                    <div className="overflow-y-auto flex-1 space-y-4 pr-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_name">Name *</Label>
+                                <Input
+                                    id="edit_name"
+                                    value={formData.name}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            name: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Enter biller name"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_category">Category</Label>
+                                <Select
+                                    value={formData.category}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            category: value,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map((category) => (
+                                            <SelectItem
+                                                key={category}
+                                                value={category}
+                                            >
+                                                {category}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_contact_person">
+                                    Contact Person
+                                </Label>
+                                <Input
+                                    id="edit_contact_person"
+                                    value={formData.contact_person}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            contact_person: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Contact person name"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_email">Email</Label>
+                                <Input
+                                    id="edit_email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            email: e.target.value,
+                                        })
+                                    }
+                                    placeholder="biller@example.com"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_phone">Phone</Label>
+                                <Input
+                                    id="edit_phone"
+                                    value={formData.phone}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            phone: e.target.value,
+                                        })
+                                    }
+                                    placeholder="+1 (555) 123-4567"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_website">Website</Label>
+                                <Input
+                                    id="edit_website"
+                                    value={formData.website}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            website: e.target.value,
+                                        })
+                                    }
+                                    placeholder="https://example.com"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_account_number">
+                                    Account Number
+                                </Label>
+                                <Input
+                                    id="edit_account_number"
+                                    value={formData.account_number}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            account_number: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Account number"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_is_active">Status</Label>
+                                <Select
+                                    value={
+                                        formData.is_active ? 'active' : 'inactive'
+                                    }
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            is_active: value === 'active',
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">
+                                            Active
                                         </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                        <SelectItem value="inactive">
+                                            Inactive
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit_contact_person">
-                                Contact Person
-                            </Label>
-                            <Input
-                                id="edit_contact_person"
-                                value={formData.contact_person}
+                            <Label htmlFor="edit_address">Address</Label>
+                            <Textarea
+                                id="edit_address"
+                                value={formData.address}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        contact_person: e.target.value,
+                                        address: e.target.value,
                                     })
                                 }
-                                placeholder="Contact person name"
+                                placeholder="Enter full address"
+                                rows={3}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit_email">Email</Label>
-                            <Input
-                                id="edit_email"
-                                type="email"
-                                value={formData.email}
+                            <Label htmlFor="edit_description">Description</Label>
+                            <Textarea
+                                id="edit_description"
+                                value={formData.description}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        email: e.target.value,
+                                        description: e.target.value,
                                     })
                                 }
-                                placeholder="biller@example.com"
+                                placeholder="Additional notes or description"
+                                rows={3}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_phone">Phone</Label>
-                            <Input
-                                id="edit_phone"
-                                value={formData.phone}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        phone: e.target.value,
-                                    })
-                                }
-                                placeholder="+1 (555) 123-4567"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_website">Website</Label>
-                            <Input
-                                id="edit_website"
-                                value={formData.website}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        website: e.target.value,
-                                    })
-                                }
-                                placeholder="https://example.com"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_account_number">
-                                Account Number
-                            </Label>
-                            <Input
-                                id="edit_account_number"
-                                value={formData.account_number}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        account_number: e.target.value,
-                                    })
-                                }
-                                placeholder="Account number"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_is_active">Status</Label>
-                            <Select
-                                value={
-                                    formData.is_active ? 'active' : 'inactive'
-                                }
-                                onValueChange={(value) =>
-                                    setFormData({
-                                        ...formData,
-                                        is_active: value === 'active',
-                                    })
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">
-                                        Active
-                                    </SelectItem>
-                                    <SelectItem value="inactive">
-                                        Inactive
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_address">Address</Label>
-                        <Textarea
-                            id="edit_address"
-                            value={formData.address}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    address: e.target.value,
-                                })
-                            }
-                            placeholder="Enter full address"
-                            rows={3}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_description">Description</Label>
-                        <Textarea
-                            id="edit_description"
-                            value={formData.description}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    description: e.target.value,
-                                })
-                            }
-                            placeholder="Additional notes or description"
-                            rows={3}
-                        />
                     </div>
                     <DialogFooter>
                         <Button
