@@ -120,7 +120,10 @@ export default function CreditsLayout({
                 <div className="hidden border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80 sm:flex sm:items-center sm:justify-between">
                     <div className="container mx-auto px-4 py-3">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center">
+                            <a 
+                                href={route('home')} 
+                                className="flex items-center transition-opacity hover:opacity-80"
+                            >
                                 <div className="flex shrink-0 items-center">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-900 dark:text-white" />
                                 </div>
@@ -129,7 +132,7 @@ export default function CreditsLayout({
                                         {authUser.name}
                                     </span>
                                 </div>
-                            </div>
+                            </a>
 
                             <div className="hidden space-x-4 sm:ml-6 sm:flex sm:items-center">
                                 {/* User Dropdown */}
@@ -169,6 +172,11 @@ export default function CreditsLayout({
                                             align="right"
                                             width="48"
                                         >
+                                            <Dropdown.Link
+                                                href={route('home')}
+                                            >
+                                                Home
+                                            </Dropdown.Link>
                                             <Dropdown.Link
                                                 href={route('profile.edit')}
                                             >

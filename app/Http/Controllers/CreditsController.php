@@ -231,14 +231,31 @@ class CreditsController extends Controller
         }
         
         try {
-            // Add credits to user's account via API
+            // Check if credits were already added (via webhook or previous request)
             $user = auth()->user();
+            $checkResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/credits/{$user->identifier}/history");
+            
+            if ($checkResponse->successful()) {
+                $history = $checkResponse->json();
+                $alreadyProcessed = collect($history)->contains(function ($item) use ($reference) {
+                    return ($item['transaction_id'] ?? '') === $reference;
+                });
+                
+                if ($alreadyProcessed) {
+                    // Credits already added by webhook
+                    return redirect()->route('credits.buy')->with('success', 'Payment successful! ' . $packageCredit . ' credits have been added to your account.');
+                }
+            }
+            
+            // Add credits to user's account via API (fallback if webhook didn't process)
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/credits/add", [
                     'client_identifier' => $user->identifier,
                     'amount' => $packageCredit,
                     'source' => 'purchase',
                     'reference_id' => $reference,
+                    'package_amount' => $packageAmount,
                 ]);
             
             if ($response->successful()) {

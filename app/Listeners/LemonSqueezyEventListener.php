@@ -34,6 +34,7 @@ class LemonSqueezyEventListener
         // Check if this is a credit purchase (has package_credit in custom data)
         if (isset($customData['package_credit']) && $userIdentifier) {
             $packageCredit = $customData['package_credit'];
+            $packageAmount = $customData['package_amount'] ?? 0;
             
             try {
                 $apiUrl = config('api.url');
@@ -46,6 +47,7 @@ class LemonSqueezyEventListener
                         'amount' => $packageCredit,
                         'source' => 'purchase',
                         'reference_id' => $referenceNumber,
+                        'package_amount' => $packageAmount,
                     ]);
                 
                 if ($response->successful()) {
