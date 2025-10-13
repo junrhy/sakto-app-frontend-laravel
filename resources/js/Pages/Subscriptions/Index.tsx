@@ -221,10 +221,14 @@ export default function Index({
         }
     }, [selectedPlan]);
 
-    // Disable auto-renew when cash payment is selected
+    // Manage auto-renew based on payment method
     useEffect(() => {
         if (paymentMethod === 'cash') {
+            // Disable auto-renew for manual cash payments
             setAutoRenew(false);
+        } else if (paymentMethod === 'lemonsqueezy') {
+            // Always enable auto-renew for credit card payments via Lemon Squeezy
+            setAutoRenew(true);
         }
     }, [paymentMethod]);
 
@@ -833,11 +837,10 @@ export default function Index({
                                                         </h4>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             After selecting your
-                                                            plan, you'll need to
-                                                            visit our office to
-                                                            complete the payment
-                                                            in cash. Our staff
-                                                            will assist you with
+                                                            plan, visit any nearby
+                                                            Neulify partner location to
+                                                            complete your payment.
+                                                            Our partners will assist you with
                                                             the payment process
                                                             and activate your
                                                             subscription.
@@ -856,13 +859,13 @@ export default function Index({
                                                                 )
                                                             }
                                                             disabled={
-                                                                paymentMethod ===
-                                                                'cash'
+                                                                paymentMethod === 'cash' ||
+                                                                paymentMethod === 'lemonsqueezy'
                                                             }
                                                         />
                                                         <Label
                                                             htmlFor="auto-renew"
-                                                            className={`cursor-pointer ${paymentMethod === 'cash' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}
+                                                            className={`cursor-pointer ${paymentMethod === 'cash' || paymentMethod === 'lemonsqueezy' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}
                                                         >
                                                             Auto-renew
                                                             subscription
@@ -873,6 +876,11 @@ export default function Index({
                                                                     available
                                                                     for cash
                                                                     payments)
+                                                                </span>
+                                                            )}
+                                                            {paymentMethod === 'lemonsqueezy' && (
+                                                                <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+                                                                    (Required for credit card)
                                                                 </span>
                                                             )}
                                                         </Label>
@@ -893,9 +901,9 @@ export default function Index({
                                                                     Your payment
                                                                     will be
                                                                     processed
-                                                                    securely at
-                                                                    our office.
-                                                                    Our staff
+                                                                    securely at any
+                                                                    Neulify partner location.
+                                                                    Partners
                                                                     will provide
                                                                     you with an
                                                                     official
@@ -1048,10 +1056,7 @@ export default function Index({
                                                                         Payment
                                                                     </span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Pay in
-                                                                        cash at
-                                                                        our
-                                                                        office
+                                                                        Pay at nearby Neulify partners
                                                                     </span>
                                                                 </div>
                                                             </label>
@@ -1129,9 +1134,10 @@ export default function Index({
                                                                 <CreditCardIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Credit/Debit
-                                                                        Card via
-                                                                        Lemon Squeezy
+                                                                        Credit/Debit Card{' '}
+                                                                        <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
+                                                                            via Lemon Squeezy
+                                                                        </span>
                                                                     </span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
                                                                         Secure online payment gateway
@@ -1149,13 +1155,13 @@ export default function Index({
                                                                 <CreditCardIcon className="h-5 w-5 text-gray-400" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Credit/Debit
-                                                                        Card via
-                                                                        Stripe
+                                                                        Credit/Debit Card{' '}
+                                                                        <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
+                                                                            via Stripe
+                                                                        </span>
                                                                     </span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Coming
-                                                                        soon
+                                                                        Coming soon
                                                                     </span>
                                                                 </div>
                                                             </label>
@@ -1560,11 +1566,10 @@ export default function Index({
                                 </span>
                                 <div>
                                     <p className="font-medium">
-                                        Visit Our Office
+                                        Visit a Neulify Partner
                                     </p>
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Come to our office during business hours
-                                        (Monday to Friday, 9:00 AM - 5:00 PM)
+                                        Visit any nearby Neulify partner location during their business hours
                                     </p>
                                 </div>
                             </li>

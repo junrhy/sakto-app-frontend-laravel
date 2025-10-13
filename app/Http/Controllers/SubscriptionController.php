@@ -157,15 +157,59 @@ class SubscriptionController extends Controller
                 'amount' => $plan->price,
             ]);
             
+            // Send confirmation email to user
+            try {
+                $emailContent = "
+                    <h2>Subscription Request Received</h2>
+                    <p>Dear {$user->name},</p>
+                    <p>Thank you for choosing to subscribe to <strong>{$plan->name}</strong>.</p>
+                    <p>Your subscription request has been received and is pending payment confirmation.</p>
+                    
+                    <h3>Payment Details:</h3>
+                    <ul>
+                        <li><strong>Plan:</strong> {$plan->name}</li>
+                        <li><strong>Amount:</strong> ₱" . number_format($plan->price, 2) . "</li>
+                        <li><strong>Reference Number:</strong> {$referenceNumber}</li>
+                        <li><strong>Duration:</strong> {$plan->duration_in_days} days</li>
+                    </ul>
+                    
+                    <h3>Next Steps:</h3>
+                    <p>Please visit any nearby Neulify partner location during their business hours to complete your payment.</p>
+                    <p><strong>Important:</strong> Please bring your reference number when making the payment.</p>
+                    
+                    <p>Once your payment is confirmed by our partner, your subscription will be activated immediately.</p>
+                    
+                    <p>If you have any questions, please don't hesitate to contact us.</p>
+                    
+                    <p>Best regards,<br>The Neulify Team</p>
+                ";
+                
+                \Mail::to($user->email)->send(new \App\Mail\GenericEmail(
+                    'Subscription Request Confirmation - ' . $plan->name,
+                    $emailContent
+                ));
+                
+                Log::info('Subscription confirmation email sent', [
+                    'user_email' => $user->email,
+                    'reference' => $referenceNumber,
+                ]);
+            } catch (\Exception $emailException) {
+                // Log email error but don't fail the subscription
+                Log::error('Failed to send subscription confirmation email', [
+                    'user_email' => $user->email,
+                    'error' => $emailException->getMessage(),
+                ]);
+            }
+            
             // Return success response with payment instructions
             return Inertia::render('Subscriptions/PaymentStatus', [
                 'status' => 'pending',
-                'message' => 'Your subscription request has been received. Please visit our office to complete the payment.',
+                'message' => 'Your subscription request has been received. A confirmation email has been sent to your email address. Please visit any nearby Neulify partner location to complete the payment.',
                 'subscription' => $subscription->load('plan'),
                 'payment_instructions' => [
                     'amount' => $plan->price,
                     'reference_number' => $referenceNumber,
-                    'business_hours' => 'Monday to Friday, 9:00 AM - 5:00 PM',
+                    'business_hours' => 'Visit any nearby Neulify partner location',
                 ],
             ]);
             
