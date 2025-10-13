@@ -80,14 +80,193 @@ class SubscriptionAdminController extends Controller
             'badge_text' => 'nullable|string|max:255',
             'project_id' => 'nullable|exists:projects,id',
             'lemon_squeezy_variant_id' => 'nullable|string|max:255',
+            'auto_create_lemon_squeezy' => 'boolean',
         ]);
         
         // Convert slug to proper format
         $validated['slug'] = Str::slug($validated['slug']);
         
+        // Automatically create Lemon Squeezy product variant if requested
+        if ($request->input('auto_create_lemon_squeezy', false)) {
+            try {
+                $variantId = $this->createLemonSqueezyVariant($validated);
+                if ($variantId) {
+                    $validated['lemon_squeezy_variant_id'] = $variantId;
+                    Log::info('Lemon Squeezy variant created automatically', [
+                        'plan_name' => $validated['name'],
+                        'variant_id' => $variantId,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to create Lemon Squeezy variant: ' . $e->getMessage(), [
+                    'plan_name' => $validated['name'],
+                    'exception' => $e,
+                ]);
+                // Don't fail the plan creation if Lemon Squeezy fails
+                // Just log it and continue
+            }
+        }
+        
+        // Remove the auto_create flag before saving
+        unset($validated['auto_create_lemon_squeezy']);
+        
         SubscriptionPlan::create($validated);
         
-        return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription plan created successfully');
+        $message = 'Subscription plan created successfully';
+        if (isset($variantId)) {
+            $message .= ' with Lemon Squeezy variant ID: ' . $variantId;
+        }
+        
+        return redirect()->route('admin.subscriptions.index')->with('success', $message);
+    }
+    
+    /**
+     * Create a Lemon Squeezy product variant for the subscription plan.
+     */
+    protected function createLemonSqueezyVariant(array $planData)
+    {
+        $apiKey = config('lemon-squeezy.api_key');
+        $storeId = config('lemon-squeezy.store');
+        
+        if (!$apiKey || !$storeId) {
+            throw new \Exception('Lemon Squeezy API key or Store ID not configured');
+        }
+        
+        // First, create or get the product
+        // Product name will be based on project or default
+        $productName = $planData['project_id'] 
+            ? Project::find($planData['project_id'])->name . ' Subscriptions'
+            : 'Subscription Plans';
+        
+        // Try to find existing product or create new one
+        $productId = $this->getOrCreateLemonSqueezyProduct($productName, $apiKey, $storeId);
+        
+        if (!$productId) {
+            throw new \Exception('Failed to get or create Lemon Squeezy product');
+        }
+        
+        // Now create the variant
+        $variantData = [
+            'data' => [
+                'type' => 'variants',
+                'attributes' => [
+                    'name' => $planData['name'],
+                    'description' => $planData['description'] ?? '',
+                    'price' => (int)($planData['price'] * 100), // Convert to cents
+                    'interval' => $this->getIntervalFromDays($planData['duration_in_days']),
+                    'interval_count' => $this->getIntervalCountFromDays($planData['duration_in_days']),
+                    'is_subscription' => true,
+                    'sort' => 0,
+                ],
+                'relationships' => [
+                    'product' => [
+                        'data' => [
+                            'type' => 'products',
+                            'id' => (string)$productId,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Accept' => 'application/vnd.api+json',
+            'Content-Type' => 'application/vnd.api+json',
+        ])->post('https://api.lemonsqueezy.com/v1/variants', $variantData);
+        
+        if ($response->successful()) {
+            $responseData = $response->json();
+            return $responseData['data']['id'] ?? null;
+        }
+        
+        throw new \Exception('Failed to create variant: ' . $response->body());
+    }
+    
+    /**
+     * Get or create a Lemon Squeezy product.
+     */
+    protected function getOrCreateLemonSqueezyProduct($productName, $apiKey, $storeId)
+    {
+        // Try to find existing product by name
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Accept' => 'application/vnd.api+json',
+        ])->get('https://api.lemonsqueezy.com/v1/products', [
+            'filter' => ['store_id' => $storeId],
+        ]);
+        
+        if ($response->successful()) {
+            $products = $response->json()['data'] ?? [];
+            foreach ($products as $product) {
+                if ($product['attributes']['name'] === $productName) {
+                    return $product['id'];
+                }
+            }
+        }
+        
+        // Create new product if not found
+        $productData = [
+            'data' => [
+                'type' => 'products',
+                'attributes' => [
+                    'name' => $productName,
+                    'description' => 'Subscription plans',
+                    'status' => 'published',
+                ],
+                'relationships' => [
+                    'store' => [
+                        'data' => [
+                            'type' => 'stores',
+                            'id' => (string)$storeId,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Accept' => 'application/vnd.api+json',
+            'Content-Type' => 'application/vnd.api+json',
+        ])->post('https://api.lemonsqueezy.com/v1/products', $productData);
+        
+        if ($response->successful()) {
+            $responseData = $response->json();
+            return $responseData['data']['id'] ?? null;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Convert duration in days to Lemon Squeezy interval.
+     */
+    protected function getIntervalFromDays($days)
+    {
+        if ($days >= 365) {
+            return 'year';
+        } elseif ($days >= 30) {
+            return 'month';
+        } elseif ($days >= 7) {
+            return 'week';
+        }
+        return 'day';
+    }
+    
+    /**
+     * Convert duration in days to Lemon Squeezy interval count.
+     */
+    protected function getIntervalCountFromDays($days)
+    {
+        if ($days >= 365) {
+            return (int)round($days / 365);
+        } elseif ($days >= 30) {
+            return (int)round($days / 30);
+        } elseif ($days >= 7) {
+            return (int)round($days / 7);
+        }
+        return $days;
     }
     
     /**
@@ -115,9 +294,72 @@ class SubscriptionAdminController extends Controller
         // Convert slug to proper format
         $validated['slug'] = Str::slug($validated['slug']);
         
+        // Update Lemon Squeezy variant if it exists
+        $lemonSqueezyUpdated = false;
+        if ($plan->lemon_squeezy_variant_id && $plan->lemon_squeezy_variant_id == $validated['lemon_squeezy_variant_id']) {
+            try {
+                $this->updateLemonSqueezyVariant($plan->lemon_squeezy_variant_id, $validated);
+                $lemonSqueezyUpdated = true;
+                Log::info('Lemon Squeezy variant updated', [
+                    'plan_id' => $id,
+                    'variant_id' => $plan->lemon_squeezy_variant_id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to update Lemon Squeezy variant: ' . $e->getMessage(), [
+                    'plan_id' => $id,
+                    'variant_id' => $plan->lemon_squeezy_variant_id,
+                    'exception' => $e,
+                ]);
+                // Continue with local update even if Lemon Squeezy fails
+            }
+        }
+        
         $plan->update($validated);
         
-        return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription plan updated successfully');
+        $message = 'Subscription plan updated successfully';
+        if ($lemonSqueezyUpdated) {
+            $message .= ' and synced with Lemon Squeezy';
+        }
+        
+        return redirect()->route('admin.subscriptions.index')->with('success', $message);
+    }
+    
+    /**
+     * Update a Lemon Squeezy product variant.
+     */
+    protected function updateLemonSqueezyVariant($variantId, array $planData)
+    {
+        $apiKey = config('lemon-squeezy.api_key');
+        
+        if (!$apiKey) {
+            throw new \Exception('Lemon Squeezy API key not configured');
+        }
+        
+        $variantData = [
+            'data' => [
+                'type' => 'variants',
+                'id' => (string)$variantId,
+                'attributes' => [
+                    'name' => $planData['name'],
+                    'description' => $planData['description'] ?? '',
+                    'price' => (int)($planData['price'] * 100), // Convert to cents
+                    'interval' => $this->getIntervalFromDays($planData['duration_in_days']),
+                    'interval_count' => $this->getIntervalCountFromDays($planData['duration_in_days']),
+                ],
+            ],
+        ];
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Accept' => 'application/vnd.api+json',
+            'Content-Type' => 'application/vnd.api+json',
+        ])->patch("https://api.lemonsqueezy.com/v1/variants/{$variantId}", $variantData);
+        
+        if (!$response->successful()) {
+            throw new \Exception('Failed to update variant: ' . $response->body());
+        }
+        
+        return true;
     }
     
     /**
