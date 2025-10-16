@@ -327,6 +327,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                 optimize, and manage your transportation network
                                 with precision and reliability.
                             </p>
+                            <p className="mx-auto mb-8 max-w-3xl text-base text-slate-600">
+                                Access is granted instantly after payment — no
+                                manual setup required.
+                            </p>
                         </div>
 
                         {/* Features Section */}
@@ -714,10 +718,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         </dt>
                                         <dd className="text-slate-600">
                                             You can upgrade your plan at any
-                                            time. We'll notify you when you're
-                                            approaching your limit and help you
-                                            choose the right plan for your
-                                            growing fleet.
+                                            time. You'll automatically receive a
+                                            notification when you're approaching
+                                            your limit, with options to upgrade
+                                            directly through your dashboard.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -727,11 +731,11 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         </dt>
                                         <dd className="text-slate-600">
                                             Yes, we provide comprehensive
-                                            training materials, interactive
-                                            video tutorials, and step-by-step
-                                            onboarding guides. Enterprise
-                                            customers get access to advanced
-                                            training modules and priority
+                                            self-paced training materials,
+                                            interactive video tutorials, and
+                                            step-by-step onboarding guides.
+                                            Enterprise customers get access to
+                                            advanced training modules and priority
                                             documentation.
                                         </dd>
                                     </div>
@@ -759,7 +763,8 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         />
                                     </div>
                                     <span className="text-xl font-bold">
-                                        Logistika
+                                        Neulify Logistics — Your All-in-One Fleet
+                                        Management Platform.
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
