@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoices', function (Blueprint $table) {
+        if (!Schema::hasTable('invoices')) {
+            Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
             $table->string('user_identifier');
@@ -31,7 +32,8 @@ return new class extends Migration
             $table->index(['user_identifier', 'status']);
             $table->index(['type', 'status']);
             $table->index(['due_date']);
-        });
+            });
+        }
     }
 
     /**

@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_apps', function (Blueprint $table) {
-            $table->id();
-            $table->string('user_identifier');
-            $table->string('module_identifier');
-            $table->timestamps();
-            
-            // Ensure a user can only add the same app once
-            $table->unique(['user_identifier', 'module_identifier']);
-            
-            // Add foreign key constraints if needed
-            $table->index(['user_identifier']);
-            $table->index(['module_identifier']);
-        });
+        if (!Schema::hasTable('user_apps')) {
+            Schema::create('user_apps', function (Blueprint $table) {
+                $table->id();
+                $table->string('user_identifier');
+                $table->string('module_identifier');
+                $table->timestamps();
+                
+                // Ensure a user can only add the same app once
+                $table->unique(['user_identifier', 'module_identifier']);
+                
+                // Add foreign key constraints if needed
+                $table->index(['user_identifier']);
+                $table->index(['module_identifier']);
+            });
+        }
     }
 
     /**

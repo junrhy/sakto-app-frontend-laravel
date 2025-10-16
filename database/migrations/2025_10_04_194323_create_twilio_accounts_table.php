@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('twilio_accounts', function (Blueprint $table) {
+        if (!Schema::hasTable('twilio_accounts')) {
+            Schema::create('twilio_accounts', function (Blueprint $table) {
             $table->id();
             $table->string('client_identifier')->index();
             $table->string('account_name');
@@ -27,7 +28,8 @@ return new class extends Migration
             // Indexes for performance
             $table->index(['client_identifier', 'is_active']);
             $table->index(['client_identifier', 'is_verified']);
-        });
+            });
+        }
     }
 
     /**

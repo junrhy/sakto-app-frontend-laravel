@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoice_items', function (Blueprint $table) {
+        if (!Schema::hasTable('invoice_items')) {
+            Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
             $table->string('item_type'); // 'subscription_plan', 'app_purchase', 'app_subscription'
@@ -25,7 +26,8 @@ return new class extends Migration
             
             $table->index(['invoice_id']);
             $table->index(['item_type', 'item_identifier']);
-        });
+            });
+        }
     }
 
     /**
