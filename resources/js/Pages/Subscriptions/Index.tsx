@@ -228,10 +228,15 @@ export default function Index({
         fetchCredits();
     }, [auth.user.identifier]);
 
-    // Set payment method to cash when a plan is selected
+    // Set payment method based on plan currency when a plan is selected
     useEffect(() => {
         if (selectedPlan) {
-            setPaymentMethod('cash');
+            // Default to cash for PHP plans, lemonsqueezy for other currencies
+            if (selectedPlan.currency === 'PHP') {
+                setPaymentMethod('cash');
+            } else {
+                setPaymentMethod('lemonsqueezy');
+            }
         }
     }, [selectedPlan]);
 
@@ -1302,96 +1307,100 @@ export default function Index({
                                                             Payment Method
                                                         </h4>
                                                         <div className="space-y-3">
-                                                            <label className="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-                                                                <input
-                                                                    type="radio"
-                                                                    name="payment_method"
-                                                                    value="cash"
-                                                                    checked={
-                                                                        paymentMethod ===
-                                                                        'cash'
-                                                                    }
-                                                                    onChange={(
-                                                                        e,
-                                                                    ) =>
-                                                                        setPaymentMethod(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                    className="h-4 w-4 text-green-600"
-                                                                />
-                                                                <BanknotesIcon className="h-5 w-5 text-green-600" />
-                                                                <div>
-                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Cash
-                                                                        Payment
-                                                                    </span>
-                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        Pay at
-                                                                        nearby
-                                                                        Neulify
-                                                                        partners
-                                                                    </span>
-                                                                </div>
-                                                            </label>
-                                                            <label
-                                                                className={`flex items-center space-x-3 rounded-lg border p-3 dark:border-gray-600 ${
-                                                                    credits >=
-                                                                    (selectedPlan?.price ||
-                                                                        0)
-                                                                        ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                                        : 'cursor-not-allowed opacity-50'
-                                                                }`}
-                                                            >
-                                                                <input
-                                                                    type="radio"
-                                                                    name="payment_method"
-                                                                    value="credits"
-                                                                    checked={
-                                                                        paymentMethod ===
-                                                                        'credits'
-                                                                    }
-                                                                    onChange={(
-                                                                        e,
-                                                                    ) =>
-                                                                        setPaymentMethod(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        credits <
-                                                                        (selectedPlan?.price ||
-                                                                            0)
-                                                                    }
-                                                                    className={`h-4 w-4 ${
+                                                            {selectedPlan?.currency === 'PHP' && (
+                                                                <label className="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name="payment_method"
+                                                                        value="cash"
+                                                                        checked={
+                                                                            paymentMethod ===
+                                                                            'cash'
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setPaymentMethod(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        className="h-4 w-4 text-green-600"
+                                                                    />
+                                                                    <BanknotesIcon className="h-5 w-5 text-green-600" />
+                                                                    <div>
+                                                                        <span className="block font-medium text-gray-900 dark:text-gray-100">
+                                                                            Cash
+                                                                            Payment
+                                                                        </span>
+                                                                        <span className="block text-sm text-gray-500 dark:text-gray-400">
+                                                                            Pay at
+                                                                            nearby
+                                                                            Neulify
+                                                                            partners
+                                                                        </span>
+                                                                    </div>
+                                                                </label>
+                                                            )}
+                                                            {selectedPlan?.currency === 'PHP' && (
+                                                                <label
+                                                                    className={`flex items-center space-x-3 rounded-lg border p-3 dark:border-gray-600 ${
                                                                         credits >=
                                                                         (selectedPlan?.price ||
                                                                             0)
-                                                                            ? 'text-green-600'
-                                                                            : 'text-gray-400'
+                                                                            ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                                            : 'cursor-not-allowed opacity-50'
                                                                     }`}
-                                                                />
-                                                                <SparklesIcon
-                                                                    className={`h-5 w-5 ${credits >= (selectedPlan?.price || 0) ? 'text-blue-600' : 'text-gray-400'}`}
-                                                                />
-                                                                <div>
-                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                        Pay with
-                                                                        Credits
-                                                                    </span>
-                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                        {credits >=
-                                                                        (selectedPlan?.price ||
-                                                                            0)
-                                                                            ? `Use your ${credits.toLocaleString()} available credits`
-                                                                            : `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${selectedPlan?.price || 0} credits`}
-                                                                    </span>
-                                                                </div>
-                                                            </label>
+                                                                >
+                                                                    <input
+                                                                        type="radio"
+                                                                        name="payment_method"
+                                                                        value="credits"
+                                                                        checked={
+                                                                            paymentMethod ===
+                                                                            'credits'
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setPaymentMethod(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            credits <
+                                                                            (selectedPlan?.price ||
+                                                                                0)
+                                                                        }
+                                                                        className={`h-4 w-4 ${
+                                                                            credits >=
+                                                                            (selectedPlan?.price ||
+                                                                                0)
+                                                                                ? 'text-green-600'
+                                                                                : 'text-gray-400'
+                                                                        }`}
+                                                                    />
+                                                                    <SparklesIcon
+                                                                        className={`h-5 w-5 ${credits >= (selectedPlan?.price || 0) ? 'text-blue-600' : 'text-gray-400'}`}
+                                                                    />
+                                                                    <div>
+                                                                        <span className="block font-medium text-gray-900 dark:text-gray-100">
+                                                                            Pay with
+                                                                            Credits
+                                                                        </span>
+                                                                        <span className="block text-sm text-gray-500 dark:text-gray-400">
+                                                                            {credits >=
+                                                                            (selectedPlan?.price ||
+                                                                                0)
+                                                                                ? `Use your ${credits.toLocaleString()} available credits`
+                                                                                : `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${selectedPlan?.price || 0} credits`}
+                                                                        </span>
+                                                                    </div>
+                                                                </label>
+                                                            )}
                                                             <label
                                                                 className={`flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all ${
                                                                     paymentMethod ===
