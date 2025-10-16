@@ -26,6 +26,11 @@ class SubscriptionAdminController extends Controller
             $query->where('project_id', $request->project_id);
         }
         
+        // Apply currency filter if provided
+        if ($request->filled('currency')) {
+            $query->where('currency', $request->currency);
+        }
+        
         $plans = $query->orderBy('slug')->get();
         
         // Add active users count for each plan
@@ -58,7 +63,7 @@ class SubscriptionAdminController extends Controller
             'projects' => $projects,
             'users' => $users,
             'subscriptions' => $subscriptions,
-            'filters' => $request->only(['project_id', 'user_id']),
+            'filters' => $request->only(['project_id', 'user_id', 'currency']),
         ]);
     }
     
@@ -72,6 +77,7 @@ class SubscriptionAdminController extends Controller
             'slug' => 'required|string|max:255|unique:subscription_plans,slug',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'currency' => 'required|string|max:3',
             'duration_in_days' => 'required|integer|min:1',
             'credits_per_month' => 'required|integer|min:0',
             'features' => 'nullable|array',
@@ -102,6 +108,7 @@ class SubscriptionAdminController extends Controller
             'slug' => 'required|string|max:255|unique:subscription_plans,slug,' . $id,
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'currency' => 'required|string|max:3',
             'duration_in_days' => 'required|integer|min:1',
             'credits_per_month' => 'required|integer|min:0',
             'features' => 'nullable|array',

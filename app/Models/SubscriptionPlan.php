@@ -21,6 +21,7 @@ class SubscriptionPlan extends Model
         'slug',
         'description',
         'price',
+        'currency',
         'duration_in_days',
         'credits_per_month',
         'unlimited_access',

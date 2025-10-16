@@ -311,8 +311,10 @@ export default function AdminLayout({
             <div
                 className={`${isSidebarOpen ? 'ml-64' : 'ml-0'} transition-all duration-300 ease-in-out`}
             >
-                {/* Top Bar */}
-                <div className="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                {/* Fixed Top Bar */}
+                <div
+                    className={`fixed right-0 top-0 z-40 border-b border-gray-200 bg-white shadow-sm transition-all duration-300 ease-in-out dark:border-gray-700 dark:bg-gray-800 ${isSidebarOpen ? 'left-64' : 'left-0'}`}
+                >
                     <div className="flex h-16 items-center justify-between px-4">
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -337,9 +339,11 @@ export default function AdminLayout({
                 </div>
 
                 {/* Page Content */}
-                <main className="py-6">
-                    <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
-                        {children}
+                <main className="pt-16">
+                    <div className="py-6">
+                        <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
+                            {children}
+                        </div>
                     </div>
                 </main>
             </div>

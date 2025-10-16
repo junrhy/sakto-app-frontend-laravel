@@ -4,6 +4,7 @@ export interface SubscriptionPlan {
     slug: string;
     description?: string;
     price: number;
+    currency?: string;
     duration_in_days: number;
     credits_per_month: number;
     features?: string[];
