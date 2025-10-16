@@ -209,10 +209,10 @@ export default function HelpCenter({ auth }: PageProps) {
                                     </svg>
                                 </div>
                                 <h3 className="mb-2 text-lg font-semibold text-slate-900">
-                                    Contact Support
+                                    Technical Support
                                 </h3>
                                 <p className="text-sm text-slate-600">
-                                    Get help from our support team
+                                    Get automated assistance and documentation
                                 </p>
                             </div>
                         </div>
@@ -412,9 +412,9 @@ export default function HelpCenter({ auth }: PageProps) {
                                     Need More Help?
                                 </h2>
                                 <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
-                                    Can't find what you're looking for? Our
-                                    support team is here to help you succeed
-                                    with Community.
+                                    Can't find what you're looking for? Access
+                                    our comprehensive knowledge base and automated
+                                    support resources.
                                 </p>
                                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                                     <a

@@ -722,14 +722,17 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-slate-900">
-                                            Do you offer training for my team?
+                                            What training resources are
+                                            available?
                                         </dt>
                                         <dd className="text-slate-600">
                                             Yes, we provide comprehensive
-                                            training materials, video tutorials,
-                                            and live training sessions.
-                                            Enterprise customers receive
-                                            dedicated onboarding support.
+                                            training materials, interactive
+                                            video tutorials, and step-by-step
+                                            onboarding guides. Enterprise
+                                            customers get access to advanced
+                                            training modules and priority
+                                            documentation.
                                         </dd>
                                     </div>
                                 </dl>

@@ -711,7 +711,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Career coaching
+                                                AI career insights
                                             </span>
                                         </li>
                                     </ul>
@@ -812,7 +812,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Personal recruiter
+                                                Advanced job matching AI
                                             </span>
                                         </li>
                                     </ul>

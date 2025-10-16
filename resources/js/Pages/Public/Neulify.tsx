@@ -499,7 +499,7 @@ export default function Neulify({ auth }: PageProps) {
                                         {
                                             title: 'Excellence',
                                             description:
-                                                'We strive for the highest quality in everything we do, from our products to our customer service.',
+                                                'We strive for the highest quality in everything we do, from our products to our automated platform experience.',
                                             icon: (
                                                 <svg
                                                     className="h-12 w-12"
@@ -687,7 +687,7 @@ export default function Neulify({ auth }: PageProps) {
                                                 'Application Submitted Successfully!',
                                                 {
                                                     description:
-                                                        'Thank you for your interest in partnering with Neulify. Our team will review your application and contact you within 2-3 business days.',
+                                                        'Thank you for your interest in partnering with Neulify. Your application will be automatically reviewed and you will receive a response via email within 2-3 business days.',
                                                     duration: 8000,
                                                 },
                                             );

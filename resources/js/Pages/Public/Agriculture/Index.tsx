@@ -602,12 +602,14 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                 </div>
                                 <div className="rounded-lg border border-gray-200 bg-white p-5 sm:p-6">
                                     <dt className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                                        What about customer support?
+                                        What support resources are available?
                                     </dt>
                                     <dd className="text-sm text-gray-600 sm:text-base">
-                                        All plans include email support. Pro and
-                                        Business plans get priority phone
-                                        support and dedicated account managers.
+                                        All plans include comprehensive
+                                        documentation, video tutorials, and
+                                        automated help center. Pro and Business
+                                        plans get priority technical support
+                                        with faster response times.
                                     </dd>
                                 </div>
                             </dl>

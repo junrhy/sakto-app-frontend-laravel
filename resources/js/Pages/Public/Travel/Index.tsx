@@ -427,7 +427,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
                                         Comprehensive travel insurance and 24/7
-                                        customer support to ensure your journey
+                                        automated assistance to ensure your journey
                                         is safe, secure, and worry-free.
                                     </p>
                                 </div>
@@ -557,7 +557,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Basic customer support
+                                                Automated help center
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -788,7 +788,7 @@ export default function TravelIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Personal travel concierge
+                                                AI-powered travel planner
                                             </span>
                                         </li>
                                     </ul>

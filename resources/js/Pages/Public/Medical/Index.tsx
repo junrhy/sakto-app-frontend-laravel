@@ -747,7 +747,7 @@ export default function Medical({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-teal-600">
-                                                Dedicated support
+                                                Priority technical support
                                             </span>
                                         </li>
                                     </ul>
@@ -779,15 +779,17 @@ export default function Medical({ auth }: PageProps) {
                                     </div>
                                     <div className="rounded-lg border border-teal-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-teal-900">
-                                            Do you offer training for my medical
-                                            staff?
+                                            What training resources are
+                                            available for my medical staff?
                                         </dt>
                                         <dd className="text-teal-600">
                                             Yes, we provide comprehensive
-                                            training materials, video tutorials,
-                                            and live training sessions.
-                                            Enterprise customers receive
-                                            dedicated onboarding support.
+                                            training materials, interactive
+                                            video tutorials, and step-by-step
+                                            onboarding guides. Enterprise
+                                            customers get access to advanced
+                                            training modules and priority
+                                            documentation.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-teal-200 bg-white p-6">

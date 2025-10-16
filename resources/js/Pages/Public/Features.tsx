@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import SolutionsDialog from '@/Components/SolutionsDialog';
 import { getHost } from '@/lib/utils';
 import {
     HeartIcon,
@@ -6,6 +7,21 @@ import {
     UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { Head, Link } from '@inertiajs/react';
+import {
+    Briefcase,
+    GraduationCap,
+    HardHat,
+    Landmark,
+    Package,
+    Plane,
+    Rocket,
+    ShoppingBag,
+    Sprout,
+    Stethoscope,
+    Truck,
+    Users,
+    UtensilsCrossed,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface PageProps {
@@ -19,13 +35,9 @@ interface PageProps {
 
 export default function Features({ auth }: PageProps) {
     const hostname = getHost();
-    const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState(
-        hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
-    );
+    const [isSolutionsDialogOpen, setIsSolutionsDialogOpen] = useState(false);
     const [userCountry, setUserCountry] = useState<string | null>(null);
-    const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
 
     // Country-specific currency configuration
@@ -58,12 +70,6 @@ export default function Features({ auth }: PageProps) {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (
-                productsDropdownRef.current &&
-                !productsDropdownRef.current.contains(event.target as Node)
-            ) {
-                setIsProductsDropdownOpen(false);
-            }
             if (
                 legalDropdownRef.current &&
                 !legalDropdownRef.current.contains(event.target as Node)
@@ -100,36 +106,127 @@ export default function Features({ auth }: PageProps) {
         return queryString ? `${baseUrl}?${queryString}` : baseUrl;
     };
 
-    const productsMenuItems =
-        hostname !== 'Neulify'
-            ? [
-                  { name: `${hostname} Community`, href: '/community' },
-                  { name: `${hostname} Logistics`, href: '/logistics' },
-                  { name: `${hostname} Medical`, href: '/medical' },
-                  { name: `${hostname} Travel`, href: '/travel' },
-                  { name: `${hostname} Delivery`, href: '/delivery' },
-                  { name: `${hostname} Job Board`, href: '/jobs' },
-                  { name: `${hostname} Marketplace`, href: '/shop' },
-                  { name: `${hostname} F&B`, href: '/fnb' },
-                  { name: `${hostname} Education`, href: '/education' },
-                  { name: `${hostname} Finance`, href: '/finance' },
-                  { name: `${hostname} Agriculture`, href: '/agriculture' },
-                  { name: `${hostname} Construction`, href: '/construction' },
-              ]
-            : [
-                  { name: 'Community', href: '/community' },
-                  { name: 'Logistics', href: '/logistics' },
-                  { name: 'Medical', href: '/medical' },
-                  { name: 'Travel', href: '/travel' },
-                  { name: 'Delivery', href: '/delivery' },
-                  { name: 'Jobs', href: '/jobs' },
-                  { name: 'Shop', href: '/shop' },
-                  { name: 'F&B', href: '/fnb' },
-                  { name: 'Education', href: '/education' },
-                  { name: 'Finance', href: '/finance' },
-                  { name: 'Agriculture', href: '/agriculture' },
-                  { name: 'Construction', href: '/construction' },
-              ];
+    // Solutions data
+    const solutions = [
+        {
+            name: 'Community',
+            description:
+                'Enterprise community management platform for organizations to connect teams, manage events, and streamline communications',
+            icon: Users,
+            href: '/community',
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+            comingSoon: false,
+        },
+        {
+            name: 'Medical',
+            description:
+                'B2B healthcare management system for medical facilities to streamline appointments, patient records, and clinic operations',
+            icon: Stethoscope,
+            href: '/medical',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-900/20',
+            comingSoon: false,
+        },
+        {
+            name: 'Logistics',
+            description:
+                'Business logistics platform for companies to manage shipments, optimize delivery routes, and track fleet operations',
+            icon: Truck,
+            href: '/logistics',
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+            comingSoon: false,
+        },
+        {
+            name: 'Shop',
+            description:
+                'B2B e-commerce platform for businesses to manage wholesale operations, inventory, and corporate purchasing',
+            icon: ShoppingBag,
+            href: '/shop',
+            color: 'text-purple-600',
+            bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Delivery',
+            description:
+                'Enterprise delivery management solution for businesses to coordinate food service, catering, and supply chain operations',
+            icon: Package,
+            href: '/delivery',
+            color: 'text-red-600',
+            bgColor: 'bg-red-50 dark:bg-red-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Jobs',
+            description:
+                'Corporate recruitment platform for businesses to manage hiring, employee onboarding, and workforce planning',
+            icon: Briefcase,
+            href: '/jobs',
+            color: 'text-indigo-600',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Travel',
+            description: 'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
+            icon: Plane,
+            href: '/travel',
+            color: 'text-cyan-600',
+            bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'F&B',
+            description: 'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
+            icon: UtensilsCrossed,
+            href: '/fnb',
+            color: 'text-amber-600',
+            bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Education',
+            description:
+                'Educational institution management system for schools and training centers to manage courses, students, and administration',
+            icon: GraduationCap,
+            href: '/education',
+            color: 'text-indigo-600',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Finance',
+            description:
+                'Business financial management platform for enterprises to handle accounting, budgeting, and financial reporting',
+            icon: Landmark,
+            href: '/finance',
+            color: 'text-emerald-600',
+            bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Agriculture',
+            description:
+                'Agribusiness management system for farms and agricultural enterprises to optimize operations, yields, and supply chains',
+            icon: Sprout,
+            href: '/agriculture',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Construction',
+            description:
+                'Construction project management platform for contractors and builders to manage projects, teams, and resources',
+            icon: HardHat,
+            href: '/construction',
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+            comingSoon: true,
+        },
+    ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -629,56 +726,13 @@ export default function Features({ auth }: PageProps) {
                                 </Link>
                             </div>
                             <div className="flex items-center">
-                                {/* Solutions Dropdown */}
-                                <div
-                                    className="relative"
-                                    ref={productsDropdownRef}
+                                {/* Our Solutions Button */}
+                                <button
+                                    onClick={() => setIsSolutionsDialogOpen(true)}
+                                    className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                 >
-                                    <button
-                                        onClick={() =>
-                                            setIsProductsDropdownOpen(
-                                                !isProductsDropdownOpen,
-                                            )
-                                        }
-                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Our Solutions
-                                        <svg
-                                            className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </button>
-                                    {isProductsDropdownOpen && (
-                                        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                                            {productsMenuItems.map((item) => (
-                                                <Link
-                                                    key={item.name}
-                                                    href={getUrlWithCurrency(
-                                                        item.href,
-                                                    )}
-                                                    className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
-                                                    onClick={() =>
-                                                        setIsProductsDropdownOpen(
-                                                            false,
-                                                        )
-                                                    }
-                                                >
-                                                    {item.name}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                    Our Solutions
+                                </button>
                                 {hostname === 'neulify' && (
                                     <Link
                                         href={route('neulify')}
@@ -755,104 +809,22 @@ export default function Features({ auth }: PageProps) {
 
                 {/* Features Section */}
                 <div className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
-                    <div className="mx-auto max-w-3xl text-center">
+                    <div className="text-center">
                         <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
-                            Tailored Solutions for Every Industry
+                            Powerful Features for Every Industry
                         </h1>
-                        <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
-                            From community services to enterprise solutions,
-                            we've got you covered
+                        <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
+                            Each solution comes with industry-specific features designed to meet your unique needs. Select a solution below to explore its complete feature set.
                         </p>
-                    </div>
-
-                    {/* Solution Selector */}
-                    <div className="mt-12 flex justify-center">
-                        <div className="w-full max-w-md">
-                            <label
-                                htmlFor="solution-select"
-                                className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                        <div className="mt-12 flex justify-center">
+                            <button
+                                onClick={() => setIsSolutionsDialogOpen(true)}
+                                className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#14B8A6]/50"
                             >
-                                Select a Solution
-                            </label>
-                            <select
-                                id="solution-select"
-                                value={activeTab}
-                                onChange={(e) => setActiveTab(e.target.value)}
-                                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-900 shadow-sm transition-colors focus:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#14B8A6]"
-                            >
-                                {Object.entries(projectFeatures).map(
-                                    ([key, project]) => (
-                                        <option key={key} value={key}>
-                                            {project.name}
-                                        </option>
-                                    ),
-                                )}
-                            </select>
+                                <Rocket className="h-6 w-6 transition-transform duration-300 group-hover:translate-y-[-4px]" />
+                                <span>Explore Solution Features</span>
+                            </button>
                         </div>
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="mt-12">
-                        {Object.entries(projectFeatures).map(
-                            ([key, project]) => (
-                                <div
-                                    key={key}
-                                    className={
-                                        activeTab === key ? 'block' : 'hidden'
-                                    }
-                                >
-                                    <div className="mb-6 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <project.icon className="h-8 w-8 text-[#14B8A6] dark:text-[#14B8A6]" />
-                                            <h2 className="bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-2xl font-bold text-transparent dark:from-[#14B8A6] dark:to-[#06B6D4]">
-                                                {project.name}
-                                            </h2>
-                                        </div>
-                                        <Link
-                                            href={getUrlWithCurrency(
-                                                `/${project.project}`,
-                                            )}
-                                            className="inline-flex items-center rounded-md bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:from-[#0D9488] hover:to-[#0891B2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:ring-offset-2"
-                                        >
-                                            Learn More
-                                            <svg
-                                                className="-mr-1 ml-2 h-4 w-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                                                />
-                                            </svg>
-                                        </Link>
-                                    </div>
-                                    <div className="mb-6 h-px bg-gradient-to-r from-[#14B8A6]/50 to-transparent"></div>
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                                        {project.features.map((feature) => (
-                                            <div
-                                                key={feature.title}
-                                                className="group relative"
-                                            >
-                                                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] opacity-0 transition duration-200 group-hover:opacity-20 dark:group-hover:opacity-30"></div>
-                                                <div className="relative rounded-lg bg-white p-4 shadow-sm transition duration-200 hover:shadow-lg hover:shadow-indigo-500/10 dark:bg-gray-800">
-                                                    <h3 className="text-lg font-semibold text-gray-900 transition-colors duration-200 group-hover:text-[#14B8A6] dark:text-white dark:group-hover:text-indigo-400">
-                                                        {feature.title}
-                                                    </h3>
-                                                    <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                                                        {feature.description}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ),
-                        )}
                     </div>
                 </div>
 
@@ -894,6 +866,14 @@ export default function Features({ auth }: PageProps) {
                     </div>
                 </footer>
             </div>
+
+            {/* Solutions Dialog */}
+            <SolutionsDialog
+                isOpen={isSolutionsDialogOpen}
+                onOpenChange={setIsSolutionsDialogOpen}
+                solutions={solutions}
+                getUrlWithCurrency={getUrlWithCurrency}
+            />
         </>
     );
 }

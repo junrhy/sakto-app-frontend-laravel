@@ -276,10 +276,7 @@ export default function PublicRegister({ event }: Props) {
         const submissionData = isMultipleRegistration
             ? {
                   registrants: multipleRegistrants.filter(
-                      (r) =>
-                          r.name.trim() &&
-                          r.email.trim() &&
-                          r.phone.trim(),
+                      (r) => r.name.trim() && r.email.trim() && r.phone.trim(),
                   ),
                   notes: formData.notes,
                   is_multiple: true,
@@ -290,16 +287,12 @@ export default function PublicRegister({ event }: Props) {
                   payment_method: 'lemonsqueezy',
               };
 
-        router.post(
-            `/events/${eventData?.id}/checkout`,
-            submissionData,
-            {
-                onError: (errors) => {
-                    toast.error('Failed to initiate payment');
-                    console.error(errors);
-                },
+        router.post(`/events/${eventData?.id}/checkout`, submissionData, {
+            onError: (errors) => {
+                toast.error('Failed to initiate payment');
+                console.error(errors);
             },
-        );
+        });
     };
 
     return (
@@ -510,10 +503,13 @@ export default function PublicRegister({ event }: Props) {
                                                         >
                                                             <h3 className="mb-4 flex items-center font-semibold text-slate-900">
                                                                 <CreditCard className="mr-2 h-5 w-5 text-blue-600" />
-                                                                Select Payment Method
+                                                                Select Payment
+                                                                Method
                                                             </h3>
                                                             <RadioGroup
-                                                                value={paymentMethod}
+                                                                value={
+                                                                    paymentMethod
+                                                                }
                                                                 onValueChange={
                                                                     setPaymentMethod
                                                                 }
@@ -942,9 +938,10 @@ export default function PublicRegister({ event }: Props) {
                                                                     {formatPrice(
                                                                         getTotalPrice(),
                                                                         eventData?.currency,
-                                                                    )}
-                                                                    {' '}with (Credit
-                                                                    Card / Online
+                                                                    )}{' '}
+                                                                    with (Credit
+                                                                    Card /
+                                                                    Online
                                                                     Payment)
                                                                 </>
                                                             ) : (

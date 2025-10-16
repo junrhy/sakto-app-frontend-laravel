@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import SolutionsDialog from '@/Components/SolutionsDialog';
 import { getPricingForService } from '@/config/pricing';
 import { getHost } from '@/lib/utils';
 import {
@@ -7,6 +8,21 @@ import {
     UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { Head, Link } from '@inertiajs/react';
+import {
+    Briefcase,
+    GraduationCap,
+    HardHat,
+    Landmark,
+    Package,
+    Plane,
+    Rocket,
+    ShoppingBag,
+    Sprout,
+    Stethoscope,
+    Truck,
+    Users,
+    UtensilsCrossed,
+} from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface PageProps {
@@ -20,13 +36,9 @@ interface PageProps {
 
 export default function Pricing({ auth }: PageProps) {
     const hostname = getHost();
-    const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState(
-        hostname !== 'Neulify' ? `${hostname} Community` : 'Community',
-    );
+    const [isSolutionsDialogOpen, setIsSolutionsDialogOpen] = useState(false);
     const [userCountry, setUserCountry] = useState<string | null>(null);
-    const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
 
     // Get currency and symbol from URL params, default to USD and $
@@ -68,12 +80,6 @@ export default function Pricing({ auth }: PageProps) {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
-                productsDropdownRef.current &&
-                !productsDropdownRef.current.contains(event.target as Node)
-            ) {
-                setIsProductsDropdownOpen(false);
-            }
-            if (
                 legalDropdownRef.current &&
                 !legalDropdownRef.current.contains(event.target as Node)
             ) {
@@ -109,36 +115,127 @@ export default function Pricing({ auth }: PageProps) {
         return queryString ? `${baseUrl}?${queryString}` : baseUrl;
     };
 
-    const productsMenuItems =
-        hostname !== 'Neulify'
-            ? [
-                  { name: `${hostname} Community`, href: '/community' },
-                  { name: `${hostname} Logistics`, href: '/logistics' },
-                  { name: `${hostname} Medical`, href: '/medical' },
-                  { name: `${hostname} Travel`, href: '/travel' },
-                  { name: `${hostname} Delivery`, href: '/delivery' },
-                  { name: `${hostname} Job Board`, href: '/jobs' },
-                  { name: `${hostname} Marketplace`, href: '/shop' },
-                  { name: `${hostname} F&B`, href: '/fnb' },
-                  { name: `${hostname} Education`, href: '/education' },
-                  { name: `${hostname} Finance`, href: '/finance' },
-                  { name: `${hostname} Agriculture`, href: '/agriculture' },
-                  { name: `${hostname} Construction`, href: '/construction' },
-              ]
-            : [
-                  { name: 'Community', href: '/community' },
-                  { name: 'Logistics', href: '/logistics' },
-                  { name: 'Medical', href: '/medical' },
-                  { name: 'Travel', href: '/travel' },
-                  { name: 'Delivery', href: '/delivery' },
-                  { name: 'Jobs', href: '/jobs' },
-                  { name: 'Shop', href: '/shop' },
-                  { name: 'F&B', href: '/fnb' },
-                  { name: 'Education', href: '/education' },
-                  { name: 'Finance', href: '/finance' },
-                  { name: 'Agriculture', href: '/agriculture' },
-                  { name: 'Construction', href: '/construction' },
-              ];
+    // Solutions data
+    const solutions = [
+        {
+            name: 'Community',
+            description:
+                'Enterprise community management platform for organizations to connect teams, manage events, and streamline communications',
+            icon: Users,
+            href: '/community',
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+            comingSoon: false,
+        },
+        {
+            name: 'Medical',
+            description:
+                'B2B healthcare management system for medical facilities to streamline appointments, patient records, and clinic operations',
+            icon: Stethoscope,
+            href: '/medical',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-900/20',
+            comingSoon: false,
+        },
+        {
+            name: 'Logistics',
+            description:
+                'Business logistics platform for companies to manage shipments, optimize delivery routes, and track fleet operations',
+            icon: Truck,
+            href: '/logistics',
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+            comingSoon: false,
+        },
+        {
+            name: 'Shop',
+            description:
+                'B2B e-commerce platform for businesses to manage wholesale operations, inventory, and corporate purchasing',
+            icon: ShoppingBag,
+            href: '/shop',
+            color: 'text-purple-600',
+            bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Delivery',
+            description:
+                'Enterprise delivery management solution for businesses to coordinate food service, catering, and supply chain operations',
+            icon: Package,
+            href: '/delivery',
+            color: 'text-red-600',
+            bgColor: 'bg-red-50 dark:bg-red-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Jobs',
+            description:
+                'Corporate recruitment platform for businesses to manage hiring, employee onboarding, and workforce planning',
+            icon: Briefcase,
+            href: '/jobs',
+            color: 'text-indigo-600',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Travel',
+            description: 'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
+            icon: Plane,
+            href: '/travel',
+            color: 'text-cyan-600',
+            bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'F&B',
+            description: 'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
+            icon: UtensilsCrossed,
+            href: '/fnb',
+            color: 'text-amber-600',
+            bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Education',
+            description:
+                'Educational institution management system for schools and training centers to manage courses, students, and administration',
+            icon: GraduationCap,
+            href: '/education',
+            color: 'text-indigo-600',
+            bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Finance',
+            description:
+                'Business financial management platform for enterprises to handle accounting, budgeting, and financial reporting',
+            icon: Landmark,
+            href: '/finance',
+            color: 'text-emerald-600',
+            bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Agriculture',
+            description:
+                'Agribusiness management system for farms and agricultural enterprises to optimize operations, yields, and supply chains',
+            icon: Sprout,
+            href: '/agriculture',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-900/20',
+            comingSoon: true,
+        },
+        {
+            name: 'Construction',
+            description:
+                'Construction project management platform for contractors and builders to manage projects, teams, and resources',
+            icon: HardHat,
+            href: '/construction',
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+            comingSoon: true,
+        },
+    ];
 
     const legalMenuItems = [
         { name: 'Privacy Policy', href: route('privacy-policy') },
@@ -376,56 +473,13 @@ export default function Pricing({ auth }: PageProps) {
                                 </Link>
                             </div>
                             <div className="flex items-center">
-                                {/* Solutions Dropdown */}
-                                <div
-                                    className="relative"
-                                    ref={productsDropdownRef}
+                                {/* Our Solutions Button */}
+                                <button
+                                    onClick={() => setIsSolutionsDialogOpen(true)}
+                                    className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                 >
-                                    <button
-                                        onClick={() =>
-                                            setIsProductsDropdownOpen(
-                                                !isProductsDropdownOpen,
-                                            )
-                                        }
-                                        className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Our Solutions
-                                        <svg
-                                            className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </button>
-                                    {isProductsDropdownOpen && (
-                                        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                                            {productsMenuItems.map((item) => (
-                                                <Link
-                                                    key={item.name}
-                                                    href={getUrlWithCurrency(
-                                                        item.href,
-                                                    )}
-                                                    className="block px-4 py-2 text-sm text-[#334155] transition-colors duration-200 hover:bg-[#14B8A6]/10 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
-                                                    onClick={() =>
-                                                        setIsProductsDropdownOpen(
-                                                            false,
-                                                        )
-                                                    }
-                                                >
-                                                    {item.name}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                    Our Solutions
+                                </button>
                                 {hostname === 'Neulify' && (
                                     <Link
                                         href={route('neulify')}
@@ -504,148 +558,25 @@ export default function Pricing({ auth }: PageProps) {
                 <div className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <h1 className="bg-gradient-to-r from-[#1E3A8A] via-[#334155] to-[#1E3A8A] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent dark:text-white sm:text-5xl">
-                            Project-Specific Pricing
+                            Transparent Pricing for Every Solution
                         </h1>
-                        <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
-                            Choose the perfect plan for your specific needs
+                        <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
+                            Pricing details are available on each solution's dedicated page. Select a solution below to view its specific plans and features.
                         </p>
-                    </div>
-
-                    {/* Solution Selector */}
-                    <div className="mt-12 flex justify-center">
-                        <div className="w-full max-w-md">
-                            <label
-                                htmlFor="solution-select"
-                                className="mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-300"
+                        <div className="mt-12 flex justify-center">
+                            <button
+                                onClick={() => setIsSolutionsDialogOpen(true)}
+                                className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#14B8A6]/50"
                             >
-                                Select a Solution
-                            </label>
-                            <select
-                                id="solution-select"
-                                value={activeTab}
-                                onChange={(e) => setActiveTab(e.target.value)}
-                                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-900 shadow-sm transition-colors focus:border-[#14B8A6] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#14B8A6]"
-                            >
-                                {Object.entries(projectPlans).map(
-                                    ([key, project]) => (
-                                        <option key={key} value={key}>
-                                            {project.name}
-                                        </option>
-                                    ),
-                                )}
-                            </select>
+                                <Rocket className="h-6 w-6 transition-transform duration-300 group-hover:translate-y-[-4px]" />
+                                <span>View Solution Pricing</span>
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    {/* Tab Content */}
-                    <div className="mt-12">
-                        {Object.entries(projectPlans).map(([key, project]) => (
-                            <div
-                                key={key}
-                                className={
-                                    activeTab === key ? 'block' : 'hidden'
-                                }
-                            >
-                                <div className="mb-6 flex items-center gap-3">
-                                    <project.icon className="h-7 w-7 text-[#14B8A6] dark:text-[#14B8A6]" />
-                                    <h2 className="bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] bg-clip-text text-2xl font-bold text-transparent dark:from-[#14B8A6] dark:to-[#06B6D4]">
-                                        {project.name}
-                                    </h2>
-                                </div>
-                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                                    {project.plans.map((plan) => (
-                                        <div
-                                            key={plan.name}
-                                            className={`group relative h-full ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'lg:-mt-4 lg:mb-4' : ''}`}
-                                        >
-                                            <div
-                                                className={`absolute -inset-0.5 rounded-lg bg-gradient-to-r from-[#14B8A6] to-[#06B6D4] ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'opacity-20 dark:opacity-30' : 'opacity-0 group-hover:opacity-10 dark:group-hover:opacity-30'} transition duration-200`}
-                                            ></div>
-                                            <div
-                                                className={`relative flex h-full flex-col rounded-lg bg-white p-6 shadow-sm transition duration-200 hover:shadow-lg hover:shadow-indigo-500/10 dark:bg-gray-800 ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'border-2 border-[#14B8A6] dark:border-indigo-400' : ''}`}
-                                            >
-                                                {(plan.name === 'Pro' ||
-                                                    plan.name ===
-                                                        'Enterprise') && (
-                                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
-                                                        <span className="inline-flex items-center rounded-full bg-[#14B8A6]/10 px-3 py-1 text-xs font-medium text-[#0D9488] dark:bg-indigo-900/50 dark:text-[#99F6E4]">
-                                                            {plan.name === 'Pro'
-                                                                ? 'Most Popular'
-                                                                : 'Premium'}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                                                        {plan.name}
-                                                    </h3>
-                                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                                        {plan.description}
-                                                    </p>
-                                                    <p className="mt-4">
-                                                        <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                                                            {urlSymbol}
-                                                            {plan.price}
-                                                        </span>
-                                                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                                                            /month
-                                                        </span>
-                                                    </p>
-                                                    {!auth.user && (
-                                                        <Link
-                                                            href={getUrlWithCurrency(
-                                                                `/${plan.project}`,
-                                                                {
-                                                                    plan: plan.name.toLowerCase(),
-                                                                },
-                                                            )}
-                                                            className="mt-4 block w-full rounded-md border border-transparent bg-gradient-to-r from-[#14B8A6] to-[#0D9488] px-4 py-2 text-center text-sm font-medium text-white shadow transition-all duration-200 hover:from-[#0D9488] hover:to-[#14B8A6] hover:shadow-lg hover:shadow-[#14B8A6]/25 dark:bg-[#14B8A6] dark:hover:bg-[#0D9488]"
-                                                        >
-                                                            Choose Plan
-                                                        </Link>
-                                                    )}
-                                                </div>
-                                                <div className="mt-4 flex-grow">
-                                                    <ul className="space-y-2">
-                                                        {plan.features.map(
-                                                            (feature) => (
-                                                                <li
-                                                                    key={
-                                                                        feature
-                                                                    }
-                                                                    className="flex items-center text-sm"
-                                                                >
-                                                                    <svg
-                                                                        className="h-4 w-4 flex-shrink-0 text-[#14B8A6]"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        viewBox="0 0 20 20"
-                                                                        fill="currentColor"
-                                                                    >
-                                                                        <path
-                                                                            fillRule="evenodd"
-                                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                            clipRule="evenodd"
-                                                                        />
-                                                                    </svg>
-                                                                    <span className="ml-2 text-gray-600 dark:text-gray-300">
-                                                                        {
-                                                                            feature
-                                                                        }
-                                                                    </span>
-                                                                </li>
-                                                            ),
-                                                        )}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* FAQ Section */}
+                {/* FAQ Section */}
+                <div className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
                     <div className="mt-24">
                         <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
                             Frequently Asked Questions
@@ -735,6 +666,14 @@ export default function Pricing({ auth }: PageProps) {
                     </div>
                 </footer>
             </div>
+
+            {/* Solutions Dialog */}
+            <SolutionsDialog
+                isOpen={isSolutionsDialogOpen}
+                onOpenChange={setIsSolutionsDialogOpen}
+                solutions={solutions}
+                getUrlWithCurrency={getUrlWithCurrency}
+            />
         </>
     );
 }

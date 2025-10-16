@@ -1052,7 +1052,7 @@ export default function Community({
                                                         />
                                                     </svg>
                                                     <span className="text-slate-600">
-                                                        Virtual Assistant
+                                                        AI-Powered Automation
                                                     </span>
                                                 </li>
                                             </ul>

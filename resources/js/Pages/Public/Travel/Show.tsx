@@ -618,12 +618,12 @@ export default function TravelShow({ auth, identifier, travel }: PageProps) {
                                         </a>
                                     </li>
                                     <li>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            href={route('faq')}
                                             className="hover:text-white"
                                         >
-                                            Contact Us
-                                        </a>
+                                            Help Center
+                                        </Link>
                                     </li>
                                     <li>
                                         <a

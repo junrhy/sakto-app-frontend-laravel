@@ -802,7 +802,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Personal concierge
+                                                Smart order recommendations
                                             </span>
                                         </li>
                                     </ul>

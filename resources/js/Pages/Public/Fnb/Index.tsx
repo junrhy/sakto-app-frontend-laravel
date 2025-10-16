@@ -666,7 +666,7 @@ export default function FnbIndex({ auth }: PageProps) {
                                                 'Multi-branch support',
                                                 'Custom integrations',
                                                 'Analytics & reporting',
-                                                '24/7 phone support',
+                                                '24/7 automated support',
                                             ]
                                         ).map((feature, index) => (
                                             <li
@@ -712,21 +712,23 @@ export default function FnbIndex({ auth }: PageProps) {
                                         <dd className="text-red-700">
                                             Yes, our platform supports
                                             integration with most major POS
-                                            systems. Contact our support team
-                                            for specific integration details.
+                                            systems. Check our integration
+                                            documentation for specific setup
+                                            instructions.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-red-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-red-900">
-                                            Do you provide training for my
-                                            staff?
+                                            What training resources are
+                                            available?
                                         </dt>
                                         <dd className="text-red-700">
                                             Yes, we provide comprehensive
-                                            training materials, video tutorials,
-                                            and live training sessions. Business
-                                            customers receive dedicated
-                                            onboarding support.
+                                            training materials, interactive
+                                            video tutorials, and step-by-step
+                                            guides. Business customers get
+                                            access to advanced training modules
+                                            and priority documentation.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-red-200 bg-white p-6">

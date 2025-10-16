@@ -315,12 +315,12 @@ const AppointmentConfirmation: React.FC<Props> = ({
                                 records
                             </li>
                             <li>
-                                • If you need to reschedule or cancel, please
-                                contact us at least 24 hours in advance
+                                • You can reschedule or cancel through your
+                                account dashboard at least 24 hours in advance
                             </li>
                             <li>
-                                • We will contact you to confirm your
-                                appointment details
+                                • You will receive automated confirmation and
+                                reminder notifications via email/SMS
                             </li>
                         </ul>
                     </div>

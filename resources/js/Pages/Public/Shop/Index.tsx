@@ -322,8 +322,8 @@ export default function ShopIndex({ auth }: PageProps) {
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
                                 Shop from thousands of verified sellers and
                                 discover unique products at great prices. Enjoy
-                                secure payments, fast shipping, and excellent
-                                customer service.
+                                secure payments, fast shipping, and automated
+                                order processing.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 <Link
@@ -805,7 +805,7 @@ export default function ShopIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Personal shopping assistant
+                                                AI shopping recommendations
                                             </span>
                                         </li>
                                     </ul>
@@ -875,8 +875,8 @@ export default function ShopIndex({ auth }: PageProps) {
                                     Discover amazing products from thousands of
                                     verified sellers. Shop with confidence
                                     knowing you're getting quality products at
-                                    great prices with excellent customer
-                                    service.
+                                    great prices with automated order processing
+                                    and smart tracking.
                                 </p>
                             </div>
 

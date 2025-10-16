@@ -90,7 +90,7 @@ export default function MedicalShow({
     const handleBookingSuccess = () => {
         setShowBookingForm(false);
         toast.success(
-            'Appointment booked successfully! We will contact you to confirm.',
+            'Appointment booked successfully! You will receive an automated confirmation email shortly.',
         );
     };
 
@@ -233,7 +233,7 @@ export default function MedicalShow({
 
                         {/* Right Column - Clinic Information */}
                         <div className="space-y-6">
-                            {/* Contact Information Card */}
+                            {/* Clinic Information Card */}
                             <div className="rounded-2xl bg-white p-6 shadow-lg">
                                 <div className="mb-4 flex items-center">
                                     <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100">
@@ -243,7 +243,7 @@ export default function MedicalShow({
                                         />
                                     </div>
                                     <h3 className="text-lg font-bold text-gray-900">
-                                        Contact Us
+                                        Clinic Information
                                     </h3>
                                 </div>
                                 <div className="space-y-4">
