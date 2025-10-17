@@ -17,10 +17,21 @@ import { BlockedDate, Reservation, Table as TableType } from '../types';
 import { DateCalendar } from './DateCalendar';
 import { toast } from 'sonner';
 
+interface TableSchedule {
+    id: number;
+    tableId: number;
+    scheduleDate: string;
+    timeslots: string[];
+    status: 'available' | 'unavailable' | 'joined';
+    joinedWith?: string | null;
+    notes?: string | null;
+}
+
 interface ReservationsTabProps {
     reservations: Reservation[];
     tables: TableType[];
     blockedDates?: BlockedDate[];
+    tableSchedules?: TableSchedule[];
     currency_symbol: string;
     onAddReservation: (reservation: Omit<Reservation, 'id' | 'status'>) => void;
     onUpdateReservation: (
@@ -36,6 +47,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     reservations,
     tables,
     blockedDates = [],
+    tableSchedules = [],
     currency_symbol,
     onAddReservation,
     onUpdateReservation,
@@ -117,6 +129,63 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             );
         },
         [reservations],
+    );
+
+    // Check if a table is unavailable according to schedule
+    const isTableUnavailableInSchedule = useCallback(
+        (tableId: number, date: string, time: string) => {
+            return tableSchedules.some(
+                (schedule) => {
+                    // Extract date part from scheduleDate
+                    const scheduleDateOnly = schedule.scheduleDate.split('T')[0];
+                    
+                    return (
+                        schedule.tableId === tableId &&
+                        scheduleDateOnly === date &&
+                        schedule.timeslots.includes(time) &&
+                        schedule.status === 'unavailable'
+                    );
+                }
+            );
+        },
+        [tableSchedules],
+    );
+
+    // Get joined table info for a specific table and time slot
+    const getJoinedTableInfo = useCallback(
+        (tableId: number, date: string, time: string) => {
+            const schedule = tableSchedules.find(
+                (schedule) => {
+                    const scheduleDateOnly = schedule.scheduleDate.split('T')[0];
+                    
+                    return (
+                        schedule.tableId === tableId &&
+                        scheduleDateOnly === date &&
+                        schedule.timeslots.includes(time) &&
+                        schedule.status === 'joined'
+                    );
+                }
+            );
+            
+            if (!schedule?.joinedWith) return null;
+            
+            // Get total seats of joined tables
+            const joinedTableIds = schedule.joinedWith.split(',').map(id => parseInt(id.trim()));
+            const totalSeats = joinedTableIds.reduce((sum, id) => {
+                const table = tables.find(t => {
+                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                    return tId === id;
+                });
+                return sum + (table?.seats || 0);
+            }, 0);
+            
+            return {
+                joinedWith: schedule.joinedWith,
+                joinedTableIds,
+                totalSeats,
+            };
+        },
+        [tableSchedules, tables],
     );
 
     const isTableReserved = useCallback(
@@ -214,36 +283,85 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     const handleSubmitReservation = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
-            if (
-                newReservation.name &&
-                newReservation.date &&
-                newReservation.time &&
-                newReservation.tableId
-            ) {
-                if (
-                    isTimeSlotBlocked(newReservation.date, newReservation.time)
-                ) {
-                    toast.error(
-                        'This time slot is blocked and reservations are not available.',
-                    );
-                    return;
-                }
-                onAddReservation(newReservation);
-                // Reset form but keep the date
-                setNewReservation((prev) => ({
-                    name: '',
-                    date: prev.date,
-                    time: '',
-                    guests: 1,
-                    tableId: 0,
-                    notes: '',
-                    contact: '',
-                }));
-                setIsDialogOpen(false);
-                toast.success('Reservation created successfully!');
+            
+            // Validate required fields with specific messages
+            if (!newReservation.name) {
+                toast.error('Please enter customer name');
+                return;
             }
+            
+            if (!newReservation.date || !newReservation.time) {
+                toast.error('Please select date and time');
+                return;
+            }
+            
+            // Check if there are any available tables for this time slot
+            const processedJoinedGroups = new Set<string>();
+            let availableCount = 0;
+            
+            tables.forEach(t => {
+                const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                const joinedInfo = getJoinedTableInfo(tableId, newReservation.date, newReservation.time);
+                
+                if (joinedInfo) {
+                    // Count joined group only once
+                    if (!processedJoinedGroups.has(joinedInfo.joinedWith)) {
+                        processedJoinedGroups.add(joinedInfo.joinedWith);
+                        
+                        const isGroupReserved = joinedInfo.joinedTableIds.some(id => 
+                            isTableReserved(id, newReservation.date, newReservation.time)
+                        );
+                        const hasCapacity = joinedInfo.totalSeats >= newReservation.guests;
+                        
+                        if (hasCapacity && !isGroupReserved) {
+                            availableCount++;
+                        }
+                    }
+                } else {
+                    // Regular table
+                    const hasCapacity = t.seats >= newReservation.guests;
+                    const isReserved = isTableReserved(tableId, newReservation.date, newReservation.time);
+                    const isUnavailable = isTableUnavailableInSchedule(tableId, newReservation.date, newReservation.time);
+                    
+                    if (hasCapacity && !isReserved && !isUnavailable) {
+                        availableCount++;
+                    }
+                }
+            });
+
+            if (availableCount === 0) {
+                toast.error('No tables available for this time slot. All tables are either reserved, unavailable, or have insufficient capacity.');
+                return;
+            }
+            
+            if (!newReservation.tableId || newReservation.tableId === 0) {
+                toast.error('Please select a table for this reservation');
+                return;
+            }
+            
+            // Check if time slot is blocked
+            if (isTimeSlotBlocked(newReservation.date, newReservation.time)) {
+                toast.error('This time slot is blocked and reservations are not available.');
+                return;
+            }
+            
+            // Submit reservation
+            onAddReservation(newReservation);
+            
+            // Reset form but keep the date
+            setNewReservation((prev) => ({
+                name: '',
+                date: prev.date,
+                time: '',
+                guests: 1,
+                tableId: 0,
+                notes: '',
+                contact: '',
+            }));
+            setIsDialogOpen(false);
+            toast.success('Reservation created successfully!');
         },
-        [newReservation, onAddReservation, isTimeSlotBlocked, isTimeSlotReserved],
+        [newReservation, onAddReservation, isTimeSlotBlocked, isTimeSlotReserved, tables, isTableReserved, isTableUnavailableInSchedule, getJoinedTableInfo],
     );
 
     return (
@@ -717,20 +835,46 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     }}
                                     required
                                 />
-                                {tables.length > 0 && newReservation.time && (
-                                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                                        {tables.filter(t => {
+                                {tables.length > 0 && newReservation.time && (() => {
+                                    const processedJoinedGroups = new Set<string>();
+                                    let availableCount = 0;
+                                    
+                                    tables.forEach(t => {
+                                        const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                        const joinedInfo = getJoinedTableInfo(tableId, newReservation.date, newReservation.time);
+                                        
+                                        if (joinedInfo) {
+                                            // Count joined group only once
+                                            if (!processedJoinedGroups.has(joinedInfo.joinedWith)) {
+                                                processedJoinedGroups.add(joinedInfo.joinedWith);
+                                                
+                                                const isGroupReserved = joinedInfo.joinedTableIds.some(id => 
+                                                    isTableReserved(id, newReservation.date, newReservation.time)
+                                                );
+                                                const hasCapacity = joinedInfo.totalSeats >= newReservation.guests;
+                                                
+                                                if (hasCapacity && !isGroupReserved) {
+                                                    availableCount++;
+                                                }
+                                            }
+                                        } else {
+                                            // Regular table
                                             const hasCapacity = t.seats >= newReservation.guests;
-                                            const isReserved = isTableReserved(
-                                                typeof t.id === 'number' ? t.id : parseInt(t.id.toString()),
-                                                newReservation.date,
-                                                newReservation.time
-                                            );
-                                            return hasCapacity && !isReserved;
-                                        }).length} 
-                                        {' '}available table(s) for this time slot
-                                    </p>
-                                )}
+                                            const isReserved = isTableReserved(tableId, newReservation.date, newReservation.time);
+                                            const isUnavailable = isTableUnavailableInSchedule(tableId, newReservation.date, newReservation.time);
+                                            
+                                            if (hasCapacity && !isReserved && !isUnavailable) {
+                                                availableCount++;
+                                            }
+                                        }
+                                    });
+                                    
+                                    return (
+                                        <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                            {availableCount} available table(s) for this time slot
+                                        </p>
+                                    );
+                                })()}
                             </div>
 
                             <div>
@@ -753,36 +897,106 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                 No tables available. Please add tables first.
                                             </div>
                                         ) : (
-                                            tables.map((table) => {
-                                                const hasInsufficientCapacity = table.seats < newReservation.guests;
-                                                const isReserved = isTableReserved(
-                                                    typeof table.id === 'number' ? table.id : parseInt(table.id.toString()),
-                                                    newReservation.date,
-                                                    newReservation.time
-                                                );
-                                                const isDisabled = hasInsufficientCapacity || isReserved;
+                                            (() => {
+                                                const processedJoinedGroups = new Set<string>();
                                                 
-                                                return (
-                                                    <SelectItem
-                                                        key={table.id}
-                                                        value={table.id.toString()}
-                                                        disabled={isDisabled}
-                                                        className={isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                                                    >
-                                                        {table.name} - {table.seats} seats
-                                                        {hasInsufficientCapacity && (
-                                                            <span className="ml-2 text-xs text-red-500">
-                                                                (Insufficient capacity)
-                                                            </span>
-                                                        )}
-                                                        {!hasInsufficientCapacity && isReserved && (
-                                                            <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">
-                                                                (Already reserved)
-                                                            </span>
-                                                        )}
-                                                    </SelectItem>
-                                                );
-                                            })
+                                                return tables.map((table) => {
+                                                    const tableId = typeof table.id === 'number' ? table.id : parseInt(table.id.toString());
+                                                    const joinedInfo = getJoinedTableInfo(tableId, newReservation.date, newReservation.time);
+                                                    
+                                                    // If table is joined, only show one entry for the joined group
+                                                    if (joinedInfo) {
+                                                        const groupKey = joinedInfo.joinedWith;
+                                                        
+                                                        // Skip if we've already processed this joined group
+                                                        if (processedJoinedGroups.has(groupKey)) {
+                                                            return null;
+                                                        }
+                                                        processedJoinedGroups.add(groupKey);
+                                                        
+                                                        // Get names of joined tables
+                                                        const joinedTableNames = joinedInfo.joinedTableIds
+                                                            .map(id => {
+                                                                const t = tables.find(t => {
+                                                                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                                    return tId === id;
+                                                                });
+                                                                return t?.name;
+                                                            })
+                                                            .filter(Boolean)
+                                                            .join(' + ');
+                                                        
+                                                        // Check if any table in the joined group is reserved
+                                                        const isGroupReserved = joinedInfo.joinedTableIds.some(id => 
+                                                            isTableReserved(id, newReservation.date, newReservation.time)
+                                                        );
+                                                        
+                                                        const hasInsufficientCapacity = joinedInfo.totalSeats < newReservation.guests;
+                                                        const isDisabled = hasInsufficientCapacity || isGroupReserved;
+                                                        
+                                                        return (
+                                                            <SelectItem
+                                                                key={`joined-${groupKey}`}
+                                                                value={tableId.toString()}
+                                                                disabled={isDisabled}
+                                                                className={isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                                            >
+                                                                {joinedTableNames} - {joinedInfo.totalSeats} seats (Joined)
+                                                                {hasInsufficientCapacity && (
+                                                                    <span className="ml-2 text-xs text-red-500">
+                                                                        (Insufficient capacity)
+                                                                    </span>
+                                                                )}
+                                                                {!hasInsufficientCapacity && isGroupReserved && (
+                                                                    <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">
+                                                                        (Already reserved)
+                                                                    </span>
+                                                                )}
+                                                            </SelectItem>
+                                                        );
+                                                    }
+                                                    
+                                                    // Regular table (not joined)
+                                                    const hasInsufficientCapacity = table.seats < newReservation.guests;
+                                                    const isReserved = isTableReserved(
+                                                        tableId,
+                                                        newReservation.date,
+                                                        newReservation.time
+                                                    );
+                                                    const isUnavailable = isTableUnavailableInSchedule(
+                                                        tableId,
+                                                        newReservation.date,
+                                                        newReservation.time
+                                                    );
+                                                    const isDisabled = hasInsufficientCapacity || isReserved || isUnavailable;
+                                                    
+                                                    return (
+                                                        <SelectItem
+                                                            key={table.id}
+                                                            value={table.id.toString()}
+                                                            disabled={isDisabled}
+                                                            className={isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                                        >
+                                                            {table.name} - {table.seats} seats
+                                                            {hasInsufficientCapacity && (
+                                                                <span className="ml-2 text-xs text-red-500">
+                                                                    (Insufficient capacity)
+                                                                </span>
+                                                            )}
+                                                            {!hasInsufficientCapacity && isReserved && (
+                                                                <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">
+                                                                    (Already reserved)
+                                                                </span>
+                                                            )}
+                                                            {!hasInsufficientCapacity && !isReserved && isUnavailable && (
+                                                                <span className="ml-2 text-xs text-red-500">
+                                                                    (Unavailable)
+                                                                </span>
+                                                            )}
+                                                        </SelectItem>
+                                                    );
+                                                }).filter(Boolean);
+                                            })()
                                         )}
                                     </SelectContent>
                                 </Select>

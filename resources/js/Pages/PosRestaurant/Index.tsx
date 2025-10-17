@@ -886,6 +886,9 @@ export default function PosRestaurantIndex({
                                                     blockedDates={
                                                         posState.blockedDates
                                                     }
+                                                    tableSchedules={
+                                                        tableSchedules
+                                                    }
                                                     currency_symbol={
                                                         currency_symbol
                                                     }
