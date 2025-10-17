@@ -106,30 +106,6 @@ export const MenuTab: React.FC<MenuTabProps> = ({
 
     return (
         <div className="space-y-6">
-            {/* Header Section */}
-            <div className="rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-6 dark:border-purple-800 dark:from-purple-900/20 dark:to-pink-900/20">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Menu Management
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Manage restaurant menu items and pricing
-                        </p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Total Items
-                            </p>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {menuItems.length}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
                     <CardTitle className="flex items-center text-gray-900 dark:text-white">

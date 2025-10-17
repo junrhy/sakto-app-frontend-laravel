@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     Calculator,
     Calendar,
@@ -110,6 +110,16 @@ const TabLoadingSpinner = () => (
     </div>
 );
 
+interface TableSchedule {
+    id: number;
+    tableId: number;
+    scheduleDate: string;
+    timeslots: string[];
+    status: 'available' | 'unavailable' | 'joined';
+    joinedWith?: string | null;
+    notes?: string | null;
+}
+
 interface PageProps {
     menuItems: MenuItem[];
     tables: Table[];
@@ -117,6 +127,7 @@ interface PageProps {
     joinedTables?: JoinedTable[];
     reservations?: Reservation[];
     blockedDates?: BlockedDate[];
+    tableSchedules?: TableSchedule[];
     currency_symbol?: string;
 }
 
@@ -127,6 +138,7 @@ export default function PosRestaurantIndex({
     joinedTables = [],
     reservations = [],
     blockedDates = [],
+    tableSchedules = [],
     currency_symbol = '$',
 }: PageProps) {
     const [isTabLoading, setIsTabLoading] = useState(false);
@@ -188,10 +200,26 @@ export default function PosRestaurantIndex({
     const handleTabChange = useCallback((value: string) => {
         setIsTabLoading(true);
         setCurrentTab(value);
-        // Simulate loading for better UX
-        setTimeout(() => {
-            setIsTabLoading(false);
-        }, 300);
+        
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const appParam = urlParams.get('app') || 'fnb';
+        
+        // Update URL with both app and tab parameters
+        router.get(
+            `/pos-restaurant?app=${appParam}&tab=${value}`,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: [], // Don't reload any props, just update URL
+                onFinish: () => {
+                    setTimeout(() => {
+                        setIsTabLoading(false);
+                    }, 300);
+                },
+            }
+        );
     }, []);
 
     // POS Tab handlers
@@ -462,6 +490,22 @@ export default function PosRestaurantIndex({
         [api],
     );
 
+    const handleSetTableSchedule = useCallback(
+        async (data: {
+            tableIds: number[];
+            date: string;
+            time: string;
+            status: 'available' | 'unavailable' | 'joined';
+            joinedWith?: string;
+        }) => {
+            const result = await api.setTableSchedule(data);
+            if (result) {
+                api.refreshData();
+            }
+        },
+        [api],
+    );
+
     // Menu handlers
     const handleAddMenuItem = useCallback(() => {
         setIsAddMenuItemDialogOpen(true);
@@ -637,8 +681,8 @@ export default function PosRestaurantIndex({
         >
             <Head title="POS Restaurant" />
 
-            <div className="min-h-screen p-6">
-                <div className="mx-auto max-w-7xl">
+            <div className="min-h-screen px-6 pb-6 pt-2">
+                <div className="w-full">
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
                         <Tabs
                             value={currentTab}
@@ -788,6 +832,12 @@ export default function PosRestaurantIndex({
                                                     tables={
                                                         posState.filteredTables
                                                     }
+                                                    reservations={
+                                                        posState.reservations
+                                                    }
+                                                    tableSchedules={
+                                                        tableSchedules
+                                                    }
                                                     currency_symbol={
                                                         currency_symbol
                                                     }
@@ -815,6 +865,9 @@ export default function PosRestaurantIndex({
                                                     }
                                                     tableStatusFilter={
                                                         posState.tableStatusFilter
+                                                    }
+                                                    onSetTableSchedule={
+                                                        handleSetTableSchedule
                                                     }
                                                 />
                                             </TabsContent>

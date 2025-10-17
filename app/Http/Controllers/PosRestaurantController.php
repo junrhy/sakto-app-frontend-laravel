@@ -31,6 +31,7 @@ class PosRestaurantController extends Controller
             'joinedTables' => $this->getJoinedTables(),
             'reservations' => $this->getReservations(),
             'blockedDates' => $this->getBlockedDates(),
+            'tableSchedules' => $this->getTableSchedules(),
             'currency_symbol' => $jsonAppCurrency->symbol
         ]);
     }
@@ -451,29 +452,113 @@ class PosRestaurantController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return $response->json();
+            $reservations = $response->json();
+            
+            // If reservations is empty or not an array, return empty array
+            if (empty($reservations) || !is_array($reservations)) {
+                return [];
+            }
+            
+            // Transform snake_case to camelCase for frontend
+            $transformedReservations = array_map(function($reservation) {
+                // Handle both array and object types
+                if (is_object($reservation)) {
+                    $reservation = (array) $reservation;
+                }
+                
+                return [
+                    'id' => (int)($reservation['id'] ?? 0),
+                    'name' => $reservation['name'] ?? '',
+                    'date' => $reservation['date'] ?? '',
+                    'time' => $reservation['time'] ?? '',
+                    'guests' => (int)($reservation['guests'] ?? 1), // Convert to integer
+                    'tableId' => (int)($reservation['table_id'] ?? 0), // Convert to integer
+                    'status' => $reservation['status'] ?? 'pending',
+                    'notes' => $reservation['notes'] ?? null,
+                    'contact' => $reservation['contact'] ?? null,
+                ];
+            }, $reservations);
+
+            return $transformedReservations;
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to fetch reservations.');
+            \Log::error('Failed to fetch reservations: ' . $e->getMessage());
+            return [];
         }
     }
 
     public function storeReservation(Request $request)
     {
         try {
-            $request['table_id'] = $request->tableId;
-            $request['client_identifier'] = auth()->user()->identifier;
+            // Validate the request data
+            $validated = $request->validate([
+                'name' => 'required|string',
+                'date' => 'required|date',
+                'time' => 'required|string',
+                'guests' => 'required|integer|min:1',
+                'tableId' => 'required|integer',
+                'contact' => 'nullable|string',
+                'notes' => 'nullable|string',
+            ]);
+
+            // Transform data for API
+            $apiData = [
+                'name' => $validated['name'],
+                'date' => $validated['date'],
+                'time' => $validated['time'],
+                'guests' => $validated['guests'],
+                'table_id' => $validated['tableId'], // Convert tableId to table_id
+                'contact' => $validated['contact'] ?? '',
+                'notes' => $validated['notes'] ?? '',
+                'status' => 'pending', // Set default status
+                'client_identifier' => auth()->user()->identifier,
+            ];
 
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/fnb-reservations", $request->all());
+                ->post("{$this->apiUrl}/fnb-reservations", $apiData);
 
             if (!$response->successful()) {
                 throw new \Exception($response->json()['message'] ?? 'Failed to store reservation');
             }
 
             return redirect()->back()->with('success', 'Reservation created successfully')
-                ->with('reservation', $response->json()['data']);
+                ->with('reservation', $response->json());
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to store reservation: ' . $e->getMessage());
+        }
+    }
+
+    public function updateReservation(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'sometimes|string',
+                'date' => 'sometimes|date',
+                'time' => 'sometimes|string',
+                'guests' => 'sometimes|integer|min:1',
+                'tableId' => 'sometimes|integer',
+                'contact' => 'nullable|string',
+                'notes' => 'nullable|string',
+                'status' => 'sometimes|in:pending,confirmed,cancelled',
+            ]);
+
+            // Transform data for API if needed
+            $apiData = $validated;
+            if (isset($validated['tableId'])) {
+                $apiData['table_id'] = $validated['tableId'];
+                unset($apiData['tableId']);
+            }
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-reservations/{$id}", $apiData);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update reservation');
+            }
+
+            return redirect()->back()->with('success', 'Reservation updated successfully')
+                ->with('reservation', $response->json());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update reservation: ' . $e->getMessage());
         }
     }
 
@@ -547,6 +632,75 @@ class PosRestaurantController extends Controller
             return response()->json([
                 'error' => 'Failed to fetch reservations overview: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function getTableSchedules()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-table-schedules?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $schedules = $response->json()['data'] ?? [];
+            
+            // Transform to camelCase for frontend
+            $transformedSchedules = array_map(function($schedule) {
+                if (is_object($schedule)) {
+                    $schedule = (array) $schedule;
+                }
+                
+                return [
+                    'id' => (int)($schedule['id'] ?? 0),
+                    'tableId' => (int)($schedule['table_id'] ?? 0),
+                    'scheduleDate' => $schedule['schedule_date'] ?? '',
+                    'timeslots' => $schedule['timeslots'] ?? [],
+                    'status' => $schedule['status'] ?? 'available',
+                    'joinedWith' => $schedule['joined_with'] ?? null,
+                    'notes' => $schedule['notes'] ?? null,
+                ];
+            }, $schedules);
+
+            return $transformedSchedules;
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch table schedules: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function setTableSchedule(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'tableIds' => 'required|array|min:1',
+                'tableIds.*' => 'required|integer',
+                'date' => 'required|date',
+                'time' => 'required|string',
+                'status' => 'required|in:available,unavailable,joined',
+                'joinedWith' => 'nullable|string',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-table-schedules/bulk-set-availability", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'table_ids' => $validated['tableIds'],
+                    'schedule_date' => $validated['date'],
+                    'timeslots' => [$validated['time']], // Single time slot
+                    'status' => $validated['status'],
+                    'joined_with' => $validated['joinedWith'] ?? null,
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to set table schedule');
+            }
+
+            return redirect()->back()->with('success', 'Table schedule updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to set table schedule: ' . $e->getMessage());
         }
     }
 

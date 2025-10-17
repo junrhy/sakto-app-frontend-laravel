@@ -36,6 +36,12 @@ class ProjectSeeder extends Seeder
                 'identifier' => 'medical',
                 'enabledModules' => json_encode(array_values(['clinic', 'payroll', 'contacts', 'email', 'sms', 'queue-system'])),
             ],
+            [
+                'id' => 5,
+                'name' => 'Food and Beverage',
+                'identifier' => 'fnb',
+                'enabledModules' => json_encode(array_values(['fnb', 'contacts', 'email', 'sms', 'payroll'])),
+            ],
         ];
 
         foreach ($projects as $project) {

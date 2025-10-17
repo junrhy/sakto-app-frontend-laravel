@@ -387,10 +387,29 @@ export const usePosApi = () => {
         });
     }, []);
 
+    // Table Schedules API calls
+    const setTableSchedule = useCallback(async (scheduleData: any) => {
+        return new Promise((resolve) => {
+            router.post('/pos-restaurant/table-schedules', scheduleData, {
+                onSuccess: () => {
+                    toast.success('Table schedule updated successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to update table schedule',
+                    );
+                    resolve(false);
+                },
+            });
+        });
+    }, []);
+
     // Utility function to refresh data
     const refreshData = useCallback(() => {
         router.reload({
-            only: ['menuItems', 'tables', 'reservations', 'blockedDates'],
+            only: ['menuItems', 'tables', 'reservations', 'blockedDates', 'tableSchedules'],
         });
     }, []);
 
@@ -422,6 +441,9 @@ export const usePosApi = () => {
         createBlockedDate,
         updateBlockedDate,
         deleteBlockedDate,
+
+        // Table Schedules
+        setTableSchedule,
 
         // Kitchen Orders
         storeKitchenOrder,

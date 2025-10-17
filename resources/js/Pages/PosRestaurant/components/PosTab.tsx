@@ -121,30 +121,6 @@ export const PosTab: React.FC<PosTabProps> = ({
 
     return (
         <div className="space-y-6">
-            {/* Header Section */}
-            <div className="rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 p-6 dark:border-blue-800 dark:from-blue-900/20 dark:to-purple-900/20">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Point of Sale
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Manage orders and process payments
-                        </p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Table
-                            </p>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {tableNumber || 'Not Selected'}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Menu Items */}
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">

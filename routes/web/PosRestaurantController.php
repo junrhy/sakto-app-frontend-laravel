@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         // Reservations
         Route::get('/reservations', [PosRestaurantController::class, 'getReservations']);
         Route::post('/reservations', [PosRestaurantController::class, 'storeReservation']);
+        Route::put('/reservations/{id}', [PosRestaurantController::class, 'updateReservation']);
         Route::delete('/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
         Route::get('/reservations-overview', [PosRestaurantController::class, 'getReservationsOverview']);
         
@@ -56,5 +57,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::post('/blocked-dates', [PosRestaurantController::class, 'storeBlockedDate']);
         Route::put('/blocked-dates/{id}', [PosRestaurantController::class, 'updateBlockedDate']);
         Route::delete('/blocked-dates/{id}', [PosRestaurantController::class, 'destroyBlockedDate']);
+        
+        // Table Schedules
+        Route::post('/table-schedules', [PosRestaurantController::class, 'setTableSchedule']);
     });
 });
