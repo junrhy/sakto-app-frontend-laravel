@@ -418,18 +418,19 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     return (
         <div className="space-y-6">
             <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
+                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center text-gray-900 dark:text-white">
-                            <Calculator className="mr-2 h-5 w-5 text-green-500" />
+                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            <Calculator className="mr-2 h-4 w-4 text-green-500" />
                             Tables Overview
                         </CardTitle>
                         {canEdit && (
                             <Button
                                 onClick={onAddTable}
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl"
+                                size="sm"
+                                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-emerald-700 hover:shadow-xl"
                             >
-                                <Plus className="mr-2 h-4 w-4" /> Add Table
+                                <Plus className="mr-1 h-3 w-3" /> Add Table
                             </Button>
                         )}
                     </div>

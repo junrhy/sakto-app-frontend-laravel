@@ -124,9 +124,9 @@ export const PosTab: React.FC<PosTabProps> = ({
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Menu Items */}
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                    <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
-                        <CardTitle className="flex items-center text-gray-900 dark:text-white">
-                            <UtensilsCrossed className="mr-2 h-5 w-5 text-blue-500" />
+                    <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
+                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            <UtensilsCrossed className="mr-2 h-4 w-4 text-blue-500" />
                             Menu Items
                         </CardTitle>
                     </CardHeader>
@@ -193,9 +193,9 @@ export const PosTab: React.FC<PosTabProps> = ({
 
                 {/* Current Order */}
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                    <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:border-gray-600 dark:from-green-900/20 dark:to-emerald-900/20">
-                        <CardTitle className="flex items-center text-gray-900 dark:text-white">
-                            <ShoppingCart className="mr-2 h-5 w-5 text-green-500" />
+                    <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 dark:border-gray-600 dark:from-green-900/20 dark:to-emerald-900/20">
+                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            <ShoppingCart className="mr-2 h-4 w-4 text-green-500" />
                             Current Order
                         </CardTitle>
                     </CardHeader>

@@ -1,5 +1,4 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import {
@@ -151,6 +150,7 @@ export default function PosRestaurantIndex({
 }: PageProps) {
     const [isTabLoading, setIsTabLoading] = useState(false);
     const [currentTab, setCurrentTab] = useState(tab);
+    const [showMobileTabs, setShowMobileTabs] = useState(false);
     const [discount, setDiscount] = useState(0);
     const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>(
         'percentage',
@@ -208,6 +208,7 @@ export default function PosRestaurantIndex({
     const handleTabChange = useCallback((value: string) => {
         setIsTabLoading(true);
         setCurrentTab(value);
+        setShowMobileTabs(false); // Close mobile tabs after selection
         
         // Get current URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -722,93 +723,99 @@ export default function PosRestaurantIndex({
         >
             <Head title="POS Restaurant" />
 
-            <div className="min-h-screen px-6 pb-6 pt-2">
+            <div className="-mt-6 min-h-screen">
                 <div className="w-full">
-                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+                    <div className="overflow-hidden border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                         <Tabs
                             value={currentTab}
                             onValueChange={handleTabChange}
                             className="w-full"
                         >
-                            <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-3 dark:border-gray-600 dark:from-gray-800 dark:to-gray-700">
-                                <TabsList
-                                    className={`grid w-full ${
-                                        useMediaQuery('(min-width: 640px)')
-                                            ? 'grid-cols-6'
-                                            : 'grid-cols-2'
-                                    } gap-2 rounded-xl border border-gray-200 bg-white p-1 pb-10 shadow-sm dark:border-gray-600 dark:bg-gray-800`}
+                            {/* Mobile Tab Toggle Button */}
+                            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-3 lg:hidden dark:border-gray-700 dark:bg-gray-800">
+                                <button
+                                    onClick={() => setShowMobileTabs(!showMobileTabs)}
+                                    className={`flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl ${
+                                        currentTab === 'pos' ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' :
+                                        currentTab === 'tables' ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' :
+                                        currentTab === 'reservations' ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700' :
+                                        currentTab === 'blocked-dates' ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700' :
+                                        currentTab === 'opened-dates' ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' :
+                                        currentTab === 'menu' ? 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700' :
+                                        'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                                    }`}
                                 >
+                                    <span className="flex items-center">
+                                        {currentTab === 'pos' && <><UtensilsCrossed className="mr-2 h-4 w-4" />Point of Sale</>}
+                                        {currentTab === 'tables' && <><Calculator className="mr-2 h-4 w-4" />Tables</>}
+                                        {currentTab === 'reservations' && <><Check className="mr-2 h-4 w-4" />Reservations</>}
+                                        {currentTab === 'blocked-dates' && <><Calendar className="mr-2 h-4 w-4" />Blocked Dates</>}
+                                        {currentTab === 'opened-dates' && <><Calendar className="mr-2 h-4 w-4" />Opened Dates</>}
+                                        {currentTab === 'menu' && <><ShoppingCart className="mr-2 h-4 w-4" />Menu</>}
+                                    </span>
+                                    <svg
+                                        className={`h-5 w-5 transition-transform duration-200 ${showMobileTabs ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Main Layout: Content on Left, Tabs on Right */}
+                            <div className="flex flex-col lg:flex-row">
+                                {/* Tabs Sidebar - Right on desktop, Hidden by default on mobile */}
+                                <div className={`order-1 mb-6 border-b border-gray-200 px-4 pb-12 pt-4 lg:order-2 lg:mb-0 lg:w-64 lg:border-b-0 lg:border-l lg:p-4 dark:border-gray-600 ${showMobileTabs ? 'block' : 'hidden lg:block'}`}>
+                                <TabsList className="flex h-auto w-full flex-col gap-2 bg-transparent p-0">
                                     <TabsTrigger
                                         value="pos"
-                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                     >
                                         <UtensilsCrossed className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        <span className="hidden sm:inline">
-                                            Point of Sale
-                                        </span>
-                                        <span className="sm:hidden">POS</span>
+                                        Point of Sale
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="tables"
-                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                     >
                                         <Calculator className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        <span className="hidden sm:inline">
-                                            Tables
-                                        </span>
-                                        <span className="sm:hidden">
-                                            Tables
-                                        </span>
+                                        Tables
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="reservations"
-                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                     >
                                         <Check className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        <span className="hidden sm:inline">
-                                            Reservations
-                                        </span>
-                                        <span className="sm:hidden">
-                                            Reserve
-                                        </span>
+                                        Reservations
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="blocked-dates"
-                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                     >
                                         <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        <span className="hidden sm:inline">
-                                            Blocked Dates
-                                        </span>
-                                        <span className="sm:hidden">
-                                            Blocked
-                                        </span>
+                                        Blocked Dates
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="opened-dates"
-                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                     >
                                         <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        <span className="hidden sm:inline">
-                                            Opened Dates
-                                        </span>
-                                        <span className="sm:hidden">
-                                            Open
-                                        </span>
+                                        Opened Dates
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="menu"
-                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                     >
                                         <ShoppingCart className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        <span className="hidden sm:inline">
-                                            Menu
-                                        </span>
-                                        <span className="sm:hidden">Menu</span>
+                                        Menu
                                     </TabsTrigger>
                                 </TabsList>
                             </div>
 
+                            {/* Content Area - Left on desktop */}
+                            <div className="order-2 flex-1 lg:order-1 lg:mr-6">
                             {isTabLoading && <TabLoadingSpinner />}
 
                             {!isTabLoading && (
@@ -817,7 +824,7 @@ export default function PosRestaurantIndex({
                                         {currentTab === 'pos' && (
                                             <TabsContent
                                                 value="pos"
-                                                className="p-6 pb-8"
+                                                className="m-0 p-0"
                                             >
                                                 <PosTab
                                                     menuItems={
@@ -879,7 +886,7 @@ export default function PosRestaurantIndex({
                                         {currentTab === 'tables' && (
                                             <TabsContent
                                                 value="tables"
-                                                className="p-6 pb-8"
+                                                className="m-0 p-0"
                                             >
                                                 <TablesTab
                                                     tables={
@@ -933,7 +940,7 @@ export default function PosRestaurantIndex({
                                         {currentTab === 'reservations' && (
                                             <TabsContent
                                                 value="reservations"
-                                                className="p-6 pb-8"
+                                                className="m-0 p-0"
                                             >
                                                 <ReservationsTab
                                                     reservations={
@@ -972,7 +979,7 @@ export default function PosRestaurantIndex({
                                         {currentTab === 'blocked-dates' && (
                                             <TabsContent
                                                 value="blocked-dates"
-                                                className="p-6 pb-8"
+                                                className="m-0 p-0"
                                             >
                                                 <BlockedDatesTab
                                                     blockedDates={
@@ -995,7 +1002,7 @@ export default function PosRestaurantIndex({
                                         {currentTab === 'opened-dates' && (
                                             <TabsContent
                                                 value="opened-dates"
-                                                className="p-6 pb-8"
+                                                className="m-0 p-0"
                                             >
                                                 <OpenedDatesTab
                                                     openedDates={openedDates}
@@ -1015,7 +1022,7 @@ export default function PosRestaurantIndex({
                                         {currentTab === 'menu' && (
                                             <TabsContent
                                                 value="menu"
-                                                className="p-6 pb-8"
+                                                className="m-0 p-0"
                                             >
                                                 <MenuTab
                                                     menuItems={
@@ -1044,6 +1051,10 @@ export default function PosRestaurantIndex({
                                     </Suspense>
                                 </ErrorBoundary>
                             )}
+                            </div>
+                            {/* End Content Area */}
+                            </div>
+                            {/* End Main Layout */}
                         </Tabs>
                     </div>
                 </div>

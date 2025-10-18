@@ -192,10 +192,10 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
     return (
         <div className="space-y-6">
             <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
-                    <CardTitle className="flex items-center text-gray-900 dark:text-white">
-                        <Calendar className="mr-2 h-5 w-5 text-green-500" />
-                        Opened Dates Management
+                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
+                    <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                        <Calendar className="mr-2 h-4 w-4 text-green-500" />
+                        Opened Dates
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">

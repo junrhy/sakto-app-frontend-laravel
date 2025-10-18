@@ -384,55 +384,85 @@ export default function Authenticated({
                         (showingNavigationDropdown
                             ? 'translate-x-0'
                             : '-translate-x-full') +
-                        ' fixed inset-y-0 left-0 z-[70] w-full transform overflow-y-auto bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg transition-transform duration-300 ease-in-out sm:hidden'
+                        ' fixed inset-y-0 left-0 z-[70] flex w-full flex-col transform bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-2xl transition-transform duration-300 ease-in-out dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 sm:hidden'
                     }
                 >
-                    {/* Close Button */}
-                    <div className="flex justify-end p-4">
-                        <button
-                            onClick={() => setShowingNavigationDropdown(false)}
-                            className="text-gray-700 transition-colors duration-200 hover:text-gray-900 focus:outline-none dark:text-white/80 dark:hover:text-white"
-                        >
-                            <svg
-                                className="h-6 w-6"
-                                stroke="currentColor"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
-                    </div>
+                    {/* Scrollable Menu Content */}
+                    <div className="flex-1 overflow-y-auto">
+                        {/* Header with User Info and Close Button */}
+                        <div className="border-b border-gray-200/50 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-5 shadow-sm dark:border-gray-700/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700">
+                            <div className="flex items-center justify-between">
+                                {/* User Info */}
+                                <div className="flex items-center space-x-3">
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white shadow-lg ring-2 ring-white/20">
+                                        <span className="text-lg font-bold">
+                                            {(auth.selectedTeamMember?.full_name || authUser.name)
+                                                .split(' ')
+                                                .map((n: string) => n[0])
+                                                .join('')
+                                                .toUpperCase()
+                                                .slice(0, 2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                            {auth.selectedTeamMember?.full_name || authUser.name}
+                                        </div>
+                                        <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                            {authUser.email}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setShowingNavigationDropdown(false)}
+                                    className="rounded-xl bg-white/50 p-2.5 text-gray-700 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-gray-900 hover:shadow-lg dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                >
+                                    <svg
+                                        className="h-5 w-5"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div className="space-y-1 px-4 pb-3">
+                        <div className="space-y-2 px-4 pb-3 pt-4">
                         <ResponsiveNavLink
                             href={route('home')}
                             active={route().current('home')}
-                            className="text-gray-800 hover:bg-white/10 hover:text-white dark:text-white/90"
+                            className="flex justify-center rounded-xl bg-white/60 py-3 font-medium text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:shadow-md dark:bg-white/5 dark:text-white/90 dark:hover:from-blue-600 dark:hover:to-purple-700"
                         >
                             Home
                         </ResponsiveNavLink>
 
                         {hasDashboardAccess && (
-                            <div className="border-t border-gray-200 dark:border-white/10">
-                                <div className="px-4 py-2">
-                                    <div className="text-base font-medium text-gray-800 dark:text-white/90">
-                                        Dashboard
-                                    </div>
+                            <div className="border-t border-gray-200/50 dark:border-white/10">
+                                {/* Full-width Category Header */}
+                                <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-gray-700 dark:from-blue-500/20 dark:to-purple-500/20 dark:text-white/80">
+                                    Dashboard
+                                </div>
+                                
+                                {/* Menu Items */}
+                                <div className="space-y-2 px-4 py-3">
                                     <ResponsiveNavLink
                                         href={`/dashboard?app=${appParam}`}
-                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                        className="flex justify-center rounded-xl bg-white/60 py-3 font-medium text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:shadow-md dark:bg-white/5 dark:text-white/90 dark:hover:from-blue-600 dark:hover:to-purple-700"
                                     >
                                         My Dashboard
                                     </ResponsiveNavLink>
                                     <ResponsiveNavLink
                                         href={`/dashboards?app=${appParam}`}
-                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                        className="flex justify-center rounded-xl bg-white/60 py-3 font-medium text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:shadow-md dark:bg-white/5 dark:text-white/90 dark:hover:from-blue-600 dark:hover:to-purple-700"
                                     >
                                         Dashboard Gallery
                                     </ResponsiveNavLink>
@@ -446,47 +476,44 @@ export default function Authenticated({
                             appParam={appParam}
                             url={url}
                         />
+                    </div>
+                    {/* End Scrollable Content */}
+                    </div>
 
-                        {/* Mobile User Section */}
-                        <div className="mt-auto border-t border-gray-200 dark:border-white/10">
-                            <div className="px-4 py-3">
-                                <div className="mb-3 flex items-center space-x-3">
-                                    <div className="flex-1">
-                                        <div className="text-base font-medium text-gray-800 dark:text-white/90">
-                                            {auth.selectedTeamMember
-                                                ?.full_name || authUser.name}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <ResponsiveNavLink
-                                        href={route('profile.edit')}
-                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
-                                    >
-                                        Profile
-                                    </ResponsiveNavLink>
-                                    <ResponsiveNavLink
-                                        href="/help"
-                                        className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
-                                    >
-                                        Help
-                                    </ResponsiveNavLink>
-                                    <div className="border-t border-white/20 pt-1">
-                                        <ResponsiveNavLink
-                                            href={route('logout', {
-                                                project:
-                                                    auth.project?.identifier,
-                                            })}
-                                            method="post"
-                                            as="button"
-                                            className="w-full text-left text-red-400 hover:bg-red-500/20 hover:text-red-300"
-                                        >
-                                            Logout
-                                        </ResponsiveNavLink>
-                                    </div>
-                                </div>
-                            </div>
+                    {/* Action Buttons - Fixed at Bottom */}
+                    <div className="border-t border-gray-200/50 bg-gradient-to-br from-gray-100 via-gray-50 to-white p-4 shadow-2xl dark:border-gray-700/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-700">
+                        <div className="grid grid-cols-3 gap-3">
+                            <ResponsiveNavLink
+                                href={route('profile.edit')}
+                                className="flex flex-col items-center justify-center space-y-1 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 px-3 py-4 text-xs font-semibold text-blue-700 shadow-md transition-all duration-200 hover:scale-105 hover:from-blue-500 hover:to-blue-600 hover:text-white hover:shadow-lg dark:from-blue-900/30 dark:to-blue-800/30 dark:text-blue-300 dark:hover:from-blue-600 dark:hover:to-blue-700 dark:hover:text-white"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>Profile</span>
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink
+                                href="/help"
+                                className="flex flex-col items-center justify-center space-y-1 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 px-3 py-4 text-xs font-semibold text-purple-700 shadow-md transition-all duration-200 hover:scale-105 hover:from-purple-500 hover:to-purple-600 hover:text-white hover:shadow-lg dark:from-purple-900/30 dark:to-purple-800/30 dark:text-purple-300 dark:hover:from-purple-600 dark:hover:to-purple-700 dark:hover:text-white"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Help</span>
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink
+                                href={route('logout', {
+                                    project: auth.project?.identifier,
+                                })}
+                                method="post"
+                                as="button"
+                                className="flex flex-col items-center justify-center space-y-1 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 px-3 py-4 text-xs font-semibold text-red-700 shadow-md transition-all duration-200 hover:scale-105 hover:from-red-500 hover:to-red-600 hover:text-white hover:shadow-lg dark:from-red-900/30 dark:to-red-800/30 dark:text-red-300 dark:hover:from-red-600 dark:hover:to-red-700 dark:hover:text-white"
+                            >
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span>Logout</span>
+                            </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>
@@ -506,7 +533,7 @@ export default function Authenticated({
                     <div className="px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
-                                {/* Mobile Menu Button */}
+                                {/* Mobile Menu Button with User Name */}
                                 <div className="mr-2 flex items-center sm:hidden">
                                     <button
                                         onClick={() =>
@@ -515,10 +542,10 @@ export default function Authenticated({
                                                     !previousState,
                                             )
                                         }
-                                        className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white dark:focus:bg-white/10 dark:focus:text-white"
+                                        className="inline-flex items-center space-x-2 rounded-lg p-2 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-900 focus:outline-none dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
                                     >
                                         <svg
-                                            className="h-6 w-6"
+                                            className="h-6 w-6 flex-shrink-0"
                                             stroke="currentColor"
                                             fill="none"
                                             viewBox="0 0 24 24"
@@ -546,6 +573,16 @@ export default function Authenticated({
                                                 d="M6 18L18 6M6 6l12 12"
                                             />
                                         </svg>
+                                        <div className="flex flex-col items-start">
+                                            {auth.selectedTeamMember?.full_name ? (
+                                                <>
+                                                    <span className="text-sm font-bold">{authUser.name}</span>
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Logged As: {auth.selectedTeamMember.full_name}</span>
+                                                </>
+                                            ) : (
+                                                <span className="text-sm font-bold">{authUser.name}</span>
+                                            )}
+                                        </div>
                                     </button>
                                 </div>
 

@@ -26,17 +26,20 @@ export default function MobileMenu({
                 return (
                     <div
                         key={category.id}
-                        className="border-t border-gray-200 dark:border-white/10"
+                        className="border-t border-gray-200/50 dark:border-white/10"
                     >
-                        <div className="px-4 py-2">
-                            <div className="text-base font-medium text-gray-800 dark:text-white/90">
-                                {category.title}
-                            </div>
+                        {/* Full-width Category Header */}
+                        <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-gray-700 dark:from-blue-500/20 dark:to-purple-500/20 dark:text-white/80">
+                            {category.title}
+                        </div>
+                        
+                        {/* Menu Items */}
+                        <div className="space-y-2 px-4 py-3">
                             {visibleItems.map((item) => (
                                 <ResponsiveNavLink
                                     key={item.id}
                                     href={item.href}
-                                    className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                                    className="flex justify-center rounded-xl bg-white/60 py-3 font-medium text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:shadow-md dark:bg-white/5 dark:text-white/90 dark:hover:from-blue-600 dark:hover:to-purple-700"
                                 >
                                     {item.title}
                                 </ResponsiveNavLink>
