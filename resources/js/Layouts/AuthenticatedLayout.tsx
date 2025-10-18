@@ -250,6 +250,7 @@ export default function Authenticated({
     const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     const { url } = usePage();
     const pageProps = usePage<{
@@ -304,6 +305,57 @@ export default function Authenticated({
         fetchCredits();
         fetchApps();
     }, [authUser.identifier]);
+
+    // Detect fullscreen mode
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            const fullscreen = !!(
+                document.fullscreenElement ||
+                (document as any).webkitFullscreenElement ||
+                (document as any).mozFullScreenElement ||
+                (document as any).msFullscreenElement
+            );
+            setIsFullscreen(fullscreen);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        // Check initial state
+        handleFullscreenChange();
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+    }, []);
+
+    // Fullscreen toggle function
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.error('Error attempting to enable fullscreen:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    // Current date and time state
+    const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+    // Update time every second
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentDateTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     const hasDashboardAccess =
         !url.includes('help') &&
@@ -525,6 +577,7 @@ export default function Authenticated({
                     />
                 )}
 
+                {!isFullscreen && (
                 <nav
                     className={`border-b border-gray-200 bg-gradient-to-r dark:border-gray-600 ${getHeaderColorClass(url, authUser.project_identifier)} fixed left-0 right-0 top-0 z-20 transition-all duration-300 ${
                         sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
@@ -649,13 +702,54 @@ export default function Authenticated({
                                         appParam={appParam}
                                         url={url}
                                     />
+                                    
+                                    {/* View Dropdown */}
+                                    <div className="inline-flex items-center">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <span className="inline-flex rounded-md">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 transition-all duration-200 ease-in-out hover:text-gray-900 focus:outline-none dark:text-gray-800 dark:text-white/90 dark:hover:text-white"
+                                                    >
+                                                        <span className="mt-[1px]">
+                                                            View
+                                                        </span>
+                                                        <svg
+                                                            className="-mr-0.5 ml-2 h-4 w-4"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            </Dropdown.Trigger>
+
+                                            <Dropdown.Content>
+                                                <button
+                                                    onClick={toggleFullscreen}
+                                                    className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                                                >
+                                                    {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                                                </button>
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </nav>
+                )}
 
                 {/* Sidebar */}
+                {!isFullscreen && (
                 <div
                     className={`fixed left-0 top-0 z-30 h-screen transition-all duration-300 ease-in-out ${
                         sidebarCollapsed ? 'w-16' : 'w-64'
@@ -963,11 +1057,96 @@ export default function Authenticated({
                         </div>
                     </div>
                 </div>
+                )}
+
+                {/* Fullscreen mode header */}
+                {isFullscreen && (
+                    <div className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200 dark:bg-gray-800/90 dark:border-gray-700">
+                        <div className="flex items-center justify-between px-4 py-1.5">
+                            {/* User Information */}
+                            <div className="flex items-center space-x-2">
+                                <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-bold text-[10px]">
+                                        {authUser.name.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                                <div className="text-xs font-medium text-gray-900 dark:text-white">
+                                    {authUser.name}
+                                </div>
+                            </div>
+
+                            {/* Date and Time + User Menu */}
+                            <div className="flex items-center space-x-2">
+                                <div className="text-right">
+                                    <div className="text-xs font-medium text-gray-900 dark:text-white">
+                                        {currentDateTime.toLocaleDateString('en-US', { 
+                                            weekday: 'short', 
+                                            year: 'numeric', 
+                                            month: 'short', 
+                                            day: 'numeric' 
+                                        })}
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                                        {currentDateTime.toLocaleTimeString('en-US', { 
+                                            hour: '2-digit', 
+                                            minute: '2-digit', 
+                                            second: '2-digit' 
+                                        })}
+                                    </div>
+                                </div>
+                                
+                                <Dropdown>
+                                    <Dropdown.Trigger>
+                                        <button className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                                            <span>{auth.selectedTeamMember?.full_name || 'Profile'}</span>
+                                            <svg
+                                                className="h-3 w-3"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </Dropdown.Trigger>
+                                    <Dropdown.Content>
+                                        <Link
+                                            href={route('logout', {
+                                                project: auth.project?.identifier,
+                                            })}
+                                            method="post"
+                                            as="button"
+                                            className="block w-full px-4 py-2 text-left text-sm leading-5 text-red-600 transition duration-150 ease-in-out hover:bg-red-50 focus:bg-red-50 focus:outline-none dark:text-red-400 dark:hover:bg-red-500/20 dark:focus:bg-red-500/20"
+                                        >
+                                            Logout
+                                        </Link>
+                                    </Dropdown.Content>
+                                </Dropdown>
+
+                                <button
+                                    onClick={toggleFullscreen}
+                                    className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    <span>Exit</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Main content with sidebar offset */}
                 <div
-                    className={`relative min-h-screen bg-white pt-16 transition-all duration-300 ease-in-out dark:bg-gray-800 ${
-                        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+                    className={`relative min-h-screen bg-white transition-all duration-300 ease-in-out dark:bg-gray-800 ${
+                        isFullscreen ? 'pt-10' : 'pt-16'
+                    } ${
+                        isFullscreen ? '' : sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
                     }`}
                 >
                     {header && (

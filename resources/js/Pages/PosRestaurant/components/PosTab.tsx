@@ -369,8 +369,9 @@ export const PosTab: React.FC<PosTabProps> = ({
                         </div>
                     </CardContent>
 
-                    <CardFooter className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-4 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
-                        <div className="mr-2 w-80 space-y-2">
+                    <CardFooter className="flex-col border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
+                        {/* Total Section */}
+                        <div className="w-full space-y-2">
                             <div className="flex items-center justify-between py-1">
                                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                     Subtotal:
@@ -389,7 +390,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     {discountAmount}
                                 </span>
                             </div>
-                            <div className="-mx-3 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2 dark:bg-blue-900/20">
+                            <div className="-mx-6 flex items-center justify-between bg-blue-50 px-6 py-3 dark:bg-blue-900/20">
                                 <span className="font-bold text-gray-900 dark:text-white">
                                     Total:
                                 </span>
@@ -399,7 +400,9 @@ export const PosTab: React.FC<PosTabProps> = ({
                                 </span>
                             </div>
                         </div>
-                        <div className="mt-4 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+
+                        {/* Action Buttons */}
+                        <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
                             <Button
                                 onClick={onPrintBill}
                                 disabled={orderItems.length === 0}
