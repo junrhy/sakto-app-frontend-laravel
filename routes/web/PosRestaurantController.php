@@ -45,6 +45,12 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::post('/orders/complete', [PosRestaurantController::class, 'completeOrder'])->name('pos-restaurant.complete-order');
         Route::get('/kitchen-orders/overview', [PosRestaurantController::class, 'getKitchenOrdersOverview']);
         
+        // Table Orders (New System)
+        Route::post('/table-order/get', [PosRestaurantController::class, 'getTableOrder'])->name('pos-restaurant.get-table-order');
+        Route::post('/table-order/save', [PosRestaurantController::class, 'saveTableOrder'])->name('pos-restaurant.save-table-order');
+        Route::post('/table-order/complete', [PosRestaurantController::class, 'completeTableOrder'])->name('pos-restaurant.complete-table-order');
+        Route::get('/table-orders/all-active', [PosRestaurantController::class, 'getAllActiveOrders'])->name('pos-restaurant.all-active-orders');
+        
         // Reservations
         Route::get('/reservations', [PosRestaurantController::class, 'getReservations']);
         Route::post('/reservations', [PosRestaurantController::class, 'storeReservation']);

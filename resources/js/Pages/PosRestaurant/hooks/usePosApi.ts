@@ -325,6 +325,95 @@ export const usePosApi = () => {
         });
     }, []);
 
+    // Table Orders API calls (New System)
+    const getTableOrder = useCallback(async (tableName: string) => {
+        try {
+            const response = await fetch('/pos-restaurant/table-order/get', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({ table_name: tableName }),
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to get table order');
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to get table order:', error);
+            return null;
+        }
+    }, []);
+
+    const saveTableOrder = useCallback(async (orderData: any) => {
+        try {
+            console.log('saveTableOrder called with:', orderData);
+            const response = await fetch('/pos-restaurant/table-order/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(orderData),
+            });
+            
+            console.log('Response status:', response.status);
+            const responseData = await response.json();
+            console.log('Response data:', responseData);
+            
+            if (!response.ok) {
+                throw new Error('Failed to save table order: ' + JSON.stringify(responseData));
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Failed to save table order:', error);
+            return false;
+        }
+    }, []);
+
+    const completeTableOrder = useCallback(async (tableName: string) => {
+        return new Promise((resolve) => {
+            router.post('/pos-restaurant/table-order/complete', { table_name: tableName }, {
+                onSuccess: () => {
+                    toast.success('Order completed successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to complete order',
+                    );
+                    resolve(false);
+                },
+            });
+        });
+    }, []);
+
+    const getAllActiveOrders = useCallback(async () => {
+        try {
+            const response = await fetch('/pos-restaurant/table-orders/all-active', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to get active orders');
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to get active orders:', error);
+            return [];
+        }
+    }, []);
+
     // Blocked Dates API calls
     const createBlockedDate = useCallback(async (blockedDateData: any) => {
         return new Promise((resolve) => {
@@ -514,6 +603,12 @@ export const usePosApi = () => {
 
         // Kitchen Orders
         storeKitchenOrder,
+
+        // Table Orders (New System)
+        getTableOrder,
+        saveTableOrder,
+        completeTableOrder,
+        getAllActiveOrders,
 
         // Utility
         refreshData,

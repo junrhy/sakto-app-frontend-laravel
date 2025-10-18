@@ -888,4 +888,100 @@ class PosRestaurantController extends Controller
             return redirect()->back()->with('error', 'Failed to remove blocked date: ' . $e->getMessage());
         }
     }
+
+    // Table Order Methods
+    public function getTableOrder(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'table_name' => 'required|string'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/get-table-order", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'table_name' => $validated['table_name']
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to get table order');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function saveTableOrder(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'table_name' => 'required|string',
+                'items' => 'required|array',
+                'discount' => 'required|numeric',
+                'discount_type' => 'required|in:percentage,fixed',
+                'subtotal' => 'required|numeric',
+                'total_amount' => 'required|numeric'
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/save-table-order", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to save table order');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function completeTableOrder(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'table_name' => 'required|string'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/complete", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'table_name' => $validated['table_name']
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to complete order');
+            }
+
+            return redirect()->back()->with('success', 'Order completed successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to complete order: ' . $e->getMessage());
+        }
+    }
+
+    public function getAllActiveOrders()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/all-active", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to get active orders');
+            }
+
+            return response()->json([
+                'orders' => $response->json()['orders'] ?? []
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'orders' => []
+            ]);
+        }
+    }
 }

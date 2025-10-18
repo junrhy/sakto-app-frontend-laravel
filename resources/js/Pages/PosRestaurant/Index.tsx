@@ -408,6 +408,52 @@ export default function PosRestaurantIndex({
         }
     }, [posState.orderItems, posState.tableNumber, api]);
 
+    // Table Order handlers (New System)
+    const handleLoadTableOrder = useCallback(async (tableName: string) => {
+        try {
+            const response = await api.getTableOrder(tableName);
+            if (response && response.items && Array.isArray(response.items) && response.items.length > 0) {
+                // Update the order items state with loaded data
+                posState.setOrderItems(response.items);
+                // Update discount settings if available
+                if (response.discount !== undefined) {
+                    setDiscount(Number(response.discount));
+                }
+                if (response.discount_type) {
+                    setDiscountType(response.discount_type as 'percentage' | 'fixed');
+                }
+                console.log('Loaded order for table:', tableName, response);
+            } else {
+                // Clear order items if no saved order
+                posState.setOrderItems([]);
+                setDiscount(0);
+            }
+        } catch (error) {
+            console.error('Failed to load table order:', error);
+            // Clear order items on error
+            posState.setOrderItems([]);
+            setDiscount(0);
+        }
+    }, [api, posState, setDiscount, setDiscountType]);
+
+    const handleSaveTableOrder = useCallback(async (tableName: string, orderData: any) => {
+        try {
+            await api.saveTableOrder(orderData);
+        } catch (error) {
+            console.error('Failed to save table order:', error);
+        }
+    }, [api]);
+
+    const handleCompleteTableOrder = useCallback(async (tableName: string) => {
+        try {
+            await api.completeTableOrder(tableName);
+            // Clear the order items after completion
+            posState.clearOrder();
+        } catch (error) {
+            console.error('Failed to complete table order:', error);
+        }
+    }, [api, posState]);
+
     const handleConfirmCompleteOrder = useCallback(async () => {
         const orderData = {
             table_number: posState.tableNumber,
@@ -721,7 +767,7 @@ export default function PosRestaurantIndex({
                 </div>
             }
         >
-            <Head title="POS Restaurant" />
+            <Head title="Food and Beverage Management System" />
 
             <div className="-mt-6 min-h-screen">
                 <div className="w-full">
@@ -878,6 +924,15 @@ export default function PosRestaurantIndex({
                                                     }
                                                     onPrintKitchenOrder={
                                                         handlePrintKitchenOrder
+                                                    }
+                                                    onLoadTableOrder={
+                                                        handleLoadTableOrder
+                                                    }
+                                                    onSaveTableOrder={
+                                                        handleSaveTableOrder
+                                                    }
+                                                    onCompleteTableOrder={
+                                                        handleCompleteTableOrder
                                                     }
                                                 />
                                             </TabsContent>
