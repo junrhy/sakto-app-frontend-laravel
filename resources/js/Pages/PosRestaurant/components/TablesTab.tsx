@@ -17,8 +17,9 @@ import {
 } from '@/Components/ui/select';
 import { Calculator, Edit, Link2, Plus, Trash, Unlink } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Table as TableType, Reservation } from '../types';
+import { Table as TableType, Reservation, BlockedDate } from '../types';
 import { DateCalendar } from './DateCalendar';
+import { toast } from 'sonner';
 
 interface TableSchedule {
     id: number;
@@ -30,9 +31,21 @@ interface TableSchedule {
     notes?: string | null;
 }
 
+interface OpenedDate {
+    id: number;
+    opened_date: string;
+    timeslots: string[];
+    reason?: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+}
+
 interface TablesTabProps {
     tables: TableType[];
     reservations?: Reservation[];
+    openedDates?: OpenedDate[];
+    blockedDates?: BlockedDate[];
     tableSchedules?: TableSchedule[];
     currency_symbol: string;
     canEdit: boolean;
@@ -58,6 +71,8 @@ interface TablesTabProps {
 export const TablesTab: React.FC<TablesTabProps> = ({
     tables,
     reservations = [],
+    openedDates = [],
+    blockedDates = [],
     tableSchedules = [],
     currency_symbol,
     canEdit,
@@ -106,6 +121,40 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     }, []);
 
     const timeSlots = useMemo(() => generateTimeSlots(), [generateTimeSlots]);
+
+    // Check if a timeslot is opened
+    const isTimeSlotOpened = useCallback(
+        (date: string, time: string) => {
+            // If no opened dates configured, all dates are available
+            if (openedDates.length === 0) return true;
+            
+            // Check if this specific date and time is opened
+            return openedDates.some((openedDate) => {
+                const openedDateStr = openedDate.opened_date.split('T')[0];
+                return (
+                    openedDateStr === date &&
+                    openedDate.timeslots &&
+                    openedDate.timeslots.includes(time)
+                );
+            });
+        },
+        [openedDates],
+    );
+
+    // Check if a timeslot is blocked
+    const isTimeSlotBlocked = useCallback(
+        (date: string, time: string) => {
+            return blockedDates.some((blockedDate) => {
+                const blockedDateStr = blockedDate.blocked_date.split('T')[0];
+                return (
+                    blockedDateStr === date &&
+                    blockedDate.timeslots &&
+                    blockedDate.timeslots.includes(time)
+                );
+            });
+        },
+        [blockedDates],
+    );
 
     // Check if a table is unavailable according to schedule
     const isTableUnavailableForSlot = useCallback(
@@ -293,6 +342,18 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     const handleSetUnavailable = useCallback(() => {
         if (!selectedTime || selectedTables.length === 0 || !onSetTableSchedule) return;
         
+        // Check if timeslot is opened
+        if (!isTimeSlotOpened(selectedDate, selectedTime)) {
+            toast.error('This time slot is not opened. Please open it first in the "Opened Dates" tab.');
+            return;
+        }
+        
+        // Check if timeslot is blocked
+        if (isTimeSlotBlocked(selectedDate, selectedTime)) {
+            toast.error('This time slot is blocked. You cannot manage table schedules on blocked dates.');
+            return;
+        }
+        
         onSetTableSchedule({
             tableIds: selectedTables,
             date: selectedDate,
@@ -301,10 +362,22 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         });
         
         setSelectedTables([]);
-    }, [selectedTables, selectedDate, selectedTime, onSetTableSchedule]);
+    }, [selectedTables, selectedDate, selectedTime, onSetTableSchedule, isTimeSlotOpened, isTimeSlotBlocked]);
 
     const handleSetAvailable = useCallback(() => {
         if (!selectedTime || selectedTables.length === 0 || !onSetTableSchedule) return;
+        
+        // Check if timeslot is opened
+        if (!isTimeSlotOpened(selectedDate, selectedTime)) {
+            toast.error('This time slot is not opened. Please open it first in the "Opened Dates" tab.');
+            return;
+        }
+        
+        // Check if timeslot is blocked
+        if (isTimeSlotBlocked(selectedDate, selectedTime)) {
+            toast.error('This time slot is blocked. You cannot manage table schedules on blocked dates.');
+            return;
+        }
         
         onSetTableSchedule({
             tableIds: selectedTables,
@@ -314,10 +387,22 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         });
         
         setSelectedTables([]);
-    }, [selectedTables, selectedDate, selectedTime, onSetTableSchedule]);
+    }, [selectedTables, selectedDate, selectedTime, onSetTableSchedule, isTimeSlotOpened, isTimeSlotBlocked]);
 
     const handleJoinTablesForTime = useCallback(() => {
         if (!selectedTime || selectedTables.length < 2 || !onSetTableSchedule) return;
+        
+        // Check if timeslot is opened
+        if (!isTimeSlotOpened(selectedDate, selectedTime)) {
+            toast.error('This time slot is not opened. Please open it first in the "Opened Dates" tab.');
+            return;
+        }
+        
+        // Check if timeslot is blocked
+        if (isTimeSlotBlocked(selectedDate, selectedTime)) {
+            toast.error('This time slot is blocked. You cannot manage table schedules on blocked dates.');
+            return;
+        }
         
         onSetTableSchedule({
             tableIds: selectedTables,
@@ -328,7 +413,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         });
         
         setSelectedTables([]);
-    }, [selectedTables, selectedDate, selectedTime, onSetTableSchedule]);
+    }, [selectedTables, selectedDate, selectedTime, onSetTableSchedule, isTimeSlotOpened, isTimeSlotBlocked]);
 
     return (
         <div className="space-y-6">
@@ -384,9 +469,21 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                 {/* Legend */}
                                 <div className="mb-3 flex flex-wrap gap-3 text-xs">
                                     <div className="flex items-center gap-1.5">
+                                        <div className="h-3 w-3 rounded border border-gray-400 bg-gray-300 dark:border-gray-700 dark:bg-gray-800"></div>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Not Opened
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-3 w-3 rounded border border-red-300 bg-red-500"></div>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Blocked
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
                                         <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
                                         <span className="text-gray-600 dark:text-gray-400">
-                                            No reservations
+                                            Available
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
@@ -413,14 +510,22 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                             <div className="grid grid-cols-2 gap-2">
                                                 {timeSlots.am.map((timeSlot) => {
                                                     const isSelected = selectedTime === timeSlot.value;
+                                                    const isOpened = isTimeSlotOpened(selectedDate, timeSlot.value);
+                                                    const isBlocked = isTimeSlotBlocked(selectedDate, timeSlot.value);
                                                     const hasReservations = hasReservationsForTimeslot(timeSlot.value);
+                                                    const isDisabled = !isOpened || isBlocked;
                                                     return (
                                                         <button
                                                             key={timeSlot.value}
                                                             type="button"
-                                                            onClick={() => setSelectedTime(timeSlot.value)}
+                                                            onClick={() => !isDisabled && setSelectedTime(timeSlot.value)}
+                                                            disabled={isDisabled}
                                                             className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
-                                                                isSelected
+                                                                !isOpened
+                                                                    ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                    : isBlocked
+                                                                    ? 'border-red-300 bg-red-500 text-white cursor-not-allowed opacity-60'
+                                                                    : isSelected
                                                                     ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
                                                                     : hasReservations
                                                                       ? 'border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 cursor-pointer dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
@@ -442,14 +547,22 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                             <div className="grid grid-cols-2 gap-2">
                                                 {timeSlots.pm.map((timeSlot) => {
                                                     const isSelected = selectedTime === timeSlot.value;
+                                                    const isOpened = isTimeSlotOpened(selectedDate, timeSlot.value);
+                                                    const isBlocked = isTimeSlotBlocked(selectedDate, timeSlot.value);
                                                     const hasReservations = hasReservationsForTimeslot(timeSlot.value);
+                                                    const isDisabled = !isOpened || isBlocked;
                                                     return (
                                                         <button
                                                             key={timeSlot.value}
                                                             type="button"
-                                                            onClick={() => setSelectedTime(timeSlot.value)}
+                                                            onClick={() => !isDisabled && setSelectedTime(timeSlot.value)}
+                                                            disabled={isDisabled}
                                                             className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
-                                                                isSelected
+                                                                !isOpened
+                                                                    ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                    : isBlocked
+                                                                    ? 'border-red-300 bg-red-500 text-white cursor-not-allowed opacity-60'
+                                                                    : isSelected
                                                                     ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
                                                                     : hasReservations
                                                                       ? 'border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 cursor-pointer dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'

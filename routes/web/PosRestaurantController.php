@@ -58,6 +58,11 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::put('/blocked-dates/{id}', [PosRestaurantController::class, 'updateBlockedDate']);
         Route::delete('/blocked-dates/{id}', [PosRestaurantController::class, 'destroyBlockedDate']);
         
+        // Opened Dates
+        Route::post('/opened-dates', [PosRestaurantController::class, 'storeOpenedDate']);
+        Route::put('/opened-dates/{id}', [PosRestaurantController::class, 'updateOpenedDate']);
+        Route::delete('/opened-dates/{id}', [PosRestaurantController::class, 'destroyOpenedDate']);
+        
         // Table Schedules
         Route::post('/table-schedules', [PosRestaurantController::class, 'setTableSchedule']);
     });

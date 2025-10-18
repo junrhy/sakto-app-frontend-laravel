@@ -1,12 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Label } from '@/Components/ui/label';
-import { Calendar } from 'lucide-react';
+import { Textarea } from '@/Components/ui/textarea';
+import { Button } from '@/Components/ui/button';
+import { Calendar, Edit2, Save, X } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
-import { BlockedDate } from '../types';
+import { BlockedDate, OpenedDate } from '../types';
 import { DateCalendar } from './DateCalendar';
+import { toast } from 'sonner';
 
 interface BlockedDatesTabProps {
     blockedDates: BlockedDate[];
+    openedDates?: OpenedDate[];
     onAddBlockedDate: (
         blockedDate: Omit<BlockedDate, 'id' | 'created_at' | 'updated_at'>,
     ) => void;
@@ -19,6 +23,7 @@ interface BlockedDatesTabProps {
 
 export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
     blockedDates,
+    openedDates = [],
     onAddBlockedDate,
     onUpdateBlockedDate,
     onDeleteBlockedDate,
@@ -40,6 +45,8 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
     });
 
     const [loadingSlots, setLoadingSlots] = useState<string[]>([]);
+    const [editingReasonId, setEditingReasonId] = useState<number | null>(null);
+    const [editingReason, setEditingReason] = useState<string>('');
     const [optimisticBlockedDates, setOptimisticBlockedDates] =
         useState<BlockedDate[]>(blockedDates);
 
@@ -96,6 +103,23 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
         async (timeSlot: string) => {
             // Prevent multiple clicks on the same slot
             if (loadingSlots.includes(timeSlot)) return;
+
+            // Check if this slot is opened (only if opened dates are configured)
+            if (openedDates.length > 0) {
+                const isOpened = openedDates.some((opened) => {
+                    const openedDateStr = opened.opened_date.split('T')[0];
+                    return (
+                        openedDateStr === newBlockedDate.blocked_date &&
+                        opened.timeslots &&
+                        opened.timeslots.includes(timeSlot)
+                    );
+                });
+                
+                if (!isOpened) {
+                    toast.error('This time slot is not opened. Please open it first in the "Opened Dates" tab before blocking.');
+                    return;
+                }
+            }
 
             setLoadingSlots((prev) => [...prev, timeSlot]);
 
@@ -172,12 +196,49 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
             loadingSlots,
             optimisticBlockedDates,
             blockedDates,
+            openedDates,
             newBlockedDate.blocked_date,
             onDeleteBlockedDate,
             onUpdateBlockedDate,
             onAddBlockedDate,
         ],
     );
+
+    // Handle editing reason for a blocked date
+    const handleEditReason = useCallback((blockedDate: BlockedDate) => {
+        setEditingReasonId(blockedDate.id);
+        setEditingReason(blockedDate.reason || '');
+    }, []);
+
+    const handleSaveReason = useCallback(async (blockedDate: BlockedDate) => {
+        if (editingReasonId !== blockedDate.id) return;
+        
+        try {
+            // Optimistically update UI
+            setOptimisticBlockedDates((prev) =>
+                prev.map((b) =>
+                    b.id === blockedDate.id
+                        ? { ...b, reason: editingReason }
+                        : b,
+                ),
+            );
+            
+            await onUpdateBlockedDate(blockedDate.id, {
+                reason: editingReason,
+            });
+            
+            setEditingReasonId(null);
+            setEditingReason('');
+        } catch (error) {
+            setOptimisticBlockedDates(blockedDates);
+            toast.error('Failed to update reason');
+        }
+    }, [editingReasonId, editingReason, onUpdateBlockedDate, blockedDates]);
+
+    const handleCancelEditReason = useCallback(() => {
+        setEditingReasonId(null);
+        setEditingReason('');
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -232,9 +293,15 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                     {/* Legend */}
                                     <div className="mb-3 flex flex-wrap gap-3 text-xs">
                                         <div className="flex items-center gap-1.5">
+                                            <div className="h-3 w-3 rounded border border-gray-400 bg-gray-300 dark:border-gray-700 dark:bg-gray-800"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Not Opened
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
                                             <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
                                             <span className="text-gray-600 dark:text-gray-400">
-                                                Available
+                                                Available to Block
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
@@ -255,6 +322,17 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {timeSlots.am.map(
                                                         (timeSlot) => {
+                                                            const isOpened = openedDates.length === 0 || openedDates.some(
+                                                                (opened) => {
+                                                                    const openedDateStr = opened.opened_date.split('T')[0];
+                                                                    return (
+                                                                        openedDateStr === newBlockedDate.blocked_date &&
+                                                                        opened.timeslots &&
+                                                                        opened.timeslots.includes(timeSlot.value)
+                                                                    );
+                                                                }
+                                                            );
+                                                            
                                                             const isBlocked =
                                                                 optimisticBlockedDates.some(
                                                                     (
@@ -293,13 +371,15 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                                                         )
                                                                     }
                                                                     disabled={
-                                                                        isLoading
+                                                                        isLoading || !isOpened
                                                                     }
                                                                     className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all relative ${
-                                                                        isBlocked
+                                                                        !isOpened
+                                                                            ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                            : isBlocked
                                                                             ? 'border-red-500 bg-red-500 text-white hover:bg-red-600'
                                                                             : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-red-700 dark:hover:bg-red-900/20'
-                                                                    } ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+                                                                    } ${isLoading ? 'opacity-50 cursor-wait' : (!isOpened ? 'cursor-not-allowed' : 'cursor-pointer')}`}
                                                                 >
                                                                     {isLoading ? (
                                                                         <span className="flex items-center justify-center">
@@ -341,6 +421,17 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {timeSlots.pm.map(
                                                         (timeSlot) => {
+                                                            const isOpened = openedDates.length === 0 || openedDates.some(
+                                                                (opened) => {
+                                                                    const openedDateStr = opened.opened_date.split('T')[0];
+                                                                    return (
+                                                                        openedDateStr === newBlockedDate.blocked_date &&
+                                                                        opened.timeslots &&
+                                                                        opened.timeslots.includes(timeSlot.value)
+                                                                    );
+                                                                }
+                                                            );
+                                                            
                                                             const isBlocked =
                                                                 optimisticBlockedDates.some(
                                                                     (
@@ -379,13 +470,15 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                                                         )
                                                                     }
                                                                     disabled={
-                                                                        isLoading
+                                                                        isLoading || !isOpened
                                                                     }
                                                                     className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all relative ${
-                                                                        isBlocked
+                                                                        !isOpened
+                                                                            ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                            : isBlocked
                                                                             ? 'border-red-500 bg-red-500 text-white hover:bg-red-600'
                                                                             : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-red-700 dark:hover:bg-red-900/20'
-                                                                    } ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+                                                                    } ${isLoading ? 'opacity-50 cursor-wait' : (!isOpened ? 'cursor-not-allowed' : 'cursor-pointer')}`}
                                                                 >
                                                                     {isLoading ? (
                                                                         <span className="flex items-center justify-center">
@@ -422,6 +515,120 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                     </div>
                                 </div>
                         </div>
+                    </div>
+
+                    {/* Blocked Dates List */}
+                    <div className="mt-6">
+                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                            Currently Blocked Dates
+                        </h3>
+                        {optimisticBlockedDates.length === 0 ? (
+                            <p className="text-center text-gray-500 dark:text-gray-400">
+                                No blocked dates configured. Click time slots above to block dates and prevent reservations.
+                            </p>
+                        ) : (
+                            <div className="space-y-3">
+                                {optimisticBlockedDates.map((blockedDate) => (
+                                    <Card
+                                        key={blockedDate.id}
+                                        className="border-red-200 bg-red-50/50 dark:border-red-700 dark:bg-red-900/10"
+                                    >
+                                        <CardContent className="p-4">
+                                            <div className="space-y-3">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <p className="font-medium text-gray-900 dark:text-white">
+                                                            {new Date(
+                                                                blockedDate.blocked_date,
+                                                            ).toLocaleDateString(
+                                                                'en-US',
+                                                                {
+                                                                    weekday: 'long',
+                                                                    year: 'numeric',
+                                                                    month: 'long',
+                                                                    day: 'numeric',
+                                                                },
+                                                            )}
+                                                        </p>
+                                                        <div className="mt-2 flex flex-wrap gap-1.5">
+                                                            {blockedDate.timeslots.sort((a, b) => a.localeCompare(b)).map((slot) => (
+                                                                <span
+                                                                    key={slot}
+                                                                    className="inline-flex items-center rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/40 dark:text-red-200"
+                                                                >
+                                                                    {convertTo12Hour(slot)}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Reason Section */}
+                                                <div className="border-t border-red-200 pt-3 dark:border-red-700">
+                                                    {editingReasonId === blockedDate.id ? (
+                                                        <div className="space-y-2">
+                                                            <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                Reason for Blocking (Optional)
+                                                            </Label>
+                                                            <Textarea
+                                                                value={editingReason}
+                                                                onChange={(e) => setEditingReason(e.target.value)}
+                                                                placeholder="e.g., Holiday, Maintenance, Private event..."
+                                                                className="resize-none text-sm text-gray-900 dark:text-white"
+                                                                rows={2}
+                                                            />
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    onClick={() => handleSaveReason(blockedDate)}
+                                                                    className="bg-green-600 hover:bg-green-700"
+                                                                >
+                                                                    <Save className="mr-1 h-3 w-3" />
+                                                                    Save
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={handleCancelEditReason}
+                                                                >
+                                                                    <X className="mr-1 h-3 w-3" />
+                                                                    Cancel
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="flex-1">
+                                                                {blockedDate.reason ? (
+                                                                    <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                                                                        <span className="font-semibold">Reason:</span> {blockedDate.reason}
+                                                                    </p>
+                                                                ) : (
+                                                                    <p className="text-xs italic text-gray-500 dark:text-gray-400">
+                                                                        No reason provided
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <Button
+                                                                type="button"
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleEditReason(blockedDate)}
+                                                                className="shrink-0"
+                                                            >
+                                                                <Edit2 className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

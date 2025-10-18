@@ -116,3 +116,13 @@ export interface BlockedDate {
     created_at: string;
     updated_at: string;
 }
+
+export interface OpenedDate {
+    id: number;
+    opened_date: string;
+    timeslots: string[];
+    reason?: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+}

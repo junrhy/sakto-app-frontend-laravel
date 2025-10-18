@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/Components/ui/textarea';
 import { Check, Clock, Plus, Trash, Users, X } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
-import { BlockedDate, Reservation, Table as TableType } from '../types';
+import { BlockedDate, OpenedDate, Reservation, Table as TableType } from '../types';
 import { DateCalendar } from './DateCalendar';
 import { toast } from 'sonner';
 
@@ -31,6 +31,7 @@ interface ReservationsTabProps {
     reservations: Reservation[];
     tables: TableType[];
     blockedDates?: BlockedDate[];
+    openedDates?: OpenedDate[];
     tableSchedules?: TableSchedule[];
     currency_symbol: string;
     onAddReservation: (reservation: Omit<Reservation, 'id' | 'status'>) => void;
@@ -47,6 +48,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     reservations,
     tables,
     blockedDates = [],
+    openedDates = [],
     tableSchedules = [],
     currency_symbol,
     onAddReservation,
@@ -117,6 +119,24 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             });
         },
         [blockedDates],
+    );
+
+    const isTimeSlotOpened = useCallback(
+        (date: string, time: string) => {
+            // If no opened dates configured, all dates are available
+            if (openedDates.length === 0) return true;
+            
+            // Check if this specific date and time is opened
+            return openedDates.some((openedDate) => {
+                const openedDateStr = openedDate.opened_date.split('T')[0];
+                return (
+                    openedDateStr === date &&
+                    openedDate.timeslots &&
+                    openedDate.timeslots.includes(time)
+                );
+            });
+        },
+        [openedDates],
     );
 
     const isTimeSlotReserved = useCallback(
@@ -339,6 +359,12 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                 return;
             }
             
+            // Check if time slot is opened
+            if (!isTimeSlotOpened(newReservation.date, newReservation.time)) {
+                toast.error('This date/time is not available for reservations. Please open it in the "Opened Dates" tab first.');
+                return;
+            }
+            
             // Check if time slot is blocked
             if (isTimeSlotBlocked(newReservation.date, newReservation.time)) {
                 toast.error('This time slot is blocked and reservations are not available.');
@@ -361,7 +387,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             setIsDialogOpen(false);
             toast.success('Reservation created successfully!');
         },
-        [newReservation, onAddReservation, isTimeSlotBlocked, isTimeSlotReserved, tables, isTableReserved, isTableUnavailableInSchedule, getJoinedTableInfo],
+        [newReservation, onAddReservation, isTimeSlotOpened, isTimeSlotBlocked, isTimeSlotReserved, tables, isTableReserved, isTableUnavailableInSchedule, getJoinedTableInfo],
     );
 
     return (
@@ -458,6 +484,11 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                         const isSelected =
                                                             newReservation.time ===
                                                             timeSlot.value;
+                                                        const isOpened =
+                                                            isTimeSlotOpened(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
                                                         const isBlocked =
                                                             isTimeSlotBlocked(
                                                                 newReservation.date,
@@ -468,23 +499,26 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                                 newReservation.date,
                                                                 timeSlot.value,
                                                             );
+                                                        const isDisabled = !isOpened || isBlocked;
 
                                                         return (
                                                             <button
                                                                 key={timeSlot.value}
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    !isBlocked &&
+                                                                    !isDisabled &&
                                                                     handleTimeSlotSelect(
                                                                         newReservation.date,
                                                                         timeSlot.value,
                                                                     )
                                                                 }
-                                                                disabled={isBlocked}
+                                                                disabled={isDisabled}
                                                                 className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
                                                                     isSelected
                                                                         ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
-                                                                        : isBlocked
+                                                                        : !isOpened
+                                                                          ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                          : isBlocked
                                                                           ? 'border-red-300 bg-red-500 text-white cursor-not-allowed opacity-60'
                                                                           : isReserved
                                                                             ? 'border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 cursor-pointer dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
@@ -508,6 +542,11 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                         const isSelected =
                                                             newReservation.time ===
                                                             timeSlot.value;
+                                                        const isOpened =
+                                                            isTimeSlotOpened(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
                                                         const isBlocked =
                                                             isTimeSlotBlocked(
                                                                 newReservation.date,
@@ -518,23 +557,26 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                                 newReservation.date,
                                                                 timeSlot.value,
                                                             );
+                                                        const isDisabled = !isOpened || isBlocked;
 
                                                         return (
                                                             <button
                                                                 key={timeSlot.value}
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    !isBlocked &&
+                                                                    !isDisabled &&
                                                                     handleTimeSlotSelect(
                                                                         newReservation.date,
                                                                         timeSlot.value,
                                                                     )
                                                                 }
-                                                                disabled={isBlocked}
+                                                                disabled={isDisabled}
                                                                 className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
                                                                     isSelected
                                                                         ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
-                                                                        : isBlocked
+                                                                        : !isOpened
+                                                                          ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                          : isBlocked
                                                                           ? 'border-red-300 bg-red-500 text-white cursor-not-allowed opacity-60'
                                                                           : isReserved
                                                                             ? 'border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 cursor-pointer dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'

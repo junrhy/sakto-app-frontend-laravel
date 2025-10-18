@@ -406,10 +406,72 @@ export const usePosApi = () => {
         });
     }, []);
 
+    // Opened Dates API calls
+    const createOpenedDate = useCallback(async (openedDateData: any) => {
+        return new Promise((resolve) => {
+            router.post('/pos-restaurant/opened-dates', openedDateData, {
+                onSuccess: () => {
+                    toast.success('Date opened successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to open date',
+                    );
+                    resolve(false);
+                },
+            });
+        });
+    }, []);
+
+    const updateOpenedDate = useCallback(
+        async (id: number, openedDateData: any) => {
+            return new Promise((resolve) => {
+                router.put(
+                    `/pos-restaurant/opened-dates/${id}`,
+                    openedDateData,
+                    {
+                        onSuccess: () => {
+                            toast.success('Opened date updated successfully');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update opened date',
+                            );
+                            resolve(false);
+                        },
+                    },
+                );
+            });
+        },
+        [],
+    );
+
+    const deleteOpenedDate = useCallback(async (id: number) => {
+        return new Promise((resolve) => {
+            router.delete(`/pos-restaurant/opened-dates/${id}`, {
+                onSuccess: () => {
+                    toast.success('Opened date deleted successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(
+                        (Object.values(errors)[0] as string) ||
+                            'Failed to delete opened date',
+                    );
+                    resolve(false);
+                },
+            });
+        });
+    }, []);
+
     // Utility function to refresh data
     const refreshData = useCallback(() => {
         router.reload({
-            only: ['menuItems', 'tables', 'reservations', 'blockedDates', 'tableSchedules'],
+            only: ['menuItems', 'tables', 'reservations', 'blockedDates', 'openedDates', 'tableSchedules'],
         });
     }, []);
 
@@ -441,6 +503,11 @@ export const usePosApi = () => {
         createBlockedDate,
         updateBlockedDate,
         deleteBlockedDate,
+
+        // Opened Dates
+        createOpenedDate,
+        updateOpenedDate,
+        deleteOpenedDate,
 
         // Table Schedules
         setTableSchedule,

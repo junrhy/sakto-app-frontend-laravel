@@ -31,6 +31,7 @@ class PosRestaurantController extends Controller
             'joinedTables' => $this->getJoinedTables(),
             'reservations' => $this->getReservations(),
             'blockedDates' => $this->getBlockedDates(),
+            'openedDates' => $this->getOpenedDates(),
             'tableSchedules' => $this->getTableSchedules(),
             'currency_symbol' => $jsonAppCurrency->symbol
         ]);
@@ -669,6 +670,77 @@ class PosRestaurantController extends Controller
         } catch (\Exception $e) {
             \Log::error('Failed to fetch table schedules: ' . $e->getMessage());
             return [];
+        }
+    }
+
+    public function getOpenedDates()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-opened-dates?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json()['data'] ?? [];
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch opened dates: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function storeOpenedDate(Request $request)
+    {
+        try {
+            $data = $request->all();
+            $data['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-opened-dates", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to open date');
+            }
+
+            return redirect()->back()->with('success', 'Date opened successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to open date: ' . $e->getMessage());
+        }
+    }
+
+    public function updateOpenedDate(Request $request, $id)
+    {
+        try {
+            $data = $request->all();
+            
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-opened-dates/{$id}", $data);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update opened date');
+            }
+
+            return redirect()->back()->with('success', 'Opened date updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update opened date: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyOpenedDate($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-opened-dates/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to delete opened date');
+            }
+
+            return redirect()->back()->with('success', 'Opened date deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete opened date: ' . $e->getMessage());
         }
     }
 

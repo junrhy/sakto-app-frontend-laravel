@@ -16,6 +16,7 @@ import { usePosApi } from './hooks/usePosApi';
 import { usePosState } from './hooks/usePosState';
 import {
     BlockedDate,
+    OpenedDate,
     JoinedTable,
     MenuItem,
     MenuItemFormData,
@@ -42,6 +43,11 @@ const ReservationsTab = lazy(() =>
 const BlockedDatesTab = lazy(() =>
     import('./components/BlockedDatesTab').then((module) => ({
         default: module.BlockedDatesTab,
+    })),
+);
+const OpenedDatesTab = lazy(() =>
+    import('./components/OpenedDatesTab').then((module) => ({
+        default: module.OpenedDatesTab,
     })),
 );
 const MenuTab = lazy(() =>
@@ -127,6 +133,7 @@ interface PageProps {
     joinedTables?: JoinedTable[];
     reservations?: Reservation[];
     blockedDates?: BlockedDate[];
+    openedDates?: OpenedDate[];
     tableSchedules?: TableSchedule[];
     currency_symbol?: string;
 }
@@ -138,6 +145,7 @@ export default function PosRestaurantIndex({
     joinedTables = [],
     reservations = [],
     blockedDates = [],
+    openedDates = [],
     tableSchedules = [],
     currency_symbol = '$',
 }: PageProps) {
@@ -661,6 +669,39 @@ export default function PosRestaurantIndex({
         [api],
     );
 
+    // Opened Dates handlers
+    const handleAddOpenedDate = useCallback(
+        async (
+            openedDate: Omit<OpenedDate, 'id' | 'created_at' | 'updated_at'>,
+        ) => {
+            const result = await api.createOpenedDate(openedDate);
+            if (result) {
+                api.refreshData();
+            }
+        },
+        [api],
+    );
+
+    const handleUpdateOpenedDate = useCallback(
+        async (id: number, openedDate: Partial<OpenedDate>) => {
+            const result = await api.updateOpenedDate(id, openedDate);
+            if (result) {
+                api.refreshData();
+            }
+        },
+        [api],
+    );
+
+    const handleDeleteOpenedDate = useCallback(
+        async (id: number) => {
+            const result = await api.deleteOpenedDate(id);
+            if (result) {
+                api.refreshData();
+            }
+        },
+        [api],
+    );
+
     return (
         <AuthenticatedLayout
             header={
@@ -693,7 +734,7 @@ export default function PosRestaurantIndex({
                                 <TabsList
                                     className={`grid w-full ${
                                         useMediaQuery('(min-width: 640px)')
-                                            ? 'grid-cols-5'
+                                            ? 'grid-cols-6'
                                             : 'grid-cols-2'
                                     } gap-2 rounded-xl border border-gray-200 bg-white p-1 pb-10 shadow-sm dark:border-gray-600 dark:bg-gray-800`}
                                 >
@@ -741,6 +782,18 @@ export default function PosRestaurantIndex({
                                         </span>
                                         <span className="sm:hidden">
                                             Blocked
+                                        </span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="opened-dates"
+                                        className="group relative whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-200"
+                                    >
+                                        <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                        <span className="hidden sm:inline">
+                                            Opened Dates
+                                        </span>
+                                        <span className="sm:hidden">
+                                            Open
                                         </span>
                                     </TabsTrigger>
                                     <TabsTrigger
@@ -835,6 +888,10 @@ export default function PosRestaurantIndex({
                                                     reservations={
                                                         posState.reservations
                                                     }
+                                                    openedDates={openedDates}
+                                                    blockedDates={
+                                                        posState.blockedDates
+                                                    }
                                                     tableSchedules={
                                                         tableSchedules
                                                     }
@@ -886,6 +943,7 @@ export default function PosRestaurantIndex({
                                                     blockedDates={
                                                         posState.blockedDates
                                                     }
+                                                    openedDates={openedDates}
                                                     tableSchedules={
                                                         tableSchedules
                                                     }
@@ -920,6 +978,7 @@ export default function PosRestaurantIndex({
                                                     blockedDates={
                                                         posState.blockedDates
                                                     }
+                                                    openedDates={openedDates}
                                                     onAddBlockedDate={
                                                         handleAddBlockedDate
                                                     }
@@ -928,6 +987,26 @@ export default function PosRestaurantIndex({
                                                     }
                                                     onDeleteBlockedDate={
                                                         handleDeleteBlockedDate
+                                                    }
+                                                />
+                                            </TabsContent>
+                                        )}
+
+                                        {currentTab === 'opened-dates' && (
+                                            <TabsContent
+                                                value="opened-dates"
+                                                className="p-6 pb-8"
+                                            >
+                                                <OpenedDatesTab
+                                                    openedDates={openedDates}
+                                                    onAddOpenedDate={
+                                                        handleAddOpenedDate
+                                                    }
+                                                    onUpdateOpenedDate={
+                                                        handleUpdateOpenedDate
+                                                    }
+                                                    onDeleteOpenedDate={
+                                                        handleDeleteOpenedDate
                                                     }
                                                 />
                                             </TabsContent>
