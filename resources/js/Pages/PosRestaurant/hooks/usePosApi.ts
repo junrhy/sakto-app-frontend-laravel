@@ -350,7 +350,6 @@ export const usePosApi = () => {
 
     const saveTableOrder = useCallback(async (orderData: any) => {
         try {
-            console.log('saveTableOrder called with:', orderData);
             const response = await fetch('/pos-restaurant/table-order/save', {
                 method: 'POST',
                 headers: {
@@ -360,11 +359,8 @@ export const usePosApi = () => {
                 body: JSON.stringify(orderData),
             });
             
-            console.log('Response status:', response.status);
-            const responseData = await response.json();
-            console.log('Response data:', responseData);
-            
             if (!response.ok) {
+                const responseData = await response.json();
                 throw new Error('Failed to save table order: ' + JSON.stringify(responseData));
             }
             
@@ -375,9 +371,16 @@ export const usePosApi = () => {
         }
     }, []);
 
-    const completeTableOrder = useCallback(async (tableName: string) => {
+    const completeTableOrder = useCallback(async (tableName: string, paymentData?: {
+        payment_amount: number;
+        payment_method: 'cash' | 'card';
+        change: number;
+    }) => {
         return new Promise((resolve) => {
-            router.post('/pos-restaurant/table-order/complete', { table_name: tableName }, {
+            router.post('/pos-restaurant/table-order/complete', { 
+                table_name: tableName,
+                ...paymentData
+            }, {
                 onSuccess: () => {
                     toast.success('Order completed successfully');
                     resolve(true);

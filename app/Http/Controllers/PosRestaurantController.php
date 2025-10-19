@@ -944,13 +944,19 @@ class PosRestaurantController extends Controller
     {
         try {
             $validated = $request->validate([
-                'table_name' => 'required|string'
+                'table_name' => 'required|string',
+                'payment_amount' => 'required|numeric|min:0',
+                'payment_method' => 'required|string|in:cash,card',
+                'change' => 'nullable|numeric|min:0'
             ]);
 
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/fnb-orders/complete", [
                     'client_identifier' => auth()->user()->identifier,
-                    'table_name' => $validated['table_name']
+                    'table_name' => $validated['table_name'],
+                    'payment_amount' => $validated['payment_amount'],
+                    'payment_method' => $validated['payment_method'],
+                    'change' => $validated['change'] ?? 0
                 ]);
 
             if (!$response->successful()) {

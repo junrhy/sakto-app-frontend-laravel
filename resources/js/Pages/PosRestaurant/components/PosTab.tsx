@@ -26,10 +26,14 @@ import {
 import {
     Calculator,
     Check,
+    ChevronDown,
+    ChevronRight,
+    CreditCard,
     Minus,
     Plus,
     Printer,
     QrCode,
+    RefreshCw,
     ShoppingCart,
     Trash2,
     UtensilsCrossed,
@@ -37,6 +41,7 @@ import {
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { MenuItem, OrderItem, Table as TableType } from '../types';
 import { usePosApi } from '../hooks/usePosApi';
+import { PaymentDialog } from './PaymentDialog';
 
 interface PosTabProps {
     menuItems: MenuItem[];
@@ -62,7 +67,11 @@ interface PosTabProps {
     // New props for table order persistence
     onLoadTableOrder?: (tableName: string) => Promise<void>;
     onSaveTableOrder?: (tableName: string, orderData: any) => Promise<void>;
-    onCompleteTableOrder?: (tableName: string) => Promise<void>;
+    onCompleteTableOrder?: (tableName: string, paymentData?: {
+        payment_amount: number;
+        payment_method: 'cash' | 'card';
+        change: number;
+    }) => Promise<void>;
 }
 
 export const PosTab: React.FC<PosTabProps> = ({
@@ -98,6 +107,12 @@ export const PosTab: React.FC<PosTabProps> = ({
         total_amount: number;
         item_count: number;
     }>>([]);
+    
+    // State for showing/hiding checkout section
+    const [showCheckout, setShowCheckout] = useState(false);
+    
+    // State for payment dialog
+    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
     // Fetch all active orders on mount only
     useEffect(() => {
@@ -107,8 +122,18 @@ export const PosTab: React.FC<PosTabProps> = ({
                 setAllActiveOrders(orders.orders);
             }
         };
+        
+        // Fetch immediately on mount
         fetchActiveOrders();
-    }, [api]); // Only fetch on mount
+    }, []); // Empty dependency array - only run on mount
+    
+    // Manual refresh function
+    const handleRefreshOrders = useCallback(async () => {
+        const orders = await api.getAllActiveOrders();
+        if (orders && orders.orders) {
+            setAllActiveOrders(orders.orders);
+        }
+    }, [api]);
 
     // Get total for a specific table
     const getTableTotal = useCallback((tableName: string) => {
@@ -183,21 +208,12 @@ export const PosTab: React.FC<PosTabProps> = ({
                 total_amount: currentTableTotal
             };
             
-            console.log('Auto-save triggered for table:', tableNumber, 'Items:', orderItems.length);
-            
             // Auto-save with debounce
             const timeoutId = setTimeout(async () => {
-                console.log('Saving order data:', orderData);
                 if (onSaveTableOrder) {
                     await onSaveTableOrder(tableNumber, orderData);
                 } else {
-                    const saved = await api.saveTableOrder(orderData);
-                    console.log('Save result:', saved);
-                }
-                // Refresh active orders after save
-                const orders = await api.getAllActiveOrders();
-                if (orders && orders.orders) {
-                    setAllActiveOrders(orders.orders);
+                    await api.saveTableOrder(orderData);
                 }
             }, 1000);
 
@@ -239,22 +255,33 @@ export const PosTab: React.FC<PosTabProps> = ({
             }
         }
         
-        // Refresh active orders after switching
-        const orders = await api.getAllActiveOrders();
-        if (orders && orders.orders) {
-            setAllActiveOrders(orders.orders);
-        }
     }, [tableNumber, orderItems, discount, discountType, currentTableTotal, onSetTableNumber, onSaveTableOrder, onLoadTableOrder, api]);
 
-    // Enhanced complete order handler
-    const handleCompleteOrder = useCallback(async () => {
+    // Open payment dialog instead of completing directly
+    const handleOpenPaymentDialog = useCallback(() => {
+        setShowPaymentDialog(true);
+    }, []);
+
+    // Handle payment confirmation
+    const handlePaymentConfirm = useCallback(async (paymentAmount: number, paymentMethod: 'cash' | 'card') => {
         if (onCompleteTableOrder && tableNumber) {
-            await onCompleteTableOrder(tableNumber);
+            await onCompleteTableOrder(tableNumber, {
+                payment_amount: paymentAmount,
+                payment_method: paymentMethod,
+                change: paymentAmount - finalTotal,
+            });
         } else if (tableNumber) {
-            await api.completeTableOrder(tableNumber);
+            await api.completeTableOrder(tableNumber, {
+                payment_amount: paymentAmount,
+                payment_method: paymentMethod,
+                change: paymentAmount - finalTotal,
+            });
         }
         onCompleteOrder();
-    }, [tableNumber, onCompleteTableOrder, api, onCompleteOrder]);
+        setShowPaymentDialog(false);
+        // Refresh active orders after completing
+        handleRefreshOrders();
+    }, [tableNumber, finalTotal, onCompleteTableOrder, api, onCompleteOrder, handleRefreshOrders]);
 
     return (
         <div className="space-y-6">
@@ -262,9 +289,18 @@ export const PosTab: React.FC<PosTabProps> = ({
                 {/* Tables List */}
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 dark:border-gray-600 dark:from-purple-900/20 dark:to-pink-900/20">
-                        <CardTitle className="flex items-center text-sm font-semibold text-gray-900 dark:text-white">
-                            <Calculator className="mr-1.5 h-3.5 w-3.5 text-purple-500" />
-                            Select Table
+                        <CardTitle className="flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
+                            <div className="flex items-center">
+                                <Calculator className="mr-1.5 h-3.5 w-3.5 text-purple-500" />
+                                Select Table
+                            </div>
+                            <button
+                                onClick={handleRefreshOrders}
+                                className="rounded p-1 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                                title="Refresh table totals"
+                            >
+                                <RefreshCw className="h-3.5 w-3.5 text-purple-500" />
+                            </button>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-2">
@@ -380,9 +416,37 @@ export const PosTab: React.FC<PosTabProps> = ({
                 {/* Current Order */}
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-2">
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 dark:border-gray-600 dark:from-green-900/20 dark:to-emerald-900/20">
-                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                            <ShoppingCart className="mr-2 h-4 w-4 text-green-500" />
-                            Order
+                        <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 dark:text-white">
+                            <div className="flex items-center">
+                                <ShoppingCart className="mr-2 h-4 w-4 text-green-500" />
+                                Order
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={onShowQRCode}
+                                    disabled={orderItems.length === 0}
+                                    className="rounded p-1.5 text-blue-600 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                    title="Show QR Code"
+                                >
+                                    <QrCode className="h-4 w-4" />
+                                </button>
+                                <button
+                                    onClick={onPrintKitchenOrder}
+                                    disabled={orderItems.length === 0}
+                                    className="rounded p-1.5 text-orange-600 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent dark:text-orange-400 dark:hover:bg-orange-900/30"
+                                    title="Kitchen Order"
+                                >
+                                    <Printer className="h-4 w-4" />
+                                </button>
+                                <button
+                                    onClick={() => setShowCheckout(!showCheckout)}
+                                    className="flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30"
+                                    title={showCheckout ? "Hide Checkout" : "Show Checkout"}
+                                >
+                                    {showCheckout ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                    Checkout
+                                </button>
+                            </div>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
@@ -474,6 +538,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                 </Card>
 
                 {/* Checkout Section */}
+                {showCheckout && (
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
                         <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
@@ -571,15 +636,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                                 className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gray-600 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Printer className="mr-2 h-4 w-4" />
-                                Print Bill
-                            </Button>
-                            <Button
-                                onClick={onShowQRCode}
-                                disabled={orderItems.length === 0}
-                                className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-blue-500 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-blue-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <QrCode className="mr-2 h-4 w-4" />
-                                Show QR Code
+                                Print
                             </Button>
                             <Button
                                 onClick={onSplitBill}
@@ -587,29 +644,30 @@ export const PosTab: React.FC<PosTabProps> = ({
                                 className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-green-500 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-green-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <Calculator className="mr-2 h-4 w-4" />
-                                Split Bill
+                                Split
                             </Button>
                             <Button
-                                onClick={onPrintKitchenOrder}
+                                onClick={handleOpenPaymentDialog}
                                 disabled={orderItems.length === 0}
-                                className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-orange-500 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-orange-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <Printer className="mr-2 h-4 w-4" />
-                                Kitchen Order
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Pay
                             </Button>
-                            {orderItems.length > 0 && (
-                                <Button
-                                    onClick={handleCompleteOrder}
-                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-red-600 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-red-600 hover:to-red-700 hover:shadow-md"
-                                >
-                                    <Check className="mr-2 h-4 w-4" />
-                                    Complete Order
-                                </Button>
-                            )}
                         </div>
                     </CardContent>
                 </Card>
+                )}
             </div>
+
+            {/* Payment Dialog */}
+            <PaymentDialog
+                isOpen={showPaymentDialog}
+                onClose={() => setShowPaymentDialog(false)}
+                onConfirm={handlePaymentConfirm}
+                totalAmount={finalTotal}
+                currencySymbol={currency_symbol}
+            />
         </div>
     );
 };

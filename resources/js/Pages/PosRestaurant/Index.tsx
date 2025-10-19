@@ -444,9 +444,13 @@ export default function PosRestaurantIndex({
         }
     }, [api]);
 
-    const handleCompleteTableOrder = useCallback(async (tableName: string) => {
+    const handleCompleteTableOrder = useCallback(async (tableName: string, paymentData?: {
+        payment_amount: number;
+        payment_method: 'cash' | 'card';
+        change: number;
+    }) => {
         try {
-            await api.completeTableOrder(tableName);
+            await api.completeTableOrder(tableName, paymentData);
             // Clear the order items after completion
             posState.clearOrder();
         } catch (error) {
