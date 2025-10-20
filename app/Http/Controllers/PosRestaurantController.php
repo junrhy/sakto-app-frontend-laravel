@@ -33,6 +33,7 @@ class PosRestaurantController extends Controller
             'blockedDates' => $this->getBlockedDates(),
             'openedDates' => $this->getOpenedDates(),
             'tableSchedules' => $this->getTableSchedules(),
+            'sales' => $this->getSales(),
             'currency_symbol' => $jsonAppCurrency->symbol
         ]);
     }
@@ -945,6 +946,8 @@ class PosRestaurantController extends Controller
     public function completeTableOrder(Request $request)
     {
         try {
+            \Log::info('Frontend Complete Table Order Request:', $request->all());
+            
             $validated = $request->validate([
                 'table_name' => 'required|string',
                 'payment_amount' => 'required|numeric|min:0',
@@ -952,21 +955,38 @@ class PosRestaurantController extends Controller
                 'change' => 'nullable|numeric|min:0'
             ]);
 
+            $apiPayload = [
+                'client_identifier' => auth()->user()->identifier,
+                'table_name' => $validated['table_name'],
+                'payment_amount' => $validated['payment_amount'],
+                'payment_method' => $validated['payment_method'],
+                'change' => $validated['change'] ?? 0
+            ];
+            
+            \Log::info('Sending to backend API:', $apiPayload);
+
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/fnb-orders/complete", [
-                    'client_identifier' => auth()->user()->identifier,
-                    'table_name' => $validated['table_name'],
-                    'payment_amount' => $validated['payment_amount'],
-                    'payment_method' => $validated['payment_method'],
-                    'change' => $validated['change'] ?? 0
-                ]);
+                ->post("{$this->apiUrl}/fnb-orders/complete", $apiPayload);
+
+            \Log::info('Backend API Response:', [
+                'status' => $response->status(),
+                'body' => $response->json()
+            ]);
 
             if (!$response->successful()) {
+                \Log::error('Backend API Error:', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
                 throw new \Exception($response->json()['message'] ?? 'Failed to complete order');
             }
 
             return redirect()->back()->with('success', 'Order completed successfully');
         } catch (\Exception $e) {
+            \Log::error('Complete Table Order Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()->with('error', 'Failed to complete order: ' . $e->getMessage());
         }
     }
@@ -990,6 +1010,31 @@ class PosRestaurantController extends Controller
             return response()->json([
                 'orders' => []
             ]);
+        }
+    }
+
+    /**
+     * Get sales data from API
+     */
+    public function getSales()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-sales?client_identifier={$clientIdentifier}");
+
+            if (!$response->json()) {
+                return [];
+            }
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json()['data']['sales'] ?? [];
+        } catch (\Exception $e) {
+            return [];
         }
     }
 }

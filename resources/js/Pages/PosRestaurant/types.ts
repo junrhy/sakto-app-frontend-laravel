@@ -62,6 +62,7 @@ export interface PageProps {
     tables: Table[];
     tab?: string;
     joinedTables?: JoinedTable[];
+    sales?: Sale[];
     currency_symbol?: string;
 }
 
@@ -122,6 +123,22 @@ export interface OpenedDate {
     opened_date: string;
     timeslots: string[];
     reason?: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Sale {
+    id: number;
+    table_number: string;
+    items: string;
+    subtotal: number;
+    discount: number | null;
+    discount_type: string | null;
+    total: number;
+    payment_amount: number | null;
+    payment_method: string | null;
+    change_amount: number;
     client_identifier: string;
     created_at: string;
     updated_at: string;

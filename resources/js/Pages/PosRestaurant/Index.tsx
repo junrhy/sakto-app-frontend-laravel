@@ -6,6 +6,7 @@ import {
     Calendar,
     Check,
     ShoppingCart,
+    TrendingUp,
     UtensilsCrossed,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ import {
     MenuItem,
     MenuItemFormData,
     Reservation,
+    Sale,
     Table,
 } from './types';
 
@@ -52,6 +54,11 @@ const OpenedDatesTab = lazy(() =>
 const MenuTab = lazy(() =>
     import('./components/MenuTab').then((module) => ({
         default: module.MenuTab,
+    })),
+);
+const SalesTab = lazy(() =>
+    import('./components/SalesTab').then((module) => ({
+        default: module.SalesTab,
     })),
 );
 
@@ -129,6 +136,7 @@ interface PageProps {
     blockedDates?: BlockedDate[];
     openedDates?: OpenedDate[];
     tableSchedules?: TableSchedule[];
+    sales?: Sale[];
     currency_symbol?: string;
 }
 
@@ -141,6 +149,7 @@ export default function PosRestaurantIndex({
     blockedDates = [],
     openedDates = [],
     tableSchedules = [],
+    sales = [],
     currency_symbol = '$',
 }: PageProps) {
     const [isTabLoading, setIsTabLoading] = useState(false);
@@ -851,6 +860,13 @@ export default function PosRestaurantIndex({
                                         <ShoppingCart className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
                                         Menu
                                     </TabsTrigger>
+                                    <TabsTrigger
+                                        value="sales"
+                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                    >
+                                        <TrendingUp className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                        Sales
+                                    </TabsTrigger>
                                 </TabsList>
                             </div>
 
@@ -1098,6 +1114,20 @@ export default function PosRestaurantIndex({
                                                     }
                                                     onBulkDeleteMenuItems={
                                                         handleBulkDeleteMenuItems
+                                                    }
+                                                />
+                                            </TabsContent>
+                                        )}
+
+                                        {currentTab === 'sales' && (
+                                            <TabsContent
+                                                value="sales"
+                                                className="m-0 p-0"
+                                            >
+                                                <SalesTab
+                                                    sales={sales || []}
+                                                    currency_symbol={
+                                                        currency_symbol
                                                     }
                                                 />
                                             </TabsContent>
