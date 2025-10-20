@@ -56,11 +56,6 @@ const MenuTab = lazy(() =>
 );
 
 // Lazy load dialog components
-const CompleteOrderDialog = lazy(() =>
-    import('./components/dialogs/CompleteOrderDialog').then((module) => ({
-        default: module.CompleteOrderDialog,
-    })),
-);
 const AddTableDialog = lazy(() =>
     import('./components/dialogs/AddTableDialog').then((module) => ({
         default: module.AddTableDialog,
@@ -157,8 +152,6 @@ export default function PosRestaurantIndex({
     );
 
     // Dialog states
-    const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] =
-        useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
@@ -233,7 +226,8 @@ export default function PosRestaurantIndex({
 
     // POS Tab handlers
     const handleCompleteOrder = useCallback(() => {
-        setIsCompleteSaleDialogOpen(true);
+        // Order completion is now handled in the payment dialog
+        // This function is called after payment is confirmed
     }, []);
 
     const handleShowQRCode = useCallback(() => {
@@ -458,27 +452,6 @@ export default function PosRestaurantIndex({
         }
     }, [api, posState]);
 
-    const handleConfirmCompleteOrder = useCallback(async () => {
-        const orderData = {
-            table_number: posState.tableNumber,
-            items: JSON.stringify(posState.orderItems),
-            subtotal: posState.totalAmount,
-            discount: discount,
-            discount_type: discountType,
-            total:
-                posState.totalAmount -
-                (discountType === 'percentage'
-                    ? (posState.totalAmount * discount) / 100
-                    : discount),
-        };
-
-        const result = await api.completeOrder(orderData);
-        if (result) {
-            posState.clearOrder();
-            setIsCompleteSaleDialogOpen(false);
-            api.refreshData();
-        }
-    }, [posState, discount, discountType, api]);
 
     // Table handlers
     const handleAddTable = useCallback(
@@ -510,6 +483,23 @@ export default function PosRestaurantIndex({
     const handleConfirmEditTable = useCallback(
         async (id: number, name: string, seats: number) => {
             const result = await api.updateTable(id, { name, seats });
+            if (result) {
+                api.refreshData();
+            }
+        },
+        [api],
+    );
+
+    const handleUpdateTableStatus = useCallback(
+        async (table: Table) => {
+            const result = await api.updateTable(
+                typeof table.id === 'number' ? table.id : parseInt(table.id.toString()),
+                { 
+                    name: table.name, 
+                    seats: table.seats,
+                    status: table.status
+                }
+            );
             if (result) {
                 api.refreshData();
             }
@@ -895,6 +885,8 @@ export default function PosRestaurantIndex({
                                                         currency_symbol
                                                     }
                                                     tables={tables}
+                                                    tableSchedules={tableSchedules}
+                                                    reservations={posState.reservations}
                                                     onAddItemToOrder={
                                                         posState.addItemToOrder
                                                     }
@@ -973,6 +965,9 @@ export default function PosRestaurantIndex({
                                                     }
                                                     onEditTable={
                                                         handleEditTable
+                                                    }
+                                                    onUpdateTableStatus={
+                                                        handleUpdateTableStatus
                                                     }
                                                     onDeleteTable={
                                                         handleDeleteTable
@@ -1121,27 +1116,6 @@ export default function PosRestaurantIndex({
 
             {/* Dialogs */}
             <Suspense fallback={null}>
-                <CompleteOrderDialog
-                    isOpen={isCompleteSaleDialogOpen}
-                    onClose={() => setIsCompleteSaleDialogOpen(false)}
-                    onConfirm={handleConfirmCompleteOrder}
-                    orderItems={posState.orderItems}
-                    tableNumber={posState.tableNumber}
-                    totalAmount={posState.totalAmount}
-                    discountAmount={
-                        discountType === 'percentage'
-                            ? (posState.totalAmount * discount) / 100
-                            : discount
-                    }
-                    finalTotal={
-                        posState.totalAmount -
-                        (discountType === 'percentage'
-                            ? (posState.totalAmount * discount) / 100
-                            : discount)
-                    }
-                    currency_symbol={currency_symbol}
-                />
-
                 <AddTableDialog
                     isOpen={isAddTableDialogOpen}
                     onClose={() => setIsAddTableDialogOpen(false)}

@@ -15,7 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Calculator, Edit, Link2, Plus, Trash, Unlink } from 'lucide-react';
+import { Calculator, ChevronDown, ChevronUp, Edit, Link2, Plus, Trash, Unlink, User } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Table as TableType, Reservation, BlockedDate } from '../types';
 import { DateCalendar } from './DateCalendar';
@@ -52,6 +52,7 @@ interface TablesTabProps {
     canDelete: boolean;
     onAddTable: () => void;
     onEditTable: (table: TableType) => void;
+    onUpdateTableStatus?: (table: TableType) => void;
     onDeleteTable: (tableId: number) => void;
     onJoinTables: (tableIds: number[]) => void;
     onUnjoinTables: (tableIds: number[]) => void;
@@ -79,6 +80,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     canDelete,
     onAddTable,
     onEditTable,
+    onUpdateTableStatus,
     onDeleteTable,
     onJoinTables,
     onUnjoinTables,
@@ -95,6 +97,10 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         return `${year}-${month}-${day}`;
     });
     const [selectedTime, setSelectedTime] = useState('');
+    const [showDateTimeSection, setShowDateTimeSection] = useState(false);
+    
+    // Local state for optimistic UI updates
+    const [tableStatuses, setTableStatuses] = useState<Record<number | string, 'available' | 'occupied' | 'reserved' | 'joined'>>({});
 
     // Generate time slots with 30-minute intervals (same as ReservationsTab)
     const generateTimeSlots = useCallback(() => {
@@ -155,6 +161,27 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         },
         [blockedDates],
     );
+
+    // Auto-select first available timeslot when date changes
+    React.useEffect(() => {
+        // Combine all timeslots from AM and PM
+        const allTimeSlots = [...timeSlots.am, ...timeSlots.pm];
+        
+        // Find the first available (opened and not blocked) timeslot
+        const firstAvailable = allTimeSlots.find(slot => {
+            const isOpened = isTimeSlotOpened(selectedDate, slot.value);
+            const isBlocked = isTimeSlotBlocked(selectedDate, slot.value);
+            return isOpened && !isBlocked;
+        });
+        
+        // Set the first available timeslot if found
+        if (firstAvailable) {
+            setSelectedTime(firstAvailable.value);
+        } else {
+            // Clear selection if no timeslots are available
+            setSelectedTime('');
+        }
+    }, [selectedDate, timeSlots, openedDates, blockedDates, isTimeSlotOpened, isTimeSlotBlocked]);
 
     // Check if a table is unavailable according to schedule
     const isTableUnavailableForSlot = useCallback(
@@ -245,7 +272,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     // Get table status for selected date/time
     const getTableStatusForSlot = useCallback(
         (table: TableType) => {
-            if (!selectedTime) return table.status;
+            if (!selectedTime) return tableStatuses[table.id] || table.status;
             
             const tableId = typeof table.id === 'number' ? table.id : parseInt(table.id.toString());
             
@@ -255,14 +282,14 @@ export const TablesTab: React.FC<TablesTabProps> = ({
             
             // Check if table is unavailable in schedules
             const isUnavailable = isTableUnavailableForSlot(tableId, selectedDate, selectedTime);
-            if (isUnavailable) return 'occupied'; // Use 'occupied' to show as unavailable
+            if (isUnavailable) return 'unavailable';
             
             // Check if table is reserved
             const isReserved = isTableReservedForSlot(tableId);
             
-            return isReserved ? 'reserved' : table.status;
+            return isReserved ? 'reserved' : (tableStatuses[table.id] || table.status);
         },
-        [selectedTime, selectedDate, getJoinedTablesForSlot, isTableUnavailableForSlot, isTableReservedForSlot],
+        [selectedTime, selectedDate, tableStatuses, getJoinedTablesForSlot, isTableUnavailableForSlot, isTableReservedForSlot],
     );
 
     const filteredTables = useMemo(() => {
@@ -282,6 +309,8 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         switch (status) {
             case 'available':
                 return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            case 'unavailable':
+                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             case 'occupied':
                 return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             case 'reserved':
@@ -436,45 +465,72 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                     </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                    {/* Date and Time Slot Selection */}
-                    <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50/50 p-6 dark:border-blue-800/50 dark:bg-blue-900/10">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            Select Date & Time to View Table Availability
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                            {/* Calendar Section - Left Side */}
-                            <div className="lg:col-span-6">
-                                <Label className="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="space-y-6">
+                        {/* Date and Time Slot Selection */}
+                        <div>
+                            <Card className="rounded-lg border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
+                                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                            <Calculator className="mr-2 h-4 w-4 text-blue-500" />
+                                            Select Date & Time to View Table Availability
+                                        </CardTitle>
+                                        <div className="flex items-center gap-3">
+                                            {selectedTime && (
+                                                <p className="text-xs text-blue-800 dark:text-blue-200 whitespace-nowrap">
+                                                    Viewing: <strong>{new Date(selectedDate).toLocaleDateString()}</strong> at <strong>{new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</strong>
+                                                </p>
+                                            )}
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowDateTimeSection(!showDateTimeSection)}
+                                                className="h-8 w-8 flex-shrink-0 p-0 text-gray-700 hover:bg-blue-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                            >
+                                                {showDateTimeSection ? (
+                                                    <ChevronUp className="h-4 w-4" />
+                                                ) : (
+                                                    <ChevronDown className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                {showDateTimeSection && (
+                                <CardContent className="p-6">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {/* Calendar Section */}
+                            <div>
+                                <Label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
                                     Select Date
                                 </Label>
-                                <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                    <DateCalendar
-                                        selectedDate={selectedDate}
-                                        onDateSelect={(dateStr) => {
-                                            setSelectedDate(dateStr);
-                                            setSelectedTime(''); // Reset time when date changes
-                                        }}
-                                        blockedDates={[]}
-                                        minDate={new Date()}
-                                    />
+                                <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                                    Choose a date to view and manage table availability
+                                </p>
+                                <div className="rounded-lg border border-gray-300 bg-white p-2 dark:border-gray-600 dark:bg-gray-700">
+                                    <div className="scale-90 origin-top-left">
+                                        <DateCalendar
+                                            selectedDate={selectedDate}
+                                            onDateSelect={(dateStr) => {
+                                                setSelectedDate(dateStr);
+                                                setSelectedTime(''); // Reset time when date changes
+                                            }}
+                                            blockedDates={[]}
+                                            minDate={new Date()}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Time Slots Section - Right Side */}
-                            <div className="lg:col-span-6">
-                                <Label className="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                            {/* Time Slots Section */}
+                            <div>
+                                <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
                                     Select Time Slot (Optional)
                                 </Label>
 
                                 {/* Legend */}
-                                <div className="mb-3 flex flex-wrap gap-3 text-xs">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-3 w-3 rounded border border-gray-400 bg-gray-300 dark:border-gray-700 dark:bg-gray-800"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Not Opened
-                                        </span>
-                                    </div>
+                                <div className="mb-2 flex flex-wrap gap-3 text-xs">
+
                                     <div className="flex items-center gap-1.5">
                                         <div className="h-3 w-3 rounded border border-red-300 bg-red-500"></div>
                                         <span className="text-gray-600 dark:text-gray-400">
@@ -496,7 +552,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                     <div className="flex items-center gap-1.5">
                                         <div className="h-3 w-3 rounded border border-yellow-300 bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900/30"></div>
                                         <span className="text-gray-600 dark:text-gray-400">
-                                            Has reservations
+                                            Reservations
                                         </span>
                                     </div>
                                 </div>
@@ -521,7 +577,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                             type="button"
                                                             onClick={() => !isDisabled && setSelectedTime(timeSlot.value)}
                                                             disabled={isDisabled}
-                                                            className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
+                                                            className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-all ${
                                                                 !isOpened
                                                                     ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                                                                     : isBlocked
@@ -558,7 +614,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                             type="button"
                                                             onClick={() => !isDisabled && setSelectedTime(timeSlot.value)}
                                                             disabled={isDisabled}
-                                                            className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
+                                                            className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-all ${
                                                                 !isOpened
                                                                     ? 'border-gray-400 bg-gray-300 text-gray-600 cursor-not-allowed opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                                                                     : isBlocked
@@ -579,87 +635,19 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                     </div>
                                 </div>
 
-                                {selectedTime && (
-                                    <div className="mt-3 space-y-2">
-                                        <div className="flex items-center justify-between rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                                            <p className="text-xs text-blue-800 dark:text-blue-200">
-                                                Viewing tables for: <strong>{new Date(selectedDate).toLocaleDateString()}</strong> at <strong>{new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</strong>
-                                            </p>
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={() => setSelectedTime('')}
-                                                className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                                            >
-                                                Clear Selection
-                                            </Button>
-                                        </div>
-                                        <div className="grid grid-cols-5 gap-2 text-xs">
-                                            <div className="rounded-md bg-green-50 p-2 text-center dark:bg-green-900/20">
-                                                <p className="font-semibold text-green-800 dark:text-green-200">
-                                                    {tables.filter(t => {
-                                                        const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                        return isTableAvailableForSlot(tableId);
-                                                    }).length}
-                                                </p>
-                                                <p className="text-green-700 dark:text-green-300">Available</p>
-                                            </div>
-                                            <div className="rounded-md bg-yellow-50 p-2 text-center dark:bg-yellow-900/20">
-                                                <p className="font-semibold text-yellow-800 dark:text-yellow-200">
-                                                    {tables.filter(t => {
-                                                        const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                        return isTableReservedForSlot(tableId);
-                                                    }).length}
-                                                </p>
-                                                <p className="text-yellow-700 dark:text-yellow-300">Reserved</p>
-                                            </div>
-                                            <div className="rounded-md bg-blue-50 p-2 text-center dark:bg-blue-900/20">
-                                                <p className="font-semibold text-blue-800 dark:text-blue-200">
-                                                    {tables.filter(t => {
-                                                        const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                        return getJoinedTablesForSlot(tableId) !== null;
-                                                    }).length}
-                                                </p>
-                                                <p className="text-blue-700 dark:text-blue-300">Joined</p>
-                                            </div>
-                                            <div className="rounded-md bg-red-50 p-2 text-center dark:bg-red-900/20">
-                                                <p className="font-semibold text-red-800 dark:text-red-200">
-                                                    {tables.filter(t => {
-                                                        const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                        return isTableUnavailableForSlot(tableId, selectedDate, selectedTime);
-                                                    }).length}
-                                                </p>
-                                                <p className="text-red-700 dark:text-red-300">Unavailable</p>
-                                            </div>
-                                            <div className="rounded-md bg-gray-50 p-2 text-center dark:bg-gray-700">
-                                                <p className="font-semibold text-gray-800 dark:text-gray-200">
-                                                    {tables.length}
-                                                </p>
-                                                <p className="text-gray-700 dark:text-gray-300">Total</p>
-                                            </div>
-                                        </div>
-                                        
+                                {selectedTime && selectedTables.length > 0 && (
+                                    <div className="mt-3">
                                         {/* Table Schedule Actions */}
-                                        {!selectedTime && selectedTables.length > 0 && (
-                                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700">
-                                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                    💡 Select a time slot above to manage table schedules for specific times
-                                                </p>
-                                            </div>
-                                        )}
-                                        
-                                        {selectedTime && selectedTables.length > 0 && (
-                                            <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 dark:border-purple-800/50 dark:bg-purple-900/10">
-                                                <p className="mb-2 text-xs font-semibold text-purple-800 dark:text-purple-200">
-                                                    Table Schedule Actions ({selectedTables.length} table{selectedTables.length > 1 ? 's' : ''} selected)
-                                                </p>
-                                                <div className="flex flex-wrap gap-2">
+                                        <div className="rounded-md border border-purple-200 bg-purple-50 p-2 dark:border-purple-800/50 dark:bg-purple-900/10">
+                                            <p className="mb-1.5 text-xs font-semibold text-purple-800 dark:text-purple-200">
+                                                Table Schedule Actions ({selectedTables.length} table{selectedTables.length > 1 ? 's' : ''} selected)
+                                            </p>
+                                            <div className="flex flex-wrap gap-1.5">
                                                     <Button
                                                         type="button"
                                                         size="sm"
                                                         variant="outline"
-                                                        className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                        className="h-7 border-red-300 px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
                                                         onClick={handleSetUnavailable}
                                                         disabled={!onSetTableSchedule}
                                                     >
@@ -669,7 +657,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                         type="button"
                                                         size="sm"
                                                         variant="outline"
-                                                        className="border-green-300 text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20"
+                                                        className="h-7 border-green-300 px-2 py-1 text-xs text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/20"
                                                         onClick={handleSetAvailable}
                                                         disabled={!onSetTableSchedule}
                                                     >
@@ -680,7 +668,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                             type="button"
                                                             size="sm"
                                                             variant="outline"
-                                                            className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                                                            className="h-7 border-blue-300 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20"
                                                             onClick={handleJoinTablesForTime}
                                                             disabled={!onSetTableSchedule}
                                                         >
@@ -688,16 +676,78 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                             Join for this Time
                                                         </Button>
                                                     )}
-                                                </div>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
-                    </div>
-
-                    <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                </CardContent>
+                                )}
+                            </Card>
+                        </div>
+                    
+                        {/* Tables Listing */}
+                        <div>
+                            <Card className="rounded-lg border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
+                                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
+                                    <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                        <Calculator className="mr-2 h-4 w-4 text-blue-500" />
+                                        Tables Listing
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-4">
+                                    {/* Summary Section */}
+                                    {selectedTime && (
+                                        <div className="mb-4">
+                                            <div className="grid grid-cols-5 gap-2 text-xs">
+                                                <div className="rounded-md bg-green-50 p-2 text-center dark:bg-green-900/20">
+                                                    <p className="font-semibold text-green-800 dark:text-green-200">
+                                                        {tables.filter(t => {
+                                                            const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                            return isTableAvailableForSlot(tableId);
+                                                        }).length}
+                                                    </p>
+                                                    <p className="text-green-700 dark:text-green-300">Available</p>
+                                                </div>
+                                                <div className="rounded-md bg-yellow-50 p-2 text-center dark:bg-yellow-900/20">
+                                                    <p className="font-semibold text-yellow-800 dark:text-yellow-200">
+                                                        {tables.filter(t => {
+                                                            const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                            return isTableReservedForSlot(tableId);
+                                                        }).length}
+                                                    </p>
+                                                    <p className="text-yellow-700 dark:text-yellow-300">Reserved</p>
+                                                </div>
+                                                <div className="rounded-md bg-blue-50 p-2 text-center dark:bg-blue-900/20">
+                                                    <p className="font-semibold text-blue-800 dark:text-blue-200">
+                                                        {tables.filter(t => {
+                                                            const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                            return getJoinedTablesForSlot(tableId) !== null;
+                                                        }).length}
+                                                    </p>
+                                                    <p className="text-blue-700 dark:text-blue-300">Joined</p>
+                                                </div>
+                                                <div className="rounded-md bg-red-50 p-2 text-center dark:bg-red-900/20">
+                                                    <p className="font-semibold text-red-800 dark:text-red-200">
+                                                        {tables.filter(t => {
+                                                            const tableId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                            return isTableUnavailableForSlot(tableId, selectedDate, selectedTime);
+                                                        }).length}
+                                                    </p>
+                                                    <p className="text-red-700 dark:text-red-300">Unavailable</p>
+                                                </div>
+                                                <div className="rounded-md bg-gray-50 p-2 text-center dark:bg-gray-700">
+                                                    <p className="font-semibold text-gray-800 dark:text-gray-200">
+                                                        {tables.length}
+                                                    </p>
+                                                    <p className="text-gray-700 dark:text-gray-300">Total</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div className="flex items-end space-x-2">
                             <div className="flex-1">
                                 <Label htmlFor="tableStatusFilter">
@@ -770,9 +820,24 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                         )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {!selectedTime ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="text-center">
+                                <Calculator className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                                <p className="mt-4 text-lg font-medium text-gray-600 dark:text-gray-400">
+                                    Select a date and time slot to view tables
+                                </p>
+                                <p className="mt-2 text-sm text-gray-500 dark:text-gray-500">
+                                    Choose a time slot from the calendar above to manage table availability
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                         {filteredTables.map((table) => {
-                            const displayStatus = selectedTime ? getTableStatusForSlot(table) : table.status;
+                            // Use local state for optimistic UI, fallback to table.status
+                            const currentStatus = tableStatuses[table.id] || table.status;
+                            const displayStatus = selectedTime ? getTableStatusForSlot(table) : currentStatus;
                             const isReservedForSlot = selectedTime && isTableReservedForSlot(
                                 typeof table.id === 'number' ? table.id : parseInt(table.id.toString())
                             );
@@ -780,42 +845,42 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                             return (
                             <Card
                                 key={table.id}
-                                className={`rounded-xl border-gray-200 bg-white shadow-md transition-all duration-200 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${
+                                className={`rounded-lg border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 ${
                                     displayStatus === 'available'
                                         ? 'border-green-200 hover:border-green-300 dark:border-green-700 dark:hover:border-green-600'
-                                        : displayStatus === 'occupied'
+                                        : displayStatus === 'unavailable'
                                           ? 'border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600'
                                           : displayStatus === 'reserved'
                                             ? 'border-yellow-200 hover:border-yellow-300 dark:border-yellow-700 dark:hover:border-yellow-600'
                                             : 'border-blue-200 hover:border-blue-300 dark:border-blue-700 dark:hover:border-blue-600'
                                 } ${isReservedForSlot ? 'ring-2 ring-yellow-300 dark:ring-yellow-700' : ''}`}
                             >
-                                <CardHeader>
+                                <CardHeader className="p-3">
                                     <div className="flex items-center justify-between">
-                                        <CardTitle className="text-gray-900 dark:text-white">
-                                            {table.status === 'joined' &&
+                                        <CardTitle className="text-sm text-gray-900 dark:text-white">
+                                            {currentStatus === 'joined' &&
                                             table.joined_with ? (
                                                 <>
-                                                    <div className="flex items-center gap-2">
-                                                        <span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-base">
                                                             {getStatusIcon(
-                                                                table.status,
+                                                                currentStatus,
                                                             )}
                                                         </span>
                                                         <span>
                                                             {table.name}
                                                         </span>
                                                     </div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                                         Joined with:{' '}
                                                         {table.joined_with}
                                                     </div>
                                                 </>
                                             ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-base">
                                                         {getStatusIcon(
-                                                            table.status,
+                                                            currentStatus,
                                                         )}
                                                     </span>
                                                     <span>{table.name}</span>
@@ -846,20 +911,27 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                         )}
                                     </div>
                                 </CardHeader>
-                                <CardContent className="p-6">
-                                    <p className="text-gray-600 dark:text-gray-300">
+                                <CardContent className="p-3">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
                                         Seats: {table.seats}
+                                        <div className="flex items-center gap-0.5">
+                                            {Array.from({ length: table.seats }, (_, i) => (
+                                                <User key={i} className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            ))}
+                                        </div>
                                     </p>
-                                    <p className="text-gray-600 dark:text-gray-300">
-                                        Status:{' '}
-                                        <span
-                                            className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(displayStatus)}`}
-                                        >
-                                            {displayStatus}
-                                        </span>
-                                    </p>
-                                    {table.joined_with && (
+                                    <div className="mt-1 space-y-1">
                                         <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            Status:{' '}
+                                            <span
+                                                className={`rounded-full px-2 py-1 text-sm font-medium ${getStatusColor(displayStatus)}`}
+                                            >
+                                                {displayStatus}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    {table.joined_with && (
+                                        <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
                                             Joined Tables: {table.joined_with}
                                         </p>
                                     )}
@@ -883,10 +955,10 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                 .join(', ');
                                             
                                             return (
-                                                <div className="mt-2 rounded-md bg-blue-50 p-2 dark:bg-blue-900/20">
+                                                <div className="mt-1.5 rounded-md bg-blue-50 p-1.5 dark:bg-blue-900/20">
                                                     <p className="text-xs font-semibold text-blue-800 dark:text-blue-200">
                                                         <Link2 className="mr-1 inline h-3 w-3" />
-                                                        Joined for selected time
+                                                        Joined
                                                     </p>
                                                     <p className="text-xs text-blue-700 dark:text-blue-300">
                                                         With: {joinedTableNames}
@@ -895,21 +967,11 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                             );
                                         }
                                         
-                                        if (isUnavailable) {
-                                            return (
-                                                <div className="mt-2 rounded-md bg-red-50 p-2 dark:bg-red-900/20">
-                                                    <p className="text-xs font-medium text-red-800 dark:text-red-200">
-                                                        Unavailable for selected time
-                                                    </p>
-                                                </div>
-                                            );
-                                        }
-                                        
                                         if (isReservedForSlot) {
                                             return (
-                                                <div className="mt-2 rounded-md bg-yellow-50 p-2 dark:bg-yellow-900/20">
+                                                <div className="mt-1.5 rounded-md bg-yellow-50 p-1.5 dark:bg-yellow-900/20">
                                                     <p className="text-xs font-medium text-yellow-800 dark:text-yellow-200">
-                                                        Reserved for selected time
+                                                        Reserved
                                                     </p>
                                                 </div>
                                             );
@@ -918,7 +980,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                         return null;
                                     })()}
                                 </CardContent>
-                                <CardFooter className="flex flex-wrap gap-2">
+                                <CardFooter className="flex flex-wrap gap-1.5 p-3">
                                     {selectedTime && displayStatus === 'joined' && (() => {
                                         const tableId = typeof table.id === 'number' ? table.id : parseInt(table.id.toString());
                                         const joinedWith = getJoinedTablesForSlot(tableId);
@@ -939,10 +1001,10 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                             });
                                                         }
                                                     }}
-                                                    className="text-orange-600 hover:text-orange-700"
+                                                    className="h-7 px-2 py-1 text-xs text-orange-600 hover:text-orange-700"
                                                 >
                                                     <Unlink className="mr-1 h-3 w-3" />
-                                                    Unjoin for this Time
+                                                    Unjoin
                                                 </Button>
                                             );
                                         }
@@ -958,9 +1020,9 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                     onClick={() =>
                                                         onEditTable(table)
                                                     }
-                                                    className="text-blue-600 hover:text-blue-700"
+                                                    className="h-7 px-2 py-1 text-xs text-blue-600 hover:text-blue-700"
                                                 >
-                                                    <Edit className="h-4 w-4" />
+                                                    <Edit className="h-3.5 w-3.5" />
                                                 </Button>
                                             )}
                                             {canDelete && (
@@ -977,8 +1039,9 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                                   ),
                                                         )
                                                     }
+                                                    className="h-7 px-2 py-1"
                                                 >
-                                                    <Trash className="h-4 w-4" />
+                                                    <Trash className="h-3.5 w-3.5" />
                                                 </Button>
                                             )}
                                         </>
@@ -987,7 +1050,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="text-green-600 hover:text-green-700"
+                                            className="h-7 px-2 py-1 text-xs text-green-600 hover:text-green-700"
                                         >
                                             Complete Order
                                         </Button>
@@ -996,7 +1059,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="text-blue-600 hover:text-blue-700"
+                                            className="h-7 px-2 py-1 text-xs text-blue-600 hover:text-blue-700"
                                         >
                                             Check In
                                         </Button>
@@ -1014,9 +1077,9 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                           ),
                                                 ])
                                             }
-                                            className="text-orange-600 hover:text-orange-700"
+                                            className="h-7 px-2 py-1 text-xs text-orange-600 hover:text-orange-700"
                                         >
-                                            <Unlink className="h-4 w-4" />
+                                            <Unlink className="h-3.5 w-3.5" />
                                         </Button>
                                     )}
                                 </CardFooter>
@@ -1024,14 +1087,19 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                             );
                         })}
                     </div>
+                    )}
 
-                    {filteredTables.length === 0 && (
+                    {selectedTime && filteredTables.length === 0 && (
                         <div className="py-8 text-center">
                             <p className="text-gray-500 dark:text-gray-400">
                                 No tables found for the selected filter.
                             </p>
                         </div>
                     )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>

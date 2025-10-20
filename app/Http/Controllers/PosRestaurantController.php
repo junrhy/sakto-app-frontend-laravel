@@ -223,9 +223,11 @@ class PosRestaurantController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'seats' => 'required|integer|min:1',
-                'status' => 'required|string|in:available,occupied,reserved,joined'
+                'status' => 'nullable|string|in:available,occupied,reserved,joined'
             ]);
 
+            // Set default status to 'available' if not provided
+            $validated['status'] = $validated['status'] ?? 'available';
             $validated['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
@@ -918,7 +920,7 @@ class PosRestaurantController extends Controller
         try {
             $validated = $request->validate([
                 'table_name' => 'required|string',
-                'items' => 'required|array',
+                'items' => 'array',
                 'discount' => 'required|numeric',
                 'discount_type' => 'required|in:percentage,fixed',
                 'subtotal' => 'required|numeric',

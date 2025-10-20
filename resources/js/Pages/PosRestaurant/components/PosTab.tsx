@@ -28,6 +28,7 @@ import {
     Check,
     ChevronDown,
     ChevronRight,
+    Clock,
     CreditCard,
     Minus,
     Plus,
@@ -39,7 +40,7 @@ import {
     UtensilsCrossed,
 } from 'lucide-react';
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
-import { MenuItem, OrderItem, Table as TableType } from '../types';
+import { MenuItem, OrderItem, Table as TableType, Reservation } from '../types';
 import { usePosApi } from '../hooks/usePosApi';
 import { PaymentDialog } from './PaymentDialog';
 
@@ -52,6 +53,15 @@ interface PosTabProps {
     discountType: 'percentage' | 'fixed';
     currency_symbol: string;
     tables: TableType[];
+    tableSchedules?: Array<{
+        id: number;
+        tableId: number;
+        scheduleDate: string; // ISO date string or date part
+        timeslots: string[];
+        status: 'available' | 'unavailable' | 'joined';
+        joinedWith?: string | null;
+    }>;
+    reservations?: Reservation[];
     onAddItemToOrder: (item: MenuItem) => void;
     onUpdateItemQuantity: (itemId: number, quantity: number) => void;
     onRemoveItemFromOrder: (itemId: number) => void;
@@ -83,6 +93,8 @@ export const PosTab: React.FC<PosTabProps> = ({
     discountType,
     currency_symbol,
     tables,
+    tableSchedules = [],
+    reservations = [],
     onAddItemToOrder,
     onUpdateItemQuantity,
     onRemoveItemFromOrder,
@@ -186,6 +198,41 @@ export const PosTab: React.FC<PosTabProps> = ({
         () => totalAmount - discountAmount,
         [totalAmount, discountAmount],
     );
+    // Resolve current table id by name
+    const currentTableId = useMemo(() => {
+        const t = tables.find(t => t.name === tableNumber);
+        if (!t) return null;
+        const id = typeof t.id === 'number' ? t.id : parseInt(String(t.id));
+        return Number.isNaN(id) ? null : id;
+    }, [tables, tableNumber]);
+
+    // Build today's date (YYYY-MM-DD)
+    const todayDate = useMemo(() => {
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const d = String(today.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }, []);
+
+    // Get today's schedules for selected table
+    const todaysSchedules = useMemo(() => {
+        if (!currentTableId || !Array.isArray(tableSchedules)) return [] as typeof tableSchedules;
+        return tableSchedules.filter(s => {
+            const schedDate = s.scheduleDate.split('T')[0];
+            return s.tableId === currentTableId && schedDate === todayDate;
+        });
+    }, [currentTableId, tableSchedules, todayDate]);
+
+    // Get today's reservations for selected table
+    const todaysReservations = useMemo(() => {
+        if (!currentTableId || !Array.isArray(reservations)) return [] as typeof reservations;
+        return reservations.filter(r => {
+            const resDate = r.date.split('T')[0];
+            return r.tableId === currentTableId && resDate === todayDate && r.status !== 'cancelled';
+        });
+    }, [currentTableId, reservations, todayDate]);
+
 
     // Calculate total for current selected table
     const currentTableTotal = useMemo(() => {
@@ -198,7 +245,7 @@ export const PosTab: React.FC<PosTabProps> = ({
 
     // Auto-save order when items change
     useEffect(() => {
-        if (tableNumber && orderItems.length > 0) {
+        if (tableNumber) {
             const orderData = {
                 table_name: tableNumber,
                 items: orderItems,
@@ -424,8 +471,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={onShowQRCode}
-                                    disabled={orderItems.length === 0}
-                                    className="rounded p-1.5 text-blue-600 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                    className="rounded p-1.5 text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900/30"
                                     title="Show QR Code"
                                 >
                                     <QrCode className="h-4 w-4" />
@@ -520,11 +566,12 @@ export const PosTab: React.FC<PosTabProps> = ({
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() =>
-                                                    onRemoveItemFromOrder(
-                                                        item.id,
-                                                    )
-                                                }
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    console.log('Removing item:', item.id, item.name);
+                                                    onRemoveItemFromOrder(item.id);
+                                                }}
                                                 className="h-8 w-8 p-0"
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -537,8 +584,8 @@ export const PosTab: React.FC<PosTabProps> = ({
                     </CardContent>
                 </Card>
 
-                {/* Checkout Section */}
-                {showCheckout && (
+        {/* Checkout Section or Today's Schedule (mutually exclusive) */}
+        {showCheckout && (
                 <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
                         <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
@@ -658,6 +705,88 @@ export const PosTab: React.FC<PosTabProps> = ({
                     </CardContent>
                 </Card>
                 )}
+
+        {!showCheckout && (todaysSchedules.length > 0 || todaysReservations.length > 0) && (
+        <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
+            <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 dark:text-white">
+                    <div className="flex items-center">
+                        <Calculator className="mr-2 h-4 w-4 text-blue-500" />
+                        Today's Schedule
+                    </div>
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+                {/* Today's Schedules */}
+                {todaysSchedules.map((sched) => (
+                    <div key={`sched-${sched.id}`} className="rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                        <div className="mb-2 flex items-center justify-between text-xs">
+                            <span className="text-gray-600 dark:text-gray-300">
+                                {sched.timeslots.map(t => (
+                                    <span key={`${sched.id}-${t}`} className="rounded border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                                        {new Date(`2000-01-01T${t}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                    </span>
+                                ))}
+                            </span>
+                            <span className={`rounded-full px-2 py-0.5 font-medium ${
+                                sched.status === 'available'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                    : sched.status === 'unavailable'
+                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            }`}>
+                                {sched.status === 'joined' ? 'Joined' : sched.status.charAt(0).toUpperCase() + sched.status.slice(1)}
+                            </span>
+                        </div>
+                        {sched.status === 'joined' && sched.joinedWith && (
+                            <div className="mb-2 text-[11px] text-blue-700 dark:text-blue-300">
+                                With: {sched.joinedWith}
+                            </div>
+                        )}
+                    </div>
+                ))}
+
+                {/* Today's Reservations */}
+                {todaysReservations.map((reservation) => (
+                    <div key={`res-${reservation.id}`} className="rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-900/20">
+                        <div className="mb-2 flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                                <span className="font-medium text-orange-800 dark:text-orange-200">
+                                    {reservation.name}
+                                </span>
+                                <span className="text-orange-600 dark:text-orange-300">
+                                    ({reservation.guests} guests)
+                                </span>
+                            </div>
+                            <span className={`rounded-full px-2 py-0.5 font-medium ${
+                                reservation.status === 'confirmed'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            }`}>
+                                {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                            </span>
+                        </div>
+                        <div className="text-xs text-orange-700 dark:text-orange-300">
+                            <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {new Date(`2000-01-01T${reservation.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                            </div>
+                            {reservation.contact && (
+                                <div className="mt-1 text-orange-600 dark:text-orange-400">
+                                    📞 {reservation.contact}
+                                </div>
+                            )}
+                            {reservation.notes && (
+                                <div className="mt-1 text-orange-600 dark:text-orange-400">
+                                    📝 {reservation.notes}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+        )}
             </div>
 
             {/* Payment Dialog */}
