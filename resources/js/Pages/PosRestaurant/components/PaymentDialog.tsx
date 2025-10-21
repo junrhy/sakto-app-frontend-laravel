@@ -9,8 +9,8 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { CreditCard, Banknote } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { Banknote, CreditCard } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface PaymentDialogProps {
     isOpen: boolean;
@@ -82,7 +82,8 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                                 Total Amount:
                             </span>
                             <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                {currencySymbol}{totalAmount.toFixed(2)}
+                                {currencySymbol}
+                                {totalAmount.toFixed(2)}
                             </span>
                         </div>
                     </div>
@@ -122,7 +123,10 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
                     {/* Amount Received Input */}
                     <div className="space-y-2">
-                        <Label htmlFor="amountReceived" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Label
+                            htmlFor="amountReceived"
+                            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
                             Amount Received
                         </Label>
                         <div className="relative">
@@ -134,7 +138,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                                 type="number"
                                 step="0.01"
                                 value={amountReceived}
-                                onChange={(e) => setAmountReceived(e.target.value)}
+                                onChange={(e) =>
+                                    setAmountReceived(e.target.value)
+                                }
                                 placeholder="0.00"
                                 disabled={paymentMethod === 'card'}
                                 className="pl-8 text-lg font-semibold text-gray-900 dark:text-white"
@@ -143,7 +149,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                         </div>
                         {!isValidPayment && amountReceived && (
                             <p className="text-sm text-red-600 dark:text-red-400">
-                                Amount received must be at least {currencySymbol}{totalAmount.toFixed(2)}
+                                Amount received must be at least{' '}
+                                {currencySymbol}
+                                {totalAmount.toFixed(2)}
                             </p>
                         )}
                     </div>
@@ -156,7 +164,8 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                                     Change:
                                 </span>
                                 <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                    {currencySymbol}{change.toFixed(2)}
+                                    {currencySymbol}
+                                    {change.toFixed(2)}
                                 </span>
                             </div>
                         </div>
@@ -165,7 +174,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     {paymentMethod === 'card' && (
                         <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
                             <p className="text-sm text-blue-700 dark:text-blue-300">
-                                Card payment will charge the exact amount of {currencySymbol}{totalAmount.toFixed(2)}
+                                Card payment will charge the exact amount of{' '}
+                                {currencySymbol}
+                                {totalAmount.toFixed(2)}
                             </p>
                         </div>
                     )}
@@ -193,4 +204,3 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </Dialog>
     );
 };
-

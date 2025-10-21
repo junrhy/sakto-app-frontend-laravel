@@ -143,12 +143,19 @@ class TwilioAccountController extends Controller
                 'last_verified_at' => now(),
             ]);
 
-            return response()->json([
+            // Prepare response data
+            $responseData = [
                 'success' => true,
                 'message' => 'Twilio account verified successfully!',
-                'account_balance' => $account->balance,
-                'currency' => $account->currency
-            ]);
+                'account_status' => $account->status,
+            ];
+
+            // Add balance if available
+            if (isset($account->balance)) {
+                $responseData['account_balance'] = $account->balance;
+            }
+
+            return response()->json($responseData);
         } catch (\Exception $e) {
             Log::error('Failed to verify Twilio account: ' . $e->getMessage());
             
@@ -207,6 +214,57 @@ class TwilioAccountController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to delete Twilio account: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to delete account');
+        }
+    }
+
+    /**
+     * Set a Twilio account as default
+     */
+    public function setDefault(TwilioAccount $twilioAccount)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            // Ensure the account belongs to the current user
+            if ($twilioAccount->client_identifier !== $clientIdentifier) {
+                return redirect()->back()->with('error', 'Unauthorized access to account');
+            }
+
+            // Ensure the account is active and verified
+            if (!$twilioAccount->is_active || !$twilioAccount->is_verified) {
+                return redirect()->back()->with('error', 'Only active and verified accounts can be set as default');
+            }
+
+            // Set as default
+            $twilioAccount->setAsDefault();
+
+            return redirect()->back()->with('success', 'Twilio account set as default successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to set default Twilio account: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to set default account');
+        }
+    }
+
+    /**
+     * Unset a Twilio account as default
+     */
+    public function unsetDefault(TwilioAccount $twilioAccount)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            // Ensure the account belongs to the current user
+            if ($twilioAccount->client_identifier !== $clientIdentifier) {
+                return redirect()->back()->with('error', 'Unauthorized access to account');
+            }
+
+            // Unset as default
+            $twilioAccount->unsetAsDefault();
+
+            return redirect()->back()->with('success', 'Twilio account unset as default successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to unset default Twilio account: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to unset default account');
         }
     }
 }

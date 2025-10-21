@@ -91,7 +91,8 @@ export default function MobileSolutions() {
         },
         {
             name: 'Travel',
-            description: 'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
+            description:
+                'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
             icon: Plane,
             href: '/travel',
             color: 'text-cyan-600',
@@ -100,7 +101,8 @@ export default function MobileSolutions() {
         },
         {
             name: 'F&B',
-            description: 'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
+            description:
+                'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
             icon: UtensilsCrossed,
             href: '/fnb',
             color: 'text-amber-600',

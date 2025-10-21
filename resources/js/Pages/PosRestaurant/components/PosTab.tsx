@@ -1,11 +1,5 @@
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import {
@@ -39,9 +33,9 @@ import {
     Trash2,
     UtensilsCrossed,
 } from 'lucide-react';
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
-import { MenuItem, OrderItem, Table as TableType, Reservation } from '../types';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePosApi } from '../hooks/usePosApi';
+import { MenuItem, OrderItem, Reservation, Table as TableType } from '../types';
 import { PaymentDialog } from './PaymentDialog';
 
 interface PosTabProps {
@@ -77,11 +71,14 @@ interface PosTabProps {
     // New props for table order persistence
     onLoadTableOrder?: (tableName: string) => Promise<void>;
     onSaveTableOrder?: (tableName: string, orderData: any) => Promise<void>;
-    onCompleteTableOrder?: (tableName: string, paymentData?: {
-        payment_amount: number;
-        payment_method: 'cash' | 'card';
-        change: number;
-    }) => Promise<void>;
+    onCompleteTableOrder?: (
+        tableName: string,
+        paymentData?: {
+            payment_amount: number;
+            payment_method: 'cash' | 'card';
+            change: number;
+        },
+    ) => Promise<void>;
 }
 
 export const PosTab: React.FC<PosTabProps> = ({
@@ -112,17 +109,19 @@ export const PosTab: React.FC<PosTabProps> = ({
     onCompleteTableOrder,
 }) => {
     const api = usePosApi();
-    
+
     // State to store all active orders with their totals
-    const [allActiveOrders, setAllActiveOrders] = useState<Array<{
-        table_name: string;
-        total_amount: number;
-        item_count: number;
-    }>>([]);
-    
+    const [allActiveOrders, setAllActiveOrders] = useState<
+        Array<{
+            table_name: string;
+            total_amount: number;
+            item_count: number;
+        }>
+    >([]);
+
     // State for showing/hiding checkout section
     const [showCheckout, setShowCheckout] = useState(false);
-    
+
     // State for payment dialog
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
@@ -134,11 +133,11 @@ export const PosTab: React.FC<PosTabProps> = ({
                 setAllActiveOrders(orders.orders);
             }
         };
-        
+
         // Fetch immediately on mount
         fetchActiveOrders();
     }, []); // Empty dependency array - only run on mount
-    
+
     // Manual refresh function
     const handleRefreshOrders = useCallback(async () => {
         const orders = await api.getAllActiveOrders();
@@ -148,19 +147,24 @@ export const PosTab: React.FC<PosTabProps> = ({
     }, [api]);
 
     // Get total for a specific table
-    const getTableTotal = useCallback((tableName: string) => {
-        // If it's the current table, use the current orderItems
-        if (tableName === tableNumber && orderItems.length > 0) {
-            return orderItems.reduce(
-                (total, item) => total + item.price * item.quantity,
-                0,
+    const getTableTotal = useCallback(
+        (tableName: string) => {
+            // If it's the current table, use the current orderItems
+            if (tableName === tableNumber && orderItems.length > 0) {
+                return orderItems.reduce(
+                    (total, item) => total + item.price * item.quantity,
+                    0,
+                );
+            }
+            // Otherwise, get from allActiveOrders
+            const order = allActiveOrders.find(
+                (o) => o.table_name === tableName,
             );
-        }
-        // Otherwise, get from allActiveOrders
-        const order = allActiveOrders.find(o => o.table_name === tableName);
-        return order ? Number(order.total_amount) : 0;
-    }, [tableNumber, orderItems, allActiveOrders]);
-    
+            return order ? Number(order.total_amount) : 0;
+        },
+        [tableNumber, orderItems, allActiveOrders],
+    );
+
     const categoryFilteredMenuItems = useMemo(() => {
         if (!Array.isArray(menuItems)) return [];
 
@@ -200,7 +204,7 @@ export const PosTab: React.FC<PosTabProps> = ({
     );
     // Resolve current table id by name
     const currentTableId = useMemo(() => {
-        const t = tables.find(t => t.name === tableNumber);
+        const t = tables.find((t) => t.name === tableNumber);
         if (!t) return null;
         const id = typeof t.id === 'number' ? t.id : parseInt(String(t.id));
         return Number.isNaN(id) ? null : id;
@@ -217,8 +221,9 @@ export const PosTab: React.FC<PosTabProps> = ({
 
     // Get today's schedules for selected table
     const todaysSchedules = useMemo(() => {
-        if (!currentTableId || !Array.isArray(tableSchedules)) return [] as typeof tableSchedules;
-        return tableSchedules.filter(s => {
+        if (!currentTableId || !Array.isArray(tableSchedules))
+            return [] as typeof tableSchedules;
+        return tableSchedules.filter((s) => {
             const schedDate = s.scheduleDate.split('T')[0];
             return s.tableId === currentTableId && schedDate === todayDate;
         });
@@ -226,13 +231,17 @@ export const PosTab: React.FC<PosTabProps> = ({
 
     // Get today's reservations for selected table
     const todaysReservations = useMemo(() => {
-        if (!currentTableId || !Array.isArray(reservations)) return [] as typeof reservations;
-        return reservations.filter(r => {
+        if (!currentTableId || !Array.isArray(reservations))
+            return [] as typeof reservations;
+        return reservations.filter((r) => {
             const resDate = r.date.split('T')[0];
-            return r.tableId === currentTableId && resDate === todayDate && r.status !== 'cancelled';
+            return (
+                r.tableId === currentTableId &&
+                resDate === todayDate &&
+                r.status !== 'cancelled'
+            );
         });
     }, [currentTableId, reservations, todayDate]);
-
 
     // Calculate total for current selected table
     const currentTableTotal = useMemo(() => {
@@ -251,10 +260,13 @@ export const PosTab: React.FC<PosTabProps> = ({
                 items: orderItems,
                 discount: discount,
                 discount_type: discountType,
-                subtotal: orderItems.reduce((total, item) => total + (item.price * item.quantity), 0),
-                total_amount: currentTableTotal
+                subtotal: orderItems.reduce(
+                    (total, item) => total + item.price * item.quantity,
+                    0,
+                ),
+                total_amount: currentTableTotal,
             };
-            
+
             // Auto-save with debounce
             const timeoutId = setTimeout(async () => {
                 if (onSaveTableOrder) {
@@ -266,43 +278,66 @@ export const PosTab: React.FC<PosTabProps> = ({
 
             return () => clearTimeout(timeoutId);
         }
-    }, [orderItems, tableNumber, discount, discountType, currentTableTotal, onSaveTableOrder, api]);
+    }, [
+        orderItems,
+        tableNumber,
+        discount,
+        discountType,
+        currentTableTotal,
+        onSaveTableOrder,
+        api,
+    ]);
 
     // Load table order when table changes
-    const handleTableChange = useCallback(async (newTableName: string) => {
-        // Save current order before switching
-        if (tableNumber && orderItems.length > 0) {
-            const orderData = {
-                table_name: tableNumber,
-                items: orderItems,
-                discount: discount,
-                discount_type: discountType,
-                subtotal: orderItems.reduce((total, item) => total + (item.price * item.quantity), 0),
-                total_amount: currentTableTotal
-            };
-            
-            if (onSaveTableOrder) {
-                await onSaveTableOrder(tableNumber, orderData);
+    const handleTableChange = useCallback(
+        async (newTableName: string) => {
+            // Save current order before switching
+            if (tableNumber && orderItems.length > 0) {
+                const orderData = {
+                    table_name: tableNumber,
+                    items: orderItems,
+                    discount: discount,
+                    discount_type: discountType,
+                    subtotal: orderItems.reduce(
+                        (total, item) => total + item.price * item.quantity,
+                        0,
+                    ),
+                    total_amount: currentTableTotal,
+                };
+
+                if (onSaveTableOrder) {
+                    await onSaveTableOrder(tableNumber, orderData);
+                } else {
+                    await api.saveTableOrder(orderData);
+                }
+            }
+
+            // Switch to new table
+            onSetTableNumber(newTableName);
+
+            // Load order for new table
+            if (onLoadTableOrder) {
+                await onLoadTableOrder(newTableName);
             } else {
-                await api.saveTableOrder(orderData);
+                const response = await api.getTableOrder(newTableName);
+                if (response && response.items) {
+                    // This would need to be handled by the parent component
+                    // to update the orderItems state
+                }
             }
-        }
-
-        // Switch to new table
-        onSetTableNumber(newTableName);
-
-        // Load order for new table
-        if (onLoadTableOrder) {
-            await onLoadTableOrder(newTableName);
-        } else {
-            const response = await api.getTableOrder(newTableName);
-            if (response && response.items) {
-                // This would need to be handled by the parent component
-                // to update the orderItems state
-            }
-        }
-        
-    }, [tableNumber, orderItems, discount, discountType, currentTableTotal, onSetTableNumber, onSaveTableOrder, onLoadTableOrder, api]);
+        },
+        [
+            tableNumber,
+            orderItems,
+            discount,
+            discountType,
+            currentTableTotal,
+            onSetTableNumber,
+            onSaveTableOrder,
+            onLoadTableOrder,
+            api,
+        ],
+    );
 
     // Open payment dialog instead of completing directly
     const handleOpenPaymentDialog = useCallback(() => {
@@ -310,25 +345,35 @@ export const PosTab: React.FC<PosTabProps> = ({
     }, []);
 
     // Handle payment confirmation
-    const handlePaymentConfirm = useCallback(async (paymentAmount: number, paymentMethod: 'cash' | 'card') => {
-        if (onCompleteTableOrder && tableNumber) {
-            await onCompleteTableOrder(tableNumber, {
-                payment_amount: paymentAmount,
-                payment_method: paymentMethod,
-                change: paymentAmount - finalTotal,
-            });
-        } else if (tableNumber) {
-            await api.completeTableOrder(tableNumber, {
-                payment_amount: paymentAmount,
-                payment_method: paymentMethod,
-                change: paymentAmount - finalTotal,
-            });
-        }
-        onCompleteOrder();
-        setShowPaymentDialog(false);
-        // Refresh active orders after completing
-        handleRefreshOrders();
-    }, [tableNumber, finalTotal, onCompleteTableOrder, api, onCompleteOrder, handleRefreshOrders]);
+    const handlePaymentConfirm = useCallback(
+        async (paymentAmount: number, paymentMethod: 'cash' | 'card') => {
+            if (onCompleteTableOrder && tableNumber) {
+                await onCompleteTableOrder(tableNumber, {
+                    payment_amount: paymentAmount,
+                    payment_method: paymentMethod,
+                    change: paymentAmount - finalTotal,
+                });
+            } else if (tableNumber) {
+                await api.completeTableOrder(tableNumber, {
+                    payment_amount: paymentAmount,
+                    payment_method: paymentMethod,
+                    change: paymentAmount - finalTotal,
+                });
+            }
+            onCompleteOrder();
+            setShowPaymentDialog(false);
+            // Refresh active orders after completing
+            handleRefreshOrders();
+        },
+        [
+            tableNumber,
+            finalTotal,
+            onCompleteTableOrder,
+            api,
+            onCompleteOrder,
+            handleRefreshOrders,
+        ],
+    );
 
     return (
         <div className="space-y-6">
@@ -355,7 +400,9 @@ export const PosTab: React.FC<PosTabProps> = ({
                             {tables.map((table) => (
                                 <button
                                     key={table.id}
-                                    onClick={() => handleTableChange(table.name)}
+                                    onClick={() =>
+                                        handleTableChange(table.name)
+                                    }
                                     className={`w-full rounded-md border p-2.5 text-left transition-all duration-200 ${
                                         tableNumber === table.name
                                             ? 'border-purple-500 bg-purple-50 shadow-sm dark:border-purple-400 dark:bg-purple-900/30'
@@ -370,9 +417,13 @@ export const PosTab: React.FC<PosTabProps> = ({
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                {getTableTotal(table.name) > 0 && (
+                                                {getTableTotal(table.name) >
+                                                    0 && (
                                                     <div className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                                                        {currency_symbol}{getTableTotal(table.name).toFixed(2)}
+                                                        {currency_symbol}
+                                                        {getTableTotal(
+                                                            table.name,
+                                                        ).toFixed(2)}
                                                     </div>
                                                 )}
                                                 {tableNumber === table.name && (
@@ -485,11 +536,21 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     <Printer className="h-4 w-4" />
                                 </button>
                                 <button
-                                    onClick={() => setShowCheckout(!showCheckout)}
+                                    onClick={() =>
+                                        setShowCheckout(!showCheckout)
+                                    }
                                     className="flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30"
-                                    title={showCheckout ? "Hide Checkout" : "Show Checkout"}
+                                    title={
+                                        showCheckout
+                                            ? 'Hide Checkout'
+                                            : 'Show Checkout'
+                                    }
                                 >
-                                    {showCheckout ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                    {showCheckout ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                        <ChevronRight className="h-4 w-4" />
+                                    )}
                                     Checkout
                                 </button>
                             </div>
@@ -569,8 +630,14 @@ export const PosTab: React.FC<PosTabProps> = ({
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    console.log('Removing item:', item.id, item.name);
-                                                    onRemoveItemFromOrder(item.id);
+                                                    console.log(
+                                                        'Removing item:',
+                                                        item.id,
+                                                        item.name,
+                                                    );
+                                                    onRemoveItemFromOrder(
+                                                        item.id,
+                                                    );
                                                 }}
                                                 className="h-8 w-8 p-0"
                                             >
@@ -584,209 +651,259 @@ export const PosTab: React.FC<PosTabProps> = ({
                     </CardContent>
                 </Card>
 
-        {/* Checkout Section or Today's Schedule (mutually exclusive) */}
-        {showCheckout && (
-                <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
-                    <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
-                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                            <Calculator className="mr-2 h-4 w-4 text-blue-500" />
-                            Checkout
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6 space-y-6">
-                        {/* Discount Section */}
-                        <div className="space-y-3">
-                            <div>
-                                <Label htmlFor="discountType" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Discount Type
-                                </Label>
-                                <Select
-                                    value={discountType}
-                                    onValueChange={onSetDiscountType}
+                {/* Checkout Section or Today's Schedule (mutually exclusive) */}
+                {showCheckout && (
+                    <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
+                        <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
+                            <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                <Calculator className="mr-2 h-4 w-4 text-blue-500" />
+                                Checkout
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6 p-6">
+                            {/* Discount Section */}
+                            <div className="space-y-3">
+                                <div>
+                                    <Label
+                                        htmlFor="discountType"
+                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                    >
+                                        Discount Type
+                                    </Label>
+                                    <Select
+                                        value={discountType}
+                                        onValueChange={onSetDiscountType}
+                                    >
+                                        <SelectTrigger className="mt-1 w-full border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                            <SelectValue placeholder="Select type" />
+                                        </SelectTrigger>
+                                        <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                            <SelectItem
+                                                value="percentage"
+                                                className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            >
+                                                Percentage
+                                            </SelectItem>
+                                            <SelectItem
+                                                value="fixed"
+                                                className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            >
+                                                Fixed Amount
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label
+                                        htmlFor="discount"
+                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                    >
+                                        Discount
+                                    </Label>
+                                    <Input
+                                        id="discount"
+                                        type="number"
+                                        value={discount}
+                                        onChange={(e) =>
+                                            onSetDiscount(
+                                                Number(e.target.value),
+                                            )
+                                        }
+                                        placeholder={
+                                            discountType === 'percentage'
+                                                ? '%'
+                                                : '$'
+                                        }
+                                        className="mt-1 w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Total Section */}
+                            <div className="space-y-3 border-t border-gray-200 pt-4 dark:border-gray-600">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Subtotal:
+                                    </span>
+                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                        {currency_symbol}
+                                        {totalAmount}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Discount:
+                                    </span>
+                                    <span className="font-semibold text-red-600 dark:text-red-400">
+                                        {currency_symbol}
+                                        {discountAmount}
+                                    </span>
+                                </div>
+                                <div className="-mx-6 flex items-center justify-between bg-blue-50 px-6 py-3 dark:bg-blue-900/20">
+                                    <span className="font-bold text-gray-900 dark:text-white">
+                                        Total:
+                                    </span>
+                                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                        {currency_symbol}
+                                        {finalTotal}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="grid w-full grid-cols-1 gap-3">
+                                <Button
+                                    onClick={onPrintBill}
+                                    disabled={orderItems.length === 0}
+                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gray-600 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    <SelectTrigger className="mt-1 w-full border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
-                                        <SelectItem
-                                            value="percentage"
-                                            className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                        >
-                                            Percentage
-                                        </SelectItem>
-                                        <SelectItem
-                                            value="fixed"
-                                            className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                        >
-                                            Fixed Amount
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                    <Printer className="mr-2 h-4 w-4" />
+                                    Print
+                                </Button>
+                                <Button
+                                    onClick={onSplitBill}
+                                    disabled={orderItems.length === 0}
+                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-green-500 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-green-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <Calculator className="mr-2 h-4 w-4" />
+                                    Split
+                                </Button>
+                                <Button
+                                    onClick={handleOpenPaymentDialog}
+                                    disabled={orderItems.length === 0}
+                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <CreditCard className="mr-2 h-4 w-4" />
+                                    Pay
+                                </Button>
                             </div>
-                            <div>
-                                <Label htmlFor="discount" className="text-sm font-medium text-gray-700 dark:text-gray-300">Discount</Label>
-                                <Input
-                                    id="discount"
-                                    type="number"
-                                    value={discount}
-                                    onChange={(e) =>
-                                        onSetDiscount(
-                                            Number(e.target.value),
-                                        )
-                                    }
-                                    placeholder={
-                                        discountType === 'percentage'
-                                            ? '%'
-                                            : '$'
-                                    }
-                                    className="mt-1 w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Total Section */}
-                        <div className="space-y-3 border-t border-gray-200 pt-4 dark:border-gray-600">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Subtotal:
-                                </span>
-                                <span className="font-semibold text-gray-900 dark:text-white">
-                                    {currency_symbol}
-                                    {totalAmount}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                    Discount:
-                                </span>
-                                <span className="font-semibold text-red-600 dark:text-red-400">
-                                    {currency_symbol}
-                                    {discountAmount}
-                                </span>
-                            </div>
-                            <div className="-mx-6 flex items-center justify-between bg-blue-50 px-6 py-3 dark:bg-blue-900/20">
-                                <span className="font-bold text-gray-900 dark:text-white">
-                                    Total:
-                                </span>
-                                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                                    {currency_symbol}
-                                    {finalTotal}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="grid w-full grid-cols-1 gap-3">
-                            <Button
-                                onClick={onPrintBill}
-                                disabled={orderItems.length === 0}
-                                className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gray-600 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print
-                            </Button>
-                            <Button
-                                onClick={onSplitBill}
-                                disabled={orderItems.length === 0}
-                                className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-green-500 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-green-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <Calculator className="mr-2 h-4 w-4" />
-                                Split
-                            </Button>
-                            <Button
-                                onClick={handleOpenPaymentDialog}
-                                disabled={orderItems.length === 0}
-                                className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <CreditCard className="mr-2 h-4 w-4" />
-                                Pay
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
                 )}
 
-        {!showCheckout && (todaysSchedules.length > 0 || todaysReservations.length > 0) && (
-        <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
-            <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
-                <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 dark:text-white">
-                    <div className="flex items-center">
-                        <Calculator className="mr-2 h-4 w-4 text-blue-500" />
-                        Today's Schedule
-                    </div>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-                {/* Today's Schedules */}
-                {todaysSchedules.map((sched) => (
-                    <div key={`sched-${sched.id}`} className="rounded-md border border-gray-200 p-3 dark:border-gray-700">
-                        <div className="mb-2 flex items-center justify-between text-xs">
-                            <span className="text-gray-600 dark:text-gray-300">
-                                {sched.timeslots.map(t => (
-                                    <span key={`${sched.id}-${t}`} className="rounded border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
-                                        {new Date(`2000-01-01T${t}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                                    </span>
+                {!showCheckout &&
+                    (todaysSchedules.length > 0 ||
+                        todaysReservations.length > 0) && (
+                        <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
+                            <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
+                                <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 dark:text-white">
+                                    <div className="flex items-center">
+                                        <Calculator className="mr-2 h-4 w-4 text-blue-500" />
+                                        Today's Schedule
+                                    </div>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3 p-4">
+                                {/* Today's Schedules */}
+                                {todaysSchedules.map((sched) => (
+                                    <div
+                                        key={`sched-${sched.id}`}
+                                        className="rounded-md border border-gray-200 p-3 dark:border-gray-700"
+                                    >
+                                        <div className="mb-2 flex items-center justify-between text-xs">
+                                            <span className="text-gray-600 dark:text-gray-300">
+                                                {sched.timeslots.map((t) => (
+                                                    <span
+                                                        key={`${sched.id}-${t}`}
+                                                        className="rounded border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                                                    >
+                                                        {new Date(
+                                                            `2000-01-01T${t}`,
+                                                        ).toLocaleTimeString(
+                                                            'en-US',
+                                                            {
+                                                                hour: 'numeric',
+                                                                minute: '2-digit',
+                                                                hour12: true,
+                                                            },
+                                                        )}
+                                                    </span>
+                                                ))}
+                                            </span>
+                                            <span
+                                                className={`rounded-full px-2 py-0.5 font-medium ${
+                                                    sched.status === 'available'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : sched.status ===
+                                                            'unavailable'
+                                                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                }`}
+                                            >
+                                                {sched.status === 'joined'
+                                                    ? 'Joined'
+                                                    : sched.status
+                                                          .charAt(0)
+                                                          .toUpperCase() +
+                                                      sched.status.slice(1)}
+                                            </span>
+                                        </div>
+                                        {sched.status === 'joined' &&
+                                            sched.joinedWith && (
+                                                <div className="mb-2 text-[11px] text-blue-700 dark:text-blue-300">
+                                                    With: {sched.joinedWith}
+                                                </div>
+                                            )}
+                                    </div>
                                 ))}
-                            </span>
-                            <span className={`rounded-full px-2 py-0.5 font-medium ${
-                                sched.status === 'available'
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                    : sched.status === 'unavailable'
-                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                            }`}>
-                                {sched.status === 'joined' ? 'Joined' : sched.status.charAt(0).toUpperCase() + sched.status.slice(1)}
-                            </span>
-                        </div>
-                        {sched.status === 'joined' && sched.joinedWith && (
-                            <div className="mb-2 text-[11px] text-blue-700 dark:text-blue-300">
-                                With: {sched.joinedWith}
-                            </div>
-                        )}
-                    </div>
-                ))}
 
-                {/* Today's Reservations */}
-                {todaysReservations.map((reservation) => (
-                    <div key={`res-${reservation.id}`} className="rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-900/20">
-                        <div className="mb-2 flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium text-orange-800 dark:text-orange-200">
-                                    {reservation.name}
-                                </span>
-                                <span className="text-orange-600 dark:text-orange-300">
-                                    ({reservation.guests} guests)
-                                </span>
-                            </div>
-                            <span className={`rounded-full px-2 py-0.5 font-medium ${
-                                reservation.status === 'confirmed'
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            }`}>
-                                {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
-                            </span>
-                        </div>
-                        <div className="text-xs text-orange-700 dark:text-orange-300">
-                            <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {new Date(`2000-01-01T${reservation.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                            </div>
-                            {reservation.contact && (
-                                <div className="mt-1 text-orange-600 dark:text-orange-400">
-                                    📞 {reservation.contact}
-                                </div>
-                            )}
-                            {reservation.notes && (
-                                <div className="mt-1 text-orange-600 dark:text-orange-400">
-                                    📝 {reservation.notes}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
-        )}
+                                {/* Today's Reservations */}
+                                {todaysReservations.map((reservation) => (
+                                    <div
+                                        key={`res-${reservation.id}`}
+                                        className="rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-700 dark:bg-orange-900/20"
+                                    >
+                                        <div className="mb-2 flex items-center justify-between text-xs">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-orange-800 dark:text-orange-200">
+                                                    {reservation.name}
+                                                </span>
+                                                <span className="text-orange-600 dark:text-orange-300">
+                                                    ({reservation.guests}{' '}
+                                                    guests)
+                                                </span>
+                                            </div>
+                                            <span
+                                                className={`rounded-full px-2 py-0.5 font-medium ${
+                                                    reservation.status ===
+                                                    'confirmed'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                }`}
+                                            >
+                                                {reservation.status
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    reservation.status.slice(1)}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs text-orange-700 dark:text-orange-300">
+                                            <div className="flex items-center gap-1">
+                                                <Clock className="h-3 w-3" />
+                                                {new Date(
+                                                    `2000-01-01T${reservation.time}`,
+                                                ).toLocaleTimeString('en-US', {
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true,
+                                                })}
+                                            </div>
+                                            {reservation.contact && (
+                                                <div className="mt-1 text-orange-600 dark:text-orange-400">
+                                                    📞 {reservation.contact}
+                                                </div>
+                                            )}
+                                            {reservation.notes && (
+                                                <div className="mt-1 text-orange-600 dark:text-orange-400">
+                                                    📝 {reservation.notes}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    )}
             </div>
 
             {/* Payment Dialog */}

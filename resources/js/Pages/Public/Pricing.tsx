@@ -179,7 +179,8 @@ export default function Pricing({ auth }: PageProps) {
         },
         {
             name: 'Travel',
-            description: 'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
+            description:
+                'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
             icon: Plane,
             href: '/travel',
             color: 'text-cyan-600',
@@ -188,7 +189,8 @@ export default function Pricing({ auth }: PageProps) {
         },
         {
             name: 'F&B',
-            description: 'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
+            description:
+                'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
             icon: UtensilsCrossed,
             href: '/fnb',
             color: 'text-amber-600',
@@ -475,7 +477,9 @@ export default function Pricing({ auth }: PageProps) {
                             <div className="flex items-center">
                                 {/* Our Solutions Button */}
                                 <button
-                                    onClick={() => setIsSolutionsDialogOpen(true)}
+                                    onClick={() =>
+                                        setIsSolutionsDialogOpen(true)
+                                    }
                                     className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                 >
                                     Our Solutions
@@ -561,11 +565,14 @@ export default function Pricing({ auth }: PageProps) {
                             Transparent Pricing for Every Solution
                         </h1>
                         <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
-                            Pricing details are available on each solution's dedicated page. Select a solution below to view its specific plans and features.
+                            Pricing details are available on each solution's
+                            dedicated page. Select a solution below to view its
+                            specific plans and features.
                         </p>
                         <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-[#14B8A6]/20 bg-[#14B8A6]/5 px-6 py-4 dark:border-[#14B8A6]/30 dark:bg-[#14B8A6]/10">
                             <p className="text-center text-base font-medium text-gray-700 dark:text-gray-200">
-                                ✅ Access is granted instantly after purchase — no manual setup required.
+                                ✅ Access is granted instantly after purchase —
+                                no manual setup required.
                             </p>
                         </div>
                         <div className="mt-12 flex justify-center">
@@ -623,9 +630,11 @@ export default function Pricing({ auth }: PageProps) {
                                         What kind of support do you provide?
                                     </dt>
                                     <dd className="mt-2 text-gray-600 dark:text-gray-300">
-                                        All support is provided via our online helpdesk and email channels. All plans include email support. Pro and
-                                        Business plans include priority support
-                                        with faster response times.
+                                        All support is provided via our online
+                                        helpdesk and email channels. All plans
+                                        include email support. Pro and Business
+                                        plans include priority support with
+                                        faster response times.
                                     </dd>
                                 </div>
                             </dl>

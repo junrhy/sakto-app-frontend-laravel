@@ -170,7 +170,8 @@ export default function Features({ auth }: PageProps) {
         },
         {
             name: 'Travel',
-            description: 'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
+            description:
+                'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
             icon: Plane,
             href: '/travel',
             color: 'text-cyan-600',
@@ -179,7 +180,8 @@ export default function Features({ auth }: PageProps) {
         },
         {
             name: 'F&B',
-            description: 'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
+            description:
+                'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
             icon: UtensilsCrossed,
             href: '/fnb',
             color: 'text-amber-600',
@@ -728,7 +730,9 @@ export default function Features({ auth }: PageProps) {
                             <div className="flex items-center">
                                 {/* Our Solutions Button */}
                                 <button
-                                    onClick={() => setIsSolutionsDialogOpen(true)}
+                                    onClick={() =>
+                                        setIsSolutionsDialogOpen(true)
+                                    }
                                     className="rounded-md px-3 py-2 text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                 >
                                     Our Solutions
@@ -814,7 +818,9 @@ export default function Features({ auth }: PageProps) {
                             Powerful Features for Every Industry
                         </h1>
                         <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
-                            Each solution comes with industry-specific features designed to meet your unique needs. Select a solution below to explore its complete feature set.
+                            Each solution comes with industry-specific features
+                            designed to meet your unique needs. Select a
+                            solution below to explore its complete feature set.
                         </p>
                         <div className="mt-12 flex justify-center">
                             <button

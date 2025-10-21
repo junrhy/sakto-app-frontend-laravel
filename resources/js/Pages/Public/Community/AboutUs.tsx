@@ -426,8 +426,9 @@ export default function AboutUs({ auth }: PageProps) {
                                             Support
                                         </h3>
                                         <p className="text-sm text-slate-600">
-                                            Comprehensive automated support system
-                                            ensuring your success with our platform
+                                            Comprehensive automated support
+                                            system ensuring your success with
+                                            our platform
                                         </p>
                                     </div>
                                 </div>

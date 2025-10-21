@@ -49,6 +49,7 @@ interface TwilioAccount {
     default_country_code: string;
     is_active: boolean;
     is_verified: boolean;
+    is_default: boolean;
     last_verified_at: string;
     created_at: string;
 }

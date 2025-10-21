@@ -16,10 +16,10 @@ import { usePosApi } from './hooks/usePosApi';
 import { usePosState } from './hooks/usePosState';
 import {
     BlockedDate,
-    OpenedDate,
     JoinedTable,
     MenuItem,
     MenuItemFormData,
+    OpenedDate,
     Reservation,
     Sale,
     Table,
@@ -211,11 +211,11 @@ export default function PosRestaurantIndex({
         setIsTabLoading(true);
         setCurrentTab(value);
         setShowMobileTabs(false); // Close mobile tabs after selection
-        
+
         // Get current URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const appParam = urlParams.get('app') || 'fnb';
-        
+
         // Update URL with both app and tab parameters
         router.get(
             `/pos-restaurant?app=${appParam}&tab=${value}`,
@@ -229,7 +229,7 @@ export default function PosRestaurantIndex({
                         setIsTabLoading(false);
                     }, 300);
                 },
-            }
+            },
         );
     }, []);
 
@@ -412,55 +412,73 @@ export default function PosRestaurantIndex({
     }, [posState.orderItems, posState.tableNumber, api]);
 
     // Table Order handlers (New System)
-    const handleLoadTableOrder = useCallback(async (tableName: string) => {
-        try {
-            const response = await api.getTableOrder(tableName);
-            if (response && response.items && Array.isArray(response.items) && response.items.length > 0) {
-                // Update the order items state with loaded data
-                posState.setOrderItems(response.items);
-                // Update discount settings if available
-                if (response.discount !== undefined) {
-                    setDiscount(Number(response.discount));
+    const handleLoadTableOrder = useCallback(
+        async (tableName: string) => {
+            try {
+                const response = await api.getTableOrder(tableName);
+                if (
+                    response &&
+                    response.items &&
+                    Array.isArray(response.items) &&
+                    response.items.length > 0
+                ) {
+                    // Update the order items state with loaded data
+                    posState.setOrderItems(response.items);
+                    // Update discount settings if available
+                    if (response.discount !== undefined) {
+                        setDiscount(Number(response.discount));
+                    }
+                    if (response.discount_type) {
+                        setDiscountType(
+                            response.discount_type as 'percentage' | 'fixed',
+                        );
+                    }
+                    console.log('Loaded order for table:', tableName, response);
+                } else {
+                    // Clear order items if no saved order
+                    posState.setOrderItems([]);
+                    setDiscount(0);
                 }
-                if (response.discount_type) {
-                    setDiscountType(response.discount_type as 'percentage' | 'fixed');
-                }
-                console.log('Loaded order for table:', tableName, response);
-            } else {
-                // Clear order items if no saved order
+            } catch (error) {
+                console.error('Failed to load table order:', error);
+                // Clear order items on error
                 posState.setOrderItems([]);
                 setDiscount(0);
             }
-        } catch (error) {
-            console.error('Failed to load table order:', error);
-            // Clear order items on error
-            posState.setOrderItems([]);
-            setDiscount(0);
-        }
-    }, [api, posState, setDiscount, setDiscountType]);
+        },
+        [api, posState, setDiscount, setDiscountType],
+    );
 
-    const handleSaveTableOrder = useCallback(async (tableName: string, orderData: any) => {
-        try {
-            await api.saveTableOrder(orderData);
-        } catch (error) {
-            console.error('Failed to save table order:', error);
-        }
-    }, [api]);
+    const handleSaveTableOrder = useCallback(
+        async (tableName: string, orderData: any) => {
+            try {
+                await api.saveTableOrder(orderData);
+            } catch (error) {
+                console.error('Failed to save table order:', error);
+            }
+        },
+        [api],
+    );
 
-    const handleCompleteTableOrder = useCallback(async (tableName: string, paymentData?: {
-        payment_amount: number;
-        payment_method: 'cash' | 'card';
-        change: number;
-    }) => {
-        try {
-            await api.completeTableOrder(tableName, paymentData);
-            // Clear the order items after completion
-            posState.clearOrder();
-        } catch (error) {
-            console.error('Failed to complete table order:', error);
-        }
-    }, [api, posState]);
-
+    const handleCompleteTableOrder = useCallback(
+        async (
+            tableName: string,
+            paymentData?: {
+                payment_amount: number;
+                payment_method: 'cash' | 'card';
+                change: number;
+            },
+        ) => {
+            try {
+                await api.completeTableOrder(tableName, paymentData);
+                // Clear the order items after completion
+                posState.clearOrder();
+            } catch (error) {
+                console.error('Failed to complete table order:', error);
+            }
+        },
+        [api, posState],
+    );
 
     // Table handlers
     const handleAddTable = useCallback(
@@ -502,12 +520,14 @@ export default function PosRestaurantIndex({
     const handleUpdateTableStatus = useCallback(
         async (table: Table) => {
             const result = await api.updateTable(
-                typeof table.id === 'number' ? table.id : parseInt(table.id.toString()),
-                { 
-                    name: table.name, 
+                typeof table.id === 'number'
+                    ? table.id
+                    : parseInt(table.id.toString()),
+                {
+                    name: table.name,
                     seats: table.seats,
-                    status: table.status
-                }
+                    status: table.status,
+                },
             );
             if (result) {
                 api.refreshData();
@@ -781,26 +801,65 @@ export default function PosRestaurantIndex({
                             className="w-full"
                         >
                             {/* Mobile Tab Toggle Button */}
-                            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-3 lg:hidden dark:border-gray-700 dark:bg-gray-800">
+                            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800 lg:hidden">
                                 <button
-                                    onClick={() => setShowMobileTabs(!showMobileTabs)}
+                                    onClick={() =>
+                                        setShowMobileTabs(!showMobileTabs)
+                                    }
                                     className={`flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl ${
-                                        currentTab === 'pos' ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' :
-                                        currentTab === 'tables' ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' :
-                                        currentTab === 'reservations' ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700' :
-                                        currentTab === 'blocked-dates' ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700' :
-                                        currentTab === 'opened-dates' ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' :
-                                        currentTab === 'menu' ? 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700' :
-                                        'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                                        currentTab === 'pos'
+                                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                                            : currentTab === 'tables'
+                                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                                              : currentTab === 'reservations'
+                                                ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
+                                                : currentTab === 'blocked-dates'
+                                                  ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
+                                                  : currentTab ===
+                                                      'opened-dates'
+                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                                                    : currentTab === 'menu'
+                                                      ? 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'
+                                                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
                                     }`}
                                 >
                                     <span className="flex items-center">
-                                        {currentTab === 'pos' && <><UtensilsCrossed className="mr-2 h-4 w-4" />Point of Sale</>}
-                                        {currentTab === 'tables' && <><Calculator className="mr-2 h-4 w-4" />Tables</>}
-                                        {currentTab === 'reservations' && <><Check className="mr-2 h-4 w-4" />Reservations</>}
-                                        {currentTab === 'blocked-dates' && <><Calendar className="mr-2 h-4 w-4" />Blocked Dates</>}
-                                        {currentTab === 'opened-dates' && <><Calendar className="mr-2 h-4 w-4" />Opened Dates</>}
-                                        {currentTab === 'menu' && <><ShoppingCart className="mr-2 h-4 w-4" />Menu</>}
+                                        {currentTab === 'pos' && (
+                                            <>
+                                                <UtensilsCrossed className="mr-2 h-4 w-4" />
+                                                Point of Sale
+                                            </>
+                                        )}
+                                        {currentTab === 'tables' && (
+                                            <>
+                                                <Calculator className="mr-2 h-4 w-4" />
+                                                Tables
+                                            </>
+                                        )}
+                                        {currentTab === 'reservations' && (
+                                            <>
+                                                <Check className="mr-2 h-4 w-4" />
+                                                Reservations
+                                            </>
+                                        )}
+                                        {currentTab === 'blocked-dates' && (
+                                            <>
+                                                <Calendar className="mr-2 h-4 w-4" />
+                                                Blocked Dates
+                                            </>
+                                        )}
+                                        {currentTab === 'opened-dates' && (
+                                            <>
+                                                <Calendar className="mr-2 h-4 w-4" />
+                                                Opened Dates
+                                            </>
+                                        )}
+                                        {currentTab === 'menu' && (
+                                            <>
+                                                <ShoppingCart className="mr-2 h-4 w-4" />
+                                                Menu
+                                            </>
+                                        )}
                                     </span>
                                     <svg
                                         className={`h-5 w-5 transition-transform duration-200 ${showMobileTabs ? 'rotate-180' : ''}`}
@@ -808,7 +867,12 @@ export default function PosRestaurantIndex({
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
                                     >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M19 9l-7 7-7-7"
+                                        />
                                     </svg>
                                 </button>
                             </div>
@@ -816,327 +880,356 @@ export default function PosRestaurantIndex({
                             {/* Main Layout: Content on Left, Tabs on Right */}
                             <div className="flex flex-col lg:flex-row">
                                 {/* Tabs Sidebar - Right on desktop, Hidden by default on mobile */}
-                                <div className={`order-1 mb-6 border-b border-gray-200 px-4 pb-12 pt-4 lg:order-2 lg:mb-0 lg:w-64 lg:border-b-0 lg:border-l lg:p-4 dark:border-gray-600 ${showMobileTabs ? 'block' : 'hidden lg:block'}`}>
-                                <TabsList className="flex h-auto w-full flex-col gap-2 bg-transparent p-0">
-                                    <TabsTrigger
-                                        value="pos"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <UtensilsCrossed className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Point of Sale
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="tables"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <Calculator className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Tables
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="reservations"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <Check className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Reservations
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="blocked-dates"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Blocked Dates
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="opened-dates"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Opened Dates
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="menu"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <ShoppingCart className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Menu
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="sales"
-                                        className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
-                                    >
-                                        <TrendingUp className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
-                                        Sales
-                                    </TabsTrigger>
-                                </TabsList>
-                            </div>
+                                <div
+                                    className={`order-1 mb-6 border-b border-gray-200 px-4 pb-12 pt-4 dark:border-gray-600 lg:order-2 lg:mb-0 lg:w-64 lg:border-b-0 lg:border-l lg:p-4 ${showMobileTabs ? 'block' : 'hidden lg:block'}`}
+                                >
+                                    <TabsList className="flex h-auto w-full flex-col gap-2 bg-transparent p-0">
+                                        <TabsTrigger
+                                            value="pos"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <UtensilsCrossed className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Point of Sale
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="tables"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <Calculator className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Tables
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="reservations"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <Check className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Reservations
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="blocked-dates"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Blocked Dates
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="opened-dates"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <Calendar className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Opened Dates
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="menu"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <ShoppingCart className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Menu
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="sales"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <TrendingUp className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Sales
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </div>
 
-                            {/* Content Area - Left on desktop */}
-                            <div className="order-2 flex-1 lg:order-1 lg:mr-6">
-                            {isTabLoading && <TabLoadingSpinner />}
+                                {/* Content Area - Left on desktop */}
+                                <div className="order-2 flex-1 lg:order-1 lg:mr-6">
+                                    {isTabLoading && <TabLoadingSpinner />}
 
-                            {!isTabLoading && (
-                                <ErrorBoundary>
-                                    <Suspense fallback={<TabLoadingSpinner />}>
-                                        {currentTab === 'pos' && (
-                                            <TabsContent
-                                                value="pos"
-                                                className="m-0 p-0"
+                                    {!isTabLoading && (
+                                        <ErrorBoundary>
+                                            <Suspense
+                                                fallback={<TabLoadingSpinner />}
                                             >
-                                                <PosTab
-                                                    menuItems={
-                                                        posState.menuItems
-                                                    }
-                                                    orderItems={
-                                                        posState.orderItems
-                                                    }
-                                                    tableNumber={
-                                                        posState.tableNumber
-                                                    }
-                                                    selectedCategory={
-                                                        posState.selectedCategory
-                                                    }
-                                                    discount={discount}
-                                                    discountType={discountType}
-                                                    currency_symbol={
-                                                        currency_symbol
-                                                    }
-                                                    tables={tables}
-                                                    tableSchedules={tableSchedules}
-                                                    reservations={posState.reservations}
-                                                    onAddItemToOrder={
-                                                        posState.addItemToOrder
-                                                    }
-                                                    onUpdateItemQuantity={
-                                                        posState.updateItemQuantity
-                                                    }
-                                                    onRemoveItemFromOrder={
-                                                        posState.removeItemFromOrder
-                                                    }
-                                                    onSetTableNumber={
-                                                        posState.setTableNumber
-                                                    }
-                                                    onSetSelectedCategory={
-                                                        posState.setSelectedCategory
-                                                    }
-                                                    onSetDiscount={setDiscount}
-                                                    onSetDiscountType={
-                                                        setDiscountType
-                                                    }
-                                                    onPrintBill={
-                                                        handlePrintBill
-                                                    }
-                                                    onShowQRCode={
-                                                        handleShowQRCode
-                                                    }
-                                                    onCompleteOrder={
-                                                        handleCompleteOrder
-                                                    }
-                                                    onSplitBill={
-                                                        handleSplitBill
-                                                    }
-                                                    onPrintKitchenOrder={
-                                                        handlePrintKitchenOrder
-                                                    }
-                                                    onLoadTableOrder={
-                                                        handleLoadTableOrder
-                                                    }
-                                                    onSaveTableOrder={
-                                                        handleSaveTableOrder
-                                                    }
-                                                    onCompleteTableOrder={
-                                                        handleCompleteTableOrder
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
+                                                {currentTab === 'pos' && (
+                                                    <TabsContent
+                                                        value="pos"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <PosTab
+                                                            menuItems={
+                                                                posState.menuItems
+                                                            }
+                                                            orderItems={
+                                                                posState.orderItems
+                                                            }
+                                                            tableNumber={
+                                                                posState.tableNumber
+                                                            }
+                                                            selectedCategory={
+                                                                posState.selectedCategory
+                                                            }
+                                                            discount={discount}
+                                                            discountType={
+                                                                discountType
+                                                            }
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
+                                                            tables={tables}
+                                                            tableSchedules={
+                                                                tableSchedules
+                                                            }
+                                                            reservations={
+                                                                posState.reservations
+                                                            }
+                                                            onAddItemToOrder={
+                                                                posState.addItemToOrder
+                                                            }
+                                                            onUpdateItemQuantity={
+                                                                posState.updateItemQuantity
+                                                            }
+                                                            onRemoveItemFromOrder={
+                                                                posState.removeItemFromOrder
+                                                            }
+                                                            onSetTableNumber={
+                                                                posState.setTableNumber
+                                                            }
+                                                            onSetSelectedCategory={
+                                                                posState.setSelectedCategory
+                                                            }
+                                                            onSetDiscount={
+                                                                setDiscount
+                                                            }
+                                                            onSetDiscountType={
+                                                                setDiscountType
+                                                            }
+                                                            onPrintBill={
+                                                                handlePrintBill
+                                                            }
+                                                            onShowQRCode={
+                                                                handleShowQRCode
+                                                            }
+                                                            onCompleteOrder={
+                                                                handleCompleteOrder
+                                                            }
+                                                            onSplitBill={
+                                                                handleSplitBill
+                                                            }
+                                                            onPrintKitchenOrder={
+                                                                handlePrintKitchenOrder
+                                                            }
+                                                            onLoadTableOrder={
+                                                                handleLoadTableOrder
+                                                            }
+                                                            onSaveTableOrder={
+                                                                handleSaveTableOrder
+                                                            }
+                                                            onCompleteTableOrder={
+                                                                handleCompleteTableOrder
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
 
-                                        {currentTab === 'tables' && (
-                                            <TabsContent
-                                                value="tables"
-                                                className="m-0 p-0"
-                                            >
-                                                <TablesTab
-                                                    tables={
-                                                        posState.filteredTables
-                                                    }
-                                                    reservations={
-                                                        posState.reservations
-                                                    }
-                                                    openedDates={openedDates}
-                                                    blockedDates={
-                                                        posState.blockedDates
-                                                    }
-                                                    tableSchedules={
-                                                        tableSchedules
-                                                    }
-                                                    currency_symbol={
-                                                        currency_symbol
-                                                    }
-                                                    canEdit={canEdit}
-                                                    canDelete={canDelete}
-                                                    onAddTable={() =>
-                                                        setIsAddTableDialogOpen(
-                                                            true,
-                                                        )
-                                                    }
-                                                    onEditTable={
-                                                        handleEditTable
-                                                    }
-                                                    onUpdateTableStatus={
-                                                        handleUpdateTableStatus
-                                                    }
-                                                    onDeleteTable={
-                                                        handleDeleteTable
-                                                    }
-                                                    onJoinTables={
-                                                        handleJoinTables
-                                                    }
-                                                    onUnjoinTables={
-                                                        handleUnjoinTables
-                                                    }
-                                                    onSetTableStatusFilter={
-                                                        posState.setTableStatusFilter
-                                                    }
-                                                    tableStatusFilter={
-                                                        posState.tableStatusFilter
-                                                    }
-                                                    onSetTableSchedule={
-                                                        handleSetTableSchedule
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
+                                                {currentTab === 'tables' && (
+                                                    <TabsContent
+                                                        value="tables"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <TablesTab
+                                                            tables={
+                                                                posState.filteredTables
+                                                            }
+                                                            reservations={
+                                                                posState.reservations
+                                                            }
+                                                            openedDates={
+                                                                openedDates
+                                                            }
+                                                            blockedDates={
+                                                                posState.blockedDates
+                                                            }
+                                                            tableSchedules={
+                                                                tableSchedules
+                                                            }
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
+                                                            canEdit={canEdit}
+                                                            canDelete={
+                                                                canDelete
+                                                            }
+                                                            onAddTable={() =>
+                                                                setIsAddTableDialogOpen(
+                                                                    true,
+                                                                )
+                                                            }
+                                                            onEditTable={
+                                                                handleEditTable
+                                                            }
+                                                            onUpdateTableStatus={
+                                                                handleUpdateTableStatus
+                                                            }
+                                                            onDeleteTable={
+                                                                handleDeleteTable
+                                                            }
+                                                            onJoinTables={
+                                                                handleJoinTables
+                                                            }
+                                                            onUnjoinTables={
+                                                                handleUnjoinTables
+                                                            }
+                                                            onSetTableStatusFilter={
+                                                                posState.setTableStatusFilter
+                                                            }
+                                                            tableStatusFilter={
+                                                                posState.tableStatusFilter
+                                                            }
+                                                            onSetTableSchedule={
+                                                                handleSetTableSchedule
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
 
-                                        {currentTab === 'reservations' && (
-                                            <TabsContent
-                                                value="reservations"
-                                                className="m-0 p-0"
-                                            >
-                                                <ReservationsTab
-                                                    reservations={
-                                                        posState.reservations
-                                                    }
-                                                    tables={posState.tables}
-                                                    blockedDates={
-                                                        posState.blockedDates
-                                                    }
-                                                    openedDates={openedDates}
-                                                    tableSchedules={
-                                                        tableSchedules
-                                                    }
-                                                    currency_symbol={
-                                                        currency_symbol
-                                                    }
-                                                    onAddReservation={
-                                                        handleAddReservation
-                                                    }
-                                                    onUpdateReservation={
-                                                        handleUpdateReservation
-                                                    }
-                                                    onDeleteReservation={
-                                                        handleDeleteReservation
-                                                    }
-                                                    onConfirmReservation={
-                                                        handleConfirmReservation
-                                                    }
-                                                    onCancelReservation={
-                                                        handleCancelReservation
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
+                                                {currentTab ===
+                                                    'reservations' && (
+                                                    <TabsContent
+                                                        value="reservations"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <ReservationsTab
+                                                            reservations={
+                                                                posState.reservations
+                                                            }
+                                                            tables={
+                                                                posState.tables
+                                                            }
+                                                            blockedDates={
+                                                                posState.blockedDates
+                                                            }
+                                                            openedDates={
+                                                                openedDates
+                                                            }
+                                                            tableSchedules={
+                                                                tableSchedules
+                                                            }
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
+                                                            onAddReservation={
+                                                                handleAddReservation
+                                                            }
+                                                            onUpdateReservation={
+                                                                handleUpdateReservation
+                                                            }
+                                                            onDeleteReservation={
+                                                                handleDeleteReservation
+                                                            }
+                                                            onConfirmReservation={
+                                                                handleConfirmReservation
+                                                            }
+                                                            onCancelReservation={
+                                                                handleCancelReservation
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
 
-                                        {currentTab === 'blocked-dates' && (
-                                            <TabsContent
-                                                value="blocked-dates"
-                                                className="m-0 p-0"
-                                            >
-                                                <BlockedDatesTab
-                                                    blockedDates={
-                                                        posState.blockedDates
-                                                    }
-                                                    openedDates={openedDates}
-                                                    onAddBlockedDate={
-                                                        handleAddBlockedDate
-                                                    }
-                                                    onUpdateBlockedDate={
-                                                        handleUpdateBlockedDate
-                                                    }
-                                                    onDeleteBlockedDate={
-                                                        handleDeleteBlockedDate
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
+                                                {currentTab ===
+                                                    'blocked-dates' && (
+                                                    <TabsContent
+                                                        value="blocked-dates"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <BlockedDatesTab
+                                                            blockedDates={
+                                                                posState.blockedDates
+                                                            }
+                                                            openedDates={
+                                                                openedDates
+                                                            }
+                                                            onAddBlockedDate={
+                                                                handleAddBlockedDate
+                                                            }
+                                                            onUpdateBlockedDate={
+                                                                handleUpdateBlockedDate
+                                                            }
+                                                            onDeleteBlockedDate={
+                                                                handleDeleteBlockedDate
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
 
-                                        {currentTab === 'opened-dates' && (
-                                            <TabsContent
-                                                value="opened-dates"
-                                                className="m-0 p-0"
-                                            >
-                                                <OpenedDatesTab
-                                                    openedDates={openedDates}
-                                                    onAddOpenedDate={
-                                                        handleAddOpenedDate
-                                                    }
-                                                    onUpdateOpenedDate={
-                                                        handleUpdateOpenedDate
-                                                    }
-                                                    onDeleteOpenedDate={
-                                                        handleDeleteOpenedDate
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
+                                                {currentTab ===
+                                                    'opened-dates' && (
+                                                    <TabsContent
+                                                        value="opened-dates"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <OpenedDatesTab
+                                                            openedDates={
+                                                                openedDates
+                                                            }
+                                                            onAddOpenedDate={
+                                                                handleAddOpenedDate
+                                                            }
+                                                            onUpdateOpenedDate={
+                                                                handleUpdateOpenedDate
+                                                            }
+                                                            onDeleteOpenedDate={
+                                                                handleDeleteOpenedDate
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
 
-                                        {currentTab === 'menu' && (
-                                            <TabsContent
-                                                value="menu"
-                                                className="m-0 p-0"
-                                            >
-                                                <MenuTab
-                                                    menuItems={
-                                                        posState.filteredMenuItems
-                                                    }
-                                                    currency_symbol={
-                                                        currency_symbol
-                                                    }
-                                                    canEdit={canEdit}
-                                                    canDelete={canDelete}
-                                                    onAddMenuItem={
-                                                        handleAddMenuItem
-                                                    }
-                                                    onEditMenuItem={
-                                                        handleEditMenuItem
-                                                    }
-                                                    onDeleteMenuItem={
-                                                        handleDeleteMenuItem
-                                                    }
-                                                    onBulkDeleteMenuItems={
-                                                        handleBulkDeleteMenuItems
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
+                                                {currentTab === 'menu' && (
+                                                    <TabsContent
+                                                        value="menu"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <MenuTab
+                                                            menuItems={
+                                                                posState.filteredMenuItems
+                                                            }
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
+                                                            canEdit={canEdit}
+                                                            canDelete={
+                                                                canDelete
+                                                            }
+                                                            onAddMenuItem={
+                                                                handleAddMenuItem
+                                                            }
+                                                            onEditMenuItem={
+                                                                handleEditMenuItem
+                                                            }
+                                                            onDeleteMenuItem={
+                                                                handleDeleteMenuItem
+                                                            }
+                                                            onBulkDeleteMenuItems={
+                                                                handleBulkDeleteMenuItems
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
 
-                                        {currentTab === 'sales' && (
-                                            <TabsContent
-                                                value="sales"
-                                                className="m-0 p-0"
-                                            >
-                                                <SalesTab
-                                                    sales={sales || []}
-                                                    currency_symbol={
-                                                        currency_symbol
-                                                    }
-                                                />
-                                            </TabsContent>
-                                        )}
-                                    </Suspense>
-                                </ErrorBoundary>
-                            )}
-                            </div>
-                            {/* End Content Area */}
+                                                {currentTab === 'sales' && (
+                                                    <TabsContent
+                                                        value="sales"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <SalesTab
+                                                            sales={sales || []}
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
+                                            </Suspense>
+                                        </ErrorBoundary>
+                                    )}
+                                </div>
+                                {/* End Content Area */}
                             </div>
                             {/* End Main Layout */}
                         </Tabs>

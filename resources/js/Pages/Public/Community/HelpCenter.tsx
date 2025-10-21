@@ -413,8 +413,8 @@ export default function HelpCenter({ auth }: PageProps) {
                                 </h2>
                                 <p className="mx-auto mb-8 max-w-2xl text-xl text-blue-100">
                                     Can't find what you're looking for? Access
-                                    our comprehensive knowledge base and automated
-                                    support resources.
+                                    our comprehensive knowledge base and
+                                    automated support resources.
                                 </p>
                                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                                     <a

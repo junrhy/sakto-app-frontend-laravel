@@ -3,7 +3,6 @@ import { Label } from '@/Components/ui/label';
 import { Calendar } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { DateCalendar } from './DateCalendar';
-import { toast } from 'sonner';
 
 interface OpenedDate {
     id: number;
@@ -20,10 +19,7 @@ interface OpenedDatesTabProps {
     onAddOpenedDate: (
         openedDate: Omit<OpenedDate, 'id' | 'created_at' | 'updated_at'>,
     ) => void;
-    onUpdateOpenedDate: (
-        id: number,
-        openedDate: Partial<OpenedDate>,
-    ) => void;
+    onUpdateOpenedDate: (id: number, openedDate: Partial<OpenedDate>) => void;
     onDeleteOpenedDate: (id: number) => void;
 }
 
@@ -94,8 +90,8 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
     const datesWithOpenings = useMemo(() => {
         return Array.from(
             new Set(
-                optimisticOpenedDates.map((opened) =>
-                    opened.opened_date.split('T')[0],
+                optimisticOpenedDates.map(
+                    (opened) => opened.opened_date.split('T')[0],
                 ),
             ),
         );
@@ -143,9 +139,11 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                         );
                         // Update with remaining slots
                         await onUpdateOpenedDate(alreadyOpenedEntry.id, {
-                            opened_date: alreadyOpenedEntry.opened_date.split('T')[0],
+                            opened_date:
+                                alreadyOpenedEntry.opened_date.split('T')[0],
                             timeslots: remainingSlots,
-                            client_identifier: alreadyOpenedEntry.client_identifier,
+                            client_identifier:
+                                alreadyOpenedEntry.client_identifier,
                         });
                     }
                 } else {
@@ -223,12 +221,7 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                         blockedDates={datesWithOpenings}
                                         minDate={
                                             new Date(
-                                                new Date().setHours(
-                                                    0,
-                                                    0,
-                                                    0,
-                                                    0,
-                                                ),
+                                                new Date().setHours(0, 0, 0, 0),
                                             )
                                         }
                                     />
@@ -267,47 +260,53 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                                 AM
                                             </h4>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {timeSlots.am.map((timeSlot) => {
-                                                    const isOpened =
-                                                        optimisticOpenedDates.some(
-                                                            (opened) =>
-                                                                opened.opened_date.split(
-                                                                    'T',
-                                                                )[0] ===
-                                                                    newOpenedDate.opened_date &&
-                                                                opened.timeslots.includes(
-                                                                    timeSlot.value,
-                                                                ),
-                                                        );
-                                                    const isLoading =
-                                                        loadingSlots.includes(
-                                                            timeSlot.value,
-                                                        );
+                                                {timeSlots.am.map(
+                                                    (timeSlot) => {
+                                                        const isOpened =
+                                                            optimisticOpenedDates.some(
+                                                                (opened) =>
+                                                                    opened.opened_date.split(
+                                                                        'T',
+                                                                    )[0] ===
+                                                                        newOpenedDate.opened_date &&
+                                                                    opened.timeslots.includes(
+                                                                        timeSlot.value,
+                                                                    ),
+                                                            );
+                                                        const isLoading =
+                                                            loadingSlots.includes(
+                                                                timeSlot.value,
+                                                            );
 
-                                                    return (
-                                                        <button
-                                                            key={timeSlot.value}
-                                                            type="button"
-                                                            onClick={() =>
-                                                                handleTimeSlotToggle(
-                                                                    timeSlot.value,
-                                                                )
-                                                            }
-                                                            disabled={isLoading}
-                                                            className={`rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-all ${
-                                                                isOpened
-                                                                    ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
-                                                                    : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
-                                                            } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
-                                                        >
-                                                            {isLoading ? (
-                                                                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                                                            ) : (
-                                                                timeSlot.display
-                                                            )}
-                                                        </button>
-                                                    );
-                                                })}
+                                                        return (
+                                                            <button
+                                                                key={
+                                                                    timeSlot.value
+                                                                }
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleTimeSlotToggle(
+                                                                        timeSlot.value,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    isLoading
+                                                                }
+                                                                className={`rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-all ${
+                                                                    isOpened
+                                                                        ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                                                                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
+                                                                } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
+                                                            >
+                                                                {isLoading ? (
+                                                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                                                ) : (
+                                                                    timeSlot.display
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    },
+                                                )}
                                             </div>
                                         </div>
 
@@ -317,47 +316,53 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                                 PM
                                             </h4>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {timeSlots.pm.map((timeSlot) => {
-                                                    const isOpened =
-                                                        optimisticOpenedDates.some(
-                                                            (opened) =>
-                                                                opened.opened_date.split(
-                                                                    'T',
-                                                                )[0] ===
-                                                                    newOpenedDate.opened_date &&
-                                                                opened.timeslots.includes(
-                                                                    timeSlot.value,
-                                                                ),
-                                                        );
-                                                    const isLoading =
-                                                        loadingSlots.includes(
-                                                            timeSlot.value,
-                                                        );
+                                                {timeSlots.pm.map(
+                                                    (timeSlot) => {
+                                                        const isOpened =
+                                                            optimisticOpenedDates.some(
+                                                                (opened) =>
+                                                                    opened.opened_date.split(
+                                                                        'T',
+                                                                    )[0] ===
+                                                                        newOpenedDate.opened_date &&
+                                                                    opened.timeslots.includes(
+                                                                        timeSlot.value,
+                                                                    ),
+                                                            );
+                                                        const isLoading =
+                                                            loadingSlots.includes(
+                                                                timeSlot.value,
+                                                            );
 
-                                                    return (
-                                                        <button
-                                                            key={timeSlot.value}
-                                                            type="button"
-                                                            onClick={() =>
-                                                                handleTimeSlotToggle(
-                                                                    timeSlot.value,
-                                                                )
-                                                            }
-                                                            disabled={isLoading}
-                                                            className={`rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-all ${
-                                                                isOpened
-                                                                    ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
-                                                                    : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
-                                                            } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
-                                                        >
-                                                            {isLoading ? (
-                                                                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                                                            ) : (
-                                                                timeSlot.display
-                                                            )}
-                                                        </button>
-                                                    );
-                                                })}
+                                                        return (
+                                                            <button
+                                                                key={
+                                                                    timeSlot.value
+                                                                }
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleTimeSlotToggle(
+                                                                        timeSlot.value,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    isLoading
+                                                                }
+                                                                className={`rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-all ${
+                                                                    isOpened
+                                                                        ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                                                                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
+                                                                } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
+                                                            >
+                                                                {isLoading ? (
+                                                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                                                ) : (
+                                                                    timeSlot.display
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    },
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -373,7 +378,8 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                         </h3>
                         {optimisticOpenedDates.length === 0 ? (
                             <p className="text-center text-gray-500 dark:text-gray-400">
-                                No opened dates configured. Click time slots above to open dates for reservations.
+                                No opened dates configured. Click time slots
+                                above to open dates for reservations.
                             </p>
                         ) : (
                             <div className="space-y-3">
@@ -399,14 +405,22 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                                         )}
                                                     </p>
                                                     <div className="mt-2 flex flex-wrap gap-1.5">
-                                                        {openedDate.timeslots.sort((a, b) => a.localeCompare(b)).map((slot) => (
-                                                            <span
-                                                                key={slot}
-                                                                className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                                            >
-                                                                {convertTo12Hour(slot)}
-                                                            </span>
-                                                        ))}
+                                                        {openedDate.timeslots
+                                                            .sort((a, b) =>
+                                                                a.localeCompare(
+                                                                    b,
+                                                                ),
+                                                            )
+                                                            .map((slot) => (
+                                                                <span
+                                                                    key={slot}
+                                                                    className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-200"
+                                                                >
+                                                                    {convertTo12Hour(
+                                                                        slot,
+                                                                    )}
+                                                                </span>
+                                                            ))}
                                                     </div>
                                                     {openedDate.reason && (
                                                         <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
@@ -426,4 +440,3 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
         </div>
     );
 };
-

@@ -735,8 +735,8 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                             interactive video tutorials, and
                                             step-by-step onboarding guides.
                                             Enterprise customers get access to
-                                            advanced training modules and priority
-                                            documentation.
+                                            advanced training modules and
+                                            priority documentation.
                                         </dd>
                                     </div>
                                 </dl>
@@ -763,8 +763,8 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         />
                                     </div>
                                     <span className="text-xl font-bold">
-                                        Neulify Logistics — Your All-in-One Fleet
-                                        Management Platform.
+                                        Neulify Logistics — Your All-in-One
+                                        Fleet Management Platform.
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">

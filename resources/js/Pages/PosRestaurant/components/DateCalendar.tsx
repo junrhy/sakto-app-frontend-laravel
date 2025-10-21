@@ -54,13 +54,21 @@ export const DateCalendar: React.FC<DateCalendarProps> = ({
 
     const handlePreviousMonth = () => {
         setCurrentMonth(
-            new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
+            new Date(
+                currentMonth.getFullYear(),
+                currentMonth.getMonth() - 1,
+                1,
+            ),
         );
     };
 
     const handleNextMonth = () => {
         setCurrentMonth(
-            new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
+            new Date(
+                currentMonth.getFullYear(),
+                currentMonth.getMonth() + 1,
+                1,
+            ),
         );
     };
 
@@ -163,7 +171,12 @@ export const DateCalendar: React.FC<DateCalendarProps> = ({
             <div className="grid grid-cols-7 gap-1">
                 {daysInMonth.map((day, index) => {
                     if (day === null) {
-                        return <div key={`empty-${index}`} className="aspect-square" />;
+                        return (
+                            <div
+                                key={`empty-${index}`}
+                                className="aspect-square"
+                            />
+                        );
                     }
 
                     const selected = isDateSelected(day);
@@ -177,9 +190,8 @@ export const DateCalendar: React.FC<DateCalendarProps> = ({
                             type="button"
                             onClick={() => !disabled && handleDateClick(day)}
                             disabled={disabled}
-                            className={`
-                                aspect-square rounded-lg text-sm font-medium transition-all
-                                ${selected
+                            className={`aspect-square rounded-lg text-sm font-medium transition-all ${
+                                selected
                                     ? 'bg-amber-500 text-white ring-2 ring-amber-500 ring-offset-2 dark:ring-offset-gray-700'
                                     : blocked
                                       ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
@@ -188,8 +200,7 @@ export const DateCalendar: React.FC<DateCalendarProps> = ({
                                         : disabled
                                           ? 'cursor-not-allowed text-gray-400 dark:text-gray-600'
                                           : 'text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700'
-                                }
-                            `}
+                            } `}
                         >
                             {day}
                         </button>
@@ -201,18 +212,23 @@ export const DateCalendar: React.FC<DateCalendarProps> = ({
             <div className="mt-4 flex flex-wrap gap-3 border-t border-gray-200 pt-3 text-xs dark:border-gray-600">
                 <div className="flex items-center gap-1.5">
                     <div className="h-4 w-4 rounded border-2 border-amber-500 bg-amber-500"></div>
-                    <span className="text-gray-600 dark:text-gray-400">Selected</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                        Selected
+                    </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <div className="h-4 w-4 rounded bg-orange-100 dark:bg-orange-900/30"></div>
-                    <span className="text-gray-600 dark:text-gray-400">Has Blocks</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                        Has Blocks
+                    </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                     <div className="h-4 w-4 rounded bg-blue-50 ring-1 ring-blue-200 dark:bg-blue-900/20 dark:ring-blue-800"></div>
-                    <span className="text-gray-600 dark:text-gray-400">Today</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                        Today
+                    </span>
                 </div>
             </div>
         </div>
     );
 };
-

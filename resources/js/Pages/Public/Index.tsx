@@ -160,7 +160,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Travel',
-            description: 'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
+            description:
+                'Business travel management system for corporate bookings, expense tracking, and employee travel coordination',
             icon: Plane,
             href: '/travel',
             color: 'text-cyan-600',
@@ -169,7 +170,8 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'F&B',
-            description: 'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
+            description:
+                'Restaurant and hospitality management platform for food service businesses to handle operations, inventory, and orders',
             icon: UtensilsCrossed,
             href: '/fnb',
             color: 'text-amber-600',
@@ -398,7 +400,9 @@ export default function Welcome({ auth }: PageProps) {
                                 <div className="hidden items-center space-x-8 md:flex">
                                     {/* Our Solutions Button */}
                                     <button
-                                        onClick={() => setIsSolutionsDialogOpen(true)}
+                                        onClick={() =>
+                                            setIsSolutionsDialogOpen(true)
+                                        }
                                         className="text-sm font-medium text-[#334155] transition-colors duration-200 hover:text-[#14B8A6] dark:text-gray-200 dark:hover:text-white"
                                     >
                                         Our Solutions
@@ -797,11 +801,14 @@ export default function Welcome({ auth }: PageProps) {
                                         Ready to Transform Your Industry?
                                     </h2>
                                     <p className="mx-auto mt-6 max-w-3xl text-xl text-gray-600 dark:text-gray-300">
-                                        Discover the perfect B2B solution for your business
+                                        Discover the perfect B2B solution for
+                                        your business
                                     </p>
                                     <div className="mt-12 flex justify-center">
                                         <button
-                                            onClick={() => setIsSolutionsDialogOpen(true)}
+                                            onClick={() =>
+                                                setIsSolutionsDialogOpen(true)
+                                            }
                                             className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#14B8A6]/50"
                                         >
                                             <Rocket className="h-6 w-6 transition-transform duration-300 group-hover:translate-y-[-4px]" />

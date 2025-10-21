@@ -332,15 +332,18 @@ export const usePosApi = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({ table_name: tableName }),
             });
-            
+
             if (!response.ok) {
                 throw new Error('Failed to get table order');
             }
-            
+
             return await response.json();
         } catch (error) {
             console.error('Failed to get table order:', error);
@@ -354,16 +357,22 @@ export const usePosApi = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify(orderData),
             });
-            
+
             if (!response.ok) {
                 const responseData = await response.json();
-                throw new Error('Failed to save table order: ' + JSON.stringify(responseData));
+                throw new Error(
+                    'Failed to save table order: ' +
+                        JSON.stringify(responseData),
+                );
             }
-            
+
             return true;
         } catch (error) {
             console.error('Failed to save table order:', error);
@@ -371,45 +380,61 @@ export const usePosApi = () => {
         }
     }, []);
 
-    const completeTableOrder = useCallback(async (tableName: string, paymentData?: {
-        payment_amount: number;
-        payment_method: 'cash' | 'card';
-        change: number;
-    }) => {
-        return new Promise((resolve) => {
-            router.post('/pos-restaurant/table-order/complete', { 
-                table_name: tableName,
-                ...paymentData
-            }, {
-                onSuccess: () => {
-                    toast.success('Order completed successfully');
-                    resolve(true);
-                },
-                onError: (errors) => {
-                    toast.error(
-                        (Object.values(errors)[0] as string) ||
-                            'Failed to complete order',
-                    );
-                    resolve(false);
-                },
+    const completeTableOrder = useCallback(
+        async (
+            tableName: string,
+            paymentData?: {
+                payment_amount: number;
+                payment_method: 'cash' | 'card';
+                change: number;
+            },
+        ) => {
+            return new Promise((resolve) => {
+                router.post(
+                    '/pos-restaurant/table-order/complete',
+                    {
+                        table_name: tableName,
+                        ...paymentData,
+                    },
+                    {
+                        onSuccess: () => {
+                            toast.success('Order completed successfully');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to complete order',
+                            );
+                            resolve(false);
+                        },
+                    },
+                );
             });
-        });
-    }, []);
+        },
+        [],
+    );
 
     const getAllActiveOrders = useCallback(async () => {
         try {
-            const response = await fetch('/pos-restaurant/table-orders/all-active', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            const response = await fetch(
+                '/pos-restaurant/table-orders/all-active',
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
                 },
-            });
-            
+            );
+
             if (!response.ok) {
                 throw new Error('Failed to get active orders');
             }
-            
+
             return await response.json();
         } catch (error) {
             console.error('Failed to get active orders:', error);
@@ -563,7 +588,14 @@ export const usePosApi = () => {
     // Utility function to refresh data
     const refreshData = useCallback(() => {
         router.reload({
-            only: ['menuItems', 'tables', 'reservations', 'blockedDates', 'openedDates', 'tableSchedules'],
+            only: [
+                'menuItems',
+                'tables',
+                'reservations',
+                'blockedDates',
+                'openedDates',
+                'tableSchedules',
+            ],
         });
     }, []);
 

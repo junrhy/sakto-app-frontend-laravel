@@ -32,7 +32,7 @@ export default function MobileMenu({
                         <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-gray-700 dark:from-blue-500/20 dark:to-purple-500/20 dark:text-white/80">
                             {category.title}
                         </div>
-                        
+
                         {/* Menu Items */}
                         <div className="space-y-2 px-4 py-3">
                             {visibleItems.map((item) => (

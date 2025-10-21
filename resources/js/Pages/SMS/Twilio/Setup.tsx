@@ -21,6 +21,7 @@ import {
     MessageSquare,
     Plus,
     Settings,
+    Star,
     Trash2,
     Wifi,
 } from 'lucide-react';
@@ -35,6 +36,7 @@ interface TwilioAccount {
     default_country_code: string;
     is_active: boolean;
     is_verified: boolean;
+    is_default: boolean;
     last_verified_at: string;
     created_at: string;
 }
@@ -182,12 +184,19 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                 `/twilio-accounts/${accountId}/verify`,
             );
             if (response.data.success) {
-                toast.success('Twilio account connection test successful!');
+                toast.success('Twilio account verified successfully!');
                 if (response.data.account_balance !== undefined) {
                     toast.info(
-                        `Account balance: ${response.data.account_balance} ${response.data.currency}`,
+                        `Account balance: ${response.data.account_balance}`,
                     );
                 }
+                if (response.data.account_status) {
+                    toast.info(`Account status: ${response.data.account_status}`);
+                }
+                // Reload page after a short delay to show toast messages
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             } else {
                 toast.error('Connection test failed');
             }
@@ -205,9 +214,51 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
         try {
             await axios.post(`/twilio-accounts/${accountId}/toggle-active`);
             toast.success('Account status updated successfully!');
+            // Reload page after a short delay to show toast message
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } catch (error: any) {
             console.error('Toggle error:', error);
             toast.error('Failed to update account status');
+        }
+    };
+
+    const setDefault = async (accountId: number, account: TwilioAccount) => {
+        // Check if account is active and verified
+        if (!account.is_active || !account.is_verified) {
+            toast.error(
+                'Only active and verified accounts can be set as default',
+            );
+            return;
+        }
+
+        try {
+            await axios.post(`/twilio-accounts/${accountId}/set-default`);
+            toast.success('Default account set successfully!');
+            // Reload page after a short delay to show toast message
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } catch (error: any) {
+            console.error('Set default error:', error);
+            toast.error(
+                error.response?.data?.error || 'Failed to set default account',
+            );
+        }
+    };
+
+    const unsetDefault = async (accountId: number) => {
+        try {
+            await axios.post(`/twilio-accounts/${accountId}/unset-default`);
+            toast.success('Default account unset successfully!');
+            // Reload page after a short delay to show toast message
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } catch (error: any) {
+            console.error('Unset default error:', error);
+            toast.error('Failed to unset default account');
         }
     };
 
@@ -269,7 +320,27 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                         Set your default country code for
                                         international messaging
                                     </li>
+                                    <li>
+                                        Set one account as default for automatic
+                                        SMS notifications
+                                    </li>
                                 </ol>
+                            </div>
+
+                            <div className="rounded-lg bg-yellow-50 p-4 dark:bg-yellow-900/20">
+                                <h4 className="mb-2 flex items-center font-semibold text-yellow-900 dark:text-yellow-100">
+                                    <Star className="mr-2 h-4 w-4" />
+                                    Default Account Feature
+                                </h4>
+                                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                    The default account will be automatically
+                                    used for sending SMS notifications when
+                                    reservations are created. You can set any
+                                    active and verified account as the default
+                                    by clicking the star icon. If no default is
+                                    set, the system will use the first available
+                                    active verified account.
+                                </p>
                             </div>
 
                             <div className="flex items-center justify-between">
@@ -323,6 +394,12 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                         {account.account_name}
                                                     </h4>
                                                     <div className="flex space-x-2">
+                                                        {account.is_default && (
+                                                            <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                                <Star className="mr-1 h-3 w-3 fill-current" />
+                                                                Default
+                                                            </Badge>
+                                                        )}
                                                         <Badge
                                                             variant={
                                                                 account.is_verified
@@ -412,6 +489,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                     }
                                                     variant="outline"
                                                     size="sm"
+                                                    title="Test Connection"
                                                 >
                                                     {testingAccount ===
                                                     account.id ? (
@@ -420,6 +498,40 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                         <Wifi className="h-4 w-4" />
                                                     )}
                                                 </Button>
+                                                {account.is_default ? (
+                                                    <Button
+                                                        onClick={() =>
+                                                            unsetDefault(
+                                                                account.id,
+                                                            )
+                                                        }
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 dark:text-yellow-400 dark:hover:bg-yellow-900/20 dark:hover:text-yellow-300"
+                                                        title="Unset as Default"
+                                                    >
+                                                        <Star className="h-4 w-4 fill-current" />
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        onClick={() =>
+                                                            setDefault(
+                                                                account.id,
+                                                                account,
+                                                            )
+                                                        }
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 dark:text-yellow-400 dark:hover:bg-yellow-900/20 dark:hover:text-yellow-300"
+                                                        title="Set as Default"
+                                                        disabled={
+                                                            !account.is_active ||
+                                                            !account.is_verified
+                                                        }
+                                                    >
+                                                        <Star className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     onClick={() =>
                                                         toggleActive(account.id)
@@ -430,6 +542,11 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                         account.is_active
                                                             ? 'text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/20 dark:hover:text-amber-300'
                                                             : 'text-green-600 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300'
+                                                    }
+                                                    title={
+                                                        account.is_active
+                                                            ? 'Deactivate Account'
+                                                            : 'Activate Account'
                                                     }
                                                 >
                                                     {account.is_active
@@ -442,6 +559,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                     }
                                                     variant="outline"
                                                     size="sm"
+                                                    title="Edit Account"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
@@ -454,6 +572,7 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                                                     variant="outline"
                                                     size="sm"
                                                     className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                                    title="Delete Account"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>

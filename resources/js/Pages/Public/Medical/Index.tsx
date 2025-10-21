@@ -331,7 +331,12 @@ export default function Medical({ auth }: PageProps) {
                             </p>
                             <div className="mx-auto mb-8 max-w-3xl rounded-lg border border-teal-200 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
                                 <p className="text-center text-sm text-teal-700">
-                                    <span className="font-semibold">Fully Automated SaaS Platform</span> — Subscribe and start managing operations instantly after purchase. No manual setup required.
+                                    <span className="font-semibold">
+                                        Fully Automated SaaS Platform
+                                    </span>{' '}
+                                    — Subscribe and start managing operations
+                                    instantly after purchase. No manual setup
+                                    required.
                                 </p>
                             </div>
                         </div>
@@ -752,7 +757,8 @@ export default function Medical({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-teal-600">
-                                                Priority technical support via chat and email
+                                                Priority technical support via
+                                                chat and email
                                             </span>
                                         </li>
                                     </ul>
@@ -776,8 +782,10 @@ export default function Medical({ auth }: PageProps) {
                                         </dt>
                                         <dd className="text-teal-600">
                                             You can upgrade your plan at any
-                                            time. You'll automatically receive a notification when you're
-                                            approaching your limit, with options to upgrade directly through your dashboard.
+                                            time. You'll automatically receive a
+                                            notification when you're approaching
+                                            your limit, with options to upgrade
+                                            directly through your dashboard.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-teal-200 bg-white p-6">
@@ -786,11 +794,14 @@ export default function Medical({ auth }: PageProps) {
                                             available for my medical staff?
                                         </dt>
                                         <dd className="text-teal-600">
-                                            Yes, we provide comprehensive self-service
-                                            training materials, interactive
-                                            video tutorials, and step-by-step
-                                            onboarding guides. Business
-                                            customers can access optional live onboarding support; all core training is self-paced and available immediately.
+                                            Yes, we provide comprehensive
+                                            self-service training materials,
+                                            interactive video tutorials, and
+                                            step-by-step onboarding guides.
+                                            Business customers can access
+                                            optional live onboarding support;
+                                            all core training is self-paced and
+                                            available immediately.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-teal-200 bg-white p-6">

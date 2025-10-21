@@ -78,7 +78,9 @@ export default function Index({
         filters.project_id || '',
     );
     const [userFilter, setUserFilter] = useState(filters.user_id || '');
-    const [currencyFilter, setCurrencyFilter] = useState(filters.currency || '');
+    const [currencyFilter, setCurrencyFilter] = useState(
+        filters.currency || '',
+    );
 
     const createForm = useForm({
         name: '',
@@ -312,7 +314,10 @@ export default function Index({
                                     {
                                         id: 'subscriptions',
                                         label: 'User Subscriptions',
-                                        count: subscriptions?.meta?.total || subscriptions?.data?.length || 0,
+                                        count:
+                                            subscriptions?.meta?.total ||
+                                            subscriptions?.data?.length ||
+                                            0,
                                         icon: (
                                             <svg
                                                 className="h-5 w-5"
@@ -332,7 +337,9 @@ export default function Index({
                                 ]}
                                 activeTab={activeTab}
                                 onTabChange={(tabId) =>
-                                    setActiveTab(tabId as 'plans' | 'subscriptions')
+                                    setActiveTab(
+                                        tabId as 'plans' | 'subscriptions',
+                                    )
                                 }
                             />
                         </div>
@@ -361,7 +368,9 @@ export default function Index({
                                                 }
                                                 className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 sm:w-48"
                                             >
-                                                <option value="">All Projects</option>
+                                                <option value="">
+                                                    All Projects
+                                                </option>
                                                 {projects.map((project) => (
                                                     <option
                                                         key={project.id}
@@ -374,7 +383,9 @@ export default function Index({
                                             {projectFilter && (
                                                 <button
                                                     onClick={() =>
-                                                        handleProjectFilterChange('')
+                                                        handleProjectFilterChange(
+                                                            '',
+                                                        )
                                                     }
                                                     className="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                                 >
@@ -401,19 +412,37 @@ export default function Index({
                                                 }
                                                 className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 sm:w-48"
                                             >
-                                                <option value="">All Currencies</option>
-                                                <option value="USD">USD ($)</option>
-                                                <option value="PHP">PHP (₱)</option>
-                                                <option value="EUR">EUR (€)</option>
-                                                <option value="GBP">GBP (£)</option>
-                                                <option value="JPY">JPY (¥)</option>
-                                                <option value="AUD">AUD ($)</option>
-                                                <option value="CAD">CAD ($)</option>
+                                                <option value="">
+                                                    All Currencies
+                                                </option>
+                                                <option value="USD">
+                                                    USD ($)
+                                                </option>
+                                                <option value="PHP">
+                                                    PHP (₱)
+                                                </option>
+                                                <option value="EUR">
+                                                    EUR (€)
+                                                </option>
+                                                <option value="GBP">
+                                                    GBP (£)
+                                                </option>
+                                                <option value="JPY">
+                                                    JPY (¥)
+                                                </option>
+                                                <option value="AUD">
+                                                    AUD ($)
+                                                </option>
+                                                <option value="CAD">
+                                                    CAD ($)
+                                                </option>
                                             </select>
                                             {currencyFilter && (
                                                 <button
                                                     onClick={() =>
-                                                        handleCurrencyFilterChange('')
+                                                        handleCurrencyFilterChange(
+                                                            '',
+                                                        )
                                                     }
                                                     className="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                                 >
@@ -422,249 +451,265 @@ export default function Index({
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex flex-col gap-2 sm:flex-row">
-                                        <PrimaryButton onClick={openCreateModal}>
+                                        <PrimaryButton
+                                            onClick={openCreateModal}
+                                        >
                                             Add New Plan
                                         </PrimaryButton>
-                                        <SecondaryButton onClick={openRenewalModal}>
+                                        <SecondaryButton
+                                            onClick={openRenewalModal}
+                                        >
                                             Run Renewal Command
                                         </SecondaryButton>
                                     </div>
                                 </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Name
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Slug
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Project
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Price
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Currency
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Duration
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Credits
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Active Users
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Status
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                        {plans.map((plan) => (
-                                            <tr
-                                                key={plan.id}
-                                                className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                                            >
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="flex items-center">
-                                                        <div>
-                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                {plan.name}
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead className="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Name
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Slug
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Project
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Price
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Currency
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Duration
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Credits
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Active Users
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Status
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                                            {plans.map((plan) => (
+                                                <tr
+                                                    key={plan.id}
+                                                    className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                >
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="flex items-center">
+                                                            <div>
+                                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                    {plan.name}
+                                                                </div>
+                                                                {plan.badge_text && (
+                                                                    <span className="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                                        {
+                                                                            plan.badge_text
+                                                                        }
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            {plan.badge_text && (
-                                                                <span className="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                                    {
-                                                                        plan.badge_text
-                                                                    }
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="font-mono text-sm text-gray-600 dark:text-gray-400">
+                                                            {plan.slug}
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {plan.project
+                                                                ? plan.project
+                                                                      .name
+                                                                : 'No Project'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {plan.price?.toLocaleString()}
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="flex items-center gap-1 text-sm text-gray-900 dark:text-gray-100">
+                                                            <span className="font-mono font-semibold">
+                                                                {plan.currency ||
+                                                                    'USD'}
+                                                            </span>
+                                                            <span className="text-gray-500 dark:text-gray-400">
+                                                                (
+                                                                {getCurrencySymbol(
+                                                                    plan.currency,
+                                                                )}
+                                                                )
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {
+                                                                plan.duration_in_days
+                                                            }{' '}
+                                                            days
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {
+                                                                plan.credits_per_month
+                                                            }{' '}
+                                                            credits/month
+                                                        </div>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {plan.active_users_count ||
+                                                                0}{' '}
+                                                            users
+                                                            {(plan.active_users_count ||
+                                                                0) > 0 && (
+                                                                <span className="ml-1 text-xs text-orange-600 dark:text-orange-400">
+                                                                    (active)
                                                                 </span>
                                                             )}
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="font-mono text-sm text-gray-600 dark:text-gray-400">
-                                                        {plan.slug}
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {plan.project
-                                                            ? plan.project.name
-                                                            : 'No Project'}
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {plan.price?.toLocaleString()}
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="flex items-center gap-1 text-sm text-gray-900 dark:text-gray-100">
-                                                        <span className="font-mono font-semibold">{plan.currency || 'USD'}</span>
-                                                        <span className="text-gray-500 dark:text-gray-400">
-                                                            ({getCurrencySymbol(plan.currency)})
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {plan.duration_in_days}{' '}
-                                                        days
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {plan.credits_per_month}{' '}
-                                                        credits/month
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {plan.active_users_count ||
-                                                            0}{' '}
-                                                        users
-                                                        {(plan.active_users_count ||
-                                                            0) > 0 && (
-                                                            <span className="ml-1 text-xs text-orange-600 dark:text-orange-400">
-                                                                (active)
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4">
-                                                    <span
-                                                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                            plan.is_active
-                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                        }`}
-                                                    >
-                                                        {plan.is_active
-                                                            ? 'Active'
-                                                            : 'Inactive'}
-                                                    </span>
-                                                    {plan.is_popular && (
-                                                        <span className="ml-1 inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                            Popular
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
-                                                    <div className="flex space-x-2">
-                                                        <button
-                                                            onClick={() =>
-                                                                openEditModal(
-                                                                    plan,
-                                                                )
-                                                            }
-                                                            className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                togglePlanStatus(
-                                                                    plan,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                plan.is_active &&
-                                                                (plan.active_users_count ||
-                                                                    0) > 0
-                                                            }
-                                                            className={`${
-                                                                plan.is_active &&
-                                                                (plan.active_users_count ||
-                                                                    0) > 0
-                                                                    ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
-                                                                    : plan.is_active
-                                                                      ? 'text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300'
-                                                                      : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                                            } transition-colors`}
-                                                            title={
-                                                                plan.is_active &&
-                                                                (plan.active_users_count ||
-                                                                    0) > 0
-                                                                    ? `Cannot deactivate plan with ${plan.active_users_count} active users`
-                                                                    : undefined
-                                                            }
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <span
+                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                plan.is_active
+                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                            }`}
                                                         >
                                                             {plan.is_active
-                                                                ? 'Deactivate'
-                                                                : 'Activate'}
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                openDeleteModal(
-                                                                    plan,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                (plan.active_users_count ||
-                                                                    0) > 0
-                                                            }
-                                                            className={`${
-                                                                (plan.active_users_count ||
-                                                                    0) > 0
-                                                                    ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
-                                                                    : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                                                            } transition-colors`}
-                                                            title={
-                                                                (plan.active_users_count ||
-                                                                    0) > 0
-                                                                    ? `Cannot delete plan with ${plan.active_users_count} active users`
-                                                                    : undefined
-                                                            }
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                                ? 'Active'
+                                                                : 'Inactive'}
+                                                        </span>
+                                                        {plan.is_popular && (
+                                                            <span className="ml-1 inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                                Popular
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
+                                                        <div className="flex space-x-2">
+                                                            <button
+                                                                onClick={() =>
+                                                                    openEditModal(
+                                                                        plan,
+                                                                    )
+                                                                }
+                                                                className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    togglePlanStatus(
+                                                                        plan,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    plan.is_active &&
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                }
+                                                                className={`${
+                                                                    plan.is_active &&
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                                                                        : plan.is_active
+                                                                          ? 'text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300'
+                                                                          : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
+                                                                } transition-colors`}
+                                                                title={
+                                                                    plan.is_active &&
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                        ? `Cannot deactivate plan with ${plan.active_users_count} active users`
+                                                                        : undefined
+                                                                }
+                                                            >
+                                                                {plan.is_active
+                                                                    ? 'Deactivate'
+                                                                    : 'Activate'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    openDeleteModal(
+                                                                        plan,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                }
+                                                                className={`${
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                                                                        : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                                                                } transition-colors`}
+                                                                title={
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                        ? `Cannot delete plan with ${plan.active_users_count} active users`
+                                                                        : undefined
+                                                                }
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         )}
 
@@ -713,146 +758,150 @@ export default function Index({
                                     </div>
                                 </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                User
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Plan
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Status
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Start Date
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                End Date
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Auto Renew
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
-                                            >
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                        {subscriptions?.data?.map(
-                                            (subscription) => (
-                                                <tr
-                                                    key={subscription.id}
-                                                    className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead className="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
                                                 >
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {
-                                                                subscription.user_name
-                                                            }
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {
-                                                                subscription
-                                                                    .plan.name
-                                                            }
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <span
-                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                                subscription.status ===
-                                                                'active'
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                    : subscription.status ===
-                                                                        'cancelled'
-                                                                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                                            }`}
-                                                        >
-                                                            {subscription.status
-                                                                .charAt(0)
-                                                                .toUpperCase() +
-                                                                subscription.status.slice(
-                                                                    1,
+                                                    User
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Plan
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Status
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Start Date
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    End Date
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Auto Renew
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                                            {subscriptions?.data?.map(
+                                                (subscription) => (
+                                                    <tr
+                                                        key={subscription.id}
+                                                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    >
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {
+                                                                    subscription.user_name
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {
+                                                                    subscription
+                                                                        .plan
+                                                                        .name
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <span
+                                                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                    subscription.status ===
+                                                                    'active'
+                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                        : subscription.status ===
+                                                                            'cancelled'
+                                                                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                                }`}
+                                                            >
+                                                                {subscription.status
+                                                                    .charAt(0)
+                                                                    .toUpperCase() +
+                                                                    subscription.status.slice(
+                                                                        1,
+                                                                    )}
+                                                            </span>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {new Date(
+                                                                    subscription.start_date,
+                                                                ).toLocaleDateString()}
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {new Date(
+                                                                    subscription.end_date,
+                                                                ).toLocaleDateString()}
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <span
+                                                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                    subscription.auto_renew
+                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                                }`}
+                                                            >
+                                                                {subscription.auto_renew
+                                                                    ? 'Yes'
+                                                                    : 'No'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
+                                                            <Link
+                                                                href={route(
+                                                                    'admin.subscriptions.view',
+                                                                    subscription.id,
                                                                 )}
-                                                        </span>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {new Date(
-                                                                subscription.start_date,
-                                                            ).toLocaleDateString()}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {new Date(
-                                                                subscription.end_date,
-                                                            ).toLocaleDateString()}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <span
-                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                                subscription.auto_renew
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                                            }`}
-                                                        >
-                                                            {subscription.auto_renew
-                                                                ? 'Yes'
-                                                                : 'No'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
-                                                        <Link
-                                                            href={route(
-                                                                'admin.subscriptions.view',
-                                                                subscription.id,
-                                                            )}
-                                                            className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                        >
-                                                            View Details
-                                                        </Link>
-                                                    </td>
-                                                </tr>
-                                            ),
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {subscriptions.meta && subscriptions.meta.links && (
-                                <div className="mt-4">
-                                    <Pagination links={subscriptions.meta.links} />
+                                                                className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                            >
+                                                                View Details
+                                                            </Link>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            )}
+
+                                {subscriptions.meta &&
+                                    subscriptions.meta.links && (
+                                        <div className="mt-4">
+                                            <Pagination
+                                                links={subscriptions.meta.links}
+                                            />
+                                        </div>
+                                    )}
                             </div>
                         )}
                     </div>
@@ -958,7 +1007,10 @@ export default function Index({
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 value={createForm.data.project_id}
                                 onChange={(e) =>
-                                    createForm.setData('project_id', e.target.value)
+                                    createForm.setData(
+                                        'project_id',
+                                        e.target.value,
+                                    )
                                 }
                             >
                                 <option value="">
@@ -983,7 +1035,8 @@ export default function Index({
                                     type="checkbox"
                                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                                     checked={
-                                        createForm.data.auto_create_lemon_squeezy
+                                        createForm.data
+                                            .auto_create_lemon_squeezy
                                     }
                                     onChange={(e) =>
                                         createForm.setData(
@@ -1015,7 +1068,9 @@ export default function Index({
                                     id="lemon_squeezy_variant_id"
                                     type="text"
                                     className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                    value={createForm.data.lemon_squeezy_variant_id}
+                                    value={
+                                        createForm.data.lemon_squeezy_variant_id
+                                    }
                                     onChange={(e) =>
                                         createForm.setData(
                                             'lemon_squeezy_variant_id',
@@ -1052,7 +1107,10 @@ export default function Index({
                                     className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     value={createForm.data.price}
                                     onChange={(e) =>
-                                        createForm.setData('price', e.target.value)
+                                        createForm.setData(
+                                            'price',
+                                            e.target.value,
+                                        )
                                     }
                                     required
                                 />
@@ -1073,7 +1131,10 @@ export default function Index({
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     value={createForm.data.currency}
                                     onChange={(e) =>
-                                        createForm.setData('currency', e.target.value)
+                                        createForm.setData(
+                                            'currency',
+                                            e.target.value,
+                                        )
                                     }
                                 >
                                     <option value="USD">USD ($)</option>
@@ -1204,7 +1265,10 @@ export default function Index({
                                 className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 value={createForm.data.badge_text}
                                 onChange={(e) =>
-                                    createForm.setData('badge_text', e.target.value)
+                                    createForm.setData(
+                                        'badge_text',
+                                        e.target.value,
+                                    )
                                 }
                             />
                             <InputError
@@ -1350,7 +1414,10 @@ export default function Index({
                                 onChange={(
                                     e: React.ChangeEvent<HTMLTextAreaElement>,
                                 ) =>
-                                    editForm.setData('description', e.target.value)
+                                    editForm.setData(
+                                        'description',
+                                        e.target.value,
+                                    )
                                 }
                             />
                             <InputError
@@ -1370,7 +1437,10 @@ export default function Index({
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 value={editForm.data.project_id}
                                 onChange={(e) =>
-                                    editForm.setData('project_id', e.target.value)
+                                    editForm.setData(
+                                        'project_id',
+                                        e.target.value,
+                                    )
                                 }
                             >
                                 <option value="">
@@ -1417,9 +1487,9 @@ export default function Index({
                             {editForm.data.lemon_squeezy_variant_id ? (
                                 <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 p-2 dark:border-blue-800 dark:bg-blue-900/20">
                                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                                        ℹ️ Changes to name, description, price, and
-                                        duration will be automatically synced with
-                                        Lemon Squeezy
+                                        ℹ️ Changes to name, description, price,
+                                        and duration will be automatically
+                                        synced with Lemon Squeezy
                                     </p>
                                 </div>
                             ) : (
@@ -1444,7 +1514,10 @@ export default function Index({
                                     className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     value={editForm.data.price}
                                     onChange={(e) =>
-                                        editForm.setData('price', e.target.value)
+                                        editForm.setData(
+                                            'price',
+                                            e.target.value,
+                                        )
                                     }
                                     required
                                 />
@@ -1465,7 +1538,10 @@ export default function Index({
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     value={editForm.data.currency}
                                     onChange={(e) =>
-                                        editForm.setData('currency', e.target.value)
+                                        editForm.setData(
+                                            'currency',
+                                            e.target.value,
+                                        )
                                     }
                                 >
                                     <option value="USD">USD ($)</option>
@@ -1596,7 +1672,10 @@ export default function Index({
                                 className="mt-1 block w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                 value={editForm.data.badge_text}
                                 onChange={(e) =>
-                                    editForm.setData('badge_text', e.target.value)
+                                    editForm.setData(
+                                        'badge_text',
+                                        e.target.value,
+                                    )
                                 }
                             />
                             <InputError
@@ -1610,7 +1689,10 @@ export default function Index({
                                 id="edit_is_popular"
                                 checked={editForm.data.is_popular}
                                 onChange={(e) =>
-                                    editForm.setData('is_popular', e.target.checked)
+                                    editForm.setData(
+                                        'is_popular',
+                                        e.target.checked,
+                                    )
                                 }
                             />
                             <InputLabel
@@ -1629,7 +1711,10 @@ export default function Index({
                                 id="edit_is_active"
                                 checked={editForm.data.is_active}
                                 onChange={(e) =>
-                                    editForm.setData('is_active', e.target.checked)
+                                    editForm.setData(
+                                        'is_active',
+                                        e.target.checked,
+                                    )
                                 }
                             />
                             <InputLabel
@@ -1704,7 +1789,8 @@ export default function Index({
                                 {currentPlan.name}
                             </p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {getCurrencySymbol(currentPlan.currency)} {currentPlan.price?.toLocaleString()} -{' '}
+                                {getCurrencySymbol(currentPlan.currency)}{' '}
+                                {currentPlan.price?.toLocaleString()} -{' '}
                                 {currentPlan.duration_in_days} days
                             </p>
                         </div>

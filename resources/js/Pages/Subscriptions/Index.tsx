@@ -265,7 +265,8 @@ export default function Index({
             }
 
             // Filter by currency if specified
-            const matchesCurrency = !currencyFilter || plan.currency === currencyFilter;
+            const matchesCurrency =
+                !currencyFilter || plan.currency === currencyFilter;
 
             return matchesBillingPeriod && matchesCurrency;
         });
@@ -500,7 +501,9 @@ export default function Index({
 
     // Get unique currencies from available plans
     const availableCurrencies = useMemo(() => {
-        const currencies = [...new Set(plans.map(plan => plan.currency).filter(Boolean))];
+        const currencies = [
+            ...new Set(plans.map((plan) => plan.currency).filter(Boolean)),
+        ];
         return currencies.sort();
     }, [plans]);
 
@@ -549,7 +552,8 @@ export default function Index({
                                         Current Subscription Overview
                                     </h3>
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Manage your current subscription and view plan details
+                                        Manage your current subscription and
+                                        view plan details
                                     </p>
                                 </div>
 
@@ -565,11 +569,19 @@ export default function Index({
                                                             Active Subscription
                                                         </CardTitle>
                                                         <p className="mt-1 text-sm text-green-600 dark:text-green-300">
-                                                            {activeSubscription.plan.name}
+                                                            {
+                                                                activeSubscription
+                                                                    .plan.name
+                                                            }
                                                         </p>
                                                     </div>
                                                     <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                        {activeSubscription.status.charAt(0).toUpperCase() + activeSubscription.status.slice(1)}
+                                                        {activeSubscription.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            activeSubscription.status.slice(
+                                                                1,
+                                                            )}
                                                     </Badge>
                                                 </div>
                                             </CardHeader>
@@ -581,17 +593,51 @@ export default function Index({
                                                         </Label>
                                                         <div className="mt-1 space-y-1">
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Name:</span> {activeSubscription.plan.name}
+                                                                <span className="font-medium">
+                                                                    Name:
+                                                                </span>{' '}
+                                                                {
+                                                                    activeSubscription
+                                                                        .plan
+                                                                        .name
+                                                                }
                                                             </p>
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Price:</span> {getCurrencySymbol(activeSubscription.plan.currency)}
-                                                                {Number(activeSubscription.plan.price).toFixed(2)}
+                                                                <span className="font-medium">
+                                                                    Price:
+                                                                </span>{' '}
+                                                                {getCurrencySymbol(
+                                                                    activeSubscription
+                                                                        .plan
+                                                                        .currency,
+                                                                )}
+                                                                {Number(
+                                                                    activeSubscription
+                                                                        .plan
+                                                                        .price,
+                                                                ).toFixed(2)}
                                                             </p>
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Duration:</span> {activeSubscription.plan.duration_in_days} days
+                                                                <span className="font-medium">
+                                                                    Duration:
+                                                                </span>{' '}
+                                                                {
+                                                                    activeSubscription
+                                                                        .plan
+                                                                        .duration_in_days
+                                                                }{' '}
+                                                                days
                                                             </p>
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Credits:</span> {activeSubscription.plan.credits_per_month} credits/month
+                                                                <span className="font-medium">
+                                                                    Credits:
+                                                                </span>{' '}
+                                                                {
+                                                                    activeSubscription
+                                                                        .plan
+                                                                        .credits_per_month
+                                                                }{' '}
+                                                                credits/month
                                                             </p>
                                                         </div>
                                                     </div>
@@ -601,55 +647,100 @@ export default function Index({
                                                         </Label>
                                                         <div className="mt-1 space-y-1">
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Started:</span> {formatDate(activeSubscription.start_date)}
+                                                                <span className="font-medium">
+                                                                    Started:
+                                                                </span>{' '}
+                                                                {formatDate(
+                                                                    activeSubscription.start_date,
+                                                                )}
                                                             </p>
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Expires:</span> {formatDate(activeSubscription.end_date)}
+                                                                <span className="font-medium">
+                                                                    Expires:
+                                                                </span>{' '}
+                                                                {formatDate(
+                                                                    activeSubscription.end_date,
+                                                                )}
                                                             </p>
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Auto-renew:</span> {activeSubscription.auto_renew ? 'Yes' : 'No'}
+                                                                <span className="font-medium">
+                                                                    Auto-renew:
+                                                                </span>{' '}
+                                                                {activeSubscription.auto_renew
+                                                                    ? 'Yes'
+                                                                    : 'No'}
                                                             </p>
                                                             <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">Payment:</span> {activeSubscription.payment_method}
+                                                                <span className="font-medium">
+                                                                    Payment:
+                                                                </span>{' '}
+                                                                {
+                                                                    activeSubscription.payment_method
+                                                                }
                                                             </p>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {activeSubscription.plan.description && (
+                                                {activeSubscription.plan
+                                                    .description && (
                                                     <div>
                                                         <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                             Description
                                                         </Label>
                                                         <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                            {activeSubscription.plan.description}
+                                                            {
+                                                                activeSubscription
+                                                                    .plan
+                                                                    .description
+                                                            }
                                                         </p>
                                                     </div>
                                                 )}
 
-                                                {activeSubscription.plan.features && activeSubscription.plan.features.length > 0 && (
-                                                    <div>
-                                                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Features
-                                                        </Label>
-                                                        <ul className="mt-1 space-y-1">
-                                                            {activeSubscription.plan.features.map((feature, index) => (
-                                                                <li key={index} className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-                                                                    <CheckIcon className="h-4 w-4 text-green-500" />
-                                                                    {feature}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
+                                                {activeSubscription.plan
+                                                    .features &&
+                                                    activeSubscription.plan
+                                                        .features.length >
+                                                        0 && (
+                                                        <div>
+                                                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Features
+                                                            </Label>
+                                                            <ul className="mt-1 space-y-1">
+                                                                {activeSubscription.plan.features.map(
+                                                                    (
+                                                                        feature,
+                                                                        index,
+                                                                    ) => (
+                                                                        <li
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100"
+                                                                        >
+                                                                            <CheckIcon className="h-4 w-4 text-green-500" />
+                                                                            {
+                                                                                feature
+                                                                            }
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                             </CardContent>
                                             <CardFooter className="flex gap-3">
                                                 {canDelete && (
                                                     <Button
                                                         variant="outline"
                                                         onClick={() => {
-                                                            setSubscriptionToCancel(activeSubscription.identifier);
-                                                            setCancelDialogOpen(true);
+                                                            setSubscriptionToCancel(
+                                                                activeSubscription.identifier,
+                                                            );
+                                                            setCancelDialogOpen(
+                                                                true,
+                                                            );
                                                         }}
                                                         className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                                                     >
@@ -658,7 +749,9 @@ export default function Index({
                                                 )}
                                                 <Button
                                                     variant="outline"
-                                                    onClick={() => setActiveTab('history')}
+                                                    onClick={() =>
+                                                        setActiveTab('history')
+                                                    }
                                                 >
                                                     View Subscription History
                                                 </Button>
@@ -675,7 +768,8 @@ export default function Index({
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                Available Credits
+                                                                Available
+                                                                Credits
                                                             </p>
                                                             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                                                                 {credits.toLocaleString()}
@@ -696,7 +790,19 @@ export default function Index({
                                                                 Days Remaining
                                                             </p>
                                                             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                                                {Math.max(0, Math.ceil((new Date(activeSubscription.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
+                                                                {Math.max(
+                                                                    0,
+                                                                    Math.ceil(
+                                                                        (new Date(
+                                                                            activeSubscription.end_date,
+                                                                        ).getTime() -
+                                                                            new Date().getTime()) /
+                                                                            (1000 *
+                                                                                60 *
+                                                                                60 *
+                                                                                24),
+                                                                    ),
+                                                                )}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -714,7 +820,11 @@ export default function Index({
                                                                 Plan Name
                                                             </p>
                                                             <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                                                                {activeSubscription.plan.name}
+                                                                {
+                                                                    activeSubscription
+                                                                        .plan
+                                                                        .name
+                                                                }
                                                             </p>
                                                         </div>
                                                     </div>
@@ -732,9 +842,15 @@ export default function Index({
                                                 No Active Subscription
                                             </h4>
                                             <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-                                                You don't have an active subscription. Choose a plan to get started.
+                                                You don't have an active
+                                                subscription. Choose a plan to
+                                                get started.
                                             </p>
-                                            <Button onClick={() => setActiveTab('plans')}>
+                                            <Button
+                                                onClick={() =>
+                                                    setActiveTab('plans')
+                                                }
+                                            >
                                                 Browse Plans
                                             </Button>
                                         </CardContent>
@@ -755,25 +871,47 @@ export default function Index({
                                             {/* Currency Filter */}
                                             {availableCurrencies.length > 1 && (
                                                 <div className="flex items-center gap-2">
-                                                    <Label htmlFor="currency-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    <Label
+                                                        htmlFor="currency-filter"
+                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                    >
                                                         Currency:
                                                     </Label>
                                                     <select
                                                         id="currency-filter"
                                                         value={currencyFilter}
-                                                        onChange={(e) => setCurrencyFilter(e.target.value)}
+                                                        onChange={(e) =>
+                                                            setCurrencyFilter(
+                                                                e.target.value,
+                                                            )
+                                                        }
                                                         className="rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                                     >
-                                                        <option value="">All Currencies</option>
-                                                        {availableCurrencies.map((currency) => (
-                                                            <option key={currency} value={currency}>
-                                                                {currency} ({getCurrencySymbol(currency)})
-                                                            </option>
-                                                        ))}
+                                                        <option value="">
+                                                            All Currencies
+                                                        </option>
+                                                        {availableCurrencies.map(
+                                                            (currency) => (
+                                                                <option
+                                                                    key={
+                                                                        currency
+                                                                    }
+                                                                    value={
+                                                                        currency
+                                                                    }
+                                                                >
+                                                                    {currency} (
+                                                                    {getCurrencySymbol(
+                                                                        currency,
+                                                                    )}
+                                                                    )
+                                                                </option>
+                                                            ),
+                                                        )}
                                                     </select>
                                                 </div>
                                             )}
-                                            
+
                                             {/* Billing Period Toggle */}
                                             <Tabs
                                                 value={billingPeriod}
@@ -879,7 +1017,9 @@ export default function Index({
                                                     <CardTitle className="flex items-center justify-between">
                                                         <span>{plan.name}</span>
                                                         <span className="text-2xl font-bold text-gray-600 dark:text-gray-300">
-                                                            {getCurrencySymbol(plan.currency)}
+                                                            {getCurrencySymbol(
+                                                                plan.currency,
+                                                            )}
                                                             {Number(
                                                                 plan.price,
                                                             ).toFixed(2)}
@@ -990,14 +1130,15 @@ export default function Index({
                                     ) : (
                                         <div className="col-span-3 py-8 text-center text-gray-500 dark:text-gray-400">
                                             <p>
-                                                {currencyFilter 
+                                                {currencyFilter
                                                     ? `No ${billingPeriod} plans available in ${currencyFilter} currency.`
-                                                    : `No ${billingPeriod} plans are currently available.`
-                                                }
+                                                    : `No ${billingPeriod} plans are currently available.`}
                                             </p>
                                             {currencyFilter && (
                                                 <p className="mt-2 text-sm">
-                                                    Try selecting a different currency or clear the filter to see all plans.
+                                                    Try selecting a different
+                                                    currency or clear the filter
+                                                    to see all plans.
                                                 </p>
                                             )}
                                         </div>
@@ -1236,7 +1377,9 @@ export default function Index({
                                                                 Total:
                                                             </span>
                                                             <span className="text-gray-900 dark:text-gray-100">
-                                                                {getCurrencySymbol(selectedPlan.currency)}
+                                                                {getCurrencySymbol(
+                                                                    selectedPlan.currency,
+                                                                )}
                                                                 {Number(
                                                                     selectedPlan.price,
                                                                 ).toFixed(2)}
@@ -1307,7 +1450,8 @@ export default function Index({
                                                             Payment Method
                                                         </h4>
                                                         <div className="space-y-3">
-                                                            {selectedPlan?.currency === 'PHP' && (
+                                                            {selectedPlan?.currency ===
+                                                                'PHP' && (
                                                                 <label className="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
                                                                     <input
                                                                         type="radio"
@@ -1335,7 +1479,8 @@ export default function Index({
                                                                             Payment
                                                                         </span>
                                                                         <span className="block text-sm text-gray-500 dark:text-gray-400">
-                                                                            Pay at
+                                                                            Pay
+                                                                            at
                                                                             nearby
                                                                             Neulify
                                                                             partners
@@ -1343,7 +1488,8 @@ export default function Index({
                                                                     </div>
                                                                 </label>
                                                             )}
-                                                            {selectedPlan?.currency === 'PHP' && (
+                                                            {selectedPlan?.currency ===
+                                                                'PHP' && (
                                                                 <label
                                                                     className={`flex items-center space-x-3 rounded-lg border p-3 dark:border-gray-600 ${
                                                                         credits >=
@@ -1388,7 +1534,8 @@ export default function Index({
                                                                     />
                                                                     <div>
                                                                         <span className="block font-medium text-gray-900 dark:text-gray-100">
-                                                                            Pay with
+                                                                            Pay
+                                                                            with
                                                                             Credits
                                                                         </span>
                                                                         <span className="block text-sm text-gray-500 dark:text-gray-400">
@@ -1901,7 +2048,10 @@ export default function Index({
                                 <div>
                                     <p className="font-medium">Make Payment</p>
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Pay the amount of {getCurrencySymbol(selectedPlan?.currency)}
+                                        Pay the amount of{' '}
+                                        {getCurrencySymbol(
+                                            selectedPlan?.currency,
+                                        )}
                                         {Number(selectedPlan?.price).toFixed(2)}{' '}
                                         in cash
                                     </p>

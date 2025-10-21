@@ -427,8 +427,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
                                         Comprehensive travel insurance and 24/7
-                                        automated assistance to ensure your journey
-                                        is safe, secure, and worry-free.
+                                        automated assistance to ensure your
+                                        journey is safe, secure, and worry-free.
                                     </p>
                                 </div>
                             </div>

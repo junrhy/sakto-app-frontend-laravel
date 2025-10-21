@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use App\Models\TwilioAccount;
+use Twilio\Rest\Client;
 use App\Models\Table;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Order;
@@ -524,8 +527,15 @@ class PosRestaurantController extends Controller
                 throw new \Exception($response->json()['message'] ?? 'Failed to store reservation');
             }
 
+            $reservation = $response->json();
+
+            // Send SMS notification if contact number is provided
+            if (!empty($validated['contact'])) {
+                $this->sendReservationSMS($reservation, $validated);
+            }
+
             return redirect()->back()->with('success', 'Reservation created successfully')
-                ->with('reservation', $response->json());
+                ->with('reservation', $reservation);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to store reservation: ' . $e->getMessage());
         }
@@ -559,8 +569,19 @@ class PosRestaurantController extends Controller
                 throw new \Exception($response->json()['message'] ?? 'Failed to update reservation');
             }
 
+            $updatedReservation = $response->json()['data'] ?? $response->json();
+
+            // Send SMS notification if status changed and contact number is available
+            if (isset($validated['status']) && !empty($updatedReservation['contact'])) {
+                if ($validated['status'] === 'confirmed') {
+                    $this->sendReservationStatusSMS($updatedReservation, 'confirmed');
+                } elseif ($validated['status'] === 'cancelled') {
+                    $this->sendReservationStatusSMS($updatedReservation, 'cancelled');
+                }
+            }
+
             return redirect()->back()->with('success', 'Reservation updated successfully')
-                ->with('reservation', $response->json());
+                ->with('reservation', $updatedReservation);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update reservation: ' . $e->getMessage());
         }
@@ -1035,6 +1056,149 @@ class PosRestaurantController extends Controller
             return $response->json()['data']['sales'] ?? [];
         } catch (\Exception $e) {
             return [];
+        }
+    }
+
+    /**
+     * Send SMS notification for reservation
+     */
+    private function sendReservationSMS($reservation, $validated)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            // Get the default Twilio account for this client
+            $twilioAccount = TwilioAccount::getDefaultOrFirst($clientIdentifier);
+
+            if (!$twilioAccount) {
+                Log::info('No Twilio account configured for client: ' . $clientIdentifier);
+                return;
+            }
+
+            if (!$twilioAccount->phone_number) {
+                Log::warning('Twilio account has no phone number configured', [
+                    'account_id' => $twilioAccount->id,
+                    'client_identifier' => $clientIdentifier
+                ]);
+                return;
+            }
+
+            // Initialize Twilio client
+            $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
+
+            // Format the reservation details
+            $date = date('F j, Y', strtotime($validated['date']));
+            $time = $validated['time'];
+            $guests = $validated['guests'];
+            $name = $validated['name'];
+
+            // Create SMS message
+            $messageBody = "Hello {$name}! Your table reservation has been confirmed:\n\n";
+            $messageBody .= "Date: {$date}\n";
+            $messageBody .= "Time: {$time}\n";
+            $messageBody .= "Guests: {$guests}\n";
+            $messageBody .= "Status: pending\n\n";
+            $messageBody .= "Thank you for choosing us!";
+
+            // Send SMS
+            $message = $client->messages->create(
+                $validated['contact'],
+                [
+                    'from' => $twilioAccount->phone_number,
+                    'body' => $messageBody
+                ]
+            );
+
+            Log::info('Reservation SMS sent successfully', [
+                'reservation_id' => $reservation['id'] ?? 'N/A',
+                'message_sid' => $message->sid,
+                'to' => $validated['contact'],
+                'twilio_account_id' => $twilioAccount->id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send reservation SMS', [
+                'reservation_id' => $reservation['id'] ?? 'N/A',
+                'client_identifier' => $clientIdentifier ?? 'N/A',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    /**
+     * Send SMS notification for reservation status changes
+     */
+    private function sendReservationStatusSMS($reservation, $status)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            // Get the default Twilio account for this client
+            $twilioAccount = TwilioAccount::getDefaultOrFirst($clientIdentifier);
+
+            if (!$twilioAccount) {
+                Log::info('No Twilio account configured for client: ' . $clientIdentifier);
+                return;
+            }
+
+            if (!$twilioAccount->phone_number) {
+                Log::warning('Twilio account has no phone number configured', [
+                    'account_id' => $twilioAccount->id,
+                    'client_identifier' => $clientIdentifier
+                ]);
+                return;
+            }
+
+            // Initialize Twilio client
+            $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
+
+            // Format the reservation details
+            $date = date('F j, Y', strtotime($reservation['date']));
+            $time = $reservation['time'];
+            $guests = $reservation['guests'];
+            $name = $reservation['name'];
+
+            // Create SMS message based on status
+            if ($status === 'confirmed') {
+                $messageBody = "Hello {$name}! Your table reservation has been CONFIRMED:\n\n";
+                $messageBody .= "Date: {$date}\n";
+                $messageBody .= "Time: {$time}\n";
+                $messageBody .= "Guests: {$guests}\n\n";
+                $messageBody .= "We look forward to serving you! Please arrive on time.";
+            } else { // cancelled or deleted
+                $messageBody = "Hello {$name}! Your table reservation has been CANCELLED:\n\n";
+                $messageBody .= "Date: {$date}\n";
+                $messageBody .= "Time: {$time}\n";
+                $messageBody .= "Guests: {$guests}\n\n";
+                $messageBody .= "If you did not request this cancellation, please contact us immediately.";
+            }
+
+            // Send SMS
+            $message = $client->messages->create(
+                $reservation['contact'],
+                [
+                    'from' => $twilioAccount->phone_number,
+                    'body' => $messageBody
+                ]
+            );
+
+            Log::info("Reservation {$status} SMS sent successfully", [
+                'reservation_id' => $reservation['id'] ?? 'N/A',
+                'message_sid' => $message->sid,
+                'to' => $reservation['contact'],
+                'status' => $status,
+                'twilio_account_id' => $twilioAccount->id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to send reservation {$status} SMS", [
+                'reservation_id' => $reservation['id'] ?? 'N/A',
+                'client_identifier' => $clientIdentifier ?? 'N/A',
+                'status' => $status,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }

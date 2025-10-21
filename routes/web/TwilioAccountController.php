@@ -19,4 +19,6 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::delete('/twilio-accounts/{twilioAccount}', [TwilioAccountController::class, 'destroy'])->name('twilio-accounts.destroy');
     Route::post('/twilio-accounts/{twilioAccount}/verify', [TwilioAccountController::class, 'verify'])->name('twilio-accounts.verify');
     Route::post('/twilio-accounts/{twilioAccount}/toggle-active', [TwilioAccountController::class, 'toggleActive'])->name('twilio-accounts.toggle-active');
+    Route::post('/twilio-accounts/{twilioAccount}/set-default', [TwilioAccountController::class, 'setDefault'])->name('twilio-accounts.set-default');
+    Route::post('/twilio-accounts/{twilioAccount}/unset-default', [TwilioAccountController::class, 'unsetDefault'])->name('twilio-accounts.unset-default');
 });

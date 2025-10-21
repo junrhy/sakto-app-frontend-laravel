@@ -688,7 +688,8 @@ export default function Community({
                                 </p>
                                 <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-blue-500/20 bg-blue-500/5 px-6 py-4">
                                     <p className="text-center text-base font-medium text-slate-700">
-                                        ✅ Access is granted instantly after purchase — no manual setup required.
+                                        ✅ Access is granted instantly after
+                                        purchase — no manual setup required.
                                     </p>
                                 </div>
                             </div>
@@ -1117,11 +1118,13 @@ export default function Community({
                                                     provide?
                                                 </dt>
                                                 <dd className="text-slate-600">
-                                                    All support is provided via our online helpdesk and email channels. All plans include email
-                                                    support. Pro and Business
-                                                    plans include priority
-                                                    support with faster response
-                                                    times.
+                                                    All support is provided via
+                                                    our online helpdesk and
+                                                    email channels. All plans
+                                                    include email support. Pro
+                                                    and Business plans include
+                                                    priority support with faster
+                                                    response times.
                                                 </dd>
                                             </div>
                                         </dl>

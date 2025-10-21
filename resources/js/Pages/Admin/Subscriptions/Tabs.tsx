@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 interface TabsProps {
     tabs: {
@@ -54,4 +54,3 @@ export default function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
         </div>
     );
 }
-

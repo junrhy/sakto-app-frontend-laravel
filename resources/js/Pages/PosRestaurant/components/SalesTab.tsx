@@ -16,7 +16,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Calendar, ChevronLeft, ChevronRight, DollarSign, Receipt, Search } from 'lucide-react';
+import {
+    Calendar,
+    ChevronLeft,
+    ChevronRight,
+    DollarSign,
+    Receipt,
+    Search,
+} from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Sale } from '../types';
 
@@ -30,8 +37,11 @@ export const SalesTab: React.FC<SalesTabProps> = ({
     currency_symbol,
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
-    const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+    const [dateFilter, setDateFilter] = useState<
+        'all' | 'today' | 'week' | 'month'
+    >('all');
+    const [paymentMethodFilter, setPaymentMethodFilter] =
+        useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -39,7 +49,9 @@ export const SalesTab: React.FC<SalesTabProps> = ({
     const parseItems = (itemsString: string): number => {
         try {
             const items = JSON.parse(itemsString);
-            return Array.isArray(items) ? items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+            return Array.isArray(items)
+                ? items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+                : 0;
         } catch (error) {
             return 0;
         }
@@ -54,7 +66,8 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                 !searchTerm ||
                 sale.table_number.toLowerCase().includes(searchLower) ||
                 sale.id.toString().includes(searchLower) ||
-                (sale.payment_method && sale.payment_method.toLowerCase().includes(searchLower));
+                (sale.payment_method &&
+                    sale.payment_method.toLowerCase().includes(searchLower));
 
             // Date filter
             const saleDate = new Date(sale.created_at);
@@ -83,10 +96,10 @@ export const SalesTab: React.FC<SalesTabProps> = ({
 
             return matchesSearch && matchesDate && matchesPaymentMethod;
         });
-        
+
         // Reset to first page when filters change
         setCurrentPage(1);
-        
+
         return filtered;
     }, [sales, searchTerm, dateFilter, paymentMethodFilter]);
 
@@ -112,7 +125,8 @@ export const SalesTab: React.FC<SalesTabProps> = ({
             (acc, sale) => ({
                 count: acc.count + 1,
                 subtotal: acc.subtotal + parseFloat(sale.subtotal.toString()),
-                discount: acc.discount + parseFloat(sale.discount?.toString() || '0'),
+                discount:
+                    acc.discount + parseFloat(sale.discount?.toString() || '0'),
                 total: acc.total + parseFloat(sale.total.toString()),
             }),
             { count: 0, subtotal: 0, discount: 0, total: 0 },
@@ -234,7 +248,9 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                         <Select
                             value={dateFilter}
                             onValueChange={(value) =>
-                                setDateFilter(value as 'all' | 'today' | 'week' | 'month')
+                                setDateFilter(
+                                    value as 'all' | 'today' | 'week' | 'month',
+                                )
                             }
                         >
                             <SelectTrigger>
@@ -243,8 +259,12 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                             <SelectContent>
                                 <SelectItem value="all">All Time</SelectItem>
                                 <SelectItem value="today">Today</SelectItem>
-                                <SelectItem value="week">Last 7 Days</SelectItem>
-                                <SelectItem value="month">Last 30 Days</SelectItem>
+                                <SelectItem value="week">
+                                    Last 7 Days
+                                </SelectItem>
+                                <SelectItem value="month">
+                                    Last 30 Days
+                                </SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -273,7 +293,9 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                 <SelectItem value="10">10 per page</SelectItem>
                                 <SelectItem value="25">25 per page</SelectItem>
                                 <SelectItem value="50">50 per page</SelectItem>
-                                <SelectItem value="100">100 per page</SelectItem>
+                                <SelectItem value="100">
+                                    100 per page
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -341,35 +363,55 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                             {parseItems(sale.items)} items
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            {formatCurrency(parseFloat(sale.subtotal.toString()))}
+                                            {formatCurrency(
+                                                parseFloat(
+                                                    sale.subtotal.toString(),
+                                                ),
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             {sale.discount
                                                 ? `${formatCurrency(parseFloat(sale.discount.toString()))} ${
-                                                      sale.discount_type === 'percentage' ? '%' : ''
+                                                      sale.discount_type ===
+                                                      'percentage'
+                                                          ? '%'
+                                                          : ''
                                                   }`
                                                 : '-'}
                                         </TableCell>
                                         <TableCell className="font-semibold text-gray-900 dark:text-white">
-                                            {formatCurrency(parseFloat(sale.total.toString()))}
+                                            {formatCurrency(
+                                                parseFloat(
+                                                    sale.total.toString(),
+                                                ),
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             <span
                                                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                    sale.payment_method === 'cash'
+                                                    sale.payment_method ===
+                                                    'cash'
                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                         : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                                                 }`}
                                             >
                                                 {sale.payment_method
-                                                    ? sale.payment_method.charAt(0).toUpperCase() +
-                                                      sale.payment_method.slice(1)
+                                                    ? sale.payment_method
+                                                          .charAt(0)
+                                                          .toUpperCase() +
+                                                      sale.payment_method.slice(
+                                                          1,
+                                                      )
                                                     : '-'}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             {sale.change_amount > 0
-                                                ? formatCurrency(parseFloat(sale.change_amount.toString()))
+                                                ? formatCurrency(
+                                                      parseFloat(
+                                                          sale.change_amount.toString(),
+                                                      ),
+                                                  )
                                                 : '-'}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
@@ -389,7 +431,8 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                     <CardContent className="p-4">
                         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Showing {startIndex + 1} to {Math.min(endIndex, filteredSales.length)} of{' '}
+                                Showing {startIndex + 1} to{' '}
+                                {Math.min(endIndex, filteredSales.length)} of{' '}
                                 {filteredSales.length} sales
                             </div>
 
@@ -397,7 +440,9 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    onClick={() =>
+                                        handlePageChange(currentPage - 1)
+                                    }
                                     disabled={currentPage === 1}
                                     className="h-8 w-8 p-0"
                                 >
@@ -405,25 +450,38 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                 </Button>
 
                                 <div className="flex items-center gap-1">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, i) => i + 1,
+                                    ).map((page) => {
                                         // Show first page, last page, current page, and pages around current
                                         if (
                                             page === 1 ||
                                             page === totalPages ||
-                                            (page >= currentPage - 1 && page <= currentPage + 1)
+                                            (page >= currentPage - 1 &&
+                                                page <= currentPage + 1)
                                         ) {
                                             return (
                                                 <Button
                                                     key={page}
-                                                    variant={currentPage === page ? 'default' : 'outline'}
+                                                    variant={
+                                                        currentPage === page
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
                                                     size="sm"
-                                                    onClick={() => handlePageChange(page)}
+                                                    onClick={() =>
+                                                        handlePageChange(page)
+                                                    }
                                                     className="h-8 w-8 p-0"
                                                 >
                                                     {page}
                                                 </Button>
                                             );
-                                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                                        } else if (
+                                            page === currentPage - 2 ||
+                                            page === currentPage + 2
+                                        ) {
                                             return (
                                                 <span
                                                     key={page}
@@ -440,7 +498,9 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    onClick={() =>
+                                        handlePageChange(currentPage + 1)
+                                    }
                                     disabled={currentPage === totalPages}
                                     className="h-8 w-8 p-0"
                                 >
@@ -496,4 +556,3 @@ export const SalesTab: React.FC<SalesTabProps> = ({
         </div>
     );
 };
-
