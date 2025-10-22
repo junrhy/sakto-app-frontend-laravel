@@ -1201,6 +1201,7 @@ export default function PosRestaurantIndex({
                                                             currency_symbol={
                                                                 currency_symbol
                                                             }
+                                                            auth={auth}
                                                             onAddReservation={
                                                                 handleAddReservation
                                                             }

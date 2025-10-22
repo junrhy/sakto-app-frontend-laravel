@@ -146,8 +146,8 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     // Check if a timeslot is opened
     const isTimeSlotOpened = useCallback(
         (date: string, time: string) => {
-            // If no opened dates configured, all dates are available
-            if (openedDates.length === 0) return true;
+            // If no opened dates configured, restaurant is closed - no timeslots available
+            if (openedDates.length === 0) return false;
 
             // Check if this specific date and time is opened
             return openedDates.some((openedDate) => {
@@ -525,26 +525,6 @@ export const TablesTab: React.FC<TablesTabProps> = ({
 
     return (
         <div className="space-y-6">
-            <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                            <Calculator className="mr-2 h-4 w-4 text-green-500" />
-                            Tables Overview
-                        </CardTitle>
-                        {canEdit && (
-                            <Button
-                                onClick={onAddTable}
-                                size="sm"
-                                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-emerald-700 hover:shadow-xl"
-                            >
-                                <Plus className="mr-1 h-3 w-3" /> Add Table
-                            </Button>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                    <div className="space-y-6">
                         {/* Date and Time Slot Selection */}
                         <div>
                             <Card className="rounded-lg border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
@@ -892,10 +872,21 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                         <div>
                             <Card className="rounded-lg border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
                                 <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
-                                    <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                        <Calculator className="mr-2 h-4 w-4 text-blue-500" />
-                                        Tables Listing
-                                    </CardTitle>
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                            <Calculator className="mr-2 h-4 w-4 text-blue-500" />
+                                            Tables Listing
+                                        </CardTitle>
+                                        {canEdit && (
+                                            <Button
+                                                onClick={onAddTable}
+                                                size="sm"
+                                                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-emerald-700 hover:shadow-xl"
+                                            >
+                                                <Plus className="mr-1 h-3 w-3" /> Add Table
+                                            </Button>
+                                        )}
+                                    </div>
                                 </CardHeader>
                                 <CardContent className="p-4">
                                     {/* Summary Section */}
@@ -1522,9 +1513,6 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                 </CardContent>
                             </Card>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 };

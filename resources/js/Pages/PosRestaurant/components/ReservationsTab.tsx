@@ -20,6 +20,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Check, Clock, Trash, X } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { router } from '@inertiajs/react';
 import {
     BlockedDate,
     OpenedDate,
@@ -45,6 +46,11 @@ interface ReservationsTabProps {
     openedDates?: OpenedDate[];
     tableSchedules?: TableSchedule[];
     currency_symbol: string;
+    auth: {
+        user: {
+            identifier: string;
+        };
+    };
     onAddReservation: (reservation: Omit<Reservation, 'id' | 'status'>) => void;
     onUpdateReservation: (
         id: number,
@@ -62,6 +68,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     openedDates = [],
     tableSchedules = [],
     currency_symbol,
+    auth,
     onAddReservation,
     onUpdateReservation,
     onDeleteReservation,
@@ -135,8 +142,8 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
 
     const isTimeSlotOpened = useCallback(
         (date: string, time: string) => {
-            // If no opened dates configured, all dates are available
-            if (openedDates.length === 0) return true;
+            // If no opened dates configured, restaurant is closed - no timeslots available
+            if (openedDates.length === 0) return false;
 
             // Check if this specific date and time is opened
             return openedDates.some((openedDate) => {
@@ -443,10 +450,26 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         <div className="space-y-6">
             <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
                 <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
-                    <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                        <Check className="mr-2 h-4 w-4 text-orange-500" />
-                        Reservations
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            <Check className="mr-2 h-4 w-4 text-orange-500" />
+                            Reservations
+                        </CardTitle>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                                const url = `/pos-restaurant/reservation?client_identifier=${auth.user.identifier}`;
+                                window.open(url, '_blank');
+                            }}
+                            className="flex items-center gap-2"
+                        >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Online Reservation
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-6">
                     {/* Calendar and Time Slots Section */}
