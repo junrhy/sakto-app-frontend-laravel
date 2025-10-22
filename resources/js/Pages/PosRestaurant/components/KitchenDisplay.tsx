@@ -1,5 +1,11 @@
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -14,7 +20,6 @@ import {
     Eye,
     Play,
     RefreshCw,
-    X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -51,7 +56,9 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
     error,
 }) => {
     const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
-    const [selectedOrder, setSelectedOrder] = useState<KitchenOrder | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<KitchenOrder | null>(
+        null,
+    );
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Auto-refresh every 10 seconds for kitchen display
@@ -281,7 +288,9 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                                 <span className="font-medium text-gray-900 dark:text-white">
                                                                     $
                                                                     {(
-                                                                        Number(item.price) *
+                                                                        Number(
+                                                                            item.price,
+                                                                        ) *
                                                                         item.quantity
                                                                     ).toFixed(
                                                                         2,
@@ -316,7 +325,6 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                         </p>
                                                     </div>
                                                 )}
-
                                             </div>
                                         </CardContent>
                                         <CardFooter className="flex justify-center p-4 pt-0">
@@ -328,14 +336,12 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                     )
                                                 }
                                                 disabled={
-                                                    updatingStatus ===
-                                                    order.id
+                                                    updatingStatus === order.id
                                                 }
                                                 size="sm"
-                                                className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-2"
+                                                className="bg-blue-600 px-8 py-2 text-white hover:bg-blue-700"
                                             >
-                                                {updatingStatus ===
-                                                order.id ? (
+                                                {updatingStatus === order.id ? (
                                                     <RefreshCw className="h-4 w-4 animate-spin" />
                                                 ) : (
                                                     <>
@@ -424,7 +430,9 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                                 <span className="font-medium text-gray-900 dark:text-white">
                                                                     $
                                                                     {(
-                                                                        Number(item.price) *
+                                                                        Number(
+                                                                            item.price,
+                                                                        ) *
                                                                         item.quantity
                                                                     ).toFixed(
                                                                         2,
@@ -459,7 +467,6 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                         </p>
                                                     </div>
                                                 )}
-
                                             </div>
                                         </CardContent>
                                         <CardFooter className="flex gap-2 p-4 pt-0">
@@ -471,14 +478,12 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                     )
                                                 }
                                                 disabled={
-                                                    updatingStatus ===
-                                                    order.id
+                                                    updatingStatus === order.id
                                                 }
                                                 size="sm"
                                                 className="flex-1 bg-green-600 text-white hover:bg-green-700"
                                             >
-                                                {updatingStatus ===
-                                                order.id ? (
+                                                {updatingStatus === order.id ? (
                                                     <RefreshCw className="h-4 w-4 animate-spin" />
                                                 ) : (
                                                     <>
@@ -488,7 +493,9 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                 )}
                                             </Button>
                                             <Button
-                                                onClick={() => openFocusView(order)}
+                                                onClick={() =>
+                                                    openFocusView(order)
+                                                }
                                                 size="sm"
                                                 variant="outline"
                                                 className="flex-1"
@@ -576,7 +583,9 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                                 <span className="font-medium text-gray-900 dark:text-white">
                                                                     $
                                                                     {(
-                                                                        Number(item.price) *
+                                                                        Number(
+                                                                            item.price,
+                                                                        ) *
                                                                         item.quantity
                                                                     ).toFixed(
                                                                         2,
@@ -611,7 +620,6 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                         </p>
                                                     </div>
                                                 )}
-
                                             </div>
                                         </CardContent>
                                         <CardFooter className="flex gap-2 p-4 pt-0">
@@ -623,14 +631,12 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                                                     )
                                                 }
                                                 disabled={
-                                                    updatingStatus ===
-                                                    order.id
+                                                    updatingStatus === order.id
                                                 }
                                                 size="sm"
                                                 className="flex-1 bg-gray-600 text-white hover:bg-gray-700"
                                             >
-                                                {updatingStatus ===
-                                                order.id ? (
+                                                {updatingStatus === order.id ? (
                                                     <RefreshCw className="h-4 w-4 animate-spin" />
                                                 ) : (
                                                     <>
@@ -661,42 +667,55 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
 
             {/* Custom backdrop overlay */}
             {isDialogOpen && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40" />
+                <div className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" />
             )}
-            
+
             {/* Focus View Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 shadow-2xl z-50">
+                <DialogContent className="z-50 max-w-2xl border-2 border-gray-300 bg-white shadow-2xl dark:border-gray-600 dark:bg-gray-800">
                     <DialogHeader>
                         <DialogTitle className="flex items-center space-x-2">
                             <Eye className="h-5 w-5" />
-                            <span>Order Focus View - #{selectedOrder?.order_number}</span>
+                            <span>
+                                Order Focus View - #
+                                {selectedOrder?.order_number}
+                            </span>
                         </DialogTitle>
                     </DialogHeader>
-                    
+
                     {selectedOrder && (
                         <div className="space-y-6">
                             {/* Order Header */}
                             <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">Order Details</h3>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                                            Order Details
+                                        </h3>
                                         <p className="text-sm text-gray-600 dark:text-gray-300">
                                             Table: {selectedOrder.table_number}
                                         </p>
                                         {selectedOrder.customer_name && (
                                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                                Customer: {selectedOrder.customer_name}
+                                                Customer:{' '}
+                                                {selectedOrder.customer_name}
                                             </p>
                                         )}
                                         <p className="text-sm text-gray-600 dark:text-gray-300">
-                                            Sent: {formatTime(selectedOrder.sent_at)}
+                                            Sent:{' '}
+                                            {formatTime(selectedOrder.sent_at)}
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <div className={`inline-flex items-center space-x-1 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
-                                            {getStatusIcon(selectedOrder.status)}
-                                            <span className="capitalize">{selectedOrder.status}</span>
+                                        <div
+                                            className={`inline-flex items-center space-x-1 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(selectedOrder.status)}`}
+                                        >
+                                            {getStatusIcon(
+                                                selectedOrder.status,
+                                            )}
+                                            <span className="capitalize">
+                                                {selectedOrder.status}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -704,22 +723,37 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
 
                             {/* Order Items */}
                             <div>
-                                <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">Order Items</h3>
+                                <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
+                                    Order Items
+                                </h3>
                                 <div className="space-y-3">
                                     {selectedOrder.items.map((item, index) => (
-                                        <div key={`${selectedOrder.id}-${item.id}-${index}`} className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+                                        <div
+                                            key={`${selectedOrder.id}-${item.id}-${index}`}
+                                            className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-600"
+                                        >
                                             <div className="flex-1">
-                                                <h4 className="font-medium text-gray-900 dark:text-white">{item.name}</h4>
+                                                <h4 className="font-medium text-gray-900 dark:text-white">
+                                                    {item.name}
+                                                </h4>
                                                 <p className="text-sm text-gray-600 dark:text-gray-300">
                                                     Quantity: {item.quantity}
                                                 </p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="font-semibold text-gray-900 dark:text-white">
-                                                    ${(Number(item.price) * item.quantity).toFixed(2)}
+                                                    $
+                                                    {(
+                                                        Number(item.price) *
+                                                        item.quantity
+                                                    ).toFixed(2)}
                                                 </p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                                                    ${Number(item.price).toFixed(2)} each
+                                                    $
+                                                    {Number(item.price).toFixed(
+                                                        2,
+                                                    )}{' '}
+                                                    each
                                                 </p>
                                             </div>
                                         </div>
@@ -731,24 +765,40 @@ export const KitchenDisplay: React.FC<KitchenDisplayProps> = ({
                             <div className="border-t border-gray-200 pt-4 dark:border-gray-600">
                                 <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
                                     <span>Total:</span>
-                                    <span>${calculateTotal(selectedOrder.items).toFixed(2)}</span>
+                                    <span>
+                                        $
+                                        {calculateTotal(
+                                            selectedOrder.items,
+                                        ).toFixed(2)}
+                                    </span>
                                 </div>
                             </div>
 
                             {/* Customer Notes */}
                             {selectedOrder.customer_notes && (
                                 <div className="rounded-lg bg-yellow-50 p-4 dark:bg-yellow-900/20">
-                                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Special Instructions</h4>
-                                    <p className="mt-1 text-yellow-700 dark:text-yellow-300">{selectedOrder.customer_notes}</p>
+                                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">
+                                        Special Instructions
+                                    </h4>
+                                    <p className="mt-1 text-yellow-700 dark:text-yellow-300">
+                                        {selectedOrder.customer_notes}
+                                    </p>
                                 </div>
                             )}
 
                             {/* Action Buttons */}
                             <div className="flex justify-center pt-4">
                                 <Button
-                                    onClick={() => updateOrderStatus(selectedOrder.id, 'ready')}
-                                    disabled={updatingStatus === selectedOrder.id}
-                                    className="bg-green-600 text-white hover:bg-green-700 px-8 py-2"
+                                    onClick={() =>
+                                        updateOrderStatus(
+                                            selectedOrder.id,
+                                            'ready',
+                                        )
+                                    }
+                                    disabled={
+                                        updatingStatus === selectedOrder.id
+                                    }
+                                    className="bg-green-600 px-8 py-2 text-white hover:bg-green-700"
                                 >
                                     {updatingStatus === selectedOrder.id ? (
                                         <RefreshCw className="mr-2 h-4 w-4 animate-spin" />

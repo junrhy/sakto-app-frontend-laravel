@@ -1499,11 +1499,84 @@ class PosRestaurantController extends Controller
     /**
      * Customer Display Screen
      */
-    public function customerDisplay($clientIdentifier)
+    public function customerDisplay(Request $request, $clientIdentifier)
     {
-        return Inertia::render('PosRestaurant/components/CustomerDisplay', [
-            'clientIdentifier' => $clientIdentifier
+        \Log::info('Customer Display Controller Called', [
+            'client_identifier' => $clientIdentifier,
+            'video_url' => $request->get('video_url')
         ]);
+        
+        try {
+            // Fetch kitchen orders directly from backend API using HTTP client
+            $response = Http::withToken($this->apiToken)
+                ->timeout(30)
+                ->get("{$this->apiUrl}/fnb-kitchen-orders", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch kitchen orders: ' . $response->body());
+            }
+
+            $responseData = $response->json();
+            $customerOrders = $responseData['data'] ?? [];
+            
+            \Log::info('Customer Display Data Fetched', [
+                'client_identifier' => $clientIdentifier,
+                'customer_orders_count' => count($customerOrders)
+            ]);
+
+            // Return JSON for AJAX requests
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'data' => [
+                        'props' => [
+                            'clientIdentifier' => $clientIdentifier,
+                            'customerOrders' => $customerOrders,
+                            'apiToken' => $this->apiToken,
+                            'videoUrl' => $request->get('video_url'),
+                        ]
+                    ]
+                ]);
+            }
+
+            return Inertia::render('PosRestaurant/components/CustomerDisplay', [
+                'clientIdentifier' => $clientIdentifier,
+                'customerOrders' => $customerOrders,
+                'apiToken' => $this->apiToken,
+                'videoUrl' => $request->get('video_url'),
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Customer Display Error', [
+                'client_identifier' => $clientIdentifier,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return JSON for AJAX requests
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'data' => [
+                        'props' => [
+                            'clientIdentifier' => $clientIdentifier,
+                            'customerOrders' => [],
+                            'error' => $e->getMessage(),
+                            'videoUrl' => $request->get('video_url'),
+                        ]
+                    ]
+                ], 500);
+            }
+
+            return Inertia::render('PosRestaurant/components/CustomerDisplay', [
+                'clientIdentifier' => $clientIdentifier,
+                'customerOrders' => [],
+                'error' => $e->getMessage(),
+                'videoUrl' => $request->get('video_url'),
+            ]);
+        }
     }
 
 }

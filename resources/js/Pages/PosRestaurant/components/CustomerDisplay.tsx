@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import axios from 'axios';
-import { CheckCircle, ChefHat, Clock, RefreshCw } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { CheckCircle, Clock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface CustomerOrder {
     id: number;
     order_number: string;
     table_number: string;
+    customer_name?: string | null;
+    customer_notes?: string | null;
     items: Array<{
         id: number;
         name: string;
@@ -18,258 +19,211 @@ interface CustomerOrder {
     prepared_at?: string | null;
     ready_at?: string | null;
     completed_at?: string | null;
+    created_at: string;
 }
 
-export const CustomerDisplay: React.FC = () => {
-    const [orders, setOrders] = useState<CustomerOrder[]>([]);
-    const [loading, setLoading] = useState(false);
+interface CustomerDisplayProps {
+    clientIdentifier: string;
+    customerOrders: CustomerOrder[];
+    error?: string;
+    videoUrl?: string;
+}
 
-    // Fetch active kitchen orders for customer display
-    const fetchOrders = useCallback(async () => {
-        setLoading(true);
+export const CustomerDisplay: React.FC<CustomerDisplayProps> = ({ 
+    clientIdentifier, 
+    customerOrders: initialOrders, 
+    error,
+    videoUrl 
+}) => {
+    const [loading, setLoading] = useState(false);
+    const [customerOrders, setCustomerOrders] = useState(initialOrders);
+
+    // Fetch orders data
+    const fetchOrders = async () => {
         try {
-            const response = await axios.get('/pos-restaurant/kitchen-orders', {
-                params: {
-                    status: 'pending,preparing,ready', // Only show active orders
+            setLoading(true);
+            const response = await fetch(`/fnb/customer-display/${clientIdentifier}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             });
-
-            if (response.data && response.data.data) {
-                setOrders(response.data.data);
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.data && data.data.props && data.data.props.customerOrders) {
+                    setCustomerOrders(data.data.props.customerOrders);
+                }
             }
         } catch (error) {
             console.error('Failed to fetch orders:', error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    };
 
-    // Initial fetch and auto-refresh
+    // Convert YouTube URL to embeddable format
+    const getEmbedUrl = (url: string) => {
+        if (!url) return '';
+        
+        // If already an embed URL, return as is
+        if (url.includes('youtube.com/embed/')) {
+            return url;
+        }
+        
+        // Extract video ID from various YouTube URL formats
+        const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+        
+        if (videoId && videoId[1]) {
+            return `https://www.youtube.com/embed/${videoId[1]}?autoplay=1&mute=1&loop=1&playlist=${videoId[1]}`;
+        }
+        
+        return url;
+    };
+
+    // Auto-refresh orders every 15 seconds
     useEffect(() => {
-        fetchOrders();
-
-        // Auto-refresh every 15 seconds for customer display
-        const interval = setInterval(fetchOrders, 15000);
+        const interval = setInterval(() => {
+            fetchOrders();
+        }, 15000);
 
         return () => clearInterval(interval);
-    }, []); // Empty dependency array - fetchOrders is stable
+    }, [clientIdentifier]);
 
-    // Get status display info
-    const getStatusInfo = (status: string) => {
-        switch (status) {
-            case 'pending':
-                return {
-                    icon: '⏳',
-                    text: 'Order Received',
-                    color: 'text-amber-600',
-                    bgColor: 'bg-amber-50',
-                    borderColor: 'border-amber-200',
-                };
-            case 'preparing':
-                return {
-                    icon: '👨‍🍳',
-                    text: 'Preparing',
-                    color: 'text-blue-600',
-                    bgColor: 'bg-blue-50',
-                    borderColor: 'border-blue-200',
-                };
-            case 'ready':
-                return {
-                    icon: '✅',
-                    text: 'Ready for Pickup',
-                    color: 'text-green-600',
-                    bgColor: 'bg-green-50',
-                    borderColor: 'border-green-200',
-                };
-            default:
-                return {
-                    icon: '❓',
-                    text: 'Unknown',
-                    color: 'text-gray-600',
-                    bgColor: 'bg-gray-50',
-                    borderColor: 'border-gray-200',
-                };
-        }
-    };
 
     // Get time elapsed
     const getTimeElapsed = (sentAt: string) => {
         const sent = new Date(sentAt);
         const now = new Date();
         const diff = now.getTime() - sent.getTime();
-        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
         const seconds = Math.floor((diff % 60000) / 1000);
 
-        if (minutes > 0) {
-            return `${minutes}m ${seconds}s`;
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        } else if (minutes > 0) {
+            return `${minutes}m`;
         }
         return `${seconds}s`;
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 dark:from-gray-900 dark:to-gray-800">
-            <div className="mx-auto max-w-6xl">
-                {/* Header */}
-                <div className="mb-8 text-center">
-                    <div className="mb-4 flex items-center justify-center gap-3">
-                        <ChefHat className="h-12 w-12 text-blue-600" />
-                        <div>
-                            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-                                Order Status
-                            </h1>
-                            <p className="text-lg text-gray-600 dark:text-gray-400">
-                                Track your order progress
-                            </p>
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pl-6 pb-6">
+            <div className="w-full">
+
+                {/* Error Display */}
+                {error && (
+                    <div className="mb-4 rounded-md bg-red-50 p-4">
+                        <div className="flex">
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-red-800">
+                                    Error loading orders
+                                </h3>
+                                <div className="mt-2 text-sm text-red-700">
+                                    {error}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                        <RefreshCw
-                            className={`h-4 w-4 text-gray-500 ${loading ? 'animate-spin' : ''}`}
-                        />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                            Auto-refreshing every 15 seconds
-                        </span>
-                    </div>
-                </div>
-
-                {/* Orders Display */}
-                {loading && orders.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center">
-                        <div className="text-center">
-                            <RefreshCw className="mx-auto h-8 w-8 animate-spin text-gray-500" />
-                            <p className="mt-2 text-gray-500 dark:text-gray-400">
-                                Loading orders...
-                            </p>
-                        </div>
-                    </div>
-                ) : orders.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center">
-                        <div className="text-center">
-                            <ChefHat className="mx-auto h-16 w-16 text-gray-400" />
-                            <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
-                                No active orders
-                            </p>
-                            <p className="text-sm text-gray-400 dark:text-gray-500">
-                                Orders will appear here when placed
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {orders.map((order) => {
-                            const statusInfo = getStatusInfo(order.status);
-
-                            return (
-                                <Card
-                                    key={order.id}
-                                    className={`border-2 ${statusInfo.borderColor} ${statusInfo.bgColor} transition-all hover:shadow-lg`}
-                                >
-                                    <CardHeader className="text-center">
-                                        <CardTitle className="flex flex-col items-center gap-2">
-                                            <span className="text-4xl">
-                                                {statusInfo.icon}
-                                            </span>
-                                            <div>
-                                                <h3
-                                                    className={`text-xl font-bold ${statusInfo.color}`}
-                                                >
-                                                    {statusInfo.text}
-                                                </h3>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                    Order #{order.order_number}
-                                                </p>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                    Table {order.table_number}
-                                                </p>
-                                            </div>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-center">
-                                        {/* Order Items */}
-                                        <div className="mb-4 rounded-lg bg-white/50 p-3 dark:bg-gray-800/50">
-                                            <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                Your Order:
-                                            </h4>
-                                            <ul className="space-y-1">
-                                                {order.items.map(
-                                                    (item, idx) => (
-                                                        <li
-                                                            key={idx}
-                                                            className="flex justify-between text-sm text-gray-900 dark:text-white"
-                                                        >
-                                                            <span>
-                                                                {item.quantity}x{' '}
-                                                                {item.name}
-                                                            </span>
-                                                        </li>
-                                                    ),
-                                                )}
-                                            </ul>
-                                        </div>
-
-                                        {/* Status Timeline */}
-                                        <div className="space-y-2">
-                                            <div
-                                                className={`flex items-center justify-center gap-2 ${order.status === 'pending' ? statusInfo.color : 'text-gray-400'}`}
-                                            >
-                                                <Clock className="h-4 w-4" />
-                                                <span className="text-sm">
-                                                    Order Received
-                                                </span>
-                                                {order.status === 'pending' && (
-                                                    <CheckCircle className="h-4 w-4" />
-                                                )}
-                                            </div>
-
-                                            <div
-                                                className={`flex items-center justify-center gap-2 ${order.status === 'preparing' ? statusInfo.color : 'text-gray-400'}`}
-                                            >
-                                                <ChefHat className="h-4 w-4" />
-                                                <span className="text-sm">
-                                                    Preparing
-                                                </span>
-                                                {order.status ===
-                                                    'preparing' && (
-                                                    <CheckCircle className="h-4 w-4" />
-                                                )}
-                                            </div>
-
-                                            <div
-                                                className={`flex items-center justify-center gap-2 ${order.status === 'ready' ? statusInfo.color : 'text-gray-400'}`}
-                                            >
-                                                <CheckCircle className="h-4 w-4" />
-                                                <span className="text-sm">
-                                                    Ready for Pickup
-                                                </span>
-                                                {order.status === 'ready' && (
-                                                    <CheckCircle className="h-4 w-4" />
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Time Info */}
-                                        <div className="mt-4 text-center">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Order placed{' '}
-                                                {getTimeElapsed(order.sent_at)}{' '}
-                                                ago
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
                     </div>
                 )}
 
-                {/* Footer */}
-                <div className="mt-12 text-center">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Thank you for your order! Please wait for your order to
-                        be ready.
-                    </p>
+                {/* Main Content Layout */}
+                <div className={`grid grid-cols-1 gap-6 ${videoUrl ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
+                    {/* Orders Section */}
+                    <div className={`space-y-4 pt-8 ${videoUrl ? '' : 'mr-6'}`}>
+                        {/* Status Columns */}
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    {/* Preparing Column */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-100 to-cyan-100 p-4 shadow-md">
+                            <div className="flex items-center space-x-2">
+                                <Clock className="h-6 w-6 text-blue-600" />
+                                <h2 className="text-xl font-bold text-blue-800">
+                                    Preparing
+                                </h2>
+                            </div>
+                            <span className="rounded-full bg-blue-200 px-3 py-1 text-sm font-bold text-blue-800 shadow-sm">
+                                {customerOrders.filter(order => order.status === 'preparing').length}
+                            </span>
+                        </div>
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                            {customerOrders.filter(order => order.status === 'preparing').map((order) => (
+                                <Card key={order.id} className="border-2 border-blue-300 bg-white rounded-lg transition-all hover:shadow-xl hover:scale-105">
+                                    <CardHeader className="border-b border-blue-300 bg-gradient-to-r from-blue-50 to-cyan-50">
+                                        <CardTitle className="text-3xl font-bold text-gray-900">
+                                            {order.order_number.split('-').slice(1).join('-')}
+                                        </CardTitle>
+                                    </CardHeader>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Ready Column */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between rounded-lg bg-gradient-to-r from-green-100 to-emerald-100 p-4 shadow-md">
+                            <div className="flex items-center space-x-2">
+                                <CheckCircle className="h-6 w-6 text-green-600" />
+                                <h2 className="text-xl font-bold text-green-800">
+                                    Ready for Pickup
+                                </h2>
+                            </div>
+                            <span className="rounded-full bg-green-200 px-3 py-1 text-sm font-bold text-green-800 shadow-sm">
+                                {customerOrders.filter(order => order.status === 'ready').length}
+                            </span>
+                        </div>
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                            {customerOrders.filter(order => order.status === 'ready').map((order) => (
+                                <Card key={order.id} className="border-2 border-green-300 bg-white rounded-lg transition-all hover:shadow-xl hover:scale-105">
+                                    <CardHeader className="border-b border-green-300 bg-gradient-to-r from-green-50 to-emerald-50">
+                                        <CardTitle className="text-3xl font-bold text-gray-900">
+                                            {order.order_number.split('-').slice(1).join('-')}
+                                        </CardTitle>
+                                    </CardHeader>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                    </div>
+
+                    
+                </div>
+
+                {/* Video Section */}
+                {videoUrl && (
+                        <div className="flex items-center justify-center min-h-screen bg-gray-900 p-6">
+                            <div className="relative aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg">
+                                <iframe
+                                    src={getEmbedUrl(videoUrl)}
+                                    title="Advertisement"
+                                    className="w-full h-full"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
+                        </div>
+                    )}
+
+                {/* Empty State */}
+                {customerOrders.length === 0 && (
+                    <div className="flex h-64 items-center justify-center">
+                        <div className="text-center">
+                            <Clock className="mx-auto h-12 w-12 text-gray-400" />
+                            <p className="mt-2 text-gray-500">
+                                No orders to display
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 </div>
             </div>
         </div>
     );
 };
+
+export default CustomerDisplay;

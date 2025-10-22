@@ -109,7 +109,7 @@ export const KitchenTab: React.FC<KitchenTabProps> = ({
         async (orderId: number, newStatus: string) => {
             try {
                 await axios.put(
-                    `/pos-restaurant/kitchen-orders/${orderId}/status`,
+                    `/fnb/kitchen-orders/${orderId}/status`,
                     {
                         status: newStatus,
                     },
@@ -313,7 +313,22 @@ export const KitchenTab: React.FC<KitchenTabProps> = ({
                                 className="min-h-[44px] touch-manipulation border-blue-300 bg-white text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:bg-gray-700 dark:text-blue-300 dark:hover:bg-blue-900/20"
                             >
                                 <ExternalLink className="mr-1 h-4 w-4" />
-                                Full Screen
+                                Kitchen Display
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    window.open(
+                                        `/fnb/customer-display/${clientIdentifier}`,
+                                        '_blank',
+                                        'width=1200,height=800,scrollbars=yes,resizable=yes',
+                                    );
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="min-h-[44px] touch-manipulation border-green-300 bg-white text-green-700 hover:bg-green-50 dark:border-green-600 dark:bg-gray-700 dark:text-green-300 dark:hover:bg-green-900/20"
+                            >
+                                <ExternalLink className="mr-1 h-4 w-4" />
+                                Customer Display
                             </Button>
                             <Button
                                 onClick={fetchOrders}
