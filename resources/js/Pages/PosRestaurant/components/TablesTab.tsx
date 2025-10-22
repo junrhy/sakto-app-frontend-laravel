@@ -668,13 +668,13 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                 </div>
 
                                                 <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                                    <div className="grid grid-cols-2 gap-4">
+                                                    <div className="grid grid-cols-2 gap-2 md:gap-4">
                                                         {/* AM Column */}
                                                         <div>
-                                                            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                                 AM
                                                             </h4>
-                                                            <div className="grid grid-cols-2 gap-2">
+                                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                                 {timeSlots.am.map(
                                                                     (
                                                                         timeSlot,
@@ -714,7 +714,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                                                 disabled={
                                                                                     isDisabled
                                                                                 }
-                                                                                className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-all ${
+                                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                                     !isOpened
                                                                                         ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                                                                                         : isBlocked
@@ -738,10 +738,10 @@ export const TablesTab: React.FC<TablesTabProps> = ({
 
                                                         {/* PM Column */}
                                                         <div>
-                                                            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                                 PM
                                                             </h4>
-                                                            <div className="grid grid-cols-2 gap-2">
+                                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                                 {timeSlots.pm.map(
                                                                     (
                                                                         timeSlot,
@@ -781,7 +781,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                                                 disabled={
                                                                                     isDisabled
                                                                                 }
-                                                                                className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-all ${
+                                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                                     !isOpened
                                                                                         ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                                                                                         : isBlocked

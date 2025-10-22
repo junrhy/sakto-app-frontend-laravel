@@ -45,6 +45,8 @@ interface PosTabProps {
     selectedCategory: string | null;
     discount: number;
     discountType: 'percentage' | 'fixed';
+    serviceCharge: number;
+    serviceChargeType: 'percentage' | 'fixed';
     currency_symbol: string;
     tables: TableType[];
     tableSchedules?: Array<{
@@ -63,6 +65,10 @@ interface PosTabProps {
     onSetSelectedCategory: (value: string) => void;
     onSetDiscount: (value: number) => void;
     onSetDiscountType: (value: 'percentage' | 'fixed') => void;
+    onSetServiceCharge: (value: number) => void;
+    onSetServiceChargeType: (value: 'percentage' | 'fixed') => void;
+    showCheckout: boolean;
+    onSetShowCheckout: (value: boolean) => void;
     onPrintBill: () => void;
     onShowQRCode: () => void;
     onCompleteOrder: () => void;
@@ -88,6 +94,8 @@ export const PosTab: React.FC<PosTabProps> = ({
     selectedCategory,
     discount,
     discountType,
+    serviceCharge,
+    serviceChargeType,
     currency_symbol,
     tables,
     tableSchedules = [],
@@ -99,6 +107,10 @@ export const PosTab: React.FC<PosTabProps> = ({
     onSetSelectedCategory,
     onSetDiscount,
     onSetDiscountType,
+    onSetServiceCharge,
+    onSetServiceChargeType,
+    showCheckout,
+    onSetShowCheckout,
     onPrintBill,
     onShowQRCode,
     onCompleteOrder,
@@ -118,9 +130,6 @@ export const PosTab: React.FC<PosTabProps> = ({
             item_count: number;
         }>
     >([]);
-
-    // State for showing/hiding checkout section
-    const [showCheckout, setShowCheckout] = useState(false);
 
     // State for payment dialog
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -193,14 +202,30 @@ export const PosTab: React.FC<PosTabProps> = ({
         [discount, discountType],
     );
 
+    const calculateServiceCharge = useCallback(
+        (amount: number) => {
+            if (serviceChargeType === 'percentage') {
+                return (amount * serviceCharge) / 100;
+            } else {
+                return serviceCharge;
+            }
+        },
+        [serviceCharge, serviceChargeType],
+    );
+
     const discountAmount = useMemo(
         () => calculateDiscount(totalAmount),
         [totalAmount, calculateDiscount],
     );
 
+    const serviceChargeAmount = useMemo(
+        () => calculateServiceCharge(totalAmount),
+        [totalAmount, calculateServiceCharge],
+    );
+
     const finalTotal = useMemo(
-        () => totalAmount - discountAmount,
-        [totalAmount, discountAmount],
+        () => totalAmount - discountAmount + serviceChargeAmount,
+        [totalAmount, discountAmount, serviceChargeAmount],
     );
     // Resolve current table id by name
     const currentTableId = useMemo(() => {
@@ -260,11 +285,13 @@ export const PosTab: React.FC<PosTabProps> = ({
                 items: orderItems,
                 discount: discount,
                 discount_type: discountType,
+                service_charge: serviceCharge,
+                service_charge_type: serviceChargeType,
                 subtotal: orderItems.reduce(
                     (total, item) => total + item.price * item.quantity,
                     0,
                 ),
-                total_amount: currentTableTotal,
+                total_amount: finalTotal,
             };
 
             // Auto-save with debounce
@@ -283,7 +310,9 @@ export const PosTab: React.FC<PosTabProps> = ({
         tableNumber,
         discount,
         discountType,
-        currentTableTotal,
+        serviceCharge,
+        serviceChargeType,
+        finalTotal,
         onSaveTableOrder,
         api,
     ]);
@@ -298,11 +327,13 @@ export const PosTab: React.FC<PosTabProps> = ({
                     items: orderItems,
                     discount: discount,
                     discount_type: discountType,
+                    service_charge: serviceCharge,
+                    service_charge_type: serviceChargeType,
                     subtotal: orderItems.reduce(
                         (total, item) => total + item.price * item.quantity,
                         0,
                     ),
-                    total_amount: currentTableTotal,
+                    total_amount: finalTotal,
                 };
 
                 if (onSaveTableOrder) {
@@ -331,7 +362,9 @@ export const PosTab: React.FC<PosTabProps> = ({
             orderItems,
             discount,
             discountType,
-            currentTableTotal,
+            serviceCharge,
+            serviceChargeType,
+            finalTotal,
             onSetTableNumber,
             onSaveTableOrder,
             onLoadTableOrder,
@@ -377,9 +410,10 @@ export const PosTab: React.FC<PosTabProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-6">
-                {/* Tables List */}
-                <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
+            <div className={`grid grid-cols-1 gap-4 ${showCheckout ? 'lg:grid-cols-5' : 'lg:grid-cols-6'}`}>
+                {/* Tables List - Hidden when checkout is shown */}
+                {!showCheckout && (
+                    <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 dark:border-gray-600 dark:from-purple-900/20 dark:to-pink-900/20">
                         <CardTitle className="flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
                             <div className="flex items-center">
@@ -441,9 +475,10 @@ export const PosTab: React.FC<PosTabProps> = ({
                         </div>
                     </CardContent>
                 </Card>
+                )}
 
                 {/* Menu Items */}
-                <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-2">
+                <Card className={`overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 ${showCheckout ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
                         <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
                             <UtensilsCrossed className="mr-2 h-4 w-4 text-blue-500" />
@@ -537,7 +572,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                                 </button>
                                 <button
                                     onClick={() =>
-                                        setShowCheckout(!showCheckout)
+                                        onSetShowCheckout(!showCheckout)
                                     }
                                     className="flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30"
                                     title={
@@ -653,74 +688,111 @@ export const PosTab: React.FC<PosTabProps> = ({
 
                 {/* Checkout Section or Today's Schedule (mutually exclusive) */}
                 {showCheckout && (
-                    <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
+                    <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-2">
                         <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
-                            <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white">
                                 <Calculator className="mr-2 h-4 w-4 text-blue-500" />
                                 Checkout
+                                {tableNumber && (
+                                    <span className="rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                                        {tableNumber}
+                                    </span>
+                                )}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6 p-6">
-                            {/* Discount Section */}
-                            <div className="space-y-3">
-                                <div>
-                                    <Label
-                                        htmlFor="discountType"
-                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Discount Type
-                                    </Label>
-                                    <Select
-                                        value={discountType}
-                                        onValueChange={onSetDiscountType}
-                                    >
-                                        <SelectTrigger className="mt-1 w-full border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                            <SelectValue placeholder="Select type" />
-                                        </SelectTrigger>
-                                        <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
-                                            <SelectItem
-                                                value="percentage"
-                                                className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            >
-                                                Percentage
-                                            </SelectItem>
-                                            <SelectItem
-                                                value="fixed"
-                                                className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            >
-                                                Fixed Amount
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label
-                                        htmlFor="discount"
-                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Discount
-                                    </Label>
-                                    <Input
-                                        id="discount"
-                                        type="number"
-                                        value={discount}
-                                        onChange={(e) =>
-                                            onSetDiscount(
-                                                Number(e.target.value),
-                                            )
-                                        }
-                                        placeholder={
-                                            discountType === 'percentage'
-                                                ? '%'
-                                                : '$'
-                                        }
-                                        className="mt-1 w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
-                                    />
-                                </div>
+                        <CardContent className="space-y-3 p-6">
+                            {/* Discount Section - Single Row */}
+                            <div className="grid grid-cols-12 items-center gap-2">
+                                <Label className="col-span-3 text-xs font-medium text-gray-700 dark:text-gray-300">
+                                    Discount
+                                </Label>
+                                <Select
+                                    value={discountType}
+                                    onValueChange={onSetDiscountType}
+                                >
+                                    <SelectTrigger className="col-span-4 h-8 border-gray-300 bg-white text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                        <SelectValue placeholder="Type" />
+                                    </SelectTrigger>
+                                    <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                        <SelectItem
+                                            value="percentage"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                        >
+                                            %
+                                        </SelectItem>
+                                        <SelectItem
+                                            value="fixed"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                        >
+                                            Fixed
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Input
+                                    id="discount"
+                                    type="number"
+                                    value={discount}
+                                    onChange={(e) =>
+                                        onSetDiscount(
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder={
+                                        discountType === 'percentage'
+                                            ? '%'
+                                            : currency_symbol
+                                    }
+                                    className="col-span-5 h-8 border border-gray-300 bg-white text-xs text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+                                />
+                            </div>
+
+                            {/* Service Charge Section - Single Row */}
+                            <div className="grid grid-cols-12 items-center gap-2">
+                                <Label className="col-span-3 text-xs font-medium text-gray-700 dark:text-gray-300">
+                                    Service
+                                </Label>
+                                <Select
+                                    value={serviceChargeType}
+                                    onValueChange={onSetServiceChargeType}
+                                >
+                                    <SelectTrigger className="col-span-4 h-8 border-gray-300 bg-white text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                        <SelectValue placeholder="Type" />
+                                    </SelectTrigger>
+                                    <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                        <SelectItem
+                                            value="percentage"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                        >
+                                            %
+                                        </SelectItem>
+                                        <SelectItem
+                                            value="fixed"
+                                            className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                        >
+                                            Fixed
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Input
+                                    id="serviceCharge"
+                                    type="number"
+                                    value={serviceCharge}
+                                    onChange={(e) =>
+                                        onSetServiceCharge(
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    placeholder={
+                                        serviceChargeType === 'percentage'
+                                            ? '%'
+                                            : currency_symbol
+                                    }
+                                    className="col-span-5 h-8 border border-gray-300 bg-white text-xs text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+                                />
                             </div>
 
                             {/* Total Section */}
-                            <div className="space-y-3 border-t border-gray-200 pt-4 dark:border-gray-600">
+                            <div className="space-y-2 border-t border-gray-200 pt-3 dark:border-gray-600">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                         Subtotal:
@@ -735,8 +807,17 @@ export const PosTab: React.FC<PosTabProps> = ({
                                         Discount:
                                     </span>
                                     <span className="font-semibold text-red-600 dark:text-red-400">
-                                        {currency_symbol}
-                                        {discountAmount}
+                                        -{currency_symbol}
+                                        {discountAmount.toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        Service Charge:
+                                    </span>
+                                    <span className="font-semibold text-green-600 dark:text-green-400">
+                                        +{currency_symbol}
+                                        {serviceChargeAmount.toFixed(2)}
                                     </span>
                                 </div>
                                 <div className="-mx-6 flex items-center justify-between bg-blue-50 px-6 py-3 dark:bg-blue-900/20">
@@ -745,35 +826,35 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     </span>
                                     <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                                         {currency_symbol}
-                                        {finalTotal}
+                                        {finalTotal.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="grid w-full grid-cols-1 gap-3">
+                            <div className="grid w-full grid-cols-3 gap-2">
                                 <Button
                                     onClick={onPrintBill}
                                     disabled={orderItems.length === 0}
-                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gray-600 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gray-600 py-2 text-xs text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    <Printer className="mr-2 h-4 w-4" />
+                                    <Printer className="mr-1 h-4 w-4" />
                                     Print
                                 </Button>
                                 <Button
                                     onClick={onSplitBill}
                                     disabled={orderItems.length === 0}
-                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-green-500 py-3 text-sm text-white shadow-sm transition-all duration-200 hover:bg-green-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-green-500 py-2 text-xs text-white shadow-sm transition-all duration-200 hover:bg-green-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    <Calculator className="mr-2 h-4 w-4" />
+                                    <Calculator className="mr-1 h-4 w-4" />
                                     Split
                                 </Button>
                                 <Button
                                     onClick={handleOpenPaymentDialog}
                                     disabled={orderItems.length === 0}
-                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-green-600 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    <CreditCard className="mr-2 h-4 w-4" />
+                                    <CreditCard className="mr-1 h-4 w-4" />
                                     Pay
                                 </Button>
                             </div>
@@ -913,6 +994,9 @@ export const PosTab: React.FC<PosTabProps> = ({
                 onConfirm={handlePaymentConfirm}
                 totalAmount={finalTotal}
                 currencySymbol={currency_symbol}
+                subtotal={totalAmount}
+                discountAmount={discountAmount}
+                serviceChargeAmount={serviceChargeAmount}
             />
         </div>
     );

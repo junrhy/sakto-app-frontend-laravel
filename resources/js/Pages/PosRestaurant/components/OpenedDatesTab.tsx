@@ -197,69 +197,66 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                    {/* Add New Opened Date Form */}
-                    <div className="mb-6 rounded-lg border border-green-200 bg-green-50/50 p-6 dark:border-green-800/50 dark:bg-green-900/10">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            Select Date & Time Slots to Open
-                        </h3>
+                    <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+                        {/* Calendar Section - Left Side (50%) */}
+                        <div className="lg:col-span-6">
+                            <Label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
+                                Select Date to Open
+                            </Label>
+                            <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                                Choose a date to open specific time slots for reservations
+                            </p>
+                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <DateCalendar
+                                    selectedDate={newOpenedDate.opened_date}
+                                    onDateSelect={(dateStr) => {
+                                        setNewOpenedDate({
+                                            ...newOpenedDate,
+                                            opened_date: dateStr,
+                                        });
+                                    }}
+                                    blockedDates={datesWithOpenings}
+                                    minDate={
+                                        new Date(
+                                            new Date().setHours(0, 0, 0, 0),
+                                        )
+                                    }
+                                />
+                            </div>
+                        </div>
 
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                            {/* Calendar Section - Left Side (50%) */}
-                            <div className="lg:col-span-6">
-                                <Label className="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
-                                    Select Date to Open
+                        {/* Time Slots Section - Right Side (50%) */}
+                        <div className="lg:col-span-6">
+                            <div className="mb-2 flex items-center justify-between">
+                                <Label className="text-sm font-medium text-gray-900 dark:text-white">
+                                    Click to Open/Close Time Slots
                                 </Label>
-                                <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                    <DateCalendar
-                                        selectedDate={newOpenedDate.opened_date}
-                                        onDateSelect={(dateStr) => {
-                                            setNewOpenedDate({
-                                                ...newOpenedDate,
-                                                opened_date: dateStr,
-                                            });
-                                        }}
-                                        blockedDates={datesWithOpenings}
-                                        minDate={
-                                            new Date(
-                                                new Date().setHours(0, 0, 0, 0),
-                                            )
-                                        }
-                                    />
+                            </div>
+
+                            {/* Legend */}
+                            <div className="mb-2 flex flex-wrap gap-3 text-xs">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Closed
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-green-500 bg-green-500"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Open
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* Time Slots Section - Right Side (50%) */}
-                            <div className="lg:col-span-6">
-                                <div className="mb-3 flex items-center justify-between">
-                                    <Label className="text-sm font-medium text-gray-900 dark:text-white">
-                                        Click to Open/Close Time Slots
-                                    </Label>
-                                </div>
-
-                                {/* Legend */}
-                                <div className="mb-3 flex flex-wrap gap-3 text-xs">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Closed
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-3 w-3 rounded border border-green-500 bg-green-500"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Open
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* AM Column */}
-                                        <div>
-                                            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                AM
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-2">
+                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                    {/* AM Column */}
+                                    <div>
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
+                                            AM
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                 {timeSlots.am.map(
                                                     (timeSlot) => {
                                                         const isOpened =
@@ -292,7 +289,7 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                                                 disabled={
                                                                     isLoading
                                                                 }
-                                                                className={`rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-all ${
+                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium shadow-sm transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                     isOpened
                                                                         ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
                                                                         : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
@@ -312,10 +309,10 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
 
                                         {/* PM Column */}
                                         <div>
-                                            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                 PM
                                             </h4>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                 {timeSlots.pm.map(
                                                     (timeSlot) => {
                                                         const isOpened =
@@ -348,7 +345,7 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                                                 disabled={
                                                                     isLoading
                                                                 }
-                                                                className={`rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-all ${
+                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium shadow-sm transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                     isOpened
                                                                         ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
                                                                         : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
@@ -369,72 +366,6 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Opened Dates List */}
-                    <div className="mt-6">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            Currently Opened Dates
-                        </h3>
-                        {optimisticOpenedDates.length === 0 ? (
-                            <p className="text-center text-gray-500 dark:text-gray-400">
-                                No opened dates configured. Click time slots
-                                above to open dates for reservations.
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {optimisticOpenedDates.map((openedDate) => (
-                                    <Card
-                                        key={openedDate.id}
-                                        className="border-green-200 bg-green-50/50 dark:border-green-700 dark:bg-green-900/10"
-                                    >
-                                        <CardContent className="p-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-gray-900 dark:text-white">
-                                                        {new Date(
-                                                            openedDate.opened_date,
-                                                        ).toLocaleDateString(
-                                                            'en-US',
-                                                            {
-                                                                weekday: 'long',
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric',
-                                                            },
-                                                        )}
-                                                    </p>
-                                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                                        {openedDate.timeslots
-                                                            .sort((a, b) =>
-                                                                a.localeCompare(
-                                                                    b,
-                                                                ),
-                                                            )
-                                                            .map((slot) => (
-                                                                <span
-                                                                    key={slot}
-                                                                    className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                                                >
-                                                                    {convertTo12Hour(
-                                                                        slot,
-                                                                    )}
-                                                                </span>
-                                                            ))}
-                                                    </div>
-                                                    {openedDate.reason && (
-                                                        <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
-                                                            {openedDate.reason}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </CardContent>
             </Card>
         </div>

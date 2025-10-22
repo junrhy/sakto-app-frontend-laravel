@@ -18,6 +18,9 @@ interface PaymentDialogProps {
     onConfirm: (paymentAmount: number, paymentMethod: 'cash' | 'card') => void;
     totalAmount: number;
     currencySymbol: string;
+    subtotal?: number;
+    discountAmount?: number;
+    serviceChargeAmount?: number;
 }
 
 export const PaymentDialog: React.FC<PaymentDialogProps> = ({
@@ -26,6 +29,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
     onConfirm,
     totalAmount,
     currencySymbol,
+    subtotal,
+    discountAmount,
+    serviceChargeAmount,
 }) => {
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
     const [amountReceived, setAmountReceived] = useState<string>('');
@@ -75,6 +81,50 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
+                    {/* Bill Breakdown */}
+                    {(subtotal !== undefined || discountAmount !== undefined || serviceChargeAmount !== undefined) && (
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                            <h4 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Bill Breakdown
+                            </h4>
+                            <div className="space-y-2">
+                                {subtotal !== undefined && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Subtotal:
+                                        </span>
+                                        <span className="font-medium text-gray-900 dark:text-white">
+                                            {currencySymbol}
+                                            {subtotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                )}
+                                {discountAmount !== undefined && discountAmount > 0 && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Discount:
+                                        </span>
+                                        <span className="font-medium text-red-600 dark:text-red-400">
+                                            -{currencySymbol}
+                                            {discountAmount.toFixed(2)}
+                                        </span>
+                                    </div>
+                                )}
+                                {serviceChargeAmount !== undefined && serviceChargeAmount > 0 && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Service Charge:
+                                        </span>
+                                        <span className="font-medium text-green-600 dark:text-green-400">
+                                            +{currencySymbol}
+                                            {serviceChargeAmount.toFixed(2)}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Total Amount Display */}
                     <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
                         <div className="flex items-center justify-between">

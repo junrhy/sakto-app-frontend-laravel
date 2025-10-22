@@ -945,6 +945,8 @@ class PosRestaurantController extends Controller
                 'items' => 'array',
                 'discount' => 'required|numeric',
                 'discount_type' => 'required|in:percentage,fixed',
+                'service_charge' => 'required|numeric',
+                'service_charge_type' => 'required|in:percentage,fixed',
                 'subtotal' => 'required|numeric',
                 'total_amount' => 'required|numeric'
             ]);

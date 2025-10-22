@@ -449,52 +449,49 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                    {/* Select Date and Time for Reservation */}
-                    <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50/50 p-6 dark:border-blue-800/50 dark:bg-blue-900/10">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            Select Date & Time
-                        </h3>
-                        <div>
-                            {/* Calendar and Time Slots Section */}
-                            <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
-                                {/* Calendar Section - Left Side */}
-                                <div className="lg:col-span-6">
-                                    <Label className="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
-                                        Select Date *
-                                    </Label>
-                                    <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                        <DateCalendar
-                                            selectedDate={newReservation.date}
-                                            onDateSelect={(dateStr) => {
-                                                setNewReservation({
-                                                    ...newReservation,
-                                                    date: dateStr,
-                                                    time: '', // Reset time when date changes
-                                                });
-                                            }}
-                                            blockedDates={datesWithReservations}
-                                            minDate={
-                                                new Date(
-                                                    new Date().setHours(
-                                                        0,
-                                                        0,
-                                                        0,
-                                                        0,
-                                                    ),
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                </div>
+                    {/* Calendar and Time Slots Section */}
+                    <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+                        {/* Calendar Section - Left Side */}
+                        <div className="lg:col-span-6">
+                            <Label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
+                                Select Date *
+                            </Label>
+                            <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                                Choose a date to create a new reservation
+                            </p>
+                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <DateCalendar
+                                    selectedDate={newReservation.date}
+                                    onDateSelect={(dateStr) => {
+                                        setNewReservation({
+                                            ...newReservation,
+                                            date: dateStr,
+                                            time: '', // Reset time when date changes
+                                        });
+                                    }}
+                                    blockedDates={datesWithReservations}
+                                    minDate={
+                                        new Date(
+                                            new Date().setHours(
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                            ),
+                                        )
+                                    }
+                                />
+                            </div>
+                        </div>
 
-                                {/* Time Slots Section - Right Side */}
-                                <div className="lg:col-span-6">
-                                    <Label className="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
+                        {/* Time Slots Section - Right Side */}
+                        <div className="lg:col-span-6">
+                                    <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
                                         Select Time Slot *
                                     </Label>
 
                                     {/* Legend */}
-                                    <div className="mb-3 flex flex-wrap gap-3 text-xs">
+                                    <div className="mb-2 flex flex-wrap gap-3 text-xs">
                                         <div className="flex items-center gap-1.5">
                                             <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
                                             <span className="text-gray-600 dark:text-gray-400">
@@ -522,13 +519,13 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     </div>
 
                                     <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-2 md:gap-4">
                                             {/* AM Column */}
                                             <div>
-                                                <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                     AM
                                                 </h4>
-                                                <div className="grid grid-cols-2 gap-2">
+                                                <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                     {timeSlots.am.map(
                                                         (timeSlot) => {
                                                             const isSelected =
@@ -569,7 +566,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                                     disabled={
                                                                         isDisabled
                                                                     }
-                                                                    className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
+                                                                    className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                         isSelected
                                                                             ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
                                                                             : !isOpened
@@ -593,10 +590,10 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
 
                                             {/* PM Column */}
                                             <div>
-                                                <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                     PM
                                                 </h4>
-                                                <div className="grid grid-cols-2 gap-2">
+                                                <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                     {timeSlots.pm.map(
                                                         (timeSlot) => {
                                                             const isSelected =
@@ -637,7 +634,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                                     disabled={
                                                                         isDisabled
                                                                     }
-                                                                    className={`rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
+                                                                    className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                         isSelected
                                                                             ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
                                                                             : !isOpened
@@ -680,18 +677,16 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
                     {/* Reservations List */}
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                 Reservations
                             </h3>
 
                             {/* Filter Buttons */}
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button
                                     size="sm"
                                     variant={
@@ -702,6 +697,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     onClick={() =>
                                         setReservationFilter('today')
                                     }
+                                    className="flex-1 sm:flex-none"
                                 >
                                     Today
                                 </Button>
@@ -715,6 +711,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     onClick={() =>
                                         setReservationFilter('selected')
                                     }
+                                    className="flex-1 sm:flex-none"
                                 >
                                     Selected Date
                                 </Button>
@@ -728,6 +725,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     onClick={() =>
                                         setReservationFilter('upcoming')
                                     }
+                                    className="flex-1 sm:flex-none"
                                 >
                                     Upcoming
                                 </Button>

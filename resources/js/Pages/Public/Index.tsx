@@ -176,7 +176,7 @@ export default function Welcome({ auth }: PageProps) {
             href: '/fnb',
             color: 'text-amber-600',
             bgColor: 'bg-amber-50 dark:bg-amber-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
         {
             name: 'Education',

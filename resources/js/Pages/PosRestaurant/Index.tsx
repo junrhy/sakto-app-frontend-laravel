@@ -159,6 +159,11 @@ export default function PosRestaurantIndex({
     const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>(
         'percentage',
     );
+    const [serviceCharge, setServiceCharge] = useState(0);
+    const [serviceChargeType, setServiceChargeType] = useState<'percentage' | 'fixed'>(
+        'percentage',
+    );
+    const [showCheckout, setShowCheckout] = useState(false);
 
     // Dialog states
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
@@ -311,9 +316,10 @@ export default function PosRestaurantIndex({
                         </table>
                     </div>
                     <div class="total-section">
-                        <p><strong>Subtotal: ${currency_symbol}${posState.totalAmount}</strong></p>
-                        <p><strong>Discount: ${currency_symbol}${discountType === 'percentage' ? (posState.totalAmount * discount) / 100 : discount}</strong></p>
-                        <p><strong>Total Amount: ${currency_symbol}${posState.totalAmount - (discountType === 'percentage' ? (posState.totalAmount * discount) / 100 : discount)}</strong></p>
+                        <p><strong>Subtotal: ${currency_symbol}${posState.totalAmount.toFixed(2)}</strong></p>
+                        <p><strong>Discount: -${currency_symbol}${(discountType === 'percentage' ? (posState.totalAmount * discount) / 100 : discount).toFixed(2)}</strong></p>
+                        <p><strong>Service Charge: +${currency_symbol}${(serviceChargeType === 'percentage' ? (posState.totalAmount * serviceCharge) / 100 : serviceCharge).toFixed(2)}</strong></p>
+                        <p style="font-size: 1.2em; margin-top: 10px; border-top: 2px solid #333; padding-top: 10px;"><strong>Total Amount: ${currency_symbol}${(posState.totalAmount - (discountType === 'percentage' ? (posState.totalAmount * discount) / 100 : discount) + (serviceChargeType === 'percentage' ? (posState.totalAmount * serviceCharge) / 100 : serviceCharge)).toFixed(2)}</strong></p>
                     </div>
                 </body>
             </html>
@@ -331,6 +337,8 @@ export default function PosRestaurantIndex({
         currency_symbol,
         discount,
         discountType,
+        serviceCharge,
+        serviceChargeType,
     ]);
 
     const handlePrintKitchenOrder = useCallback(async () => {
@@ -433,11 +441,21 @@ export default function PosRestaurantIndex({
                             response.discount_type as 'percentage' | 'fixed',
                         );
                     }
+                    // Update service charge settings if available
+                    if (response.service_charge !== undefined) {
+                        setServiceCharge(Number(response.service_charge));
+                    }
+                    if (response.service_charge_type) {
+                        setServiceChargeType(
+                            response.service_charge_type as 'percentage' | 'fixed',
+                        );
+                    }
                     console.log('Loaded order for table:', tableName, response);
                 } else {
                     // Clear order items if no saved order
                     posState.setOrderItems([]);
                     setDiscount(0);
+                    setServiceCharge(0);
                 }
             } catch (error) {
                 console.error('Failed to load table order:', error);
@@ -775,7 +793,7 @@ export default function PosRestaurantIndex({
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center space-x-3">
+                <div className="hidden xl:flex items-center space-x-3">
                     <div className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-2">
                         <UtensilsCrossed className="h-6 w-6 text-white" />
                     </div>
@@ -881,7 +899,7 @@ export default function PosRestaurantIndex({
                             <div className="flex flex-col lg:flex-row">
                                 {/* Tabs Sidebar - Right on desktop, Hidden by default on mobile */}
                                 <div
-                                    className={`order-1 mb-6 border-b border-gray-200 px-4 pb-12 pt-4 dark:border-gray-600 lg:order-2 lg:mb-0 lg:w-64 lg:border-b-0 lg:border-l lg:p-4 ${showMobileTabs ? 'block' : 'hidden lg:block'}`}
+                                    className={`order-1 mb-6 border-b border-gray-200 px-4 pb-12 pt-4 dark:border-gray-600 lg:order-2 lg:mb-0 lg:w-64 lg:border-b-0 lg:border-l lg:p-4 ${showMobileTabs ? 'block' : 'hidden lg:block'} ${showCheckout && currentTab === 'pos' ? 'lg:hidden' : ''}`}
                                 >
                                     <TabsList className="flex h-auto w-full flex-col gap-2 bg-transparent p-0">
                                         <TabsTrigger
@@ -937,7 +955,7 @@ export default function PosRestaurantIndex({
                                 </div>
 
                                 {/* Content Area - Left on desktop */}
-                                <div className="order-2 flex-1 lg:order-1 lg:mr-6">
+                                <div className={`order-2 flex-1 lg:order-1 ${showCheckout && currentTab === 'pos' ? '' : 'lg:mr-6'}`}>
                                     {isTabLoading && <TabLoadingSpinner />}
 
                                     {!isTabLoading && (
@@ -966,6 +984,10 @@ export default function PosRestaurantIndex({
                                                             discount={discount}
                                                             discountType={
                                                                 discountType
+                                                            }
+                                                            serviceCharge={serviceCharge}
+                                                            serviceChargeType={
+                                                                serviceChargeType
                                                             }
                                                             currency_symbol={
                                                                 currency_symbol
@@ -998,6 +1020,14 @@ export default function PosRestaurantIndex({
                                                             onSetDiscountType={
                                                                 setDiscountType
                                                             }
+                                                            onSetServiceCharge={
+                                                                setServiceCharge
+                                                            }
+                                                            onSetServiceChargeType={
+                                                                setServiceChargeType
+                                                            }
+                                                            showCheckout={showCheckout}
+                                                            onSetShowCheckout={setShowCheckout}
                                                             onPrintBill={
                                                                 handlePrintBill
                                                             }
@@ -1269,11 +1299,19 @@ export default function PosRestaurantIndex({
                             ? (posState.totalAmount * discount) / 100
                             : discount
                     }
+                    serviceChargeAmount={
+                        serviceChargeType === 'percentage'
+                            ? (posState.totalAmount * serviceCharge) / 100
+                            : serviceCharge
+                    }
                     finalTotal={
                         posState.totalAmount -
                         (discountType === 'percentage'
                             ? (posState.totalAmount * discount) / 100
-                            : discount)
+                            : discount) +
+                        (serviceChargeType === 'percentage'
+                            ? (posState.totalAmount * serviceCharge) / 100
+                            : serviceCharge)
                     }
                     currency_symbol={currency_symbol}
                 />

@@ -26,6 +26,7 @@ interface SplitBillDialogProps {
     tableNumber: string;
     totalAmount: number;
     discountAmount: number;
+    serviceChargeAmount: number;
     finalTotal: number;
     currency_symbol: string;
 }
@@ -37,6 +38,7 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
     tableNumber,
     totalAmount,
     discountAmount,
+    serviceChargeAmount,
     finalTotal,
     currency_symbol,
 }) => {
@@ -182,9 +184,10 @@ export const SplitBillDialog: React.FC<SplitBillDialogProps> = ({
                     </div>
 
                     <div class="total-section">
-                        <p><strong>Subtotal: ${currency_symbol}${totalAmount}</strong></p>
-                        <p><strong>Discount: ${currency_symbol}${discountAmount}</strong></p>
-                        <p><strong>Total Amount: ${currency_symbol}${finalTotal}</strong></p>
+                        <p><strong>Subtotal: ${currency_symbol}${totalAmount.toFixed(2)}</strong></p>
+                        <p><strong>Discount: -${currency_symbol}${discountAmount.toFixed(2)}</strong></p>
+                        <p><strong>Service Charge: +${currency_symbol}${serviceChargeAmount.toFixed(2)}</strong></p>
+                        <p style="font-size: 1.2em; margin-top: 10px; border-top: 2px solid #333; padding-top: 10px;"><strong>Total Amount: ${currency_symbol}${finalTotal.toFixed(2)}</strong></p>
                     </div>
 
                     <div class="split-details">

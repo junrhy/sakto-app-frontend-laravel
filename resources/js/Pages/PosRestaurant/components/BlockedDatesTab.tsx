@@ -1,8 +1,7 @@
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
-import { Calendar, Edit2, Save, X } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { BlockedDate, OpenedDate } from '../types';
@@ -45,8 +44,6 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
     });
 
     const [loadingSlots, setLoadingSlots] = useState<string[]>([]);
-    const [editingReasonId, setEditingReasonId] = useState<number | null>(null);
-    const [editingReason, setEditingReason] = useState<string>('');
     const [optimisticBlockedDates, setOptimisticBlockedDates] =
         useState<BlockedDate[]>(blockedDates);
 
@@ -208,45 +205,6 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
         ],
     );
 
-    // Handle editing reason for a blocked date
-    const handleEditReason = useCallback((blockedDate: BlockedDate) => {
-        setEditingReasonId(blockedDate.id);
-        setEditingReason(blockedDate.reason || '');
-    }, []);
-
-    const handleSaveReason = useCallback(
-        async (blockedDate: BlockedDate) => {
-            if (editingReasonId !== blockedDate.id) return;
-
-            try {
-                // Optimistically update UI
-                setOptimisticBlockedDates((prev) =>
-                    prev.map((b) =>
-                        b.id === blockedDate.id
-                            ? { ...b, reason: editingReason }
-                            : b,
-                    ),
-                );
-
-                await onUpdateBlockedDate(blockedDate.id, {
-                    reason: editingReason,
-                });
-
-                setEditingReasonId(null);
-                setEditingReason('');
-            } catch (error) {
-                setOptimisticBlockedDates(blockedDates);
-                toast.error('Failed to update reason');
-            }
-        },
-        [editingReasonId, editingReason, onUpdateBlockedDate, blockedDates],
-    );
-
-    const handleCancelEditReason = useCallback(() => {
-        setEditingReasonId(null);
-        setEditingReason('');
-    }, []);
-
     return (
         <div className="space-y-6">
             <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
@@ -257,45 +215,46 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                    {/* Blocked Dates Management */}
-                    <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-6 dark:border-amber-800/50 dark:bg-amber-900/10">
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                            {/* Calendar Section - Left Side */}
-                            <div className="lg:col-span-6">
-                                <Label className="mb-3 block text-sm font-medium text-gray-900 dark:text-white">
-                                    Select Date to Block *
-                                </Label>
-                                <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                    <DateCalendar
-                                        selectedDate={
-                                            newBlockedDate.blocked_date
-                                        }
-                                        onDateSelect={(dateStr) => {
-                                            setNewBlockedDate({
-                                                ...newBlockedDate,
-                                                blocked_date: dateStr,
-                                            });
-                                        }}
-                                        blockedDates={datesWithBlocks}
-                                        minDate={
-                                            new Date(
-                                                new Date().setHours(0, 0, 0, 0),
-                                            )
-                                        }
-                                    />
-                                </div>
+                    <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+                        {/* Calendar Section - Left Side */}
+                        <div className="lg:col-span-6">
+                            <Label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
+                                Select Date to Block *
+                            </Label>
+                            <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                                Choose a date to block specific time slots from reservations
+                            </p>
+                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <DateCalendar
+                                    selectedDate={
+                                        newBlockedDate.blocked_date
+                                    }
+                                    onDateSelect={(dateStr) => {
+                                        setNewBlockedDate({
+                                            ...newBlockedDate,
+                                            blocked_date: dateStr,
+                                        });
+                                    }}
+                                    blockedDates={datesWithBlocks}
+                                    minDate={
+                                        new Date(
+                                            new Date().setHours(0, 0, 0, 0),
+                                        )
+                                    }
+                                />
                             </div>
+                        </div>
 
-                            {/* Time Slots Section - Right Side */}
-                            <div className="lg:col-span-6">
-                                <div className="mb-3 flex items-center justify-between">
+                        {/* Time Slots Section - Right Side */}
+                        <div className="lg:col-span-6">
+                                <div className="mb-2 flex items-center justify-between">
                                     <Label className="text-sm font-medium text-gray-900 dark:text-white">
                                         Click to Block/Unblock Time Slots
                                     </Label>
                                 </div>
 
                                 {/* Legend */}
-                                <div className="mb-3 flex flex-wrap gap-3 text-xs">
+                                <div className="mb-2 flex flex-wrap gap-3 text-xs">
                                     <div className="flex items-center gap-1.5">
                                         <div className="h-3 w-3 rounded border border-gray-400 bg-gray-300 dark:border-gray-700 dark:bg-gray-800"></div>
                                         <span className="text-gray-600 dark:text-gray-400">
@@ -317,13 +276,13 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                 </div>
 
                                 <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-2 md:gap-4">
                                         {/* AM Column */}
                                         <div>
-                                            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                 AM
                                             </h4>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                 {timeSlots.am.map(
                                                     (timeSlot) => {
                                                         const isOpened =
@@ -385,7 +344,7 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                                                     isLoading ||
                                                                     !isOpened
                                                                 }
-                                                                className={`relative rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
+                                                                className={`relative whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                     !isOpened
                                                                         ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                                                                         : isBlocked
@@ -427,10 +386,10 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
 
                                         {/* PM Column */}
                                         <div>
-                                            <h4 className="mb-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
                                                 PM
                                             </h4>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
                                                 {timeSlots.pm.map(
                                                     (timeSlot) => {
                                                         const isOpened =
@@ -492,7 +451,7 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                                                     isLoading ||
                                                                     !isOpened
                                                                 }
-                                                                className={`relative rounded-md border px-2 py-1.5 text-sm font-medium transition-all ${
+                                                                className={`relative whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
                                                                     !isOpened
                                                                         ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
                                                                         : isBlocked
@@ -535,160 +494,6 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Blocked Dates List */}
-                    <div className="mt-6">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            Currently Blocked Dates
-                        </h3>
-                        {optimisticBlockedDates.length === 0 ? (
-                            <p className="text-center text-gray-500 dark:text-gray-400">
-                                No blocked dates configured. Click time slots
-                                above to block dates and prevent reservations.
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {optimisticBlockedDates.map((blockedDate) => (
-                                    <Card
-                                        key={blockedDate.id}
-                                        className="border-red-200 bg-red-50/50 dark:border-red-700 dark:bg-red-900/10"
-                                    >
-                                        <CardContent className="p-4">
-                                            <div className="space-y-3">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-gray-900 dark:text-white">
-                                                            {new Date(
-                                                                blockedDate.blocked_date,
-                                                            ).toLocaleDateString(
-                                                                'en-US',
-                                                                {
-                                                                    weekday:
-                                                                        'long',
-                                                                    year: 'numeric',
-                                                                    month: 'long',
-                                                                    day: 'numeric',
-                                                                },
-                                                            )}
-                                                        </p>
-                                                        <div className="mt-2 flex flex-wrap gap-1.5">
-                                                            {blockedDate.timeslots
-                                                                .sort((a, b) =>
-                                                                    a.localeCompare(
-                                                                        b,
-                                                                    ),
-                                                                )
-                                                                .map((slot) => (
-                                                                    <span
-                                                                        key={
-                                                                            slot
-                                                                        }
-                                                                        className="inline-flex items-center rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/40 dark:text-red-200"
-                                                                    >
-                                                                        {convertTo12Hour(
-                                                                            slot,
-                                                                        )}
-                                                                    </span>
-                                                                ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Reason Section */}
-                                                <div className="border-t border-red-200 pt-3 dark:border-red-700">
-                                                    {editingReasonId ===
-                                                    blockedDate.id ? (
-                                                        <div className="space-y-2">
-                                                            <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                                                Reason for
-                                                                Blocking
-                                                                (Optional)
-                                                            </Label>
-                                                            <Textarea
-                                                                value={
-                                                                    editingReason
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setEditingReason(
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                placeholder="e.g., Holiday, Maintenance, Private event..."
-                                                                className="resize-none text-sm text-gray-900 dark:text-white"
-                                                                rows={2}
-                                                            />
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    type="button"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleSaveReason(
-                                                                            blockedDate,
-                                                                        )
-                                                                    }
-                                                                    className="bg-green-600 hover:bg-green-700"
-                                                                >
-                                                                    <Save className="mr-1 h-3 w-3" />
-                                                                    Save
-                                                                </Button>
-                                                                <Button
-                                                                    type="button"
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={
-                                                                        handleCancelEditReason
-                                                                    }
-                                                                >
-                                                                    <X className="mr-1 h-3 w-3" />
-                                                                    Cancel
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-start justify-between gap-3">
-                                                            <div className="flex-1">
-                                                                {blockedDate.reason ? (
-                                                                    <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
-                                                                        <span className="font-semibold">
-                                                                            Reason:
-                                                                        </span>{' '}
-                                                                        {
-                                                                            blockedDate.reason
-                                                                        }
-                                                                    </p>
-                                                                ) : (
-                                                                    <p className="text-xs italic text-gray-500 dark:text-gray-400">
-                                                                        No
-                                                                        reason
-                                                                        provided
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                            <Button
-                                                                type="button"
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() =>
-                                                                    handleEditReason(
-                                                                        blockedDate,
-                                                                    )
-                                                                }
-                                                                className="shrink-0"
-                                                            >
-                                                                <Edit2 className="h-3 w-3" />
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </CardContent>
             </Card>
         </div>
