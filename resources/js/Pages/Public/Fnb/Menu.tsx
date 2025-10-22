@@ -224,14 +224,16 @@ export default function FnbPublicMenu({
             };
 
             // Get CSRF token from meta tag
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute('content');
 
             const response = await fetch('/api/fnb-public/customer-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken || '',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
                 body: JSON.stringify(orderData),
             });
@@ -245,8 +247,12 @@ export default function FnbPublicMenu({
                 setNotes('');
             } else {
                 const errorMessage = data.message || 'Failed to submit order';
-                const errors = data.errors ? Object.values(data.errors).flat().join(', ') : '';
-                toast.error(errors ? `${errorMessage}: ${errors}` : errorMessage);
+                const errors = data.errors
+                    ? Object.values(data.errors).flat().join(', ')
+                    : '';
+                toast.error(
+                    errors ? `${errorMessage}: ${errors}` : errorMessage,
+                );
                 console.error('Order submission failed:', data);
             }
         } catch (error) {

@@ -5,6 +5,7 @@ import {
     Calculator,
     Calendar,
     Check,
+    ChefHat,
     ShoppingCart,
     TrendingUp,
     UtensilsCrossed,
@@ -56,6 +57,13 @@ const MenuTab = lazy(() =>
         default: module.MenuTab,
     })),
 );
+
+const KitchenTab = lazy(() =>
+    import('./components/KitchenTab').then((module) => ({
+        default: module.KitchenTab,
+    })),
+);
+
 const SalesTab = lazy(() =>
     import('./components/SalesTab').then((module) => ({
         default: module.SalesTab,
@@ -138,6 +146,11 @@ interface PageProps {
     tableSchedules?: TableSchedule[];
     sales?: Sale[];
     currency_symbol?: string;
+    auth: {
+        user: {
+            identifier: string;
+        };
+    };
 }
 
 export default function PosRestaurantIndex({
@@ -151,6 +164,7 @@ export default function PosRestaurantIndex({
     tableSchedules = [],
     sales = [],
     currency_symbol = '$',
+    auth,
 }: PageProps) {
     const [isTabLoading, setIsTabLoading] = useState(false);
     const [currentTab, setCurrentTab] = useState(tab);
@@ -419,7 +433,12 @@ export default function PosRestaurantIndex({
         printWindow.focus();
         printWindow.print();
         printWindow.close();
-    }, [posState.orderItems, posState.tableNumber, customerName, customerNotes]);
+    }, [
+        posState.orderItems,
+        posState.tableNumber,
+        customerName,
+        customerNotes,
+    ]);
 
     // Table Order handlers (New System)
     const handleLoadTableOrder = useCallback(
@@ -961,6 +980,13 @@ export default function PosRestaurantIndex({
                                             Menu
                                         </TabsTrigger>
                                         <TabsTrigger
+                                            value="kitchen"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <ChefHat className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Kitchen
+                                        </TabsTrigger>
+                                        <TabsTrigger
                                             value="sales"
                                             className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
                                         >
@@ -1075,9 +1101,6 @@ export default function PosRestaurantIndex({
                                                             }
                                                             onSplitBill={
                                                                 handleSplitBill
-                                                            }
-                                                            onPrintKitchenOrder={
-                                                                handlePrintKitchenOrder
                                                             }
                                                             onLoadTableOrder={
                                                                 handleLoadTableOrder
@@ -1273,6 +1296,23 @@ export default function PosRestaurantIndex({
                                                             }
                                                             onBulkDeleteMenuItems={
                                                                 handleBulkDeleteMenuItems
+                                                            }
+                                                        />
+                                                    </TabsContent>
+                                                )}
+
+                                                {currentTab === 'kitchen' && (
+                                                    <TabsContent
+                                                        value="kitchen"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <KitchenTab
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
+                                                            clientIdentifier={
+                                                                auth.user
+                                                                    .identifier
                                                             }
                                                         />
                                                     </TabsContent>

@@ -14,6 +14,7 @@ export interface MenuItem {
 
 export interface OrderItem extends MenuItem {
     quantity: number;
+    uniqueId?: string;
     selected?: boolean;
     notes?: string;
 }

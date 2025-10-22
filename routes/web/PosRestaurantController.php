@@ -76,5 +76,13 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/customer-orders/pending', [PosRestaurantController::class, 'getPendingCustomerOrders'])->name('pos-restaurant.customer-orders.pending');
         Route::put('/customer-orders/{id}/status', [PosRestaurantController::class, 'updateCustomerOrderStatus'])->name('pos-restaurant.customer-orders.update-status');
         Route::delete('/customer-orders/{id}', [PosRestaurantController::class, 'cancelCustomerOrder'])->name('pos-restaurant.customer-orders.cancel');
+
+        // Kitchen Orders
+        Route::get('/kitchen-orders', [PosRestaurantController::class, 'getKitchenOrders'])->name('pos-restaurant.kitchen-orders');
+        Route::post('/kitchen-orders/send', [PosRestaurantController::class, 'sendToKitchen'])->name('pos-restaurant.kitchen-orders.send');
+        Route::post('/kitchen-orders/complete', [PosRestaurantController::class, 'completeKitchenOrder'])->name('pos-restaurant.kitchen-orders.complete');
+        Route::post('/update-item-status', [PosRestaurantController::class, 'updateItemStatus'])->name('pos-restaurant.update-item-status');
     });
+
 });
+

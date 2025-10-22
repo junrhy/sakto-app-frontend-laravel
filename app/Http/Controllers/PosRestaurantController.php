@@ -53,16 +53,25 @@ class PosRestaurantController extends Controller
                 ->get("{$this->apiUrl}/fnb-menu-items?client_identifier={$clientIdentifier}");
 
             if(!$response->json()) {
-                return response()->json(['error' => 'Failed to connect to FNB Menu Items API.'], 500);
+                Log::error('Failed to connect to FNB Menu Items API', ['client_identifier' => $clientIdentifier]);
+                return [];
             }
 
             if (!$response->successful()) {
-                throw new \Exception('API request failed: ' . $response->body());
+                Log::error('FNB Menu Items API request failed', [
+                    'client_identifier' => $clientIdentifier,
+                    'response' => $response->body()
+                ]);
+                return [];
             }
 
-            return $response->json()['data']['fnb_menu_items'];
+            return $response->json()['data']['fnb_menu_items'] ?? [];
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to fetch menu items.');
+            Log::error('Exception while fetching menu items', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
         }
     }
 
@@ -204,16 +213,25 @@ class PosRestaurantController extends Controller
                 ->get("{$this->apiUrl}/fnb-tables?client_identifier={$clientIdentifier}");
 
             if(!$response->json()) {
-                return response()->json(['error' => 'Failed to connect to FNB Tables API.'], 500);
+                Log::error('Failed to connect to FNB Tables API', ['client_identifier' => $clientIdentifier]);
+                return [];
             }
 
             if (!$response->successful()) {
-                throw new \Exception('API request failed: ' . $response->body());
+                Log::error('FNB Tables API request failed', [
+                    'client_identifier' => $clientIdentifier,
+                    'response' => $response->body()
+                ]);
+                return [];
             }
 
-            return $response->json()['data']['fnb_tables'];
+            return $response->json()['data']['fnb_tables'] ?? [];
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to fetch tables.');
+            Log::error('Exception while fetching tables', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
         }
     }
 
@@ -342,12 +360,20 @@ class PosRestaurantController extends Controller
                 ->get("{$this->apiUrl}/fnb-tables/joined?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
-                throw new \Exception('API request failed: ' . $response->body());
+                Log::error('FNB Joined Tables API request failed', [
+                    'client_identifier' => $clientIdentifier,
+                    'response' => $response->body()
+                ]);
+                return [];
             }
 
-            return $response->json()['data']['fnb_tables'];
+            return $response->json()['data']['fnb_tables'] ?? [];
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to fetch joined tables.');
+            Log::error('Exception while fetching joined tables', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
         }
     }
 
@@ -1279,4 +1305,205 @@ class PosRestaurantController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get all kitchen orders
+     */
+    public function getKitchenOrders(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-kitchen-orders", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'status' => $request->input('status')
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to fetch kitchen orders');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Send order to kitchen
+     */
+    public function sendToKitchen(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'table_number' => 'required|string',
+                'customer_name' => 'nullable|string',
+                'customer_notes' => 'nullable|string',
+                'items' => 'required|array'
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-kitchen-orders/send", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to send to kitchen');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update item status in table order
+     */
+    public function updateItemStatus(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'table_name' => 'required|string',
+                'item_ids' => 'required|array',
+                'status' => 'required|in:pending,sent_to_kitchen,preparing,ready,completed'
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/update-item-status", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update item status');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update kitchen order status
+     */
+    public function updateKitchenOrderStatus(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:pending,preparing,ready,completed,cancelled'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-kitchen-orders/{$id}/status", [
+                    'status' => $validated['status'],
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update status');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Complete kitchen order (called on payment completion)
+     */
+    public function completeKitchenOrder(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'table_number' => 'required|string'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-kitchen-orders/complete", [
+                    'client_identifier' => auth()->user()->identifier,
+                    'table_number' => $validated['table_number']
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to complete kitchen order');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Kitchen Display Screen
+     */
+    public function kitchenDisplay(Request $request, $clientIdentifier)
+    {
+        \Log::info('Kitchen Display Controller Called', [
+            'client_identifier' => $clientIdentifier
+        ]);
+        
+        try {
+            // Fetch kitchen orders directly from backend API using HTTP client
+            $response = Http::withToken($this->apiToken)
+                ->timeout(30)
+                ->get("{$this->apiUrl}/fnb-kitchen-orders", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch kitchen orders: ' . $response->body());
+            }
+
+            $responseData = $response->json();
+            $kitchenOrders = $responseData['data'] ?? [];
+            
+            \Log::info('Kitchen Display Data Fetched', [
+                'client_identifier' => $clientIdentifier,
+                'kitchen_orders_count' => count($kitchenOrders)
+            ]);
+
+            return Inertia::render('PosRestaurant/components/KitchenDisplay', [
+                'clientIdentifier' => $clientIdentifier,
+                'kitchenOrders' => $kitchenOrders,
+                'apiToken' => $this->apiToken,
+                'apiUrl' => $this->apiUrl
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Kitchen Display Error', [
+                'client_identifier' => $clientIdentifier,
+                'error' => $e->getMessage()
+            ]);
+            
+            // If API fails, still render the page but with empty data
+            return Inertia::render('PosRestaurant/components/KitchenDisplay', [
+                'clientIdentifier' => $clientIdentifier,
+                'kitchenOrders' => [],
+                'apiToken' => $this->apiToken,
+                'apiUrl' => $this->apiUrl,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Customer Display Screen
+     */
+    public function customerDisplay($clientIdentifier)
+    {
+        return Inertia::render('PosRestaurant/components/CustomerDisplay', [
+            'clientIdentifier' => $clientIdentifier
+        ]);
+    }
+
 }

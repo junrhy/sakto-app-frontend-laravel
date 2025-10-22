@@ -20,6 +20,7 @@ import {
 import {
     Calculator,
     Check,
+    ChefHat,
     ChevronDown,
     ChevronRight,
     Clock,
@@ -50,7 +51,7 @@ interface PosTabProps {
     serviceCharge: number;
     serviceChargeType: 'percentage' | 'fixed';
     currency_symbol: string;
-    tables: TableType[];
+    tables?: TableType[];
     tableSchedules?: Array<{
         id: number;
         tableId: number;
@@ -61,8 +62,8 @@ interface PosTabProps {
     }>;
     reservations?: Reservation[];
     onAddItemToOrder: (item: MenuItem) => void;
-    onUpdateItemQuantity: (itemId: number, quantity: number) => void;
-    onRemoveItemFromOrder: (itemId: number) => void;
+    onUpdateItemQuantity: (uniqueId: string, quantity: number) => void;
+    onRemoveItemFromOrder: (uniqueId: string) => void;
     onSetTableNumber: (value: string) => void;
     onSetSelectedCategory: (value: string) => void;
     onSetDiscount: (value: number) => void;
@@ -79,10 +80,9 @@ interface PosTabProps {
     onShowQRCode: () => void;
     onCompleteOrder: () => void;
     onSplitBill: () => void;
-    onPrintKitchenOrder: () => void;
     // New props for table order persistence
     onLoadTableOrder?: (tableName: string) => Promise<void>;
-    onSaveTableOrder?: (tableName: string, orderData: any) => Promise<void>;
+    onSaveTableOrder?: (tableName: string, orderData: unknown) => Promise<void>;
     onCompleteTableOrder?: (
         tableName: string,
         paymentData?: {
@@ -125,12 +125,109 @@ export const PosTab: React.FC<PosTabProps> = ({
     onShowQRCode,
     onCompleteOrder,
     onSplitBill,
-    onPrintKitchenOrder,
     onLoadTableOrder,
     onSaveTableOrder,
     onCompleteTableOrder,
 }) => {
     const api = usePosApi();
+
+    // Track which items are selected for kitchen
+    const [selectedForKitchen, setSelectedForKitchen] = useState<Set<string>>(
+        new Set(),
+    );
+
+    // Track item status from database - keyed by uniqueId for new items, by id for legacy items
+    const [itemStatus, setItemStatus] = useState<Record<string, string>>({});
+
+    // Reset selection when table changes
+    useEffect(() => {
+        setSelectedForKitchen(new Set());
+        setItemStatus({});
+    }, [tableNumber]);
+
+    // Load item status when table changes (not when orderItems change)
+    useEffect(() => {
+        const loadItemStatus = async () => {
+            if (tableNumber) {
+                try {
+                    const response = await api.getTableOrder(tableNumber);
+                    if (
+                        response &&
+                        response.order &&
+                        response.order.item_status
+                    ) {
+                        console.log('Loading item status:', {
+                            tableNumber,
+                            itemStatus: response.order.item_status,
+                            orderItems: orderItems.map((item) => ({
+                                id: item.id,
+                                uniqueId: item.uniqueId,
+                                name: item.name,
+                            })),
+                        });
+
+                        // Convert legacy item_status (keyed by id) to new format (keyed by uniqueId)
+                        const newItemStatus: Record<string, string> = {};
+
+                        // Load all item statuses from the database
+                        // First, load statuses for current order items
+                        if (orderItems.length > 0) {
+                            orderItems.forEach((item) => {
+                                if (item.uniqueId) {
+                                    // Check for status by uniqueId first (new format)
+                                    const statusByUniqueId =
+                                        response.order.item_status[
+                                            item.uniqueId
+                                        ];
+                                    if (statusByUniqueId) {
+                                        newItemStatus[item.uniqueId] =
+                                            statusByUniqueId;
+                                    } else {
+                                        // Fallback to legacy format (keyed by menu item ID)
+                                        const legacyStatus =
+                                            response.order.item_status[item.id];
+                                        if (legacyStatus) {
+                                            newItemStatus[item.uniqueId] =
+                                                legacyStatus;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Also load any other statuses that might exist in the database
+                        // This handles cases where items were sent to kitchen but aren't in current orderItems
+                        Object.entries(response.order.item_status).forEach(
+                            ([key, status]) => {
+                                // If it's a uniqueId format (contains dashes), store it directly
+                                if (key.includes('-') && !newItemStatus[key]) {
+                                    newItemStatus[key] = status as string;
+                                }
+                            },
+                        );
+
+                        console.log('Final item status:', newItemStatus);
+                        setItemStatus(newItemStatus);
+                    }
+                } catch (error) {
+                    console.error('Failed to load item status:', error);
+                }
+            }
+        };
+
+        loadItemStatus();
+    }, [tableNumber]); // Only run when table changes, not when orderItems change
+
+    // Ensure tables is always an array
+    const tablesArray = useMemo((): TableType[] => {
+        if (!tables) return [];
+        if (Array.isArray(tables)) return tables;
+        // If tables is an object, try to convert it to an array
+        if (typeof tables === 'object') {
+            return Object.values(tables) as TableType[];
+        }
+        return [];
+    }, [tables]);
 
     // State to store all active orders with their totals
     const [allActiveOrders, setAllActiveOrders] = useState<
@@ -155,7 +252,7 @@ export const PosTab: React.FC<PosTabProps> = ({
 
         // Fetch immediately on mount
         fetchActiveOrders();
-    }, []); // Empty dependency array - only run on mount
+    }, []); // Empty dependency array - only run once on mount
 
     // Manual refresh function
     const handleRefreshOrders = useCallback(async () => {
@@ -163,7 +260,7 @@ export const PosTab: React.FC<PosTabProps> = ({
         if (orders && orders.orders) {
             setAllActiveOrders(orders.orders);
         }
-    }, [api]);
+    }, []); // Empty dependency array - api is stable
 
     // Get total for a specific table
     const getTableTotal = useCallback(
@@ -239,11 +336,11 @@ export const PosTab: React.FC<PosTabProps> = ({
     );
     // Resolve current table id by name
     const currentTableId = useMemo(() => {
-        const t = tables.find((t) => t.name === tableNumber);
+        const t = tablesArray.find((t) => t.name === tableNumber);
         if (!t) return null;
         const id = typeof t.id === 'number' ? t.id : parseInt(String(t.id));
         return Number.isNaN(id) ? null : id;
-    }, [tables, tableNumber]);
+    }, [tablesArray, tableNumber]);
 
     // Build today's date (YYYY-MM-DD)
     const todayDate = useMemo(() => {
@@ -279,13 +376,13 @@ export const PosTab: React.FC<PosTabProps> = ({
     }, [currentTableId, reservations, todayDate]);
 
     // Calculate total for current selected table
-    const currentTableTotal = useMemo(() => {
-        if (!tableNumber || orderItems.length === 0) return 0;
-        return orderItems.reduce(
-            (total, item) => total + item.price * item.quantity,
-            0,
-        );
-    }, [tableNumber, orderItems]);
+    // const currentTableTotal = useMemo(() => {
+    //     if (!tableNumber || orderItems.length === 0) return 0;
+    //     return orderItems.reduce(
+    //         (total, item) => total + item.price * item.quantity,
+    //         0,
+    //     );
+    // }, [tableNumber, orderItems]);
 
     // Auto-save order when items change
     useEffect(() => {
@@ -308,10 +405,16 @@ export const PosTab: React.FC<PosTabProps> = ({
 
             // Auto-save with debounce
             const timeoutId = setTimeout(async () => {
-                if (onSaveTableOrder) {
-                    await onSaveTableOrder(tableNumber, orderData);
-                } else {
-                    await api.saveTableOrder(orderData);
+                try {
+                    console.log('Auto-saving order:', orderData);
+                    if (onSaveTableOrder) {
+                        await onSaveTableOrder(tableNumber, orderData);
+                    } else {
+                        const result = await api.saveTableOrder(orderData);
+                        console.log('Save result:', result);
+                    }
+                } catch (error) {
+                    console.error('Auto-save failed:', error);
                 }
             }, 1000);
 
@@ -328,7 +431,7 @@ export const PosTab: React.FC<PosTabProps> = ({
         customerNotes,
         finalTotal,
         onSaveTableOrder,
-        api,
+        // Removed api dependency as it's stable
     ]);
 
     // Load table order when table changes
@@ -386,7 +489,7 @@ export const PosTab: React.FC<PosTabProps> = ({
             onSetTableNumber,
             onSaveTableOrder,
             onLoadTableOrder,
-            api,
+            // Removed api dependency as it's stable
         ],
     );
 
@@ -430,18 +533,29 @@ export const PosTab: React.FC<PosTabProps> = ({
                 // Concatenate customer notes if there are existing notes
                 const existingNotes = customerNotes; // From component props
                 const trimmedNewNotes = newCustomerNotes.trim();
-                
+
                 // Check if this note already exists to avoid duplicates
-                if (!existingNotes || !existingNotes.includes(trimmedNewNotes)) {
-                    const concatenatedNotes = existingNotes && existingNotes.trim()
-                        ? `${existingNotes} | ${trimmedNewNotes}` 
-                        : trimmedNewNotes;
+                if (
+                    !existingNotes ||
+                    !existingNotes.includes(trimmedNewNotes)
+                ) {
+                    const concatenatedNotes =
+                        existingNotes && existingNotes.trim()
+                            ? `${existingNotes} | ${trimmedNewNotes}`
+                            : trimmedNewNotes;
                     onSetCustomerNotes(concatenatedNotes);
                 }
                 // If note already exists, don't update (avoid duplicates)
             }
         },
-        [menuItems, onSetTableNumber, onAddItemToOrder, onSetCustomerName, onSetCustomerNotes, customerNotes],
+        [
+            menuItems,
+            onSetTableNumber,
+            onAddItemToOrder,
+            onSetCustomerName,
+            onSetCustomerNotes,
+            customerNotes,
+        ],
     );
 
     // Handle payment confirmation
@@ -469,11 +583,89 @@ export const PosTab: React.FC<PosTabProps> = ({
             tableNumber,
             finalTotal,
             onCompleteTableOrder,
-            api,
+            // Removed api dependency as it's stable
             onCompleteOrder,
             handleRefreshOrders,
         ],
     );
+
+    // Handle sending order to kitchen
+    const handleSendToKitchen = useCallback(async () => {
+        if (!tableNumber || orderItems.length === 0) {
+            toast.error('No items to send to kitchen');
+            return;
+        }
+
+        // Get selected items for kitchen
+        const selectedItems = orderItems.filter(
+            (item) => item.uniqueId && selectedForKitchen.has(item.uniqueId),
+        );
+
+        if (selectedItems.length === 0) {
+            toast.error('Please select items to send to kitchen');
+            return;
+        }
+
+        try {
+            const response = await api.sendToKitchen({
+                table_number: tableNumber,
+                customer_name: customerName || null,
+                customer_notes: customerNotes || null,
+                items: selectedItems.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+            });
+
+            if (response.data && response.data.order_number) {
+                // Update item status to 'sent_to_kitchen' for selected items
+                try {
+                    // Update local state first
+                    const newItemStatus = { ...itemStatus };
+                    selectedItems.forEach((item) => {
+                        if (item.uniqueId) {
+                            newItemStatus[item.uniqueId] = 'sent_to_kitchen';
+                        }
+                    });
+                    setItemStatus(newItemStatus);
+
+                    // Then update backend
+                    await api.updateItemStatus({
+                        table_name: tableNumber,
+                        item_ids: selectedItems.map(
+                            (item) => item.uniqueId || item.id,
+                        ),
+                        status: 'sent_to_kitchen',
+                    });
+                } catch (error) {
+                    console.error('Failed to update item status:', error);
+                    // Don't show error to user as kitchen order was successful
+                }
+
+                // Clear selection after successful send
+                setSelectedForKitchen(new Set());
+
+                toast.success(
+                    `${selectedItems.length} item(s) sent to kitchen! Order #${response.data.order_number}`,
+                );
+            } else {
+                toast.error('Failed to send order to kitchen');
+            }
+        } catch (error) {
+            console.error('Failed to send to kitchen:', error);
+            toast.error('Failed to send order to kitchen');
+        }
+    }, [
+        tableNumber,
+        orderItems,
+        customerName,
+        customerNotes,
+        // Removed api dependency as it's stable
+        selectedForKitchen,
+        itemStatus,
+    ]);
 
     return (
         <div className="space-y-6">
@@ -500,7 +692,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                         </CardHeader>
                         <CardContent className="p-2">
                             <div className="space-y-1.5">
-                                {tables.map((table) => (
+                                {tablesArray.map((table) => (
                                     <button
                                         key={table.id}
                                         onClick={() =>
@@ -593,7 +785,9 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     onClick={(e) => {
                                         e.preventDefault();
                                         if (!tableNumber) {
-                                            toast.error('Please select a table first');
+                                            toast.error(
+                                                'Please select a table first',
+                                            );
                                             return;
                                         }
                                         onAddItemToOrder(item);
@@ -601,7 +795,11 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     disabled={!tableNumber}
                                     className="group flex h-auto touch-manipulation flex-col items-center rounded-lg border border-gray-200 bg-white p-3 text-gray-900 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600 dark:disabled:hover:bg-gray-700"
                                     type="button"
-                                    title={!tableNumber ? 'Select a table first' : `Add ${item.name}`}
+                                    title={
+                                        !tableNumber
+                                            ? 'Select a table first'
+                                            : `Add ${item.name}`
+                                    }
                                 >
                                     <img
                                         src={
@@ -642,17 +840,23 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     <QrCode className="h-4 w-4" />
                                 </button>
                                 <button
-                                    onClick={onPrintKitchenOrder}
+                                    onClick={handleSendToKitchen}
                                     disabled={orderItems.length === 0}
                                     className="rounded p-1.5 text-orange-600 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent dark:text-orange-400 dark:hover:bg-orange-900/30"
-                                    title="Kitchen Order"
+                                    title={`Send to Kitchen${
+                                        selectedForKitchen.size > 0
+                                            ? ` (${selectedForKitchen.size} selected)`
+                                            : ' (select items first)'
+                                    }`}
                                 >
-                                    <Printer className="h-4 w-4" />
+                                    <ChefHat className="h-4 w-4" />
                                 </button>
                                 <button
                                     onClick={() => {
                                         if (!tableNumber) {
-                                            toast.error('Please select a table first');
+                                            toast.error(
+                                                'Please select a table first',
+                                            );
                                             return;
                                         }
                                         onSetShowCheckout(!showCheckout);
@@ -682,10 +886,64 @@ export const PosTab: React.FC<PosTabProps> = ({
                             <TableHeader>
                                 <TableRow className="bg-gray-50 dark:bg-gray-700">
                                     <TableHead className="text-gray-900 dark:text-white">
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                orderItems.length > 0 &&
+                                                orderItems.every(
+                                                    (item) =>
+                                                        (item.uniqueId &&
+                                                            selectedForKitchen.has(
+                                                                item.uniqueId,
+                                                            )) ||
+                                                        itemStatus[
+                                                            item.uniqueId || ''
+                                                        ] === 'sent_to_kitchen',
+                                                )
+                                            }
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    // Only select items that haven't been sent to kitchen
+                                                    const selectableItems =
+                                                        orderItems.filter(
+                                                            (item) =>
+                                                                itemStatus[
+                                                                    item.uniqueId ||
+                                                                        ''
+                                                                ] !==
+                                                                'sent_to_kitchen',
+                                                        );
+                                                    setSelectedForKitchen(
+                                                        new Set(
+                                                            selectableItems
+                                                                .map(
+                                                                    (item) =>
+                                                                        item.uniqueId,
+                                                                )
+                                                                .filter(
+                                                                    (
+                                                                        id,
+                                                                    ): id is string =>
+                                                                        Boolean(
+                                                                            id,
+                                                                        ),
+                                                                ),
+                                                        ),
+                                                    );
+                                                } else {
+                                                    setSelectedForKitchen(
+                                                        new Set(),
+                                                    );
+                                                }
+                                            }}
+                                            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                        />
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
                                         Item
                                     </TableHead>
                                     <TableHead className="text-gray-900 dark:text-white">
-                                        Quantity
+                                        Qty
                                     </TableHead>
                                     <TableHead className="text-gray-900 dark:text-white">
                                         Price
@@ -699,42 +957,111 @@ export const PosTab: React.FC<PosTabProps> = ({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {orderItems.map((item) => (
+                                {orderItems.map((item, index) => (
                                     <TableRow
-                                        key={item.id}
+                                        key={
+                                            item.uniqueId ||
+                                            `${item.id}-${index}`
+                                        }
                                         className="border-gray-200 dark:border-gray-600"
                                     >
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex items-center gap-2 whitespace-nowrap">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        item.uniqueId
+                                                            ? selectedForKitchen.has(
+                                                                  item.uniqueId,
+                                                              )
+                                                            : false
+                                                    }
+                                                    disabled={
+                                                        itemStatus[
+                                                            item.uniqueId || ''
+                                                        ] === 'sent_to_kitchen'
+                                                    }
+                                                    onChange={(e) => {
+                                                        const newSelection =
+                                                            new Set(
+                                                                selectedForKitchen,
+                                                            );
+                                                        if (
+                                                            e.target.checked &&
+                                                            item.uniqueId
+                                                        ) {
+                                                            newSelection.add(
+                                                                item.uniqueId,
+                                                            );
+                                                        } else if (
+                                                            item.uniqueId
+                                                        ) {
+                                                            newSelection.delete(
+                                                                item.uniqueId,
+                                                            );
+                                                        }
+                                                        setSelectedForKitchen(
+                                                            newSelection,
+                                                        );
+                                                    }}
+                                                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                                />
+                                                {itemStatus[
+                                                    item.uniqueId || ''
+                                                ] === 'sent_to_kitchen' && (
+                                                    <span className="inline-flex items-center rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
+                                                        <ChefHat className="h-3 w-3" />
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             {item.name}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            <div className="flex items-center space-x-2">
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        onUpdateItemQuantity(
-                                                            item.id,
-                                                            item.quantity - 1,
-                                                        )
-                                                    }
-                                                >
-                                                    <Minus className="h-4 w-4" />
-                                                </Button>
-                                                <span className="text-lg text-gray-900 dark:text-white">
+                                            {itemStatus[item.uniqueId || ''] ===
+                                            'sent_to_kitchen' ? (
+                                                <span className="min-w-[20px] text-center text-sm font-medium text-gray-900 dark:text-white">
                                                     {item.quantity}
                                                 </span>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        onUpdateItemQuantity(
-                                                            item.id,
-                                                            item.quantity + 1,
-                                                        )
-                                                    }
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
-                                            </div>
+                                            ) : (
+                                                <div className="flex items-center space-x-1">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            item.uniqueId &&
+                                                            onUpdateItemQuantity(
+                                                                item.uniqueId,
+                                                                item.quantity -
+                                                                    1,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            item.quantity <= 1
+                                                        }
+                                                        className="h-6 w-6 p-0 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        <Minus className="h-3 w-3" />
+                                                    </Button>
+                                                    <span className="min-w-[20px] text-center text-sm font-medium text-gray-900 dark:text-white">
+                                                        {item.quantity}
+                                                    </span>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            item.uniqueId &&
+                                                            onUpdateItemQuantity(
+                                                                item.uniqueId,
+                                                                item.quantity +
+                                                                    1,
+                                                            )
+                                                        }
+                                                        className="h-6 w-6 p-0"
+                                                    >
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             {currency_symbol}
@@ -745,25 +1072,29 @@ export const PosTab: React.FC<PosTabProps> = ({
                                             {item.price * item.quantity}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    console.log(
-                                                        'Removing item:',
-                                                        item.id,
-                                                        item.name,
-                                                    );
-                                                    onRemoveItemFromOrder(
-                                                        item.id,
-                                                    );
-                                                }}
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            {itemStatus[item.uniqueId || ''] !==
+                                                'sent_to_kitchen' && (
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        console.log(
+                                                            'Removing item:',
+                                                            item.id,
+                                                            item.name,
+                                                        );
+                                                        item.uniqueId &&
+                                                            onRemoveItemFromOrder(
+                                                                item.uniqueId,
+                                                            );
+                                                    }}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -916,14 +1247,14 @@ export const PosTab: React.FC<PosTabProps> = ({
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="grid w-full grid-cols-3 gap-2">
+                            <div className="grid w-full grid-cols-2 gap-2 lg:grid-cols-3">
                                 <Button
                                     onClick={onPrintBill}
                                     disabled={orderItems.length === 0}
                                     className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-gray-600 py-2 text-xs text-white shadow-sm transition-all duration-200 hover:bg-gray-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <Printer className="mr-1 h-4 w-4" />
-                                    Print
+                                    Print Bill
                                 </Button>
                                 <Button
                                     onClick={onSplitBill}
@@ -931,7 +1262,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-green-500 py-2 text-xs text-white shadow-sm transition-all duration-200 hover:bg-green-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <Calculator className="mr-1 h-4 w-4" />
-                                    Split
+                                    Split Bill
                                 </Button>
                                 <Button
                                     onClick={handleOpenPaymentDialog}
@@ -976,7 +1307,9 @@ export const PosTab: React.FC<PosTabProps> = ({
                                         </p>
                                         {customerNotes && (
                                             <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                                                <strong>Special Requests:</strong>{' '}
+                                                <strong>
+                                                    Special Requests:
+                                                </strong>{' '}
                                                 {customerNotes}
                                             </p>
                                         )}

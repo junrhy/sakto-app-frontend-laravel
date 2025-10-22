@@ -87,31 +87,23 @@ export const usePosState = (
     // Callbacks
     const addItemToOrder = useCallback((item: MenuItem) => {
         setOrderItems((prev) => {
-            const existingItem = prev.find(
-                (orderItem) => orderItem.id === item.id,
-            );
-            if (existingItem) {
-                return prev.map((orderItem) =>
-                    orderItem.id === item.id
-                        ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                        : orderItem,
-                );
-            } else {
-                return [...prev, { ...item, quantity: 1 }];
-            }
+            // Always add as a new line item, never merge with existing items
+            // Add unique identifier for each line item
+            const uniqueId = `${item.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            return [...prev, { ...item, quantity: 1, uniqueId }];
         });
     }, []);
 
     const updateItemQuantity = useCallback(
-        (itemId: number, newQuantity: number) => {
+        (uniqueId: string, newQuantity: number) => {
             if (newQuantity <= 0) {
                 setOrderItems((prev) =>
-                    prev.filter((item) => item.id !== itemId),
+                    prev.filter((item) => item.uniqueId !== uniqueId),
                 );
             } else {
                 setOrderItems((prev) =>
                     prev.map((item) =>
-                        item.id === itemId
+                        item.uniqueId === uniqueId
                             ? { ...item, quantity: newQuantity }
                             : item,
                     ),
@@ -121,8 +113,10 @@ export const usePosState = (
         [],
     );
 
-    const removeItemFromOrder = useCallback((itemId: number) => {
-        setOrderItems((prev) => prev.filter((item) => item.id !== itemId));
+    const removeItemFromOrder = useCallback((uniqueId: string) => {
+        setOrderItems((prev) =>
+            prev.filter((item) => item.uniqueId !== uniqueId),
+        );
     }, []);
 
     const clearOrder = useCallback(() => {

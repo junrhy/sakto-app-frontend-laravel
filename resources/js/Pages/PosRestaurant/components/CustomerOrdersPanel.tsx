@@ -29,7 +29,7 @@ interface CustomerOrdersPanelProps {
         tableNumber: string,
         items: CustomerOrderItem[],
         customerName?: string | null,
-        customerNotes?: string | null
+        customerNotes?: string | null,
     ) => void;
     onRefresh?: () => void;
 }
@@ -138,7 +138,12 @@ export const CustomerOrdersPanel: React.FC<CustomerOrdersPanelProps> = ({
     const addToPOS = async (order: CustomerOrder) => {
         try {
             if (onAddItemsToPOS) {
-                onAddItemsToPOS(order.table_name, order.items, order.customer_name, order.customer_notes);
+                onAddItemsToPOS(
+                    order.table_name,
+                    order.items,
+                    order.customer_name,
+                    order.customer_notes,
+                );
             }
 
             // Delete the customer order after adding to POS
@@ -153,16 +158,20 @@ export const CustomerOrdersPanel: React.FC<CustomerOrdersPanelProps> = ({
                                 .querySelector('meta[name="csrf-token"]')
                                 ?.getAttribute('content') || '',
                     },
-                }
+                },
             );
 
             const data = await response.json();
 
             if (data.status === 'success') {
-                toast.success(`Order added to ${order.table_name} and removed from queue`);
+                toast.success(
+                    `Order added to ${order.table_name} and removed from queue`,
+                );
                 fetchOrders(); // Refresh the orders list
             } else {
-                toast.error(data.message || 'Failed to remove order from queue');
+                toast.error(
+                    data.message || 'Failed to remove order from queue',
+                );
             }
         } catch (error) {
             console.error('Failed to add order to POS:', error);
@@ -269,7 +278,7 @@ export const CustomerOrdersPanel: React.FC<CustomerOrdersPanelProps> = ({
                                     <div className="mb-3 space-y-1">
                                         {order.items.map((item, idx) => (
                                             <div
-                                                key={idx}
+                                                key={`${order.id}-${item.id}-${idx}`}
                                                 className="flex justify-between text-sm"
                                             >
                                                 <span className="text-gray-700 dark:text-gray-300">

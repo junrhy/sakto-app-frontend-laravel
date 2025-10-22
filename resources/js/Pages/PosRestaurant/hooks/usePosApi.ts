@@ -325,6 +325,38 @@ export const usePosApi = () => {
         });
     }, []);
 
+    const sendToKitchen = useCallback(async (orderData: any) => {
+        try {
+            const response = await fetch(
+                '/pos-restaurant/kitchen-orders/send',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify(orderData),
+                },
+            );
+
+            if (!response.ok) {
+                const responseData = await response.json();
+                throw new Error(
+                    'Failed to send to kitchen: ' +
+                        JSON.stringify(responseData),
+                );
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to send to kitchen:', error);
+            throw error;
+        }
+    }, []);
+
     // Table Orders API calls (New System)
     const getTableOrder = useCallback(async (tableName: string) => {
         try {
@@ -439,6 +471,35 @@ export const usePosApi = () => {
         } catch (error) {
             console.error('Failed to get active orders:', error);
             return [];
+        }
+    }, []);
+
+    const updateItemStatus = useCallback(async (orderData: any) => {
+        try {
+            const response = await fetch('/pos-restaurant/update-item-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(orderData),
+            });
+
+            if (!response.ok) {
+                const responseData = await response.json();
+                throw new Error(
+                    'Failed to update item status: ' +
+                        JSON.stringify(responseData),
+                );
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to update item status:', error);
+            throw error;
         }
     }, []);
 
@@ -638,12 +699,14 @@ export const usePosApi = () => {
 
         // Kitchen Orders
         storeKitchenOrder,
+        sendToKitchen,
 
         // Table Orders (New System)
         getTableOrder,
         saveTableOrder,
         completeTableOrder,
         getAllActiveOrders,
+        updateItemStatus,
 
         // Utility
         refreshData,
