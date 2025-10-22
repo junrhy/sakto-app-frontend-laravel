@@ -204,7 +204,8 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                 Select Date to Open
                             </Label>
                             <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-                                Choose a date to open specific time slots for reservations
+                                Choose a date to open specific time slots for
+                                reservations
                             </p>
                             <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
                                 <DateCalendar
@@ -253,119 +254,107 @@ export const OpenedDatesTab: React.FC<OpenedDatesTabProps> = ({
                                 <div className="grid grid-cols-2 gap-2 md:gap-4">
                                     {/* AM Column */}
                                     <div>
-                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                             AM
                                         </h4>
                                         <div className="grid grid-cols-2 gap-1 md:gap-2">
-                                                {timeSlots.am.map(
-                                                    (timeSlot) => {
-                                                        const isOpened =
-                                                            optimisticOpenedDates.some(
-                                                                (opened) =>
-                                                                    opened.opened_date.split(
-                                                                        'T',
-                                                                    )[0] ===
-                                                                        newOpenedDate.opened_date &&
-                                                                    opened.timeslots.includes(
-                                                                        timeSlot.value,
-                                                                    ),
-                                                            );
-                                                        const isLoading =
-                                                            loadingSlots.includes(
+                                            {timeSlots.am.map((timeSlot) => {
+                                                const isOpened =
+                                                    optimisticOpenedDates.some(
+                                                        (opened) =>
+                                                            opened.opened_date.split(
+                                                                'T',
+                                                            )[0] ===
+                                                                newOpenedDate.opened_date &&
+                                                            opened.timeslots.includes(
                                                                 timeSlot.value,
-                                                            );
+                                                            ),
+                                                    );
+                                                const isLoading =
+                                                    loadingSlots.includes(
+                                                        timeSlot.value,
+                                                    );
 
-                                                        return (
-                                                            <button
-                                                                key={
-                                                                    timeSlot.value
-                                                                }
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleTimeSlotToggle(
-                                                                        timeSlot.value,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    isLoading
-                                                                }
-                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium shadow-sm transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                                    isOpened
-                                                                        ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
-                                                                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
-                                                                } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
-                                                            >
-                                                                {isLoading ? (
-                                                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                                                                ) : (
-                                                                    timeSlot.display
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    },
-                                                )}
-                                            </div>
+                                                return (
+                                                    <button
+                                                        key={timeSlot.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleTimeSlotToggle(
+                                                                timeSlot.value,
+                                                            )
+                                                        }
+                                                        disabled={isLoading}
+                                                        className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium shadow-sm transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                            isOpened
+                                                                ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                                                                : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
+                                                        } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
+                                                    >
+                                                        {isLoading ? (
+                                                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                                        ) : (
+                                                            timeSlot.display
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
+                                    </div>
 
-                                        {/* PM Column */}
-                                        <div>
-                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
-                                                PM
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
-                                                {timeSlots.pm.map(
-                                                    (timeSlot) => {
-                                                        const isOpened =
-                                                            optimisticOpenedDates.some(
-                                                                (opened) =>
-                                                                    opened.opened_date.split(
-                                                                        'T',
-                                                                    )[0] ===
-                                                                        newOpenedDate.opened_date &&
-                                                                    opened.timeslots.includes(
-                                                                        timeSlot.value,
-                                                                    ),
-                                                            );
-                                                        const isLoading =
-                                                            loadingSlots.includes(
+                                    {/* PM Column */}
+                                    <div>
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                            PM
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                            {timeSlots.pm.map((timeSlot) => {
+                                                const isOpened =
+                                                    optimisticOpenedDates.some(
+                                                        (opened) =>
+                                                            opened.opened_date.split(
+                                                                'T',
+                                                            )[0] ===
+                                                                newOpenedDate.opened_date &&
+                                                            opened.timeslots.includes(
                                                                 timeSlot.value,
-                                                            );
+                                                            ),
+                                                    );
+                                                const isLoading =
+                                                    loadingSlots.includes(
+                                                        timeSlot.value,
+                                                    );
 
-                                                        return (
-                                                            <button
-                                                                key={
-                                                                    timeSlot.value
-                                                                }
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleTimeSlotToggle(
-                                                                        timeSlot.value,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    isLoading
-                                                                }
-                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium shadow-sm transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                                    isOpened
-                                                                        ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
-                                                                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
-                                                                } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
-                                                            >
-                                                                {isLoading ? (
-                                                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                                                                ) : (
-                                                                    timeSlot.display
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    },
-                                                )}
-                                            </div>
+                                                return (
+                                                    <button
+                                                        key={timeSlot.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleTimeSlotToggle(
+                                                                timeSlot.value,
+                                                            )
+                                                        }
+                                                        disabled={isLoading}
+                                                        className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium shadow-sm transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                            isOpened
+                                                                ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                                                                : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-green-500 dark:hover:bg-green-900/20'
+                                                        } ${isLoading ? 'cursor-wait opacity-50' : 'cursor-pointer'}`}
+                                                    >
+                                                        {isLoading ? (
+                                                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                                        ) : (
+                                                            timeSlot.display
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>

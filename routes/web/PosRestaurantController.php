@@ -71,5 +71,10 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         
         // Table Schedules
         Route::post('/table-schedules', [PosRestaurantController::class, 'setTableSchedule']);
+        
+        // Customer Orders (QR Code Ordering)
+        Route::get('/customer-orders/pending', [PosRestaurantController::class, 'getPendingCustomerOrders'])->name('pos-restaurant.customer-orders.pending');
+        Route::put('/customer-orders/{id}/status', [PosRestaurantController::class, 'updateCustomerOrderStatus'])->name('pos-restaurant.customer-orders.update-status');
+        Route::delete('/customer-orders/{id}', [PosRestaurantController::class, 'cancelCustomerOrder'])->name('pos-restaurant.customer-orders.cancel');
     });
 });

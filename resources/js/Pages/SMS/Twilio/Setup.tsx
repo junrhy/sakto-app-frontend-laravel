@@ -191,7 +191,9 @@ export default function Setup({ auth, accounts, hasActiveAccount }: Props) {
                     );
                 }
                 if (response.data.account_status) {
-                    toast.info(`Account status: ${response.data.account_status}`);
+                    toast.info(
+                        `Account status: ${response.data.account_status}`,
+                    );
                 }
                 // Reload page after a short delay to show toast messages
                 setTimeout(() => {

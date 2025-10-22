@@ -160,9 +160,11 @@ export default function PosRestaurantIndex({
         'percentage',
     );
     const [serviceCharge, setServiceCharge] = useState(0);
-    const [serviceChargeType, setServiceChargeType] = useState<'percentage' | 'fixed'>(
-        'percentage',
-    );
+    const [serviceChargeType, setServiceChargeType] = useState<
+        'percentage' | 'fixed'
+    >('percentage');
+    const [customerName, setCustomerName] = useState<string>('');
+    const [customerNotes, setCustomerNotes] = useState<string>('');
     const [showCheckout, setShowCheckout] = useState(false);
 
     // Dialog states
@@ -354,11 +356,20 @@ export default function PosRestaurantIndex({
             <tr>
                 <td>${item.name}</td>
                 <td>${item.quantity}</td>
-                <td>${item.notes || 'No special instructions'}</td>
             </tr>
         `,
             )
             .join('');
+
+        const customerInfoSection = customerName
+            ? `
+            <div class="customer-info">
+                <h3>Customer Information</h3>
+                <p><strong>Customer Name:</strong> ${customerName}</p>
+                ${customerNotes ? `<p><strong>Special Requests:</strong> ${customerNotes}</p>` : ''}
+            </div>
+        `
+            : '';
 
         const printContent = `
             <html>
@@ -367,6 +378,9 @@ export default function PosRestaurantIndex({
                     <style>
                         body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
                         .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                        .customer-info { background-color: #fff3cd; border: 2px solid #ff9800; border-radius: 5px; padding: 15px; margin-bottom: 20px; }
+                        .customer-info h3 { margin-top: 0; margin-bottom: 10px; color: #ff6f00; }
+                        .customer-info p { margin: 5px 0; }
                         .order-details { margin-bottom: 20px; }
                         .order-details h3 { margin-bottom: 10px; color: #333; }
                         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -381,6 +395,7 @@ export default function PosRestaurantIndex({
                         <p>Date: ${new Date().toLocaleDateString()}</p>
                         <p>Time: ${new Date().toLocaleTimeString()}</p>
                     </div>
+                    ${customerInfoSection}
                     <div class="order-details">
                         <h3>Order Items</h3>
                         <table>
@@ -388,7 +403,6 @@ export default function PosRestaurantIndex({
                                 <tr>
                                     <th>Item</th>
                                     <th>Qty</th>
-                                    <th>Notes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -405,19 +419,7 @@ export default function PosRestaurantIndex({
         printWindow.focus();
         printWindow.print();
         printWindow.close();
-
-        // Also send to kitchen order API
-        try {
-            await api.storeKitchenOrder({
-                table_number: posState.tableNumber,
-                items: posState.orderItems,
-                client_identifier: 'current_client', // This should come from auth
-            });
-            toast.success('Kitchen order sent successfully');
-        } catch (error) {
-            toast.error('Failed to send kitchen order');
-        }
-    }, [posState.orderItems, posState.tableNumber, api]);
+    }, [posState.orderItems, posState.tableNumber, customerName, customerNotes]);
 
     // Table Order handlers (New System)
     const handleLoadTableOrder = useCallback(
@@ -447,8 +449,17 @@ export default function PosRestaurantIndex({
                     }
                     if (response.service_charge_type) {
                         setServiceChargeType(
-                            response.service_charge_type as 'percentage' | 'fixed',
+                            response.service_charge_type as
+                                | 'percentage'
+                                | 'fixed',
                         );
+                    }
+                    // Load customer information if available
+                    if (response.customer_name) {
+                        setCustomerName(response.customer_name);
+                    }
+                    if (response.customer_notes) {
+                        setCustomerNotes(response.customer_notes);
                     }
                     console.log('Loaded order for table:', tableName, response);
                 } else {
@@ -456,12 +467,17 @@ export default function PosRestaurantIndex({
                     posState.setOrderItems([]);
                     setDiscount(0);
                     setServiceCharge(0);
+                    setCustomerName('');
+                    setCustomerNotes('');
                 }
             } catch (error) {
                 console.error('Failed to load table order:', error);
                 // Clear order items on error
                 posState.setOrderItems([]);
                 setDiscount(0);
+                setServiceCharge(0);
+                setCustomerName('');
+                setCustomerNotes('');
             }
         },
         [api, posState, setDiscount, setDiscountType],
@@ -793,7 +809,7 @@ export default function PosRestaurantIndex({
     return (
         <AuthenticatedLayout
             header={
-                <div className="hidden xl:flex items-center space-x-3">
+                <div className="hidden items-center space-x-3 xl:flex">
                     <div className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-2">
                         <UtensilsCrossed className="h-6 w-6 text-white" />
                     </div>
@@ -955,7 +971,9 @@ export default function PosRestaurantIndex({
                                 </div>
 
                                 {/* Content Area - Left on desktop */}
-                                <div className={`order-2 flex-1 lg:order-1 ${showCheckout && currentTab === 'pos' ? '' : 'lg:mr-6'}`}>
+                                <div
+                                    className={`order-2 flex-1 lg:order-1 ${showCheckout && currentTab === 'pos' ? '' : 'lg:mr-6'}`}
+                                >
                                     {isTabLoading && <TabLoadingSpinner />}
 
                                     {!isTabLoading && (
@@ -985,7 +1003,9 @@ export default function PosRestaurantIndex({
                                                             discountType={
                                                                 discountType
                                                             }
-                                                            serviceCharge={serviceCharge}
+                                                            serviceCharge={
+                                                                serviceCharge
+                                                            }
                                                             serviceChargeType={
                                                                 serviceChargeType
                                                             }
@@ -1026,8 +1046,24 @@ export default function PosRestaurantIndex({
                                                             onSetServiceChargeType={
                                                                 setServiceChargeType
                                                             }
-                                                            showCheckout={showCheckout}
-                                                            onSetShowCheckout={setShowCheckout}
+                                                            customerName={
+                                                                customerName
+                                                            }
+                                                            customerNotes={
+                                                                customerNotes
+                                                            }
+                                                            onSetCustomerName={
+                                                                setCustomerName
+                                                            }
+                                                            onSetCustomerNotes={
+                                                                setCustomerNotes
+                                                            }
+                                                            showCheckout={
+                                                                showCheckout
+                                                            }
+                                                            onSetShowCheckout={
+                                                                setShowCheckout
+                                                            }
                                                             onPrintBill={
                                                                 handlePrintBill
                                                             }

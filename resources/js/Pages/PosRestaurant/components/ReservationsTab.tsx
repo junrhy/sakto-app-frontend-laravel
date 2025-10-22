@@ -472,12 +472,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     blockedDates={datesWithReservations}
                                     minDate={
                                         new Date(
-                                            new Date().setHours(
-                                                0,
-                                                0,
-                                                0,
-                                                0,
-                                            ),
+                                            new Date().setHours(0, 0, 0, 0),
                                         )
                                     }
                                 />
@@ -486,197 +481,177 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
 
                         {/* Time Slots Section - Right Side */}
                         <div className="lg:col-span-6">
-                                    <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                                        Select Time Slot *
-                                    </Label>
+                            <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
+                                Select Time Slot *
+                            </Label>
 
-                                    {/* Legend */}
-                                    <div className="mb-2 flex flex-wrap gap-3 text-xs">
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
-                                            <span className="text-gray-600 dark:text-gray-400">
-                                                Available
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="h-3 w-3 rounded border border-blue-500 bg-blue-500"></div>
-                                            <span className="text-gray-600 dark:text-gray-400">
-                                                Selected
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="h-3 w-3 rounded border border-yellow-300 bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900/30"></div>
-                                            <span className="text-gray-600 dark:text-gray-400">
-                                                Has reservations
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="h-3 w-3 rounded border border-red-500 bg-red-500"></div>
-                                            <span className="text-gray-600 dark:text-gray-400">
-                                                Blocked
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                        <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                            {/* AM Column */}
-                                            <div>
-                                                <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
-                                                    AM
-                                                </h4>
-                                                <div className="grid grid-cols-2 gap-1 md:gap-2">
-                                                    {timeSlots.am.map(
-                                                        (timeSlot) => {
-                                                            const isSelected =
-                                                                newReservation.time ===
-                                                                timeSlot.value;
-                                                            const isOpened =
-                                                                isTimeSlotOpened(
-                                                                    newReservation.date,
-                                                                    timeSlot.value,
-                                                                );
-                                                            const isBlocked =
-                                                                isTimeSlotBlocked(
-                                                                    newReservation.date,
-                                                                    timeSlot.value,
-                                                                );
-                                                            const isReserved =
-                                                                isTimeSlotReserved(
-                                                                    newReservation.date,
-                                                                    timeSlot.value,
-                                                                );
-                                                            const isDisabled =
-                                                                !isOpened ||
-                                                                isBlocked;
-
-                                                            return (
-                                                                <button
-                                                                    key={
-                                                                        timeSlot.value
-                                                                    }
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        !isDisabled &&
-                                                                        handleTimeSlotSelect(
-                                                                            newReservation.date,
-                                                                            timeSlot.value,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        isDisabled
-                                                                    }
-                                                                    className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                                        isSelected
-                                                                            ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
-                                                                            : !isOpened
-                                                                              ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                              : isBlocked
-                                                                                ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
-                                                                                : isReserved
-                                                                                  ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
-                                                                                  : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                                                                    }`}
-                                                                >
-                                                                    {
-                                                                        timeSlot.display
-                                                                    }
-                                                                </button>
-                                                            );
-                                                        },
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* PM Column */}
-                                            <div>
-                                                <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
-                                                    PM
-                                                </h4>
-                                                <div className="grid grid-cols-2 gap-1 md:gap-2">
-                                                    {timeSlots.pm.map(
-                                                        (timeSlot) => {
-                                                            const isSelected =
-                                                                newReservation.time ===
-                                                                timeSlot.value;
-                                                            const isOpened =
-                                                                isTimeSlotOpened(
-                                                                    newReservation.date,
-                                                                    timeSlot.value,
-                                                                );
-                                                            const isBlocked =
-                                                                isTimeSlotBlocked(
-                                                                    newReservation.date,
-                                                                    timeSlot.value,
-                                                                );
-                                                            const isReserved =
-                                                                isTimeSlotReserved(
-                                                                    newReservation.date,
-                                                                    timeSlot.value,
-                                                                );
-                                                            const isDisabled =
-                                                                !isOpened ||
-                                                                isBlocked;
-
-                                                            return (
-                                                                <button
-                                                                    key={
-                                                                        timeSlot.value
-                                                                    }
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        !isDisabled &&
-                                                                        handleTimeSlotSelect(
-                                                                            newReservation.date,
-                                                                            timeSlot.value,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        isDisabled
-                                                                    }
-                                                                    className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                                        isSelected
-                                                                            ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
-                                                                            : !isOpened
-                                                                              ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                              : isBlocked
-                                                                                ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
-                                                                                : isReserved
-                                                                                  ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
-                                                                                  : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                                                                    }`}
-                                                                >
-                                                                    {
-                                                                        timeSlot.display
-                                                                    }
-                                                                </button>
-                                                            );
-                                                        },
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Show reservations for selected date */}
-                                    {reservationsForSelectedDate.length > 0 && (
-                                        <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 dark:border-yellow-800/50 dark:bg-yellow-900/10">
-                                            <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200">
-                                                <Clock className="mr-1 inline h-3 w-3" />
-                                                {
-                                                    reservationsForSelectedDate.length
-                                                }{' '}
-                                                reservation
-                                                {reservationsForSelectedDate.length !==
-                                                1
-                                                    ? 's'
-                                                    : ''}{' '}
-                                                on this date
-                                            </p>
-                                        </div>
-                                    )}
+                            {/* Legend */}
+                            <div className="mb-2 flex flex-wrap gap-3 text-xs">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Available
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-blue-500 bg-blue-500"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Selected
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-yellow-300 bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900/30"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Has reservations
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-red-500 bg-red-500"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Blocked
+                                    </span>
                                 </div>
                             </div>
+
+                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                    {/* AM Column */}
+                                    <div>
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                            AM
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                            {timeSlots.am.map((timeSlot) => {
+                                                const isSelected =
+                                                    newReservation.time ===
+                                                    timeSlot.value;
+                                                const isOpened =
+                                                    isTimeSlotOpened(
+                                                        newReservation.date,
+                                                        timeSlot.value,
+                                                    );
+                                                const isBlocked =
+                                                    isTimeSlotBlocked(
+                                                        newReservation.date,
+                                                        timeSlot.value,
+                                                    );
+                                                const isReserved =
+                                                    isTimeSlotReserved(
+                                                        newReservation.date,
+                                                        timeSlot.value,
+                                                    );
+                                                const isDisabled =
+                                                    !isOpened || isBlocked;
+
+                                                return (
+                                                    <button
+                                                        key={timeSlot.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            !isDisabled &&
+                                                            handleTimeSlotSelect(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            )
+                                                        }
+                                                        disabled={isDisabled}
+                                                        className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                            isSelected
+                                                                ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
+                                                                : !isOpened
+                                                                  ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                  : isBlocked
+                                                                    ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
+                                                                    : isReserved
+                                                                      ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
+                                                                      : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                                                        }`}
+                                                    >
+                                                        {timeSlot.display}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* PM Column */}
+                                    <div>
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                            PM
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                            {timeSlots.pm.map((timeSlot) => {
+                                                const isSelected =
+                                                    newReservation.time ===
+                                                    timeSlot.value;
+                                                const isOpened =
+                                                    isTimeSlotOpened(
+                                                        newReservation.date,
+                                                        timeSlot.value,
+                                                    );
+                                                const isBlocked =
+                                                    isTimeSlotBlocked(
+                                                        newReservation.date,
+                                                        timeSlot.value,
+                                                    );
+                                                const isReserved =
+                                                    isTimeSlotReserved(
+                                                        newReservation.date,
+                                                        timeSlot.value,
+                                                    );
+                                                const isDisabled =
+                                                    !isOpened || isBlocked;
+
+                                                return (
+                                                    <button
+                                                        key={timeSlot.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            !isDisabled &&
+                                                            handleTimeSlotSelect(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            )
+                                                        }
+                                                        disabled={isDisabled}
+                                                        className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                            isSelected
+                                                                ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
+                                                                : !isOpened
+                                                                  ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                  : isBlocked
+                                                                    ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
+                                                                    : isReserved
+                                                                      ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
+                                                                      : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                                                        }`}
+                                                    >
+                                                        {timeSlot.display}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Show reservations for selected date */}
+                            {reservationsForSelectedDate.length > 0 && (
+                                <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 dark:border-yellow-800/50 dark:bg-yellow-900/10">
+                                    <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200">
+                                        <Clock className="mr-1 inline h-3 w-3" />
+                                        {reservationsForSelectedDate.length}{' '}
+                                        reservation
+                                        {reservationsForSelectedDate.length !==
+                                        1
+                                            ? 's'
+                                            : ''}{' '}
+                                        on this date
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Reservations List */}
                     <div className="space-y-4">

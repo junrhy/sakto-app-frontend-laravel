@@ -671,7 +671,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                     <div className="grid grid-cols-2 gap-2 md:gap-4">
                                                         {/* AM Column */}
                                                         <div>
-                                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
+                                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                                                 AM
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-1 md:gap-2">
@@ -738,7 +738,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
 
                                                         {/* PM Column */}
                                                         <div>
-                                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
+                                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                                                 PM
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-1 md:gap-2">

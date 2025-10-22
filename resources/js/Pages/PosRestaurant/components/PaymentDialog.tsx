@@ -82,7 +82,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
                 <div className="space-y-6 py-4">
                     {/* Bill Breakdown */}
-                    {(subtotal !== undefined || discountAmount !== undefined || serviceChargeAmount !== undefined) && (
+                    {(subtotal !== undefined ||
+                        discountAmount !== undefined ||
+                        serviceChargeAmount !== undefined) && (
                         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                             <h4 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Bill Breakdown
@@ -99,28 +101,30 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
                                         </span>
                                     </div>
                                 )}
-                                {discountAmount !== undefined && discountAmount > 0 && (
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Discount:
-                                        </span>
-                                        <span className="font-medium text-red-600 dark:text-red-400">
-                                            -{currencySymbol}
-                                            {discountAmount.toFixed(2)}
-                                        </span>
-                                    </div>
-                                )}
-                                {serviceChargeAmount !== undefined && serviceChargeAmount > 0 && (
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Service Charge:
-                                        </span>
-                                        <span className="font-medium text-green-600 dark:text-green-400">
-                                            +{currencySymbol}
-                                            {serviceChargeAmount.toFixed(2)}
-                                        </span>
-                                    </div>
-                                )}
+                                {discountAmount !== undefined &&
+                                    discountAmount > 0 && (
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Discount:
+                                            </span>
+                                            <span className="font-medium text-red-600 dark:text-red-400">
+                                                -{currencySymbol}
+                                                {discountAmount.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    )}
+                                {serviceChargeAmount !== undefined &&
+                                    serviceChargeAmount > 0 && (
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Service Charge:
+                                            </span>
+                                            <span className="font-medium text-green-600 dark:text-green-400">
+                                                +{currencySymbol}
+                                                {serviceChargeAmount.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     )}

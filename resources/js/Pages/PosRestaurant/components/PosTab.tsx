@@ -34,8 +34,10 @@ import {
     UtensilsCrossed,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { usePosApi } from '../hooks/usePosApi';
 import { MenuItem, OrderItem, Reservation, Table as TableType } from '../types';
+import { CustomerOrdersPanel } from './CustomerOrdersPanel';
 import { PaymentDialog } from './PaymentDialog';
 
 interface PosTabProps {
@@ -67,6 +69,10 @@ interface PosTabProps {
     onSetDiscountType: (value: 'percentage' | 'fixed') => void;
     onSetServiceCharge: (value: number) => void;
     onSetServiceChargeType: (value: 'percentage' | 'fixed') => void;
+    customerName: string;
+    customerNotes: string;
+    onSetCustomerName: (value: string) => void;
+    onSetCustomerNotes: (value: string) => void;
     showCheckout: boolean;
     onSetShowCheckout: (value: boolean) => void;
     onPrintBill: () => void;
@@ -96,6 +102,8 @@ export const PosTab: React.FC<PosTabProps> = ({
     discountType,
     serviceCharge,
     serviceChargeType,
+    customerName,
+    customerNotes,
     currency_symbol,
     tables,
     tableSchedules = [],
@@ -109,6 +117,8 @@ export const PosTab: React.FC<PosTabProps> = ({
     onSetDiscountType,
     onSetServiceCharge,
     onSetServiceChargeType,
+    onSetCustomerName,
+    onSetCustomerNotes,
     showCheckout,
     onSetShowCheckout,
     onPrintBill,
@@ -287,6 +297,8 @@ export const PosTab: React.FC<PosTabProps> = ({
                 discount_type: discountType,
                 service_charge: serviceCharge,
                 service_charge_type: serviceChargeType,
+                customer_name: customerName || null,
+                customer_notes: customerNotes || null,
                 subtotal: orderItems.reduce(
                     (total, item) => total + item.price * item.quantity,
                     0,
@@ -312,6 +324,8 @@ export const PosTab: React.FC<PosTabProps> = ({
         discountType,
         serviceCharge,
         serviceChargeType,
+        customerName,
+        customerNotes,
         finalTotal,
         onSaveTableOrder,
         api,
@@ -329,6 +343,8 @@ export const PosTab: React.FC<PosTabProps> = ({
                     discount_type: discountType,
                     service_charge: serviceCharge,
                     service_charge_type: serviceChargeType,
+                    customer_name: customerName || null,
+                    customer_notes: customerNotes || null,
                     subtotal: orderItems.reduce(
                         (total, item) => total + item.price * item.quantity,
                         0,
@@ -364,6 +380,8 @@ export const PosTab: React.FC<PosTabProps> = ({
             discountType,
             serviceCharge,
             serviceChargeType,
+            customerName,
+            customerNotes,
             finalTotal,
             onSetTableNumber,
             onSaveTableOrder,
@@ -376,6 +394,55 @@ export const PosTab: React.FC<PosTabProps> = ({
     const handleOpenPaymentDialog = useCallback(() => {
         setShowPaymentDialog(true);
     }, []);
+
+    // Handle adding customer order items to POS
+    const handleAddCustomerOrderToPOS = useCallback(
+        (
+            tableName: string,
+            items: Array<{
+                id: number;
+                name: string;
+                quantity: number;
+                price: number;
+            }>,
+            newCustomerName?: string | null,
+            newCustomerNotes?: string | null,
+        ) => {
+            // Switch to the specified table
+            onSetTableNumber(tableName);
+
+            // Add items to the order
+            items.forEach((item) => {
+                const menuItem = menuItems.find((mi) => mi.id === item.id);
+                if (menuItem) {
+                    // Add item multiple times based on quantity
+                    for (let i = 0; i < item.quantity; i++) {
+                        onAddItemToOrder(menuItem);
+                    }
+                }
+            });
+
+            // Save customer information to order
+            if (newCustomerName) {
+                onSetCustomerName(newCustomerName);
+            }
+            if (newCustomerNotes && newCustomerNotes.trim()) {
+                // Concatenate customer notes if there are existing notes
+                const existingNotes = customerNotes; // From component props
+                const trimmedNewNotes = newCustomerNotes.trim();
+                
+                // Check if this note already exists to avoid duplicates
+                if (!existingNotes || !existingNotes.includes(trimmedNewNotes)) {
+                    const concatenatedNotes = existingNotes && existingNotes.trim()
+                        ? `${existingNotes} | ${trimmedNewNotes}` 
+                        : trimmedNewNotes;
+                    onSetCustomerNotes(concatenatedNotes);
+                }
+                // If note already exists, don't update (avoid duplicates)
+            }
+        },
+        [menuItems, onSetTableNumber, onAddItemToOrder, onSetCustomerName, onSetCustomerNotes, customerNotes],
+    );
 
     // Handle payment confirmation
     const handlePaymentConfirm = useCallback(
@@ -410,75 +477,81 @@ export const PosTab: React.FC<PosTabProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className={`grid grid-cols-1 gap-4 ${showCheckout ? 'lg:grid-cols-5' : 'lg:grid-cols-6'}`}>
+            <div
+                className={`grid grid-cols-1 gap-4 ${showCheckout ? 'lg:grid-cols-5' : 'lg:grid-cols-6'}`}
+            >
                 {/* Tables List - Hidden when checkout is shown */}
                 {!showCheckout && (
                     <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
-                    <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 dark:border-gray-600 dark:from-purple-900/20 dark:to-pink-900/20">
-                        <CardTitle className="flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
-                            <div className="flex items-center">
-                                <Calculator className="mr-1.5 h-3.5 w-3.5 text-purple-500" />
-                                Select Table
-                            </div>
-                            <button
-                                onClick={handleRefreshOrders}
-                                className="rounded p-1 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                                title="Refresh table totals"
-                            >
-                                <RefreshCw className="h-3.5 w-3.5 text-purple-500" />
-                            </button>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-2">
-                        <div className="space-y-1.5">
-                            {tables.map((table) => (
+                        <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 dark:border-gray-600 dark:from-purple-900/20 dark:to-pink-900/20">
+                            <CardTitle className="flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
+                                <div className="flex items-center">
+                                    <Calculator className="mr-1.5 h-3.5 w-3.5 text-purple-500" />
+                                    Select Table
+                                </div>
                                 <button
-                                    key={table.id}
-                                    onClick={() =>
-                                        handleTableChange(table.name)
-                                    }
-                                    className={`w-full rounded-md border p-2.5 text-left transition-all duration-200 ${
-                                        tableNumber === table.name
-                                            ? 'border-purple-500 bg-purple-50 shadow-sm dark:border-purple-400 dark:bg-purple-900/30'
-                                            : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-purple-500/50 dark:hover:bg-purple-900/10'
-                                    }`}
+                                    onClick={handleRefreshOrders}
+                                    className="rounded p-1 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                                    title="Refresh table totals"
                                 >
-                                    <div className="flex flex-col">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                    {table.name}
+                                    <RefreshCw className="h-3.5 w-3.5 text-purple-500" />
+                                </button>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-2">
+                            <div className="space-y-1.5">
+                                {tables.map((table) => (
+                                    <button
+                                        key={table.id}
+                                        onClick={() =>
+                                            handleTableChange(table.name)
+                                        }
+                                        className={`w-full rounded-md border p-2.5 text-left transition-all duration-200 ${
+                                            tableNumber === table.name
+                                                ? 'border-purple-500 bg-purple-50 shadow-sm dark:border-purple-400 dark:bg-purple-900/30'
+                                                : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-purple-500/50 dark:hover:bg-purple-900/10'
+                                        }`}
+                                    >
+                                        <div className="flex flex-col">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                        {table.name}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {getTableTotal(table.name) >
+                                                        0 && (
+                                                        <div className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                                                            {currency_symbol}
+                                                            {getTableTotal(
+                                                                table.name,
+                                                            ).toFixed(2)}
+                                                        </div>
+                                                    )}
+                                                    {tableNumber ===
+                                                        table.name && (
+                                                        <Check className="h-4 w-4 flex-shrink-0 text-purple-500 dark:text-purple-400" />
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                {getTableTotal(table.name) >
-                                                    0 && (
-                                                    <div className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                                                        {currency_symbol}
-                                                        {getTableTotal(
-                                                            table.name,
-                                                        ).toFixed(2)}
-                                                    </div>
-                                                )}
-                                                {tableNumber === table.name && (
-                                                    <Check className="h-4 w-4 flex-shrink-0 text-purple-500 dark:text-purple-400" />
-                                                )}
+                                            <div className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                                                {table.seats} seats
+                                                {table.joined_with &&
+                                                    ' • Joined'}
                                             </div>
                                         </div>
-                                        <div className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
-                                            {table.seats} seats
-                                            {table.joined_with && ' • Joined'}
-                                        </div>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                                    </button>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
 
                 {/* Menu Items */}
-                <Card className={`overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 ${showCheckout ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
+                <Card
+                    className={`overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 ${showCheckout ? 'lg:col-span-1' : 'lg:col-span-2'}`}
+                >
                     <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600">
                         <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
                             <UtensilsCrossed className="mr-2 h-4 w-4 text-blue-500" />
@@ -519,10 +592,16 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     key={item.id}
                                     onClick={(e) => {
                                         e.preventDefault();
+                                        if (!tableNumber) {
+                                            toast.error('Please select a table first');
+                                            return;
+                                        }
                                         onAddItemToOrder(item);
                                     }}
-                                    className="group flex h-auto touch-manipulation flex-col items-center rounded-lg border border-gray-200 bg-white p-3 text-gray-900 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:border-blue-500 dark:hover:bg-blue-900/20"
+                                    disabled={!tableNumber}
+                                    className="group flex h-auto touch-manipulation flex-col items-center rounded-lg border border-gray-200 bg-white p-3 text-gray-900 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600 dark:disabled:hover:bg-gray-700"
                                     type="button"
+                                    title={!tableNumber ? 'Select a table first' : `Add ${item.name}`}
                                 >
                                     <img
                                         src={
@@ -571,14 +650,21 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     <Printer className="h-4 w-4" />
                                 </button>
                                 <button
-                                    onClick={() =>
-                                        onSetShowCheckout(!showCheckout)
-                                    }
-                                    className="flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30"
+                                    onClick={() => {
+                                        if (!tableNumber) {
+                                            toast.error('Please select a table first');
+                                            return;
+                                        }
+                                        onSetShowCheckout(!showCheckout);
+                                    }}
+                                    disabled={!tableNumber && !showCheckout}
+                                    className="flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-green-600 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent dark:text-green-400 dark:hover:bg-green-900/30"
                                     title={
-                                        showCheckout
-                                            ? 'Hide Checkout'
-                                            : 'Show Checkout'
+                                        !tableNumber && !showCheckout
+                                            ? 'Select a table first'
+                                            : showCheckout
+                                              ? 'Hide Checkout'
+                                              : 'Show Checkout'
                                     }
                                 >
                                     {showCheckout ? (
@@ -733,9 +819,7 @@ export const PosTab: React.FC<PosTabProps> = ({
                                     type="number"
                                     value={discount}
                                     onChange={(e) =>
-                                        onSetDiscount(
-                                            Number(e.target.value),
-                                        )
+                                        onSetDiscount(Number(e.target.value))
                                     }
                                     placeholder={
                                         discountType === 'percentage'
@@ -864,17 +948,41 @@ export const PosTab: React.FC<PosTabProps> = ({
 
                 {!showCheckout &&
                     (todaysSchedules.length > 0 ||
-                        todaysReservations.length > 0) && (
+                        todaysReservations.length > 0 ||
+                        customerName) && (
                         <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 lg:col-span-1">
                             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 dark:border-gray-600 dark:from-blue-900/20 dark:to-indigo-900/20">
                                 <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 dark:text-white">
                                     <div className="flex items-center">
                                         <Calculator className="mr-2 h-4 w-4 text-blue-500" />
-                                        Today's Schedule
+                                        {customerName
+                                            ? 'Order Info & Schedule'
+                                            : "Today's Schedule"}
                                     </div>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3 p-4">
+                                {/* Customer Info Section */}
+                                {customerName && (
+                                    <div className="rounded-lg border-2 border-orange-300 bg-orange-50 p-3 dark:border-orange-600 dark:bg-orange-900/20">
+                                        <div className="mb-1 flex items-center gap-2">
+                                            <span className="text-xs font-semibold uppercase text-orange-700 dark:text-orange-400">
+                                                Customer Order
+                                            </span>
+                                        </div>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                            <strong>Customer:</strong>{' '}
+                                            {customerName}
+                                        </p>
+                                        {customerNotes && (
+                                            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                                                <strong>Special Requests:</strong>{' '}
+                                                {customerNotes}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
                                 {/* Today's Schedules */}
                                 {todaysSchedules.map((sched) => (
                                     <div
@@ -986,6 +1094,12 @@ export const PosTab: React.FC<PosTabProps> = ({
                         </Card>
                     )}
             </div>
+
+            {/* Customer Orders Panel */}
+            <CustomerOrdersPanel
+                onAddItemsToPOS={handleAddCustomerOrderToPOS}
+                onRefresh={handleRefreshOrders}
+            />
 
             {/* Payment Dialog */}
             <PaymentDialog

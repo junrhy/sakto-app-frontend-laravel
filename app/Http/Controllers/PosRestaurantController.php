@@ -947,6 +947,8 @@ class PosRestaurantController extends Controller
                 'discount_type' => 'required|in:percentage,fixed',
                 'service_charge' => 'required|numeric',
                 'service_charge_type' => 'required|in:percentage,fixed',
+                'customer_name' => 'nullable|string',
+                'customer_notes' => 'nullable|string',
                 'subtotal' => 'required|numeric',
                 'total_amount' => 'required|numeric'
             ]);
@@ -1201,6 +1203,80 @@ class PosRestaurantController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+        }
+    }
+
+    /**
+     * Get pending customer orders
+     */
+    public function getPendingCustomerOrders(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-customer-orders/pending", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to fetch customer orders');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update customer order status
+     */
+    public function updateCustomerOrderStatus(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:pending,confirmed,preparing,served,cancelled'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-customer-orders/{$id}/status", [
+                    'status' => $validated['status'],
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update order status');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Delete customer order (after adding to POS)
+     */
+    public function cancelCustomerOrder(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-customer-orders/{$id}", [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to delete order');
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Order deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

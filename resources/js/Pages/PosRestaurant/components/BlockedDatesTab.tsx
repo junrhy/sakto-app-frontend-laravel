@@ -1,4 +1,3 @@
-import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Label } from '@/Components/ui/label';
 import { Calendar } from 'lucide-react';
@@ -222,13 +221,12 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                 Select Date to Block *
                             </Label>
                             <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-                                Choose a date to block specific time slots from reservations
+                                Choose a date to block specific time slots from
+                                reservations
                             </p>
                             <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
                                 <DateCalendar
-                                    selectedDate={
-                                        newBlockedDate.blocked_date
-                                    }
+                                    selectedDate={newBlockedDate.blocked_date}
                                     onDateSelect={(dateStr) => {
                                         setNewBlockedDate({
                                             ...newBlockedDate,
@@ -247,253 +245,243 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
 
                         {/* Time Slots Section - Right Side */}
                         <div className="lg:col-span-6">
-                                <div className="mb-2 flex items-center justify-between">
-                                    <Label className="text-sm font-medium text-gray-900 dark:text-white">
-                                        Click to Block/Unblock Time Slots
-                                    </Label>
+                            <div className="mb-2 flex items-center justify-between">
+                                <Label className="text-sm font-medium text-gray-900 dark:text-white">
+                                    Click to Block/Unblock Time Slots
+                                </Label>
+                            </div>
+
+                            {/* Legend */}
+                            <div className="mb-2 flex flex-wrap gap-3 text-xs">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-gray-400 bg-gray-300 dark:border-gray-700 dark:bg-gray-800"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Not Opened
+                                    </span>
                                 </div>
-
-                                {/* Legend */}
-                                <div className="mb-2 flex flex-wrap gap-3 text-xs">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-3 w-3 rounded border border-gray-400 bg-gray-300 dark:border-gray-700 dark:bg-gray-800"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Not Opened
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Available to Block
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-3 w-3 rounded border border-red-500 bg-red-500"></div>
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            Blocked
-                                        </span>
-                                    </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Available to Block
+                                    </span>
                                 </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3 w-3 rounded border border-red-500 bg-red-500"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                        Blocked
+                                    </span>
+                                </div>
+                            </div>
 
-                                <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                    <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                        {/* AM Column */}
-                                        <div>
-                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
-                                                AM
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
-                                                {timeSlots.am.map(
-                                                    (timeSlot) => {
-                                                        const isOpened =
-                                                            openedDates.length ===
-                                                                0 ||
-                                                            openedDates.some(
-                                                                (opened) => {
-                                                                    const openedDateStr =
-                                                                        opened.opened_date.split(
-                                                                            'T',
-                                                                        )[0];
-                                                                    return (
-                                                                        openedDateStr ===
-                                                                            newBlockedDate.blocked_date &&
-                                                                        opened.timeslots &&
-                                                                        opened.timeslots.includes(
-                                                                            timeSlot.value,
-                                                                        )
-                                                                    );
-                                                                },
+                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                    {/* AM Column */}
+                                    <div>
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                            AM
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                            {timeSlots.am.map((timeSlot) => {
+                                                const isOpened =
+                                                    openedDates.length === 0 ||
+                                                    openedDates.some(
+                                                        (opened) => {
+                                                            const openedDateStr =
+                                                                opened.opened_date.split(
+                                                                    'T',
+                                                                )[0];
+                                                            return (
+                                                                openedDateStr ===
+                                                                    newBlockedDate.blocked_date &&
+                                                                opened.timeslots &&
+                                                                opened.timeslots.includes(
+                                                                    timeSlot.value,
+                                                                )
                                                             );
+                                                        },
+                                                    );
 
-                                                        const isBlocked =
-                                                            optimisticBlockedDates.some(
-                                                                (blocked) => {
-                                                                    const blockedDateStr =
-                                                                        blocked.blocked_date.split(
-                                                                            'T',
-                                                                        )[0];
-                                                                    const selectedDateStr =
-                                                                        newBlockedDate.blocked_date;
-                                                                    return (
-                                                                        blockedDateStr ===
-                                                                            selectedDateStr &&
-                                                                        blocked.timeslots.includes(
-                                                                            timeSlot.value,
-                                                                        )
-                                                                    );
-                                                                },
+                                                const isBlocked =
+                                                    optimisticBlockedDates.some(
+                                                        (blocked) => {
+                                                            const blockedDateStr =
+                                                                blocked.blocked_date.split(
+                                                                    'T',
+                                                                )[0];
+                                                            const selectedDateStr =
+                                                                newBlockedDate.blocked_date;
+                                                            return (
+                                                                blockedDateStr ===
+                                                                    selectedDateStr &&
+                                                                blocked.timeslots.includes(
+                                                                    timeSlot.value,
+                                                                )
                                                             );
+                                                        },
+                                                    );
 
-                                                        const isLoading =
-                                                            loadingSlots.includes(
+                                                const isLoading =
+                                                    loadingSlots.includes(
+                                                        timeSlot.value,
+                                                    );
+
+                                                return (
+                                                    <button
+                                                        key={timeSlot.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleTimeSlotToggle(
                                                                 timeSlot.value,
-                                                            );
-
-                                                        return (
-                                                            <button
-                                                                key={
-                                                                    timeSlot.value
-                                                                }
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleTimeSlotToggle(
-                                                                        timeSlot.value,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    isLoading ||
-                                                                    !isOpened
-                                                                }
-                                                                className={`relative whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                                    !isOpened
-                                                                        ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                        : isBlocked
-                                                                          ? 'border-red-500 bg-red-500 text-white hover:bg-red-600'
-                                                                          : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-red-700 dark:hover:bg-red-900/20'
-                                                                } ${isLoading ? 'cursor-wait opacity-50' : !isOpened ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                                                            >
-                                                                {isLoading ? (
-                                                                    <span className="flex items-center justify-center">
-                                                                        <svg
-                                                                            className="h-4 w-4 animate-spin"
-                                                                            viewBox="0 0 24 24"
-                                                                        >
-                                                                            <circle
-                                                                                className="opacity-25"
-                                                                                cx="12"
-                                                                                cy="12"
-                                                                                r="10"
-                                                                                stroke="currentColor"
-                                                                                strokeWidth="4"
-                                                                                fill="none"
-                                                                            />
-                                                                            <path
-                                                                                className="opacity-75"
-                                                                                fill="currentColor"
-                                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                                            />
-                                                                        </svg>
-                                                                    </span>
-                                                                ) : (
-                                                                    timeSlot.display
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    },
-                                                )}
-                                            </div>
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            isLoading ||
+                                                            !isOpened
+                                                        }
+                                                        className={`relative whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                            !isOpened
+                                                                ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                : isBlocked
+                                                                  ? 'border-red-500 bg-red-500 text-white hover:bg-red-600'
+                                                                  : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-red-700 dark:hover:bg-red-900/20'
+                                                        } ${isLoading ? 'cursor-wait opacity-50' : !isOpened ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                                    >
+                                                        {isLoading ? (
+                                                            <span className="flex items-center justify-center">
+                                                                <svg
+                                                                    className="h-4 w-4 animate-spin"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <circle
+                                                                        className="opacity-25"
+                                                                        cx="12"
+                                                                        cy="12"
+                                                                        r="10"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="4"
+                                                                        fill="none"
+                                                                    />
+                                                                    <path
+                                                                        className="opacity-75"
+                                                                        fill="currentColor"
+                                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                                    />
+                                                                </svg>
+                                                            </span>
+                                                        ) : (
+                                                            timeSlot.display
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
+                                    </div>
 
-                                        {/* PM Column */}
-                                        <div>
-                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 md:mb-3 md:text-sm dark:text-gray-300">
-                                                PM
-                                            </h4>
-                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
-                                                {timeSlots.pm.map(
-                                                    (timeSlot) => {
-                                                        const isOpened =
-                                                            openedDates.length ===
-                                                                0 ||
-                                                            openedDates.some(
-                                                                (opened) => {
-                                                                    const openedDateStr =
-                                                                        opened.opened_date.split(
-                                                                            'T',
-                                                                        )[0];
-                                                                    return (
-                                                                        openedDateStr ===
-                                                                            newBlockedDate.blocked_date &&
-                                                                        opened.timeslots &&
-                                                                        opened.timeslots.includes(
-                                                                            timeSlot.value,
-                                                                        )
-                                                                    );
-                                                                },
+                                    {/* PM Column */}
+                                    <div>
+                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                            PM
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                            {timeSlots.pm.map((timeSlot) => {
+                                                const isOpened =
+                                                    openedDates.length === 0 ||
+                                                    openedDates.some(
+                                                        (opened) => {
+                                                            const openedDateStr =
+                                                                opened.opened_date.split(
+                                                                    'T',
+                                                                )[0];
+                                                            return (
+                                                                openedDateStr ===
+                                                                    newBlockedDate.blocked_date &&
+                                                                opened.timeslots &&
+                                                                opened.timeslots.includes(
+                                                                    timeSlot.value,
+                                                                )
                                                             );
+                                                        },
+                                                    );
 
-                                                        const isBlocked =
-                                                            optimisticBlockedDates.some(
-                                                                (blocked) => {
-                                                                    const blockedDateStr =
-                                                                        blocked.blocked_date.split(
-                                                                            'T',
-                                                                        )[0];
-                                                                    const selectedDateStr =
-                                                                        newBlockedDate.blocked_date;
-                                                                    return (
-                                                                        blockedDateStr ===
-                                                                            selectedDateStr &&
-                                                                        blocked.timeslots.includes(
-                                                                            timeSlot.value,
-                                                                        )
-                                                                    );
-                                                                },
+                                                const isBlocked =
+                                                    optimisticBlockedDates.some(
+                                                        (blocked) => {
+                                                            const blockedDateStr =
+                                                                blocked.blocked_date.split(
+                                                                    'T',
+                                                                )[0];
+                                                            const selectedDateStr =
+                                                                newBlockedDate.blocked_date;
+                                                            return (
+                                                                blockedDateStr ===
+                                                                    selectedDateStr &&
+                                                                blocked.timeslots.includes(
+                                                                    timeSlot.value,
+                                                                )
                                                             );
+                                                        },
+                                                    );
 
-                                                        const isLoading =
-                                                            loadingSlots.includes(
+                                                const isLoading =
+                                                    loadingSlots.includes(
+                                                        timeSlot.value,
+                                                    );
+
+                                                return (
+                                                    <button
+                                                        key={timeSlot.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleTimeSlotToggle(
                                                                 timeSlot.value,
-                                                            );
-
-                                                        return (
-                                                            <button
-                                                                key={
-                                                                    timeSlot.value
-                                                                }
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleTimeSlotToggle(
-                                                                        timeSlot.value,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    isLoading ||
-                                                                    !isOpened
-                                                                }
-                                                                className={`relative whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                                    !isOpened
-                                                                        ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                        : isBlocked
-                                                                          ? 'border-red-500 bg-red-500 text-white hover:bg-red-600'
-                                                                          : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-red-700 dark:hover:bg-red-900/20'
-                                                                } ${isLoading ? 'cursor-wait opacity-50' : !isOpened ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                                                            >
-                                                                {isLoading ? (
-                                                                    <span className="flex items-center justify-center">
-                                                                        <svg
-                                                                            className="h-4 w-4 animate-spin"
-                                                                            viewBox="0 0 24 24"
-                                                                        >
-                                                                            <circle
-                                                                                className="opacity-25"
-                                                                                cx="12"
-                                                                                cy="12"
-                                                                                r="10"
-                                                                                stroke="currentColor"
-                                                                                strokeWidth="4"
-                                                                                fill="none"
-                                                                            />
-                                                                            <path
-                                                                                className="opacity-75"
-                                                                                fill="currentColor"
-                                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                                            />
-                                                                        </svg>
-                                                                    </span>
-                                                                ) : (
-                                                                    timeSlot.display
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    },
-                                                )}
-                                            </div>
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            isLoading ||
+                                                            !isOpened
+                                                        }
+                                                        className={`relative whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                            !isOpened
+                                                                ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                : isBlocked
+                                                                  ? 'border-red-500 bg-red-500 text-white hover:bg-red-600'
+                                                                  : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-red-700 dark:hover:bg-red-900/20'
+                                                        } ${isLoading ? 'cursor-wait opacity-50' : !isOpened ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                                    >
+                                                        {isLoading ? (
+                                                            <span className="flex items-center justify-center">
+                                                                <svg
+                                                                    className="h-4 w-4 animate-spin"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <circle
+                                                                        className="opacity-25"
+                                                                        cx="12"
+                                                                        cy="12"
+                                                                        r="10"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="4"
+                                                                        fill="none"
+                                                                    />
+                                                                    <path
+                                                                        className="opacity-75"
+                                                                        fill="currentColor"
+                                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                                    />
+                                                                </svg>
+                                                            </span>
+                                                        ) : (
+                                                            timeSlot.display
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>
