@@ -2,6 +2,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
 import {
     Table,
     TableBody,
@@ -23,6 +24,7 @@ interface MenuTabProps {
     onEditMenuItem: (item: MenuItem) => void;
     onDeleteMenuItem: (id: number) => void;
     onBulkDeleteMenuItems: (ids: number[]) => void;
+    onToggleAvailability?: (id: number, field: 'is_available_personal' | 'is_available_online', value: boolean) => void;
 }
 
 export const MenuTab: React.FC<MenuTabProps> = ({
@@ -34,6 +36,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
     onEditMenuItem,
     onDeleteMenuItem,
     onBulkDeleteMenuItems,
+    onToggleAvailability,
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -232,29 +235,60 @@ export const MenuTab: React.FC<MenuTabProps> = ({
                                             : 'N/A'}
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex flex-col gap-1">
-                                            <span
-                                                className={`rounded px-2 py-1 text-xs ${
-                                                    item.is_available_personal
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                }`}
-                                            >
-                                                {item.is_available_personal
-                                                    ? 'Personal'
-                                                    : 'Not Available'}
-                                            </span>
-                                            <span
-                                                className={`rounded px-2 py-1 text-xs ${
-                                                    item.is_available_online
-                                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                                }`}
-                                            >
-                                                {item.is_available_online
-                                                    ? 'Online'
-                                                    : 'Offline'}
-                                            </span>
+                                        <div className="flex flex-col gap-3">
+                                            {/* In Store Availability Toggle */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                        In Store
+                                                    </span>
+                                                    <span
+                                                        className={`rounded px-2 py-1 text-xs ${
+                                                            item.is_available_personal
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                        }`}
+                                                    >
+                                                        {item.is_available_personal ? 'Available' : 'Unavailable'}
+                                                    </span>
+                                                </div>
+                                                {canEdit && onToggleAvailability && (
+                                                    <Switch
+                                                        checked={item.is_available_personal}
+                                                        onCheckedChange={(checked) =>
+                                                            onToggleAvailability(item.id, 'is_available_personal', checked)
+                                                        }
+                                                        className="data-[state=checked]:bg-green-600"
+                                                    />
+                                                )}
+                                            </div>
+                                            
+                                            {/* Online Availability Toggle */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                        Online
+                                                    </span>
+                                                    <span
+                                                        className={`rounded px-2 py-1 text-xs ${
+                                                            item.is_available_online
+                                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                        }`}
+                                                    >
+                                                        {item.is_available_online ? 'Available' : 'Unavailable'}
+                                                    </span>
+                                                </div>
+                                                {canEdit && onToggleAvailability && (
+                                                    <Switch
+                                                        checked={item.is_available_online}
+                                                        onCheckedChange={(checked) =>
+                                                            onToggleAvailability(item.id, 'is_available_online', checked)
+                                                        }
+                                                        className="data-[state=checked]:bg-blue-600"
+                                                    />
+                                                )}
+                                            </div>
                                         </div>
                                     </TableCell>
                                     <TableCell>

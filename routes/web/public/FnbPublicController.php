@@ -25,3 +25,9 @@ Route::get('/fnb/customer-display/{clientIdentifier}', [App\Http\Controllers\Pos
 // Kitchen Order Status Update (public)
 Route::put('/fnb/kitchen-orders/{id}/status', [App\Http\Controllers\PosRestaurantController::class, 'updateKitchenOrderStatus'])->name('pos-restaurant.kitchen-orders.update-status');
 
+// Public Online Store Routes
+Route::get('/fnb/store/{domain}', [FnbPublicController::class, 'onlineStore'])->name('fnb.public.online-store');
+Route::get('/fnb/store/{domain}/menu', [FnbPublicController::class, 'onlineStoreMenu'])->name('fnb.public.online-store.menu');
+Route::post('/fnb/store/{domain}/order', [FnbPublicController::class, 'submitOnlineOrder'])->name('fnb.public.online-store.order');
+Route::get('/fnb/store/{domain}/order/{orderNumber}', [FnbPublicController::class, 'orderStatus'])->name('fnb.public.online-store.order-status');
+

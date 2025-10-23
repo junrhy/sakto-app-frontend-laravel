@@ -24,8 +24,24 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/menu-items', [PosRestaurantController::class, 'getMenuItems']);
         Route::post('/menu-items', [PosRestaurantController::class, 'storeMenuItem']);
         Route::put('/menu-item/{id}', [PosRestaurantController::class, 'updateMenuItem']);
+        Route::patch('/menu-item/{id}/toggle-availability', [PosRestaurantController::class, 'toggleMenuItemAvailability']);
         Route::delete('/menu-item/{id}', [PosRestaurantController::class, 'destroyMenuItem']);
         Route::post('/menu-items/bulk-destroy', [PosRestaurantController::class, 'bulkDestroyMenuItem']);
+        
+        // Online Stores
+        Route::get('/online-stores', [PosRestaurantController::class, 'getOnlineStores']);
+        Route::post('/online-stores', [PosRestaurantController::class, 'storeOnlineStore']);
+        Route::put('/online-store/{id}', [PosRestaurantController::class, 'updateOnlineStore']);
+        Route::delete('/online-store/{id}', [PosRestaurantController::class, 'destroyOnlineStore']);
+        Route::patch('/online-store/{id}/toggle-status', [PosRestaurantController::class, 'toggleOnlineStoreStatus']);
+        Route::patch('/online-store/{id}/menu-items', [PosRestaurantController::class, 'updateOnlineStoreMenuItems']);
+        
+        // Online Orders
+        Route::get('/online-orders', [PosRestaurantController::class, 'getOnlineOrders']);
+        Route::patch('/online-order/{id}/verify', [PosRestaurantController::class, 'verifyOnlineOrder']);
+        Route::patch('/online-order/{id}/negotiate-payment', [PosRestaurantController::class, 'negotiateOnlineOrderPayment']);
+        Route::patch('/online-order/{id}/status', [PosRestaurantController::class, 'updateOnlineOrderStatus']);
+        Route::patch('/online-order/{id}/payment-status', [PosRestaurantController::class, 'updateOnlineOrderPaymentStatus']);
         
         // Tables
         Route::get('/tables', [PosRestaurantController::class, 'getTables']);

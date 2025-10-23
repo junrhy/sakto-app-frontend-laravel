@@ -37,6 +37,8 @@ class PosRestaurantController extends Controller
             'openedDates' => $this->getOpenedDates(),
             'tableSchedules' => $this->getTableSchedules(),
             'sales' => $this->getSales(),
+            'onlineStores' => $this->getOnlineStores(),
+            'onlineOrders' => $this->getOnlineOrders(),
             'currency_symbol' => $jsonAppCurrency->symbol
         ]);
     }
@@ -162,6 +164,41 @@ class PosRestaurantController extends Controller
             return redirect()->back()->with('success', 'Menu item updated successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update menu item.');
+        }
+    }
+
+    /**
+     * Toggle menu item availability
+     */
+    public function toggleMenuItemAvailability(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'field' => 'required|in:is_available_personal,is_available_online',
+                'value' => 'required|boolean'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-menu-items/{$id}/toggle-availability", [
+                    'field' => $validated['field'],
+                    'value' => $validated['value'],
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Menu item availability updated successfully',
+                'data' => $response->json()['data'] ?? null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update menu item availability: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -1415,6 +1452,327 @@ class PosRestaurantController extends Controller
                 'status' => 'error',
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Get online stores from API
+     */
+    public function getOnlineStores()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-online-stores?client_identifier={$clientIdentifier}");
+
+            if(!$response->json()) {
+                Log::error('Failed to connect to FNB Online Stores API', ['client_identifier' => $clientIdentifier]);
+                return [];
+            }
+
+            if (!$response->successful()) {
+                Log::error('FNB Online Stores API request failed', [
+                    'client_identifier' => $clientIdentifier,
+                    'response' => $response->body()
+                ]);
+                return [];
+            }
+
+            return $response->json()['data']['fnb_online_stores'] ?? [];
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching online stores', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Store a newly created online store
+     */
+    public function storeOnlineStore(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'domain' => 'required|string',
+                'is_active' => 'boolean',
+                'menu_items' => 'nullable|array',
+                'menu_items.*' => 'integer',
+                'settings' => 'nullable|array',
+                'verification_required' => 'nullable|in:auto,manual,none',
+                'payment_negotiation_enabled' => 'boolean',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-online-stores", $validated);
+
+            if (!$response->successful()) {
+                return redirect()->back()
+                    ->with('error', $response->json()['message'] ?? 'Failed to create online store');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Online store created successfully')
+                ->with('onlineStore', $response->json()['data']);
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to store online store: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update the specified online store
+     */
+    public function updateOnlineStore(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:255',
+                'description' => 'nullable|string',
+                'domain' => 'sometimes|string',
+                'is_active' => 'boolean',
+                'menu_items' => 'nullable|array',
+                'menu_items.*' => 'integer',
+                'settings' => 'nullable|array',
+                'verification_required' => 'nullable|in:auto,manual,none',
+                'payment_negotiation_enabled' => 'boolean',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-online-stores/{$id}", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Online store updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update online store.');
+        }
+    }
+
+    /**
+     * Remove the specified online store
+     */
+    public function destroyOnlineStore(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-online-stores/{$id}", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Online store deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete online store.');
+        }
+    }
+
+    /**
+     * Toggle online store status
+     */
+    public function toggleOnlineStoreStatus(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'is_active' => 'required|boolean'
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-online-stores/{$id}/toggle-status", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Online store status updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update online store status: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update online store menu items
+     */
+    public function updateOnlineStoreMenuItems(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'menu_items' => 'required|array',
+                'menu_items.*' => 'integer'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-online-stores/{$id}/menu-items", array_merge($validated, [
+                    'client_identifier' => $clientIdentifier
+                ]));
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Menu items updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update menu items: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get online orders from API
+     */
+    public function getOnlineOrders()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-online-orders?client_identifier={$clientIdentifier}");
+
+            if(!$response->json()) {
+                Log::error('Failed to connect to FNB Online Orders API', ['client_identifier' => $clientIdentifier]);
+                return [];
+            }
+
+            if (!$response->successful()) {
+                Log::error('FNB Online Orders API request failed', [
+                    'client_identifier' => $clientIdentifier,
+                    'response' => $response->body()
+                ]);
+                return [];
+            }
+
+            return $response->json()['data']['fnb_online_orders'] ?? [];
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching online orders', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Verify an online order
+     */
+    public function verifyOnlineOrder(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'verification_status' => 'required|in:verified,rejected',
+                'verification_notes' => 'nullable|string'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+            $validated['client_identifier'] = $clientIdentifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-online-orders/{$id}/verify", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Order verification updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to verify order: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Negotiate payment for an online order
+     */
+    public function negotiateOnlineOrderPayment(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'negotiated_amount' => 'required|numeric|min:0',
+                'payment_notes' => 'nullable|string'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+            $validated['client_identifier'] = $clientIdentifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-online-orders/{$id}/negotiate-payment", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Payment negotiation updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to negotiate payment: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update online order status
+     */
+    public function updateOnlineOrderStatus(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:pending,verified,preparing,ready,delivered,cancelled'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+            $validated['client_identifier'] = $clientIdentifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-online-orders/{$id}/status", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Order status updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update order status: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update online order payment status
+     */
+    public function updateOnlineOrderPaymentStatus(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'payment_status' => 'required|in:pending,negotiated,paid,failed',
+                'payment_method' => 'nullable|string',
+                'payment_notes' => 'nullable|string'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+            $validated['client_identifier'] = $clientIdentifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/fnb-online-orders/{$id}", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Payment status updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update payment status: ' . $e->getMessage());
         }
     }
 

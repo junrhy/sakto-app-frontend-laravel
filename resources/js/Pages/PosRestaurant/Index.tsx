@@ -6,6 +6,7 @@ import {
     Calendar,
     Check,
     ChefHat,
+    ShoppingBag,
     ShoppingCart,
     TrendingUp,
     UtensilsCrossed,
@@ -67,6 +68,12 @@ const KitchenTab = lazy(() =>
 const SalesTab = lazy(() =>
     import('./components/SalesTab').then((module) => ({
         default: module.SalesTab,
+    })),
+);
+
+const FoodDeliveryTab = lazy(() =>
+    import('./components/FoodDeliveryTab').then((module) => ({
+        default: module.FoodDeliveryTab,
     })),
 );
 
@@ -145,6 +152,52 @@ interface PageProps {
     openedDates?: OpenedDate[];
     tableSchedules?: TableSchedule[];
     sales?: Sale[];
+    onlineStores?: Array<{
+        id: number;
+        name: string;
+        description: string;
+        domain: string;
+        is_active: boolean;
+        menu_items: number[];
+        settings: any;
+        verification_required: string;
+        payment_negotiation_enabled: boolean;
+        created_at: string;
+        updated_at: string;
+    }>;
+    onlineOrders?: Array<{
+        id: number;
+        order_number: string;
+        customer_name: string;
+        customer_email: string;
+        customer_phone: string;
+        delivery_address: string;
+        items: Array<{
+            id: number;
+            name: string;
+            quantity: number;
+            price: number;
+        }>;
+        subtotal: number;
+        delivery_fee: number;
+        tax_amount: number;
+        total_amount: number;
+        status: string;
+        verification_status: string;
+        verification_notes?: string;
+        payment_negotiation_enabled: boolean;
+        negotiated_amount?: number;
+        payment_notes?: string;
+        payment_status: string;
+        payment_method?: string;
+        verified_at?: string;
+        created_at: string;
+        online_store: {
+            id: number;
+            name: string;
+            domain: string;
+        };
+    }>;
     currency_symbol?: string;
     auth: {
         user: {
@@ -163,6 +216,8 @@ export default function PosRestaurantIndex({
     openedDates = [],
     tableSchedules = [],
     sales = [],
+    onlineStores = [],
+    onlineOrders = [],
     currency_symbol = '$',
     auth,
 }: PageProps) {
@@ -712,6 +767,16 @@ export default function PosRestaurantIndex({
         setIsDeleteMenuItemDialogOpen(true);
     }, []);
 
+    const handleToggleAvailability = useCallback(
+        async (id: number, field: 'is_available_personal' | 'is_available_online', value: boolean) => {
+            const result = await api.toggleMenuItemAvailability(id, field, value);
+            if (result) {
+                api.refreshData();
+            }
+        },
+        [api],
+    );
+
     // Reservation handlers
     const handleAddReservation = useCallback(
         async (reservation: Omit<Reservation, 'id' | 'status'>) => {
@@ -992,6 +1057,13 @@ export default function PosRestaurantIndex({
                                         >
                                             <TrendingUp className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
                                             Sales
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="food-delivery"
+                                            className="group relative w-full justify-start rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-gray-100 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700 dark:data-[state=inactive]:hover:text-gray-200"
+                                        >
+                                            <ShoppingBag className="mr-2 h-4 w-4 group-data-[state=active]:text-white" />
+                                            Food Delivery
                                         </TabsTrigger>
                                     </TabsList>
                                 </div>
@@ -1298,6 +1370,9 @@ export default function PosRestaurantIndex({
                                                             onBulkDeleteMenuItems={
                                                                 handleBulkDeleteMenuItems
                                                             }
+                                                            onToggleAvailability={
+                                                                handleToggleAvailability
+                                                            }
                                                         />
                                                     </TabsContent>
                                                 )}
@@ -1329,6 +1404,76 @@ export default function PosRestaurantIndex({
                                                             currency_symbol={
                                                                 currency_symbol
                                                             }
+                                                        />
+                                                    </TabsContent>
+                                                )}
+
+                                                {currentTab === 'food-delivery' && (
+                                                    <TabsContent
+                                                        value="food-delivery"
+                                                        className="m-0 p-0"
+                                                    >
+                                                        <FoodDeliveryTab
+                                                            menuItems={posState.menuItems}
+                                                            onlineStores={onlineStores}
+                                                            onlineOrders={onlineOrders}
+                                                            currency_symbol={currency_symbol}
+                                                            canEdit={true}
+                                                            canDelete={true}
+                                                            onAddOnlineStore={async (storeData) => {
+                                                                const result = await api.createOnlineStore(storeData);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onEditOnlineStore={async (id, storeData) => {
+                                                                const result = await api.updateOnlineStore(id, storeData);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onDeleteOnlineStore={async (id) => {
+                                                                const result = await api.deleteOnlineStore(id);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onToggleStoreStatus={async (id, is_active) => {
+                                                                const result = await api.toggleOnlineStoreStatus(id, is_active);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onUpdateStoreMenuItems={async (id, menuItemIds) => {
+                                                                const result = await api.updateOnlineStoreMenuItems(id, menuItemIds);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onVerifyOrder={async (id, status, notes) => {
+                                                                const result = await api.verifyOrder(id, status, notes);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onNegotiatePayment={async (id, amount, notes) => {
+                                                                const result = await api.negotiatePayment(id, amount, notes);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onUpdateOrderStatus={async (id, status) => {
+                                                                const result = await api.updateOrderStatus(id, status);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
+                                                            onUpdatePaymentStatus={async (id, paymentStatus, paymentMethod, paymentNotes) => {
+                                                                const result = await api.updatePaymentStatus(id, paymentStatus, paymentMethod, paymentNotes);
+                                                                if (result) {
+                                                                    api.refreshData();
+                                                                }
+                                                            }}
                                                         />
                                                     </TabsContent>
                                                 )}
