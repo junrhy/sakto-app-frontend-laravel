@@ -17,7 +17,8 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { Check, Clock, Trash, X } from 'lucide-react';
+import { Badge } from '@/Components/ui/badge';
+import { Check, Clock, Trash, X, Users, Plus, Calendar, User, Phone, MessageSquare, MapPin, CalendarDays, CalendarCheck, CalendarClock } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { router } from '@inertiajs/react';
@@ -28,6 +29,7 @@ import {
     Table as TableType,
 } from '../types';
 import { DateCalendar } from './DateCalendar';
+import { MultipleTableAssignmentDialog } from './MultipleTableAssignmentDialog';
 
 interface TableSchedule {
     id: number;
@@ -76,6 +78,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     onCancelReservation,
 }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isMultipleTableDialogOpen, setIsMultipleTableDialogOpen] = useState(false);
+    const [isAssignTableDialogOpen, setIsAssignTableDialogOpen] = useState(false);
+    const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [reservationFilter, setReservationFilter] = useState<
@@ -94,6 +99,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             time: '',
             guests: 1,
             tableId: 0,
+            tableIds: [],
             notes: '',
             contact: '',
         };
@@ -321,6 +327,32 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         [isTableReserved],
     );
 
+    const handleMultipleTableAssignment = useCallback((selectedTableIds: number[]) => {
+        setNewReservation(prev => ({
+            ...prev,
+            tableIds: selectedTableIds,
+            tableId: selectedTableIds.length > 0 ? selectedTableIds[0] : 0, // Keep first table as primary
+        }));
+        setIsMultipleTableDialogOpen(false);
+        toast.success(`Assigned ${selectedTableIds.length} table(s) to reservation`);
+    }, []);
+
+    const handleAssignTables = useCallback((reservation: Reservation) => {
+        setSelectedReservation(reservation);
+        setIsAssignTableDialogOpen(true);
+    }, []);
+
+    const handleAssignTableUpdate = useCallback((selectedTableIds: number[]) => {
+        if (selectedReservation) {
+            onUpdateReservation(selectedReservation.id, {
+                tableIds: selectedTableIds,
+            });
+            setIsAssignTableDialogOpen(false);
+            setSelectedReservation(null);
+            // Toast message is handled by the API hook
+        }
+    }, [selectedReservation, onUpdateReservation]);
+
     const handleSubmitReservation = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
@@ -336,68 +368,26 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                 return;
             }
 
-            // Check if there are any available tables for this time slot
-            const processedJoinedGroups = new Set<string>();
-            let availableCount = 0;
+            // Note: Table availability is now handled by the multiple table assignment dialog
+            // Users can only select from available tables in the assignment dialog
 
-            tables.forEach((t) => {
-                const tableId =
-                    typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                const joinedInfo = getJoinedTableInfo(
-                    tableId,
-                    newReservation.date,
-                    newReservation.time,
-                );
-
-                if (joinedInfo) {
-                    // Count joined group only once
-                    if (!processedJoinedGroups.has(joinedInfo.joinedWith)) {
-                        processedJoinedGroups.add(joinedInfo.joinedWith);
-
-                        const isGroupReserved = joinedInfo.joinedTableIds.some(
-                            (id) =>
-                                isTableReserved(
-                                    id,
-                                    newReservation.date,
-                                    newReservation.time,
-                                ),
-                        );
-                        const hasCapacity =
-                            joinedInfo.totalSeats >= newReservation.guests;
-
-                        if (hasCapacity && !isGroupReserved) {
-                            availableCount++;
-                        }
-                    }
-                } else {
-                    // Regular table
-                    const hasCapacity = t.seats >= newReservation.guests;
-                    const isReserved = isTableReserved(
-                        tableId,
-                        newReservation.date,
-                        newReservation.time,
-                    );
-                    const isUnavailable = isTableUnavailableInSchedule(
-                        tableId,
-                        newReservation.date,
-                        newReservation.time,
-                    );
-
-                    if (hasCapacity && !isReserved && !isUnavailable) {
-                        availableCount++;
-                    }
-                }
-            });
-
-            if (availableCount === 0) {
-                toast.error(
-                    'No tables available for this time slot. All tables are either reserved, unavailable, or have insufficient capacity.',
-                );
+            // Check if tables are assigned
+            if (!newReservation.tableIds || newReservation.tableIds.length === 0) {
+                toast.error('Please assign at least one table for this reservation');
                 return;
             }
 
-            if (!newReservation.tableId || newReservation.tableId === 0) {
-                toast.error('Please select a table for this reservation');
+            // Check if selected tables have sufficient total capacity
+            const totalSelectedSeats = newReservation.tableIds.reduce((total, tableId) => {
+                const table = tables.find(t => {
+                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                    return tId === tableId;
+                });
+                return total + (table?.seats || 0);
+            }, 0);
+
+            if (totalSelectedSeats < newReservation.guests) {
+                toast.error(`Selected tables have insufficient capacity. Total seats: ${totalSelectedSeats}, Required: ${newReservation.guests}`);
                 return;
             }
 
@@ -427,6 +417,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                 time: '',
                 guests: 1,
                 tableId: 0,
+                tableIds: [],
                 notes: '',
                 contact: '',
             }));
@@ -678,12 +669,22 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
 
                     {/* Reservations List */}
                     <div className="space-y-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                Reservations
-                            </h3>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
+                                    <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Reservations
+                                    </h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {filteredReservations.length} reservation{filteredReservations.length !== 1 ? 's' : ''} found
+                                    </p>
+                                </div>
+                            </div>
 
-                            {/* Filter Buttons */}
+                            {/* Enhanced Filter Buttons */}
                             <div className="flex flex-wrap gap-2">
                                 <Button
                                     size="sm"
@@ -695,9 +696,11 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     onClick={() =>
                                         setReservationFilter('today')
                                     }
-                                    className="flex-1 sm:flex-none"
+                                    className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                                 >
-                                    Today
+                                    <CalendarDays className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Today</span>
+                                    <span className="sm:hidden">Today</span>
                                 </Button>
                                 <Button
                                     size="sm"
@@ -709,9 +712,11 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     onClick={() =>
                                         setReservationFilter('selected')
                                     }
-                                    className="flex-1 sm:flex-none"
+                                    className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                                 >
-                                    Selected Date
+                                    <CalendarCheck className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Selected Date</span>
+                                    <span className="sm:hidden">Selected</span>
                                 </Button>
                                 <Button
                                     size="sm"
@@ -723,108 +728,63 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     onClick={() =>
                                         setReservationFilter('upcoming')
                                     }
-                                    className="flex-1 sm:flex-none"
+                                    className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                                 >
-                                    Upcoming
+                                    <CalendarClock className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Upcoming</span>
+                                    <span className="sm:hidden">Upcoming</span>
                                 </Button>
                             </div>
                         </div>
 
                         {filteredReservations.length === 0 ? (
-                            <div className="py-8 text-center">
+                            <div className="py-12 text-center">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                    <Calendar className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                                </div>
+                                <h4 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+                                    No reservations found
+                                </h4>
                                 <p className="text-gray-500 dark:text-gray-400">
                                     {reservationFilter === 'today' &&
-                                        'No reservations for today.'}
+                                        'No reservations scheduled for today.'}
                                     {reservationFilter === 'selected' &&
-                                        `No reservations for ${new Date(newReservation.date).toLocaleDateString()}.`}
+                                        `No reservations found for ${new Date(newReservation.date).toLocaleDateString()}.`}
                                     {reservationFilter === 'upcoming' &&
                                         'No upcoming reservations found.'}
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid gap-4">
+                            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                                 {filteredReservations.map((reservation) => (
                                     <Card
                                         key={reservation.id}
-                                        className="border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
+                                        className="group border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500"
                                     >
                                         <CardContent className="p-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <div className="mb-2 flex items-center gap-2">
-                                                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                                            {/* Header Section */}
+                                            <div className="mb-3 flex items-start justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                                        <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                                                             {reservation.name}
                                                         </h4>
-                                                        <span
-                                                            className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(reservation.status)}`}
-                                                        >
-                                                            {reservation.status}
-                                                        </span>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300 md:grid-cols-4">
-                                                        <div>
-                                                            <span className="font-medium">
-                                                                Date:
-                                                            </span>{' '}
-                                                            {reservation.date}
-                                                        </div>
-                                                        <div>
-                                                            <span className="font-medium">
-                                                                Time:
-                                                            </span>{' '}
-                                                            {reservation.time}
-                                                        </div>
-                                                        <div>
-                                                            <span className="font-medium">
-                                                                Guests:
-                                                            </span>{' '}
-                                                            {reservation.guests}
-                                                        </div>
-                                                        <div>
-                                                            <span className="font-medium">
-                                                                Table:
-                                                            </span>{' '}
-                                                            {(() => {
-                                                                const tableId =
-                                                                    reservation.tableId ||
-                                                                    (
-                                                                        reservation as any
-                                                                    ).table_id;
-                                                                const foundTable =
-                                                                    tables.find(
-                                                                        (t) =>
-                                                                            t.id ===
-                                                                            tableId,
-                                                                    );
-                                                                return (
-                                                                    foundTable?.name ||
-                                                                    'N/A'
-                                                                );
-                                                            })()}
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge
+                                                                className={`${getStatusColor(reservation.status)} text-xs font-medium`}
+                                                            >
+                                                                {reservation.status}
+                                                            </Badge>
                                                         </div>
                                                     </div>
-                                                    {reservation.contact && (
-                                                        <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                                            <span className="font-medium">
-                                                                Contact:
-                                                            </span>{' '}
-                                                            {
-                                                                reservation.contact
-                                                            }
-                                                        </div>
-                                                    )}
-                                                    {reservation.notes && (
-                                                        <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                                            <span className="font-medium">
-                                                                Notes:
-                                                            </span>{' '}
-                                                            {reservation.notes}
-                                                        </div>
-                                                    )}
                                                 </div>
-                                                <div className="ml-4 flex gap-2">
-                                                    {reservation.status ===
-                                                        'pending' && (
+                                                
+                                                {/* Action Buttons */}
+                                                <div className="flex gap-2">
+                                                    {reservation.status === 'pending' && (
                                                         <>
                                                             <Button
                                                                 size="sm"
@@ -850,8 +810,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                             </Button>
                                                         </>
                                                     )}
-                                                    {reservation.status ===
-                                                        'confirmed' && (
+                                                    {reservation.status === 'confirmed' && (
                                                         <Button
                                                             size="sm"
                                                             variant="destructive"
@@ -877,6 +836,117 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                     </Button>
                                                 </div>
                                             </div>
+
+                                            {/* Main Info Grid */}
+                                            <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                {/* Date & Time */}
+                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                    <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {reservation.date}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {reservation.time}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Guests */}
+                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                    <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {reservation.guests} Guest{reservation.guests !== 1 ? 's' : ''}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            Party Size
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Tables */}
+                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                    <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {(() => {
+                                                                // Handle multiple tables
+                                                                if (reservation.tableIds && reservation.tableIds.length > 0) {
+                                                                    const tableNames = reservation.tableIds.map(tableId => {
+                                                                        const foundTable = tables.find(t => {
+                                                                            const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                                            return tId === tableId;
+                                                                        });
+                                                                        return foundTable?.name || `Table ${tableId}`;
+                                                                    });
+                                                                    return tableNames.join(', ');
+                                                                }
+                                                                
+                                                                // Fallback to single table
+                                                                const tableId =
+                                                                    reservation.tableId ||
+                                                                    (
+                                                                        reservation as any
+                                                                    ).table_id;
+                                                                const foundTable =
+                                                                    tables.find(
+                                                                        (t) =>
+                                                                            t.id ===
+                                                                            tableId,
+                                                                    );
+                                                                return (
+                                                                    foundTable?.name ||
+                                                                    'N/A'
+                                                                );
+                                                            })()}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {reservation.tableIds && reservation.tableIds.length > 1 ? 'Tables' : 'Table'}
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => handleAssignTables(reservation)}
+                                                        className="ml-2 h-8 w-8 p-0"
+                                                    >
+                                                        <Users className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+
+                                                {/* Contact */}
+                                                {reservation.contact && (
+                                                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                        <Phone className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                {reservation.contact}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                Contact
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Notes Section */}
+                                            {reservation.notes && (
+                                                <div className="rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                    <div className="flex items-start gap-2">
+                                                        <MessageSquare className="mt-0.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                        <div>
+                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                                                                Notes
+                                                            </p>
+                                                            <p className="text-sm text-gray-900 dark:text-white">
+                                                                {reservation.notes}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -1084,220 +1154,61 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                             </div>
 
                             <div>
-                                <Label htmlFor="table_select">Table *</Label>
-                                <Select
-                                    value={newReservation.tableId.toString()}
-                                    onValueChange={(value) =>
-                                        setNewReservation((prev) => ({
-                                            ...prev,
-                                            tableId: parseInt(value),
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a table" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {tables.length === 0 ? (
-                                            <div className="p-2 text-center text-sm text-gray-500">
-                                                No tables available. Please add
-                                                tables first.
-                                            </div>
-                                        ) : (
-                                            (() => {
-                                                const processedJoinedGroups =
-                                                    new Set<string>();
-
-                                                return tables
-                                                    .map((table) => {
-                                                        const tableId =
-                                                            typeof table.id ===
-                                                            'number'
-                                                                ? table.id
-                                                                : parseInt(
-                                                                      table.id.toString(),
-                                                                  );
-                                                        const joinedInfo =
-                                                            getJoinedTableInfo(
-                                                                tableId,
-                                                                newReservation.date,
-                                                                newReservation.time,
-                                                            );
-
-                                                        // If table is joined, only show one entry for the joined group
-                                                        if (joinedInfo) {
-                                                            const groupKey =
-                                                                joinedInfo.joinedWith;
-
-                                                            // Skip if we've already processed this joined group
-                                                            if (
-                                                                processedJoinedGroups.has(
-                                                                    groupKey,
-                                                                )
-                                                            ) {
-                                                                return null;
-                                                            }
-                                                            processedJoinedGroups.add(
-                                                                groupKey,
-                                                            );
-
-                                                            // Get names of joined tables
-                                                            const joinedTableNames =
-                                                                joinedInfo.joinedTableIds
-                                                                    .map(
-                                                                        (
-                                                                            id,
-                                                                        ) => {
-                                                                            const t =
-                                                                                tables.find(
-                                                                                    (
-                                                                                        t,
-                                                                                    ) => {
-                                                                                        const tId =
-                                                                                            typeof t.id ===
-                                                                                            'number'
-                                                                                                ? t.id
-                                                                                                : parseInt(
-                                                                                                      t.id.toString(),
-                                                                                                  );
-                                                                                        return (
-                                                                                            tId ===
-                                                                                            id
-                                                                                        );
-                                                                                    },
-                                                                                );
-                                                                            return t?.name;
-                                                                        },
-                                                                    )
-                                                                    .filter(
-                                                                        Boolean,
-                                                                    )
-                                                                    .join(
-                                                                        ' + ',
-                                                                    );
-
-                                                            // Check if any table in the joined group is reserved
-                                                            const isGroupReserved =
-                                                                joinedInfo.joinedTableIds.some(
-                                                                    (id) =>
-                                                                        isTableReserved(
-                                                                            id,
-                                                                            newReservation.date,
-                                                                            newReservation.time,
-                                                                        ),
-                                                                );
-
-                                                            const hasInsufficientCapacity =
-                                                                joinedInfo.totalSeats <
-                                                                newReservation.guests;
-                                                            const isDisabled =
-                                                                hasInsufficientCapacity ||
-                                                                isGroupReserved;
-
-                                                            return (
-                                                                <SelectItem
-                                                                    key={`joined-${groupKey}`}
-                                                                    value={tableId.toString()}
-                                                                    disabled={
-                                                                        isDisabled
-                                                                    }
-                                                                    className={
-                                                                        isDisabled
-                                                                            ? 'cursor-not-allowed opacity-50'
-                                                                            : ''
-                                                                    }
-                                                                >
-                                                                    {
-                                                                        joinedTableNames
-                                                                    }{' '}
-                                                                    -{' '}
-                                                                    {
-                                                                        joinedInfo.totalSeats
-                                                                    }{' '}
-                                                                    seats
-                                                                    (Joined)
-                                                                    {hasInsufficientCapacity && (
-                                                                        <span className="ml-2 text-xs text-red-500">
-                                                                            (Insufficient
-                                                                            capacity)
-                                                                        </span>
-                                                                    )}
-                                                                    {!hasInsufficientCapacity &&
-                                                                        isGroupReserved && (
-                                                                            <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">
-                                                                                (Already
-                                                                                reserved)
-                                                                            </span>
-                                                                        )}
-                                                                </SelectItem>
-                                                            );
-                                                        }
-
-                                                        // Regular table (not joined)
-                                                        const hasInsufficientCapacity =
-                                                            table.seats <
-                                                            newReservation.guests;
-                                                        const isReserved =
-                                                            isTableReserved(
-                                                                tableId,
-                                                                newReservation.date,
-                                                                newReservation.time,
-                                                            );
-                                                        const isUnavailable =
-                                                            isTableUnavailableInSchedule(
-                                                                tableId,
-                                                                newReservation.date,
-                                                                newReservation.time,
-                                                            );
-                                                        const isDisabled =
-                                                            hasInsufficientCapacity ||
-                                                            isReserved ||
-                                                            isUnavailable;
-
-                                                        return (
-                                                            <SelectItem
-                                                                key={table.id}
-                                                                value={table.id.toString()}
-                                                                disabled={
-                                                                    isDisabled
-                                                                }
-                                                                className={
-                                                                    isDisabled
-                                                                        ? 'cursor-not-allowed opacity-50'
-                                                                        : ''
-                                                                }
-                                                            >
-                                                                {table.name} -{' '}
-                                                                {table.seats}{' '}
-                                                                seats
-                                                                {hasInsufficientCapacity && (
-                                                                    <span className="ml-2 text-xs text-red-500">
-                                                                        (Insufficient
-                                                                        capacity)
-                                                                    </span>
-                                                                )}
-                                                                {!hasInsufficientCapacity &&
-                                                                    isReserved && (
-                                                                        <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">
-                                                                            (Already
-                                                                            reserved)
-                                                                        </span>
-                                                                    )}
-                                                                {!hasInsufficientCapacity &&
-                                                                    !isReserved &&
-                                                                    isUnavailable && (
-                                                                        <span className="ml-2 text-xs text-red-500">
-                                                                            (Unavailable)
-                                                                        </span>
-                                                                    )}
-                                                            </SelectItem>
-                                                        );
-                                                    })
-                                                    .filter(Boolean);
-                                            })()
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                                <div className="flex items-center justify-between mb-2">
+                                    <Label htmlFor="table_assign">Tables *</Label>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setIsMultipleTableDialogOpen(true)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Users className="h-4 w-4" />
+                                        Assign
+                                    </Button>
+                                </div>
+                                
+                                {/* Show assigned tables */}
+                                {newReservation.tableIds && newReservation.tableIds.length > 0 ? (
+                                    <div className="mb-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                            <span className="text-sm font-medium text-green-900 dark:text-green-100">
+                                                Assigned Tables ({newReservation.tableIds.length})
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {newReservation.tableIds.map((tableId) => {
+                                                const table = tables.find(t => {
+                                                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                    return tId === tableId;
+                                                });
+                                                return (
+                                                    <Badge key={tableId} variant="secondary" className="text-xs">
+                                                        {table?.name} ({table?.seats} seats)
+                                                    </Badge>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="mt-2 text-xs text-green-700 dark:text-green-300">
+                                            Total capacity: {newReservation.tableIds.reduce((total, tableId) => {
+                                                const table = tables.find(t => {
+                                                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
+                                                    return tId === tableId;
+                                                });
+                                                return total + (table?.seats || 0);
+                                            }, 0)} seats
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                        <div className="text-center text-gray-500 dark:text-gray-400">
+                                            <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                            <p className="text-sm">No tables assigned</p>
+                                            <p className="text-xs">Click "Assign" to select tables for this reservation</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
@@ -1334,6 +1245,42 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Multiple Table Assignment Dialog */}
+            <MultipleTableAssignmentDialog
+                isOpen={isMultipleTableDialogOpen}
+                onClose={() => setIsMultipleTableDialogOpen(false)}
+                onConfirm={handleMultipleTableAssignment}
+                tables={tables}
+                selectedDate={newReservation.date}
+                selectedTime={newReservation.time}
+                guests={newReservation.guests}
+                tableSchedules={tableSchedules}
+                isTableReserved={isTableReserved}
+                isTableUnavailableInSchedule={isTableUnavailableInSchedule}
+                getJoinedTableInfo={getJoinedTableInfo}
+            />
+
+            {/* Assign Tables Dialog for Existing Reservations */}
+            {selectedReservation && (
+                <MultipleTableAssignmentDialog
+                    isOpen={isAssignTableDialogOpen}
+                    onClose={() => {
+                        setIsAssignTableDialogOpen(false);
+                        setSelectedReservation(null);
+                    }}
+                    onConfirm={handleAssignTableUpdate}
+                    tables={tables}
+                    selectedDate={selectedReservation.date}
+                    selectedTime={selectedReservation.time}
+                    guests={selectedReservation.guests}
+                    tableSchedules={tableSchedules}
+                    isTableReserved={isTableReserved}
+                    isTableUnavailableInSchedule={isTableUnavailableInSchedule}
+                    getJoinedTableInfo={getJoinedTableInfo}
+                    preSelectedTableIds={selectedReservation.tableIds || []}
+                />
+            )}
         </div>
     );
 };

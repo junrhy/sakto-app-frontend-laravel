@@ -36,7 +36,6 @@ interface ReservationFormData {
     date: string;
     time: string;
     guests: number;
-    tableId: number;
     notes: string;
 }
 
@@ -144,7 +143,6 @@ export default function PublicReservation({
             date: `${year}-${month}-${day}`,
             time: '',
             guests: 2,
-            tableId: 0,
             notes: '',
         };
     });
@@ -196,29 +194,10 @@ export default function PublicReservation({
         [openedDates],
     );
 
-    // Get available tables for selected date and time
-    const availableTables = useMemo(() => {
-        if (!formData.date || !formData.time) return [];
-
-        return tables.filter((table) => {
-            // Check if table has enough seats
-            const hasCapacity = table.seats >= formData.guests;
-            
-            // For now, we'll assume all tables are available
-            // In a real implementation, you'd check against existing reservations
-            return hasCapacity;
-        });
-    }, [tables, formData.date, formData.time, formData.guests]);
-
     // Reset time when date changes
     useEffect(() => {
-        setFormData((prev) => ({ ...prev, time: '', tableId: 0 }));
+        setFormData((prev) => ({ ...prev, time: '' }));
     }, [formData.date]);
-
-    // Reset table when time changes
-    useEffect(() => {
-        setFormData((prev) => ({ ...prev, tableId: 0 }));
-    }, [formData.time]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -249,10 +228,7 @@ export default function PublicReservation({
             return;
         }
         
-        if (formData.tableId === 0) {
-            toast.error('Please select a table');
-            return;
-        }
+        // Table assignment will be handled by restaurant staff
 
         setIsSubmitting(true);
         
@@ -279,7 +255,6 @@ export default function PublicReservation({
                     date: `${year}-${month}-${day}`,
                     time: '',
                     guests: 2,
-                    tableId: 0,
                     notes: '',
                 });
             } else {
@@ -562,68 +537,31 @@ export default function PublicReservation({
                                     </div>
                                 </div>
 
-                                {/* Party Size and Table Selection */}
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div>
-                                        <Label htmlFor="guests" className="flex items-center gap-2">
-                                            <Users className="h-4 w-4" />
-                                            Party Size *
-                                        </Label>
-                                        <Input
-                                            id="guests"
-                                            type="number"
-                                            min="1"
-                                            max="20"
-                                            value={formData.guests}
-                                            onChange={(e) => {
-                                                const newGuests = parseInt(e.target.value) || 1;
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    guests: newGuests,
-                                                    tableId: 0, // Reset table selection
-                                                }));
-                                            }}
-                                            required
-                                            className="mt-1"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="table">
-                                            Preferred Table *
-                                        </Label>
-                                        <Select
-                                            value={formData.tableId.toString()}
-                                            onValueChange={(value) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    tableId: parseInt(value),
-                                                }))
-                                            }
-                                        >
-                                            <SelectTrigger className="mt-1">
-                                                <SelectValue placeholder="Select a table" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availableTables.length === 0 ? (
-                                                    <div className="p-2 text-center text-sm text-gray-500">
-                                                        {!formData.date || !formData.time
-                                                            ? 'Please select date and time first'
-                                                            : 'No available tables for this time slot'}
-                                                    </div>
-                                                ) : (
-                                                    availableTables.map((table) => (
-                                                        <SelectItem
-                                                            key={table.id}
-                                                            value={table.id.toString()}
-                                                        >
-                                                            {table.name} - {table.seats} seats
-                                                        </SelectItem>
-                                                    ))
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                {/* Party Size */}
+                                <div>
+                                    <Label htmlFor="guests" className="flex items-center gap-2">
+                                        <Users className="h-4 w-4" />
+                                        Party Size *
+                                    </Label>
+                                    <Input
+                                        id="guests"
+                                        type="number"
+                                        min="1"
+                                        max="20"
+                                        value={formData.guests}
+                                        onChange={(e) => {
+                                            const newGuests = parseInt(e.target.value) || 1;
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                guests: newGuests,
+                                            }));
+                                        }}
+                                        required
+                                        className="mt-1"
+                                    />
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                        We'll assign the best available table for your party size
+                                    </p>
                                 </div>
 
                                 {/* Special Requests */}

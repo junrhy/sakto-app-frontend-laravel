@@ -24,6 +24,7 @@ export interface Table {
     numericId?: number;
     name: string;
     seats: number;
+    location?: string;
     status: 'available' | 'occupied' | 'reserved' | 'joined';
     joined_with?: string;
     isJoinedTable?: boolean;
@@ -37,6 +38,7 @@ export interface Reservation {
     time: string;
     guests: number;
     tableId: number;
+    tableIds?: number[]; // For multiple table reservations
     status: 'pending' | 'confirmed' | 'cancelled';
     notes?: string;
     contact?: string;
@@ -71,6 +73,7 @@ export interface EditTableData {
     id: number;
     name: string;
     seats: number;
+    location?: string;
 }
 
 export interface TableResponse {

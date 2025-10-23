@@ -261,6 +261,7 @@ export default function PosRestaurantIndex({
         id: number;
         name: string;
         seats: number;
+        location?: string;
     } | null>(null);
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
@@ -590,10 +591,11 @@ export default function PosRestaurantIndex({
 
     // Table handlers
     const handleAddTable = useCallback(
-        async (name: string, seats: number) => {
+        async (name: string, seats: number, location: string) => {
             const result = await api.createTable({
                 name,
                 seats,
+                location,
                 status: 'available',
             });
             if (result) {
@@ -611,13 +613,14 @@ export default function PosRestaurantIndex({
                     : parseInt(table.id.toString()),
             name: table.name,
             seats: table.seats,
+            location: table.location,
         });
         setIsEditTableDialogOpen(true);
     }, []);
 
     const handleConfirmEditTable = useCallback(
-        async (id: number, name: string, seats: number) => {
-            const result = await api.updateTable(id, { name, seats });
+        async (id: number, name: string, seats: number, location: string) => {
+            const result = await api.updateTable(id, { name, seats, location });
             if (result) {
                 api.refreshData();
             }

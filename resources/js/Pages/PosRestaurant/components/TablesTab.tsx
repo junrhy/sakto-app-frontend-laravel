@@ -177,6 +177,47 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         [blockedDates],
     );
 
+    // Synchronize local table statuses with actual table data
+    React.useEffect(() => {
+        if (tables && Array.isArray(tables)) {
+            // Clear any local statuses that don't match the actual table status
+            const updatedStatuses: Record<number | string, 'available' | 'occupied' | 'reserved' | 'joined'> = {};
+            
+            tables.forEach((table) => {
+                // Only keep local status if it's different from actual status
+                // This allows for optimistic updates while preventing stale data
+                if (tableStatuses[table.id] && tableStatuses[table.id] !== table.status) {
+                    // Keep the local status for optimistic updates
+                    updatedStatuses[table.id] = tableStatuses[table.id];
+                }
+            });
+            
+            setTableStatuses(updatedStatuses);
+        }
+    }, [tables]);
+
+    // Function to clear local table status (useful for debugging or manual reset)
+    const clearTableStatus = React.useCallback((tableId: number | string) => {
+        setTableStatuses(prev => {
+            const updated = { ...prev };
+            delete updated[tableId];
+            return updated;
+        });
+    }, []);
+
+    // Function to clear all local table statuses
+    const clearAllTableStatuses = React.useCallback(() => {
+        setTableStatuses({});
+    }, []);
+
+    // Debug function - expose to window for console access
+    React.useEffect(() => {
+        (window as any).clearTableStatus = clearTableStatus;
+        (window as any).clearAllTableStatuses = clearAllTableStatuses;
+        (window as any).getTableStatuses = () => tableStatuses;
+        (window as any).getTables = () => tables;
+    }, [clearTableStatus, clearAllTableStatuses, tableStatuses, tables]);
+
     // Auto-select first available timeslot when date changes
     React.useEffect(() => {
         // Combine all timeslots from AM and PM

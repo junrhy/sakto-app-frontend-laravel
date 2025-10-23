@@ -282,6 +282,7 @@ class PosRestaurantController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'seats' => 'required|integer|min:1',
+                'location' => 'nullable|string',
                 'status' => 'nullable|string|in:available,occupied,reserved,joined'
             ]);
 
@@ -542,7 +543,8 @@ class PosRestaurantController extends Controller
                     'date' => $reservation['date'] ?? '',
                     'time' => $reservation['time'] ?? '',
                     'guests' => (int)($reservation['guests'] ?? 1), // Convert to integer
-                    'tableId' => (int)($reservation['table_id'] ?? 0), // Convert to integer
+                    'tableId' => null, // Legacy field - no longer used
+                    'tableIds' => $reservation['table_ids'] ?? null, // Multiple table IDs
                     'status' => $reservation['status'] ?? 'pending',
                     'notes' => $reservation['notes'] ?? null,
                     'contact' => $reservation['contact'] ?? null,
@@ -565,7 +567,7 @@ class PosRestaurantController extends Controller
                 'date' => 'required|date',
                 'time' => 'required|string',
                 'guests' => 'required|integer|min:1',
-                'tableId' => 'required|integer',
+                'tableIds' => 'nullable|array',
                 'contact' => 'nullable|string',
                 'notes' => 'nullable|string',
             ]);
@@ -576,7 +578,7 @@ class PosRestaurantController extends Controller
                 'date' => $validated['date'],
                 'time' => $validated['time'],
                 'guests' => $validated['guests'],
-                'table_id' => $validated['tableId'], // Convert tableId to table_id
+                'table_ids' => $validated['tableIds'] ?? null, // Multiple table IDs
                 'contact' => $validated['contact'] ?? '',
                 'notes' => $validated['notes'] ?? '',
                 'status' => 'pending', // Set default status
@@ -612,7 +614,7 @@ class PosRestaurantController extends Controller
                 'date' => 'sometimes|date',
                 'time' => 'sometimes|string',
                 'guests' => 'sometimes|integer|min:1',
-                'tableId' => 'sometimes|integer',
+                'tableIds' => 'nullable|array',
                 'contact' => 'nullable|string',
                 'notes' => 'nullable|string',
                 'status' => 'sometimes|in:pending,confirmed,cancelled',
@@ -620,9 +622,9 @@ class PosRestaurantController extends Controller
 
             // Transform data for API if needed
             $apiData = $validated;
-            if (isset($validated['tableId'])) {
-                $apiData['table_id'] = $validated['tableId'];
-                unset($apiData['tableId']);
+            if (isset($validated['tableIds'])) {
+                $apiData['table_ids'] = $validated['tableIds'];
+                unset($apiData['tableIds']);
             }
 
             $response = Http::withToken($this->apiToken)
@@ -1159,12 +1161,24 @@ class PosRestaurantController extends Controller
             $guests = $validated['guests'];
             $name = $validated['name'];
 
+            // Get confirmation token from reservation
+            $confirmationToken = $reservation['confirmation_token'] ?? null;
+            $confirmationUrl = $confirmationToken ? 
+                config('app.url') . "/pos-restaurant/reservation/confirm/{$confirmationToken}" : 
+                null;
+
             // Create SMS message
             $messageBody = "Hello {$name}! Your table reservation has been confirmed:\n\n";
             $messageBody .= "Date: {$date}\n";
             $messageBody .= "Time: {$time}\n";
             $messageBody .= "Guests: {$guests}\n";
             $messageBody .= "Status: pending\n\n";
+            
+            if ($confirmationUrl) {
+                $messageBody .= "Please confirm your reservation by clicking this link:\n";
+                $messageBody .= "{$confirmationUrl}\n\n";
+            }
+            
             $messageBody .= "Thank you for choosing us!";
 
             // Send SMS

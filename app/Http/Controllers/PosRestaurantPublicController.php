@@ -82,7 +82,6 @@ class PosRestaurantPublicController extends Controller
                 'date' => 'required|date',
                 'time' => 'required|string',
                 'guests' => 'required|integer|min:1|max:20',
-                'tableId' => 'required|integer',
                 'notes' => 'nullable|string|max:1000',
                 'client_identifier' => 'required|string',
             ], [
@@ -101,14 +100,13 @@ class PosRestaurantPublicController extends Controller
                 'date' => $validated['date'],
                 'time' => $validated['time'],
                 'guests' => $validated['guests'],
-                'tableId' => $validated['tableId'],
                 'notes' => $validated['notes'],
                 'status' => 'pending',
             ];
 
             // Submit reservation to backend API
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/reservations", $reservationData);
+                ->post("{$this->apiUrl}/fnb-reservations", $reservationData);
 
             if (!$response->successful()) {
                 $errorMessage = $response->json()['message'] ?? 'Failed to submit reservation';
@@ -131,6 +129,40 @@ class PosRestaurantPublicController extends Controller
                 'status' => 'error',
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Show the reservation confirmation page
+     */
+    public function confirmReservation($token): Response
+    {
+        try {
+            // Fetch reservation details by token from backend API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-reservations/by-token/{$token}");
+
+            if (!$response->successful()) {
+                return Inertia::render('PosRestaurant/ReservationConfirmation', [
+                    'token' => $token,
+                    'reservation' => null,
+                    'error' => 'Reservation not found'
+                ]);
+            }
+
+            $reservation = $response->json()['data'];
+
+            return Inertia::render('PosRestaurant/ReservationConfirmation', [
+                'token' => $token,
+                'reservation' => $reservation
+            ]);
+
+        } catch (\Exception $e) {
+            return Inertia::render('PosRestaurant/ReservationConfirmation', [
+                'token' => $token,
+                'reservation' => null,
+                'error' => 'Failed to load reservation details'
+            ]);
         }
     }
 
