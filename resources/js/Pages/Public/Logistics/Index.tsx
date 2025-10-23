@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost } from '@/lib/utils';
+import { getHost, formatCurrency } from '@/lib/utils';
 import {
     faBolt,
     faChartLine,
@@ -477,8 +477,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {basicPlan?.currency || '₱'}
-                                            {basicPlan?.price || 299}
+                                            {formatCurrency(
+                                                basicPlan?.price || 299,
+                                                basicPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {basicPlan?.period || '/month'}
@@ -559,8 +561,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {proPlan?.currency || '₱'}
-                                            {proPlan?.price || 499}
+                                            {formatCurrency(
+                                                proPlan?.price || 499,
+                                                proPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {proPlan?.period || '/month'}
@@ -638,8 +642,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {businessPlan?.currency || '₱'}
-                                            {businessPlan?.price || 699}
+                                            {formatCurrency(
+                                                businessPlan?.price || 699,
+                                                businessPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {businessPlan?.period || '/month'}

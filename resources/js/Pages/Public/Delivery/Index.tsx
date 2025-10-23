@@ -1,4 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
+import { formatCurrency } from '@/lib/utils';
 import {
     faClock,
     faMapMarkerAlt,
@@ -501,10 +502,12 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {basicPlan?.currency || ''}
                                             {basicPlan?.price === 0
                                                 ? 'Free'
-                                                : `${basicPlan?.currency || '₱'}${basicPlan?.price || 0}`}
+                                                : formatCurrency(
+                                                    basicPlan?.price || 0,
+                                                    basicPlan?.currency || '₱'
+                                                )}
                                         </span>
                                         {basicPlan?.period && (
                                             <span className="text-sm text-slate-600">
@@ -609,8 +612,10 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {proPlan?.currency || '₱'}
-                                            {proPlan?.price || 199}
+                                            {formatCurrency(
+                                                proPlan?.price || 199,
+                                                proPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {proPlan?.period || '/month'}
@@ -725,8 +730,10 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-slate-900">
-                                            {businessPlan?.currency || '₱'}
-                                            {businessPlan?.price || 399}
+                                            {formatCurrency(
+                                                businessPlan?.price || 399,
+                                                businessPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-slate-600">
                                             {businessPlan?.period || '/month'}

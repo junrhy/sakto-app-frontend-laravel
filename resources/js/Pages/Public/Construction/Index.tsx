@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost } from '@/lib/utils';
+import { getHost, formatCurrency } from '@/lib/utils';
 import {
     faChartLine,
     faCheckCircle,
@@ -429,8 +429,7 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {basicPlan.currency}
-                                            {basicPlan.price}
+                                            {formatCurrency(basicPlan.price, basicPlan.currency)}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -481,8 +480,7 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {proPlan.currency}
-                                            {proPlan.price}
+                                            {formatCurrency(proPlan.price, proPlan.currency)}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -528,8 +526,7 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {businessPlan.currency}
-                                            {businessPlan.price}
+                                            {formatCurrency(businessPlan.price, businessPlan.currency)}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month

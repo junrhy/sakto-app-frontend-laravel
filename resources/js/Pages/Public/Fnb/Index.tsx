@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost } from '@/lib/utils';
+import { getHost, formatCurrency } from '@/lib/utils';
 import {
     faChartLine,
     faCheckCircle,
@@ -469,8 +469,10 @@ export default function FnbIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-red-900">
-                                            {basicPlan?.currency || '₱'}
-                                            {basicPlan?.price || 299}
+                                            {formatCurrency(
+                                                basicPlan?.price || 299,
+                                                basicPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-red-700">
                                             {basicPlan?.period || '/month'}
@@ -551,8 +553,10 @@ export default function FnbIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-red-900">
-                                            {proPlan?.currency || '₱'}
-                                            {proPlan?.price || 599}
+                                            {formatCurrency(
+                                                proPlan?.price || 599,
+                                                proPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-red-700">
                                             {proPlan?.period || '/month'}
@@ -629,8 +633,10 @@ export default function FnbIndex({ auth }: PageProps) {
                                     </p>
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-red-900">
-                                            {businessPlan?.currency || '₱'}
-                                            {businessPlan?.price || 999}
+                                            {formatCurrency(
+                                                businessPlan?.price || 999,
+                                                businessPlan?.currency || '₱'
+                                            )}
                                         </span>
                                         <span className="text-sm text-red-700">
                                             {businessPlan?.period || '/month'}

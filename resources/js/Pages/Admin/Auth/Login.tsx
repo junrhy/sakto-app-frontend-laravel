@@ -4,9 +4,11 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler, useEffect } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
 export default function Login() {
+    const [hostname, setHostname] = useState('Sakto');
+    
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -14,6 +16,17 @@ export default function Login() {
     });
 
     useEffect(() => {
+        // Get the hostname from the current URL
+        if (typeof window !== 'undefined') {
+            const currentHostname = window.location.hostname;
+            // Capitalize the first letter and remove common TLDs for display
+            const displayName = currentHostname
+                .split('.')[0]
+                .charAt(0)
+                .toUpperCase() + currentHostname.split('.')[0].slice(1);
+            setHostname(displayName);
+        }
+        
         return () => {
             reset('password');
         };
@@ -34,7 +47,7 @@ export default function Login() {
                         <div className="flex items-center">
                             <ApplicationLogo className="h-20 w-20 fill-current text-gray-800 dark:text-gray-200" />
                             <span className="ml-2 text-2xl font-black text-gray-900 dark:text-white">
-                                Sakto{' '}
+                                {hostname}{' '}
                                 <span className="text-blue-600 dark:text-blue-400">
                                     Admin
                                 </span>
