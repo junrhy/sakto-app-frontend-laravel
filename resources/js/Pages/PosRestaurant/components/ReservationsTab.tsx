@@ -50,10 +50,7 @@ interface ReservationsTabProps {
     openedDates?: OpenedDate[];
     tableSchedules?: TableSchedule[];
     currency_symbol: string;
-    auth: {
-        user: PageProps['auth']['user'] & {
-            identifier: string;
-        };
+    auth: PageProps['auth'] & {
         selectedTeamMember?: {
             identifier: string;
             full_name: string;
@@ -586,7 +583,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
-                                    const url = `/pos-restaurant/reservation?client_identifier=${auth.user.identifier}`;
+                                    const url = `/pos-restaurant/reservation?client_identifier=${(auth.user as any).identifier || ''}`;
                                     window.open(url, '_blank');
                                 }}
                                 className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"

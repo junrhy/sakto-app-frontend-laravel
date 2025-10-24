@@ -26,6 +26,7 @@ import {
     Sale,
     Table,
 } from './types';
+import { PageProps as InertiaPageProps } from '@/types';
 
 // Lazy load tab components for better performance
 const PosTab = lazy(() =>
@@ -142,7 +143,7 @@ interface TableSchedule {
     notes?: string | null;
 }
 
-interface PageProps {
+interface PageProps extends InertiaPageProps {
     menuItems: MenuItem[];
     tables: Table[];
     tab?: string;
@@ -199,11 +200,6 @@ interface PageProps {
         };
     }>;
     currency_symbol?: string;
-    auth: {
-        user: {
-            identifier: string;
-        };
-    };
 }
 
 export default function PosRestaurantIndex({
@@ -1390,8 +1386,8 @@ export default function PosRestaurantIndex({
                                                                 currency_symbol
                                                             }
                                                             clientIdentifier={
-                                                                auth.user
-                                                                    .identifier
+                                                                (auth.user as any)
+                                                                    .identifier || ''
                                                             }
                                                         />
                                                     </TabsContent>
