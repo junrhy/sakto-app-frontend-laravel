@@ -548,6 +548,8 @@ class PosRestaurantController extends Controller
                     'status' => $reservation['status'] ?? 'pending',
                     'notes' => $reservation['notes'] ?? null,
                     'contact' => $reservation['contact'] ?? null,
+                    'confirmation_token' => $reservation['confirmation_token'] ?? null,
+                    'confirmed_at' => $reservation['confirmed_at'] ?? null,
                 ];
             }, $reservations);
 
@@ -721,6 +723,100 @@ class PosRestaurantController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch reservations overview: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Daily Notes Methods
+    public function getDailyNotes(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $noteDate = $request->query('note_date');
+
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-daily-notes", [
+                    'client_identifier' => $clientIdentifier,
+                    'note_date' => $noteDate,
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Get daily notes failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch daily notes',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function storeDailyNote(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'note_date' => 'required|date',
+                'note' => 'required|string',
+                'created_by' => 'nullable|string',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-daily-notes", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json(), 201);
+        } catch (\Exception $e) {
+            Log::error('Store daily note failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create daily note',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    public function destroyDailyNote($id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-daily-notes/{$id}", [
+                    'client_identifier' => $clientIdentifier,
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Delete daily note failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete daily note',
+                'data' => null
             ], 500);
         }
     }

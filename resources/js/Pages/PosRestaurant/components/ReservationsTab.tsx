@@ -1,5 +1,5 @@
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -18,18 +18,20 @@ import {
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { Badge } from '@/Components/ui/badge';
-import { Check, Clock, Trash, X, Users, Plus, Calendar, User, Phone, MessageSquare, MapPin, CalendarDays, CalendarCheck, CalendarClock } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import { Check, Clock, Trash, X, Users, Plus, Calendar, User, Phone, MessageSquare, MapPin, CalendarDays, CalendarCheck, CalendarClock, StickyNote } from 'lucide-react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { router } from '@inertiajs/react';
+import axios from 'axios';
 import {
     BlockedDate,
     OpenedDate,
     Reservation,
     Table as TableType,
 } from '../types';
-import { DateCalendar } from './DateCalendar';
 import { MultipleTableAssignmentDialog } from './MultipleTableAssignmentDialog';
+import { WeekDatePicker } from './WeekDatePicker';
+import { PageProps } from '@/types';
 
 interface TableSchedule {
     id: number;
@@ -49,8 +51,14 @@ interface ReservationsTabProps {
     tableSchedules?: TableSchedule[];
     currency_symbol: string;
     auth: {
-        user: {
+        user: PageProps['auth']['user'] & {
             identifier: string;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            full_name: string;
+            email: string;
+            roles: string[];
         };
     };
     onAddReservation: (reservation: Omit<Reservation, 'id' | 'status'>) => void;
@@ -85,7 +93,12 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     const [selectedTime, setSelectedTime] = useState('');
     const [reservationFilter, setReservationFilter] = useState<
         'today' | 'selected' | 'upcoming'
-    >('upcoming');
+    >('selected');
+    const [isTimeSlotSectionVisible, setIsTimeSlotSectionVisible] = useState(false);
+    const [isDailyNotesVisible, setIsDailyNotesVisible] = useState(false);
+    const [dailyNotes, setDailyNotes] = useState<any[]>([]);
+    const [newNote, setNewNote] = useState('');
+    const [countryCode, setCountryCode] = useState('PH'); // Default to Philippines
     const [newReservation, setNewReservation] = useState<
         Omit<Reservation, 'id' | 'status'>
     >(() => {
@@ -292,6 +305,33 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             });
     }, [reservations, reservationFilter, newReservation.date]);
 
+    // Group reservations by timeslot
+    const groupedReservations = useMemo(() => {
+        const groups: { [key: string]: Reservation[] } = {};
+        
+        filteredReservations.forEach((reservation) => {
+            const key = `${reservation.date}_${reservation.time}`;
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(reservation);
+        });
+
+        // Convert to array and sort by date/time
+        return Object.entries(groups)
+            .map(([key, reservations]) => ({
+                dateTime: key,
+                date: reservations[0].date,
+                time: reservations[0].time,
+                reservations: reservations,
+            }))
+            .sort((a, b) => {
+                const dateA = new Date(`${a.date} ${a.time}`);
+                const dateB = new Date(`${b.date} ${b.time}`);
+                return dateA.getTime() - dateB.getTime();
+            });
+    }, [filteredReservations]);
+
     const getStatusColor = useCallback((status: string) => {
         switch (status) {
             case 'pending':
@@ -421,6 +461,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                 notes: '',
                 contact: '',
             }));
+            setCountryCode('PH'); // Reset to default
             setIsDialogOpen(false);
             toast.success('Reservation created successfully!');
         },
@@ -437,6 +478,68 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         ],
     );
 
+    // Fetch daily notes for the selected date
+    const fetchDailyNotes = useCallback(async () => {
+        try {
+            const response = await axios.get('/pos-restaurant/daily-notes', {
+                params: {
+                    note_date: newReservation.date,
+                },
+            });
+            
+            if (response.data.status === 'success') {
+                setDailyNotes(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching daily notes:', error);
+        }
+    }, [newReservation.date]);
+
+    // Create a new daily note
+    const handleAddNote = useCallback(async () => {
+        if (!newNote.trim()) {
+            toast.error('Please enter a note');
+            return;
+        }
+
+        try {
+            const response = await axios.post('/pos-restaurant/daily-notes', {
+                note_date: newReservation.date,
+                note: newNote,
+                created_by: auth.selectedTeamMember?.full_name || auth.user.name,
+            });
+
+            if (response.data.status === 'success') {
+                toast.success('Note added successfully');
+                setNewNote('');
+                fetchDailyNotes();
+            }
+        } catch (error) {
+            console.error('Error creating note:', error);
+            toast.error('Failed to add note');
+        }
+    }, [newNote, auth.user.name, auth.selectedTeamMember?.full_name, newReservation.date, fetchDailyNotes]);
+
+    // Delete a daily note
+    const handleDeleteNote = useCallback(async (noteId: number) => {
+        try {
+            const response = await axios.delete(`/pos-restaurant/daily-notes/${noteId}`);
+
+            if (response.data.status === 'success') {
+                toast.success('Note deleted successfully');
+                fetchDailyNotes();
+            }
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            toast.error('Failed to delete note');
+        }
+    }, [fetchDailyNotes]);
+
+    // Fetch notes when selected date changes
+    useEffect(() => {
+        fetchDailyNotes();
+    }, [newReservation.date, fetchDailyNotes]);
+
     return (
         <div className="space-y-6">
             <Card className="overflow-hidden rounded-xl border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
@@ -446,58 +549,187 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                             <Check className="mr-2 h-4 w-4 text-orange-500" />
                             Reservations
                         </CardTitle>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                                const url = `/pos-restaurant/reservation?client_identifier=${auth.user.identifier}`;
-                                window.open(url, '_blank');
-                            }}
-                            className="flex items-center gap-2"
-                        >
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            Online Reservation
-                        </Button>
+                        <div className="flex items-center gap-1 sm:gap-2">
+                            <Button
+                                size="sm"
+                                variant={isTimeSlotSectionVisible ? "default" : "outline"}
+                                onClick={() => setIsTimeSlotSectionVisible(!isTimeSlotSectionVisible)}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
+                                title={isTimeSlotSectionVisible ? "Close Reservation" : "Add Reservation"}
+                            >
+                                {isTimeSlotSectionVisible ? (
+                                    <X className="h-4 w-4" />
+                                ) : (
+                                    <Plus className="h-4 w-4" />
+                                )}
+                                <span className="hidden md:inline">
+                                    {isTimeSlotSectionVisible ? "Close Reservation" : "Add Reservation"}
+                                </span>
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={isDailyNotesVisible ? "default" : "outline"}
+                                onClick={() => setIsDailyNotesVisible(!isDailyNotesVisible)}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
+                                title={isDailyNotesVisible ? "Close Note" : "Add Note"}
+                            >
+                                {isDailyNotesVisible ? (
+                                    <X className="h-4 w-4" />
+                                ) : (
+                                    <StickyNote className="h-4 w-4" />
+                                )}
+                                <span className="hidden md:inline">
+                                    {isDailyNotesVisible ? "Close Note" : "Add Note"}
+                                </span>
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    const url = `/pos-restaurant/reservation?client_identifier=${auth.user.identifier}`;
+                                    window.open(url, '_blank');
+                                }}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
+                                title="Online Reservation"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                <span className="hidden md:inline">Online Reservation</span>
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                    {/* Calendar and Time Slots Section */}
-                    <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
-                        {/* Calendar Section - Left Side */}
-                        <div className="lg:col-span-6">
-                            <Label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
-                                Select Date *
-                            </Label>
-                            <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-                                Choose a date to create a new reservation
-                            </p>
-                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                <DateCalendar
-                                    selectedDate={newReservation.date}
-                                    onDateSelect={(dateStr) => {
-                                        setNewReservation({
-                                            ...newReservation,
-                                            date: dateStr,
-                                            time: '', // Reset time when date changes
-                                        });
-                                    }}
-                                    blockedDates={datesWithReservations}
-                                    minDate={
-                                        new Date(
-                                            new Date().setHours(0, 0, 0, 0),
-                                        )
-                                    }
-                                />
-                            </div>
-                        </div>
+                    {/* Horizontal Week View */}
+                    <WeekDatePicker
+                        selectedDate={newReservation.date}
+                        onDateSelect={(dateStr) => {
+                            setNewReservation({
+                                ...newReservation,
+                                date: dateStr,
+                                time: '', // Reset time when date changes
+                            });
+                        }}
+                        datesWithIndicator={datesWithReservations}
+                        className="mb-6"
+                    />
 
-                        {/* Time Slots Section - Right Side */}
-                        <div className="lg:col-span-6">
-                            <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                                Select Time Slot *
-                            </Label>
+                    {/* Notes List Section - Read Only (Always Visible if notes exist) */}
+                    {dailyNotes.length > 0 && (
+                        <div className="mb-6">
+                            <Card className="border-yellow-200 bg-yellow-50/30 dark:border-yellow-800/50 dark:bg-yellow-900/10">
+                                <CardHeader className="border-b border-yellow-200 bg-yellow-100/50 px-4 py-3 dark:border-yellow-800/50 dark:bg-yellow-900/20">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center text-sm font-semibold text-yellow-900 dark:text-yellow-100">
+                                            <StickyNote className="mr-2 h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                                            Notes for {new Date(newReservation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </CardTitle>
+                                        <Badge variant="secondary" className="text-xs">
+                                            {dailyNotes.length} {dailyNotes.length === 1 ? 'note' : 'notes'}
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-4">
+                                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                                        {dailyNotes.map((note) => (
+                                            <div
+                                                key={note.id}
+                                                className="group flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-gray-300 hover:shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
+                                            >
+                                                <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                                                <div className="flex-1 space-y-1">
+                                                    <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">
+                                                        {note.note}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                        <span>{note.created_by || 'Unknown'}</span>
+                                                        <span>•</span>
+                                                        <span>
+                                                            {new Date(note.created_at).toLocaleString('en-US', {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: 'numeric',
+                                                                minute: '2-digit',
+                                                                hour12: true,
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => handleDeleteNote(note.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <Trash className="h-4 w-4 text-red-500" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
+                    {/* Daily Notes Section - Add Note Form (Collapsible) */}
+                    {isDailyNotesVisible && (
+                        <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <Card className="border-blue-200 bg-blue-50/30 dark:border-blue-800/50 dark:bg-blue-900/10">
+                                <CardHeader className="border-b border-blue-200 bg-blue-100/50 px-4 py-3 dark:border-blue-800/50 dark:bg-blue-900/20">
+                                    <CardTitle className="flex items-center text-sm font-semibold text-blue-900 dark:text-blue-100">
+                                        <Plus className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                        Add New Note for {new Date(newReservation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-4">
+                                    <div className="space-y-3">
+                                        <Textarea
+                                            value={newNote}
+                                            onChange={(e) => setNewNote(e.target.value)}
+                                            placeholder="Enter a note for this date (visible to all team members)..."
+                                            className="min-h-[100px] resize-none"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                                    e.preventDefault();
+                                                    handleAddNote();
+                                                }
+                                            }}
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setNewNote('');
+                                                    setIsDailyNotesVisible(false);
+                                                }}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                onClick={handleAddNote}
+                                                disabled={!newNote.trim()}
+                                            >
+                                                <Plus className="h-4 w-4 mr-1" />
+                                                Add Note
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+
+                    {/* Time Slots Section - Collapsible */}
+                    {isTimeSlotSectionVisible && (
+                        <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div>
+                                <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
+                                    Select Time Slot *
+                                </Label>
 
                             {/* Legend */}
                             <div className="mb-2 flex flex-wrap gap-3 text-xs">
@@ -528,13 +760,13 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                             </div>
 
                             <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                     {/* AM Column */}
                                     <div>
                                         <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                             AM
                                         </h4>
-                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                        <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
                                             {timeSlots.am.map((timeSlot) => {
                                                 const isSelected =
                                                     newReservation.time ===
@@ -593,7 +825,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                         <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                             PM
                                         </h4>
-                                        <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                        <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
                                             {timeSlots.pm.map((timeSlot) => {
                                                 const isSelected =
                                                     newReservation.time ===
@@ -648,24 +880,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Show reservations for selected date */}
-                            {reservationsForSelectedDate.length > 0 && (
-                                <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 dark:border-yellow-800/50 dark:bg-yellow-900/10">
-                                    <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200">
-                                        <Clock className="mr-1 inline h-3 w-3" />
-                                        {reservationsForSelectedDate.length}{' '}
-                                        reservation
-                                        {reservationsForSelectedDate.length !==
-                                        1
-                                            ? 's'
-                                            : ''}{' '}
-                                        on this date
-                                    </p>
-                                </div>
-                            )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Reservations List */}
                     <div className="space-y-4">
@@ -755,85 +972,67 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                {filteredReservations.map((reservation) => (
+                            <div className="space-y-6">
+                                {groupedReservations.map((group) => (
+                                    <div key={group.dateTime} className="space-y-3">
+                                        {/* Timeslot Header */}
+                                        <div className="flex items-center gap-3 border-b-2 border-blue-500 pb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    {new Date(`2000-01-01T${group.time}`).toLocaleTimeString('en-US', {
+                                                        hour: 'numeric',
+                                                        minute: '2-digit',
+                                                        hour12: true,
+                                                    })}
+                                                </h4>
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {new Date(group.date).toLocaleDateString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <Badge variant="secondary" className="ml-auto">
+                                                {group.reservations.length} {group.reservations.length === 1 ? 'reservation' : 'reservations'}
+                                            </Badge>
+                                        </div>
+                                        
+                                        {/* Reservations Grid for this timeslot */}
+                                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                            {group.reservations.map((reservation) => (
                                     <Card
                                         key={reservation.id}
                                         className="group border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500"
                                     >
                                         <CardContent className="p-4">
                                             {/* Header Section */}
-                                            <div className="mb-3 flex items-start justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                                        <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                            {reservation.name}
-                                                        </h4>
-                                                        <div className="flex items-center gap-2">
-                                                            <Badge
-                                                                className={`${getStatusColor(reservation.status)} text-xs font-medium`}
-                                                            >
-                                                                {reservation.status}
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
+                                            <div className="mb-3 flex items-center gap-3">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                                 </div>
-                                                
-                                                {/* Action Buttons */}
-                                                <div className="flex gap-2">
-                                                    {reservation.status === 'pending' && (
-                                                        <>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    onConfirmReservation(
-                                                                        reservation.id,
-                                                                    )
-                                                                }
-                                                                className="bg-green-500 text-white hover:bg-green-600"
-                                                            >
-                                                                <Check className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                onClick={() =>
-                                                                    onCancelReservation(
-                                                                        reservation.id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                    {reservation.status === 'confirmed' && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            onClick={() =>
-                                                                onCancelReservation(
-                                                                    reservation.id,
-                                                                )
-                                                            }
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                        {reservation.name}
+                                                    </h4>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <Badge
+                                                            className={`${getStatusColor(reservation.status)} text-xs font-medium`}
                                                         >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            onDeleteReservation(
-                                                                reservation.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <Trash className="h-4 w-4" />
-                                                    </Button>
+                                                            {reservation.status}
+                                                        </Badge>
+                                                        {/* Show confirmation status */}
+                                                        {reservation.confirmed_at ? (
+                                                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs font-medium">
+                                                                Confirmed by Patron
+                                                            </Badge>
+                                                        ) : reservation.confirmation_token ? (
+                                                            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-medium">
+                                                                Notified
+                                                            </Badge>
+                                                        ) : null}
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -905,14 +1104,6 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                             {reservation.tableIds && reservation.tableIds.length > 1 ? 'Tables' : 'Table'}
                                                         </p>
                                                     </div>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => handleAssignTables(reservation)}
-                                                        className="ml-2 h-8 w-8 p-0"
-                                                    >
-                                                        <Users className="h-3 w-3" />
-                                                    </Button>
                                                 </div>
 
                                                 {/* Contact */}
@@ -948,7 +1139,78 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                 </div>
                                             )}
                                         </CardContent>
+                                        
+                                        {/* Card Footer with Action Buttons */}
+                                        <CardFooter className="flex justify-between gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleAssignTables(reservation)}
+                                                title="Assign Tables"
+                                            >
+                                                <Users className="h-4 w-4" />
+                                            </Button>
+                                            <div className="flex gap-2">
+                                                {reservation.status === 'pending' && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                onConfirmReservation(
+                                                                    reservation.id,
+                                                                )
+                                                            }
+                                                            className="bg-green-500 text-white hover:bg-green-600"
+                                                            title="Confirm Reservation"
+                                                        >
+                                                            <Check className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            onClick={() =>
+                                                                onCancelReservation(
+                                                                    reservation.id,
+                                                                )
+                                                            }
+                                                            title="Cancel Reservation"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                {reservation.status === 'confirmed' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() =>
+                                                            onCancelReservation(
+                                                                reservation.id,
+                                                            )
+                                                        }
+                                                        title="Cancel Reservation"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        onDeleteReservation(
+                                                            reservation.id,
+                                                        )
+                                                    }
+                                                    title="Delete Reservation"
+                                                >
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardFooter>
                                     </Card>
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -1015,21 +1277,47 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                 />
                             </div>
 
-                            <div>
+                            <div className="space-y-2">
                                 <Label htmlFor="customer_contact">
                                     Contact Number
                                 </Label>
-                                <Input
-                                    id="customer_contact"
-                                    value={newReservation.contact}
-                                    onChange={(e) =>
-                                        setNewReservation((prev) => ({
-                                            ...prev,
-                                            contact: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="Enter contact number"
-                                />
+                                <div className="flex gap-2">
+                                    <Select
+                                        value={countryCode}
+                                        onValueChange={setCountryCode}
+                                    >
+                                        <SelectTrigger className="w-[140px]">
+                                            <SelectValue placeholder="Code" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="PH">🇵🇭 +63</SelectItem>
+                                            <SelectItem value="US">🇺🇸 +1</SelectItem>
+                                            <SelectItem value="GB">🇬🇧 +44</SelectItem>
+                                            <SelectItem value="AU">🇦🇺 +61</SelectItem>
+                                            <SelectItem value="SG">🇸🇬 +65</SelectItem>
+                                            <SelectItem value="MY">🇲🇾 +60</SelectItem>
+                                            <SelectItem value="TH">🇹🇭 +66</SelectItem>
+                                            <SelectItem value="ID">🇮🇩 +62</SelectItem>
+                                            <SelectItem value="JP">🇯🇵 +81</SelectItem>
+                                            <SelectItem value="KR">🇰🇷 +82</SelectItem>
+                                            <SelectItem value="CN">🇨🇳 +86</SelectItem>
+                                            <SelectItem value="HK">🇭🇰 +852</SelectItem>
+                                            <SelectItem value="IN">🇮🇳 +91</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Input
+                                        id="customer_contact"
+                                        value={newReservation.contact}
+                                        onChange={(e) =>
+                                            setNewReservation((prev) => ({
+                                                ...prev,
+                                                contact: e.target.value,
+                                            }))
+                                        }
+                                        placeholder="9123456789"
+                                        className="flex-1"
+                                    />
+                                </div>
                             </div>
 
                             <div>

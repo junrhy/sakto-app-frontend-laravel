@@ -74,6 +74,11 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::delete('/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
         Route::get('/reservations-overview', [PosRestaurantController::class, 'getReservationsOverview']);
         
+        // Daily Notes
+        Route::get('/daily-notes', [PosRestaurantController::class, 'getDailyNotes']);
+        Route::post('/daily-notes', [PosRestaurantController::class, 'storeDailyNote']);
+        Route::delete('/daily-notes/{id}', [PosRestaurantController::class, 'destroyDailyNote']);
+        
         // Blocked Dates
         Route::get('/blocked-dates', [PosRestaurantController::class, 'getBlockedDates']);
         Route::post('/blocked-dates', [PosRestaurantController::class, 'storeBlockedDate']);

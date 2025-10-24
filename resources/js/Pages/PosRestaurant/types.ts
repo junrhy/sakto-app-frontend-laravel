@@ -42,6 +42,8 @@ export interface Reservation {
     status: 'pending' | 'confirmed' | 'cancelled';
     notes?: string;
     contact?: string;
+    confirmation_token?: string | null;
+    confirmed_at?: string | null;
 }
 
 export interface MenuItemFormData {
