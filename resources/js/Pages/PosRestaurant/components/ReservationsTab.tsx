@@ -1,5 +1,12 @@
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -17,12 +24,27 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { Badge } from '@/Components/ui/badge';
-import { Check, Clock, Trash, X, Users, Plus, Calendar, User, Phone, MessageSquare, MapPin, CalendarDays, CalendarCheck, CalendarClock, StickyNote } from 'lucide-react';
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
+import { PageProps } from '@/types';
 import axios from 'axios';
+import {
+    Calendar,
+    CalendarCheck,
+    CalendarClock,
+    CalendarDays,
+    Check,
+    Clock,
+    MapPin,
+    MessageSquare,
+    Phone,
+    Plus,
+    StickyNote,
+    Trash,
+    User,
+    Users,
+    X,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
     BlockedDate,
     OpenedDate,
@@ -31,7 +53,6 @@ import {
 } from '../types';
 import { MultipleTableAssignmentDialog } from './MultipleTableAssignmentDialog';
 import { WeekDatePicker } from './WeekDatePicker';
-import { PageProps } from '@/types';
 
 interface TableSchedule {
     id: number;
@@ -91,15 +112,19 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     onClearPrefilledData,
 }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isMultipleTableDialogOpen, setIsMultipleTableDialogOpen] = useState(false);
-    const [isAssignTableDialogOpen, setIsAssignTableDialogOpen] = useState(false);
-    const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+    const [isMultipleTableDialogOpen, setIsMultipleTableDialogOpen] =
+        useState(false);
+    const [isAssignTableDialogOpen, setIsAssignTableDialogOpen] =
+        useState(false);
+    const [selectedReservation, setSelectedReservation] =
+        useState<Reservation | null>(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [reservationFilter, setReservationFilter] = useState<
         'today' | 'selected' | 'upcoming'
     >('selected');
-    const [isTimeSlotSectionVisible, setIsTimeSlotSectionVisible] = useState(false);
+    const [isTimeSlotSectionVisible, setIsTimeSlotSectionVisible] =
+        useState(false);
     const [isDailyNotesVisible, setIsDailyNotesVisible] = useState(false);
     const [dailyNotes, setDailyNotes] = useState<any[]>([]);
     const [newNote, setNewNote] = useState('');
@@ -154,19 +179,19 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         if (prefilledData) {
             // Set the selected date
             setSelectedDate(prefilledData.date);
-            
+
             // Update newReservation with pre-filled data
-            setNewReservation(prev => ({
+            setNewReservation((prev) => ({
                 ...prev,
                 date: prefilledData.date,
                 time: prefilledData.time,
                 tableIds: prefilledData.tableIds || [],
             }));
-            
+
             // Open the time slot section and dialog
             setIsTimeSlotSectionVisible(true);
             setIsDialogOpen(true);
-            
+
             // Clear the pre-filled data after using it
             onClearPrefilledData?.();
         }
@@ -336,7 +361,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     // Group reservations by timeslot
     const groupedReservations = useMemo(() => {
         const groups: { [key: string]: Reservation[] } = {};
-        
+
         filteredReservations.forEach((reservation) => {
             const key = `${reservation.date}_${reservation.time}`;
             if (!groups[key]) {
@@ -395,31 +420,39 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         [isTableReserved],
     );
 
-    const handleMultipleTableAssignment = useCallback((selectedTableIds: number[]) => {
-        setNewReservation(prev => ({
-            ...prev,
-            tableIds: selectedTableIds,
-            tableId: selectedTableIds.length > 0 ? selectedTableIds[0] : 0, // Keep first table as primary
-        }));
-        setIsMultipleTableDialogOpen(false);
-        toast.success(`Assigned ${selectedTableIds.length} table(s) to reservation`);
-    }, []);
+    const handleMultipleTableAssignment = useCallback(
+        (selectedTableIds: number[]) => {
+            setNewReservation((prev) => ({
+                ...prev,
+                tableIds: selectedTableIds,
+                tableId: selectedTableIds.length > 0 ? selectedTableIds[0] : 0, // Keep first table as primary
+            }));
+            setIsMultipleTableDialogOpen(false);
+            toast.success(
+                `Assigned ${selectedTableIds.length} table(s) to reservation`,
+            );
+        },
+        [],
+    );
 
     const handleAssignTables = useCallback((reservation: Reservation) => {
         setSelectedReservation(reservation);
         setIsAssignTableDialogOpen(true);
     }, []);
 
-    const handleAssignTableUpdate = useCallback((selectedTableIds: number[]) => {
-        if (selectedReservation) {
-            onUpdateReservation(selectedReservation.id, {
-                tableIds: selectedTableIds,
-            });
-            setIsAssignTableDialogOpen(false);
-            setSelectedReservation(null);
-            // Toast message is handled by the API hook
-        }
-    }, [selectedReservation, onUpdateReservation]);
+    const handleAssignTableUpdate = useCallback(
+        (selectedTableIds: number[]) => {
+            if (selectedReservation) {
+                onUpdateReservation(selectedReservation.id, {
+                    tableIds: selectedTableIds,
+                });
+                setIsAssignTableDialogOpen(false);
+                setSelectedReservation(null);
+                // Toast message is handled by the API hook
+            }
+        },
+        [selectedReservation, onUpdateReservation],
+    );
 
     const handleSubmitReservation = useCallback(
         (e: React.FormEvent) => {
@@ -440,22 +473,35 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             // Users can only select from available tables in the assignment dialog
 
             // Check if tables are assigned
-            if (!newReservation.tableIds || newReservation.tableIds.length === 0) {
-                toast.error('Please assign at least one table for this reservation');
+            if (
+                !newReservation.tableIds ||
+                newReservation.tableIds.length === 0
+            ) {
+                toast.error(
+                    'Please assign at least one table for this reservation',
+                );
                 return;
             }
 
             // Check if selected tables have sufficient total capacity
-            const totalSelectedSeats = newReservation.tableIds.reduce((total, tableId) => {
-                const table = tables.find(t => {
-                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                    return tId === tableId;
-                });
-                return total + (table?.seats || 0);
-            }, 0);
+            const totalSelectedSeats = newReservation.tableIds.reduce(
+                (total, tableId) => {
+                    const table = tables.find((t) => {
+                        const tId =
+                            typeof t.id === 'number'
+                                ? t.id
+                                : parseInt(t.id.toString());
+                        return tId === tableId;
+                    });
+                    return total + (table?.seats || 0);
+                },
+                0,
+            );
 
             if (totalSelectedSeats < newReservation.guests) {
-                toast.error(`Selected tables have insufficient capacity. Total seats: ${totalSelectedSeats}, Required: ${newReservation.guests}`);
+                toast.error(
+                    `Selected tables have insufficient capacity. Total seats: ${totalSelectedSeats}, Required: ${newReservation.guests}`,
+                );
                 return;
             }
 
@@ -514,7 +560,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                     note_date: newReservation.date,
                 },
             });
-            
+
             if (response.data.status === 'success') {
                 setDailyNotes(response.data.data);
             }
@@ -534,7 +580,8 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             const response = await axios.post('/pos-restaurant/daily-notes', {
                 note_date: newReservation.date,
                 note: newNote,
-                created_by: auth.selectedTeamMember?.full_name || auth.user.name,
+                created_by:
+                    auth.selectedTeamMember?.full_name || auth.user.name,
             });
 
             if (response.data.status === 'success') {
@@ -546,22 +593,33 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
             console.error('Error creating note:', error);
             toast.error('Failed to add note');
         }
-    }, [newNote, auth.user.name, auth.selectedTeamMember?.full_name, newReservation.date, fetchDailyNotes]);
+    }, [
+        newNote,
+        auth.user.name,
+        auth.selectedTeamMember?.full_name,
+        newReservation.date,
+        fetchDailyNotes,
+    ]);
 
     // Delete a daily note
-    const handleDeleteNote = useCallback(async (noteId: number) => {
-        try {
-            const response = await axios.delete(`/pos-restaurant/daily-notes/${noteId}`);
+    const handleDeleteNote = useCallback(
+        async (noteId: number) => {
+            try {
+                const response = await axios.delete(
+                    `/pos-restaurant/daily-notes/${noteId}`,
+                );
 
-            if (response.data.status === 'success') {
-                toast.success('Note deleted successfully');
-                fetchDailyNotes();
+                if (response.data.status === 'success') {
+                    toast.success('Note deleted successfully');
+                    fetchDailyNotes();
+                }
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                toast.error('Failed to delete note');
             }
-        } catch (error) {
-            console.error('Error deleting note:', error);
-            toast.error('Failed to delete note');
-        }
-    }, [fetchDailyNotes]);
+        },
+        [fetchDailyNotes],
+    );
 
     // Fetch notes when selected date changes
     useEffect(() => {
@@ -580,10 +638,22 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                         <div className="flex items-center gap-1 sm:gap-2">
                             <Button
                                 size="sm"
-                                variant={isTimeSlotSectionVisible ? "default" : "outline"}
-                                onClick={() => setIsTimeSlotSectionVisible(!isTimeSlotSectionVisible)}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
-                                title={isTimeSlotSectionVisible ? "Close Reservation" : "Add Reservation"}
+                                variant={
+                                    isTimeSlotSectionVisible
+                                        ? 'default'
+                                        : 'outline'
+                                }
+                                onClick={() =>
+                                    setIsTimeSlotSectionVisible(
+                                        !isTimeSlotSectionVisible,
+                                    )
+                                }
+                                className="flex items-center gap-1 px-2 sm:gap-2 sm:px-3"
+                                title={
+                                    isTimeSlotSectionVisible
+                                        ? 'Close Reservation'
+                                        : 'Add Reservation'
+                                }
                             >
                                 {isTimeSlotSectionVisible ? (
                                     <X className="h-4 w-4" />
@@ -591,15 +661,25 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     <Plus className="h-4 w-4" />
                                 )}
                                 <span className="hidden md:inline">
-                                    {isTimeSlotSectionVisible ? "Close Reservation" : "Add Reservation"}
+                                    {isTimeSlotSectionVisible
+                                        ? 'Close Reservation'
+                                        : 'Add Reservation'}
                                 </span>
                             </Button>
                             <Button
                                 size="sm"
-                                variant={isDailyNotesVisible ? "default" : "outline"}
-                                onClick={() => setIsDailyNotesVisible(!isDailyNotesVisible)}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
-                                title={isDailyNotesVisible ? "Close Note" : "Add Note"}
+                                variant={
+                                    isDailyNotesVisible ? 'default' : 'outline'
+                                }
+                                onClick={() =>
+                                    setIsDailyNotesVisible(!isDailyNotesVisible)
+                                }
+                                className="flex items-center gap-1 px-2 sm:gap-2 sm:px-3"
+                                title={
+                                    isDailyNotesVisible
+                                        ? 'Close Note'
+                                        : 'Add Note'
+                                }
                             >
                                 {isDailyNotesVisible ? (
                                     <X className="h-4 w-4" />
@@ -607,7 +687,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     <StickyNote className="h-4 w-4" />
                                 )}
                                 <span className="hidden md:inline">
-                                    {isDailyNotesVisible ? "Close Note" : "Add Note"}
+                                    {isDailyNotesVisible
+                                        ? 'Close Note'
+                                        : 'Add Note'}
                                 </span>
                             </Button>
                             <Button
@@ -617,13 +699,25 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     const url = `/pos-restaurant/reservation?client_identifier=${(auth.user as any).identifier || ''}`;
                                     window.open(url, '_blank');
                                 }}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
+                                className="flex items-center gap-1 px-2 sm:gap-2 sm:px-3"
                                 title="Online Reservation"
                             >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    />
                                 </svg>
-                                <span className="hidden md:inline">Online Reservation</span>
+                                <span className="hidden md:inline">
+                                    Online Reservation
+                                </span>
                             </Button>
                         </div>
                     </div>
@@ -651,15 +745,28 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center text-sm font-semibold text-yellow-900 dark:text-yellow-100">
                                             <StickyNote className="mr-2 h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                                            Notes for {new Date(newReservation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            Notes for{' '}
+                                            {new Date(
+                                                newReservation.date,
+                                            ).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })}
                                         </CardTitle>
-                                        <Badge variant="secondary" className="text-xs">
-                                            {dailyNotes.length} {dailyNotes.length === 1 ? 'note' : 'notes'}
+                                        <Badge
+                                            variant="secondary"
+                                            className="text-xs"
+                                        >
+                                            {dailyNotes.length}{' '}
+                                            {dailyNotes.length === 1
+                                                ? 'note'
+                                                : 'notes'}
                                         </Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-4">
-                                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                                    <div className="max-h-[300px] space-y-2 overflow-y-auto">
                                         {dailyNotes.map((note) => (
                                             <div
                                                 key={note.id}
@@ -667,20 +774,28 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                             >
                                                 <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                                                 <div className="flex-1 space-y-1">
-                                                    <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">
+                                                    <p className="whitespace-pre-wrap text-sm text-gray-900 dark:text-white">
                                                         {note.note}
                                                     </p>
                                                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                                                        <span>{note.created_by || 'Unknown'}</span>
+                                                        <span>
+                                                            {note.created_by ||
+                                                                'Unknown'}
+                                                        </span>
                                                         <span>•</span>
                                                         <span>
-                                                            {new Date(note.created_at).toLocaleString('en-US', {
-                                                                month: 'short',
-                                                                day: 'numeric',
-                                                                hour: 'numeric',
-                                                                minute: '2-digit',
-                                                                hour12: true,
-                                                            })}
+                                                            {new Date(
+                                                                note.created_at,
+                                                            ).toLocaleString(
+                                                                'en-US',
+                                                                {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    hour: 'numeric',
+                                                                    minute: '2-digit',
+                                                                    hour12: true,
+                                                                },
+                                                            )}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -688,8 +803,12 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                     type="button"
                                                     size="sm"
                                                     variant="ghost"
-                                                    onClick={() => handleDeleteNote(note.id)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() =>
+                                                        handleDeleteNote(
+                                                            note.id,
+                                                        )
+                                                    }
+                                                    className="opacity-0 transition-opacity group-hover:opacity-100"
                                                 >
                                                     <Trash className="h-4 w-4 text-red-500" />
                                                 </Button>
@@ -703,23 +822,35 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
 
                     {/* Daily Notes Section - Add Note Form (Collapsible) */}
                     {isDailyNotesVisible && (
-                        <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mb-6 duration-300 animate-in fade-in slide-in-from-top-2">
                             <Card className="border-blue-200 bg-blue-50/30 dark:border-blue-800/50 dark:bg-blue-900/10">
                                 <CardHeader className="border-b border-blue-200 bg-blue-100/50 px-4 py-3 dark:border-blue-800/50 dark:bg-blue-900/20">
                                     <CardTitle className="flex items-center text-sm font-semibold text-blue-900 dark:text-blue-100">
                                         <Plus className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                        Add New Note for {new Date(newReservation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        Add New Note for{' '}
+                                        {new Date(
+                                            newReservation.date,
+                                        ).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                        })}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4">
                                     <div className="space-y-3">
                                         <Textarea
                                             value={newNote}
-                                            onChange={(e) => setNewNote(e.target.value)}
+                                            onChange={(e) =>
+                                                setNewNote(e.target.value)
+                                            }
                                             placeholder="Enter a note for this date (visible to all team members)..."
                                             className="min-h-[100px] resize-none"
                                             onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                                if (
+                                                    e.key === 'Enter' &&
+                                                    (e.ctrlKey || e.metaKey)
+                                                ) {
                                                     e.preventDefault();
                                                     handleAddNote();
                                                 }
@@ -731,7 +862,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                 variant="outline"
                                                 onClick={() => {
                                                     setNewNote('');
-                                                    setIsDailyNotesVisible(false);
+                                                    setIsDailyNotesVisible(
+                                                        false,
+                                                    );
                                                 }}
                                             >
                                                 Cancel
@@ -741,7 +874,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                                 onClick={handleAddNote}
                                                 disabled={!newNote.trim()}
                                             >
-                                                <Plus className="h-4 w-4 mr-1" />
+                                                <Plus className="mr-1 h-4 w-4" />
                                                 Add Note
                                             </Button>
                                         </div>
@@ -753,161 +886,179 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
 
                     {/* Time Slots Section - Collapsible */}
                     {isTimeSlotSectionVisible && (
-                        <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mb-6 duration-300 animate-in fade-in slide-in-from-top-2">
                             <div>
                                 <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
                                     Select Time Slot *
                                 </Label>
 
-                            {/* Legend */}
-                            <div className="mb-2 flex flex-wrap gap-3 text-xs">
-                                <div className="flex items-center gap-1.5">
-                                    <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                        Available
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="h-3 w-3 rounded border border-blue-500 bg-blue-500"></div>
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                        Selected
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="h-3 w-3 rounded border border-yellow-300 bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900/30"></div>
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                        Has reservations
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="h-3 w-3 rounded border border-red-500 bg-red-500"></div>
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                        Blocked
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                    {/* AM Column */}
-                                    <div>
-                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
-                                            AM
-                                        </h4>
-                                        <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {timeSlots.am.map((timeSlot) => {
-                                                const isSelected =
-                                                    newReservation.time ===
-                                                    timeSlot.value;
-                                                const isOpened =
-                                                    isTimeSlotOpened(
-                                                        newReservation.date,
-                                                        timeSlot.value,
-                                                    );
-                                                const isBlocked =
-                                                    isTimeSlotBlocked(
-                                                        newReservation.date,
-                                                        timeSlot.value,
-                                                    );
-                                                const isReserved =
-                                                    isTimeSlotReserved(
-                                                        newReservation.date,
-                                                        timeSlot.value,
-                                                    );
-                                                const isDisabled =
-                                                    !isOpened || isBlocked;
-
-                                                return (
-                                                    <button
-                                                        key={timeSlot.value}
-                                                        type="button"
-                                                        onClick={() =>
-                                                            !isDisabled &&
-                                                            handleTimeSlotSelect(
-                                                                newReservation.date,
-                                                                timeSlot.value,
-                                                            )
-                                                        }
-                                                        disabled={isDisabled}
-                                                        className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                            isSelected
-                                                                ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
-                                                                : !isOpened
-                                                                  ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                  : isBlocked
-                                                                    ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
-                                                                    : isReserved
-                                                                      ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
-                                                                      : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                                                        }`}
-                                                    >
-                                                        {timeSlot.display}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                {/* Legend */}
+                                <div className="mb-2 flex flex-wrap gap-3 text-xs">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-3 w-3 rounded border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"></div>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Available
+                                        </span>
                                     </div>
-
-                                    {/* PM Column */}
-                                    <div>
-                                        <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
-                                            PM
-                                        </h4>
-                                        <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {timeSlots.pm.map((timeSlot) => {
-                                                const isSelected =
-                                                    newReservation.time ===
-                                                    timeSlot.value;
-                                                const isOpened =
-                                                    isTimeSlotOpened(
-                                                        newReservation.date,
-                                                        timeSlot.value,
-                                                    );
-                                                const isBlocked =
-                                                    isTimeSlotBlocked(
-                                                        newReservation.date,
-                                                        timeSlot.value,
-                                                    );
-                                                const isReserved =
-                                                    isTimeSlotReserved(
-                                                        newReservation.date,
-                                                        timeSlot.value,
-                                                    );
-                                                const isDisabled =
-                                                    !isOpened || isBlocked;
-
-                                                return (
-                                                    <button
-                                                        key={timeSlot.value}
-                                                        type="button"
-                                                        onClick={() =>
-                                                            !isDisabled &&
-                                                            handleTimeSlotSelect(
-                                                                newReservation.date,
-                                                                timeSlot.value,
-                                                            )
-                                                        }
-                                                        disabled={isDisabled}
-                                                        className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
-                                                            isSelected
-                                                                ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
-                                                                : !isOpened
-                                                                  ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                  : isBlocked
-                                                                    ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
-                                                                    : isReserved
-                                                                      ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
-                                                                      : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                                                        }`}
-                                                    >
-                                                        {timeSlot.display}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-3 w-3 rounded border border-blue-500 bg-blue-500"></div>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Selected
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-3 w-3 rounded border border-yellow-300 bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900/30"></div>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Has reservations
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-3 w-3 rounded border border-red-500 bg-red-500"></div>
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            Blocked
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
+
+                                <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
+                                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                        {/* AM Column */}
+                                        <div>
+                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                                AM
+                                            </h4>
+                                            <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                {timeSlots.am.map(
+                                                    (timeSlot) => {
+                                                        const isSelected =
+                                                            newReservation.time ===
+                                                            timeSlot.value;
+                                                        const isOpened =
+                                                            isTimeSlotOpened(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
+                                                        const isBlocked =
+                                                            isTimeSlotBlocked(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
+                                                        const isReserved =
+                                                            isTimeSlotReserved(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
+                                                        const isDisabled =
+                                                            !isOpened ||
+                                                            isBlocked;
+
+                                                        return (
+                                                            <button
+                                                                key={
+                                                                    timeSlot.value
+                                                                }
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    !isDisabled &&
+                                                                    handleTimeSlotSelect(
+                                                                        newReservation.date,
+                                                                        timeSlot.value,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    isDisabled
+                                                                }
+                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                                    isSelected
+                                                                        ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
+                                                                        : !isOpened
+                                                                          ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                          : isBlocked
+                                                                            ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
+                                                                            : isReserved
+                                                                              ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
+                                                                              : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                                                                }`}
+                                                            >
+                                                                {
+                                                                    timeSlot.display
+                                                                }
+                                                            </button>
+                                                        );
+                                                    },
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* PM Column */}
+                                        <div>
+                                            <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
+                                                PM
+                                            </h4>
+                                            <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                {timeSlots.pm.map(
+                                                    (timeSlot) => {
+                                                        const isSelected =
+                                                            newReservation.time ===
+                                                            timeSlot.value;
+                                                        const isOpened =
+                                                            isTimeSlotOpened(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
+                                                        const isBlocked =
+                                                            isTimeSlotBlocked(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
+                                                        const isReserved =
+                                                            isTimeSlotReserved(
+                                                                newReservation.date,
+                                                                timeSlot.value,
+                                                            );
+                                                        const isDisabled =
+                                                            !isOpened ||
+                                                            isBlocked;
+
+                                                        return (
+                                                            <button
+                                                                key={
+                                                                    timeSlot.value
+                                                                }
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    !isDisabled &&
+                                                                    handleTimeSlotSelect(
+                                                                        newReservation.date,
+                                                                        timeSlot.value,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    isDisabled
+                                                                }
+                                                                className={`whitespace-nowrap rounded border px-0.5 py-0.5 text-xs font-medium transition-all md:rounded-md md:px-2 md:py-1 md:text-sm ${
+                                                                    isSelected
+                                                                        ? 'border-blue-500 bg-blue-500 text-white shadow-md ring-2 ring-blue-300'
+                                                                        : !isOpened
+                                                                          ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                          : isBlocked
+                                                                            ? 'cursor-not-allowed border-red-300 bg-red-500 text-white opacity-60'
+                                                                            : isReserved
+                                                                              ? 'cursor-pointer border-yellow-300 bg-yellow-100 text-yellow-800 hover:border-yellow-400 hover:bg-yellow-200 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200 dark:hover:bg-yellow-900/50'
+                                                                              : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                                                                }`}
+                                                            >
+                                                                {
+                                                                    timeSlot.display
+                                                                }
+                                                            </button>
+                                                        );
+                                                    },
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -924,7 +1075,12 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                         Reservations
                                     </h3>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {filteredReservations.length} reservation{filteredReservations.length !== 1 ? 's' : ''} found
+                                        {filteredReservations.length}{' '}
+                                        reservation
+                                        {filteredReservations.length !== 1
+                                            ? 's'
+                                            : ''}{' '}
+                                        found
                                     </p>
                                 </div>
                             </div>
@@ -944,7 +1100,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                                 >
                                     <CalendarDays className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Today</span>
+                                    <span className="hidden sm:inline">
+                                        Today
+                                    </span>
                                     <span className="sm:hidden">Today</span>
                                 </Button>
                                 <Button
@@ -960,7 +1118,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                                 >
                                     <CalendarCheck className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Selected Date</span>
+                                    <span className="hidden sm:inline">
+                                        Selected Date
+                                    </span>
                                     <span className="sm:hidden">Selected</span>
                                 </Button>
                                 <Button
@@ -976,7 +1136,9 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                     className="flex items-center gap-2 transition-all duration-200 hover:scale-105"
                                 >
                                     <CalendarClock className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Upcoming</span>
+                                    <span className="hidden sm:inline">
+                                        Upcoming
+                                    </span>
                                     <span className="sm:hidden">Upcoming</span>
                                 </Button>
                             </div>
@@ -1002,241 +1164,329 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                         ) : (
                             <div className="space-y-6">
                                 {groupedReservations.map((group) => (
-                                    <div key={group.dateTime} className="space-y-3">
+                                    <div
+                                        key={group.dateTime}
+                                        className="space-y-3"
+                                    >
                                         {/* Timeslot Header */}
                                         <div className="flex items-center gap-3 border-b-2 border-blue-500 pb-2">
                                             <div className="flex items-center gap-2">
                                                 <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    {new Date(`2000-01-01T${group.time}`).toLocaleTimeString('en-US', {
-                                                        hour: 'numeric',
-                                                        minute: '2-digit',
-                                                        hour12: true,
-                                                    })}
+                                                    {new Date(
+                                                        `2000-01-01T${group.time}`,
+                                                    ).toLocaleTimeString(
+                                                        'en-US',
+                                                        {
+                                                            hour: 'numeric',
+                                                            minute: '2-digit',
+                                                            hour12: true,
+                                                        },
+                                                    )}
                                                 </h4>
                                                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {new Date(group.date).toLocaleDateString('en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                    })}
+                                                    {new Date(
+                                                        group.date,
+                                                    ).toLocaleDateString(
+                                                        'en-US',
+                                                        {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}
                                                 </span>
                                             </div>
-                                            <Badge variant="secondary" className="ml-auto">
-                                                {group.reservations.length} {group.reservations.length === 1 ? 'reservation' : 'reservations'}
+                                            <Badge
+                                                variant="secondary"
+                                                className="ml-auto"
+                                            >
+                                                {group.reservations.length}{' '}
+                                                {group.reservations.length === 1
+                                                    ? 'reservation'
+                                                    : 'reservations'}
                                             </Badge>
                                         </div>
-                                        
+
                                         {/* Reservations Grid for this timeslot */}
                                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                            {group.reservations.map((reservation) => (
-                                    <Card
-                                        key={reservation.id}
-                                        className="group border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500"
-                                    >
-                                        <CardContent className="p-4">
-                                            {/* Header Section */}
-                                            <div className="mb-3 flex items-center gap-3">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                        {reservation.name}
-                                                    </h4>
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <Badge
-                                                            className={`${getStatusColor(reservation.status)} text-xs font-medium`}
-                                                        >
-                                                            {reservation.status}
-                                                        </Badge>
-                                                        {/* Show confirmation status */}
-                                                        {reservation.confirmed_at ? (
-                                                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs font-medium">
-                                                                Confirmed by Patron
-                                                            </Badge>
-                                                        ) : reservation.confirmation_token ? (
-                                                            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-medium">
-                                                                Notified
-                                                            </Badge>
-                                                        ) : null}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Main Info Grid */}
-                                            <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                                {/* Date & Time */}
-                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
-                                                    <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {reservation.date}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {reservation.time}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Guests */}
-                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
-                                                    <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {reservation.guests} Guest{reservation.guests !== 1 ? 's' : ''}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                            Party Size
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Tables */}
-                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
-                                                    <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                                    <div className="flex-1">
-                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {(() => {
-                                                                // Handle multiple tables
-                                                                if (reservation.tableIds && reservation.tableIds.length > 0) {
-                                                                    const tableNames = reservation.tableIds.map(tableId => {
-                                                                        const foundTable = tables.find(t => {
-                                                                            const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                                            return tId === tableId;
-                                                                        });
-                                                                        return foundTable?.name || `Table ${tableId}`;
-                                                                    });
-                                                                    return tableNames.join(', ');
-                                                                }
-                                                                
-                                                                // Fallback to single table
-                                                                const tableId =
-                                                                    reservation.tableId ||
-                                                                    (
-                                                                        reservation as any
-                                                                    ).table_id;
-                                                                const foundTable =
-                                                                    tables.find(
-                                                                        (t) =>
-                                                                            t.id ===
-                                                                            tableId,
-                                                                    );
-                                                                return (
-                                                                    foundTable?.name ||
-                                                                    'N/A'
-                                                                );
-                                                            })()}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {reservation.tableIds && reservation.tableIds.length > 1 ? 'Tables' : 'Table'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Contact */}
-                                                {reservation.contact && (
-                                                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
-                                                        <Phone className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                {reservation.contact}
-                                                            </p>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                Contact
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Notes Section */}
-                                            {reservation.notes && (
-                                                <div className="rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
-                                                    <div className="flex items-start gap-2">
-                                                        <MessageSquare className="mt-0.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                                        <div>
-                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                                                                Notes
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-white">
-                                                                {reservation.notes}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                        
-                                        {/* Card Footer with Action Buttons */}
-                                        <CardFooter className="flex justify-between gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleAssignTables(reservation)}
-                                                title="Assign Tables"
-                                            >
-                                                <Users className="h-4 w-4" />
-                                            </Button>
-                                            <div className="flex gap-2">
-                                                {reservation.status === 'pending' && (
-                                                    <>
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                onConfirmReservation(
-                                                                    reservation.id,
-                                                                )
-                                                            }
-                                                            className="bg-green-500 text-white hover:bg-green-600"
-                                                            title="Confirm Reservation"
-                                                        >
-                                                            <Check className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            onClick={() =>
-                                                                onCancelReservation(
-                                                                    reservation.id,
-                                                                )
-                                                            }
-                                                            title="Cancel Reservation"
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                                {reservation.status === 'confirmed' && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        onClick={() =>
-                                                            onCancelReservation(
-                                                                reservation.id,
-                                                            )
-                                                        }
-                                                        title="Cancel Reservation"
+                                            {group.reservations.map(
+                                                (reservation) => (
+                                                    <Card
+                                                        key={reservation.id}
+                                                        className="group border-gray-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
                                                     >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                )}
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        onDeleteReservation(
-                                                            reservation.id,
-                                                        )
-                                                    }
-                                                    title="Delete Reservation"
-                                                >
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </CardFooter>
-                                    </Card>
-                                            ))}
+                                                        <CardContent className="p-4">
+                                                            {/* Header Section */}
+                                                            <div className="mb-3 flex items-center gap-3">
+                                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                        {
+                                                                            reservation.name
+                                                                        }
+                                                                    </h4>
+                                                                    <div className="flex flex-wrap items-center gap-2">
+                                                                        <Badge
+                                                                            className={`${getStatusColor(reservation.status)} text-xs font-medium`}
+                                                                        >
+                                                                            {
+                                                                                reservation.status
+                                                                            }
+                                                                        </Badge>
+                                                                        {/* Show confirmation status */}
+                                                                        {reservation.confirmed_at ? (
+                                                                            <Badge className="bg-purple-100 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                                                Confirmed
+                                                                                by
+                                                                                Patron
+                                                                            </Badge>
+                                                                        ) : reservation.confirmation_token ? (
+                                                                            <Badge className="bg-blue-100 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                                                Notified
+                                                                            </Badge>
+                                                                        ) : null}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Main Info Grid */}
+                                                            <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                                {/* Date & Time */}
+                                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                                    <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {
+                                                                                reservation.date
+                                                                            }
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                            {
+                                                                                reservation.time
+                                                                            }
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Guests */}
+                                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                                    <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {
+                                                                                reservation.guests
+                                                                            }{' '}
+                                                                            Guest
+                                                                            {reservation.guests !==
+                                                                            1
+                                                                                ? 's'
+                                                                                : ''}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                            Party
+                                                                            Size
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Tables */}
+                                                                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                                    <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                                    <div className="flex-1">
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {(() => {
+                                                                                // Handle multiple tables
+                                                                                if (
+                                                                                    reservation.tableIds &&
+                                                                                    reservation
+                                                                                        .tableIds
+                                                                                        .length >
+                                                                                        0
+                                                                                ) {
+                                                                                    const tableNames =
+                                                                                        reservation.tableIds.map(
+                                                                                            (
+                                                                                                tableId,
+                                                                                            ) => {
+                                                                                                const foundTable =
+                                                                                                    tables.find(
+                                                                                                        (
+                                                                                                            t,
+                                                                                                        ) => {
+                                                                                                            const tId =
+                                                                                                                typeof t.id ===
+                                                                                                                'number'
+                                                                                                                    ? t.id
+                                                                                                                    : parseInt(
+                                                                                                                          t.id.toString(),
+                                                                                                                      );
+                                                                                                            return (
+                                                                                                                tId ===
+                                                                                                                tableId
+                                                                                                            );
+                                                                                                        },
+                                                                                                    );
+                                                                                                return (
+                                                                                                    foundTable?.name ||
+                                                                                                    `Table ${tableId}`
+                                                                                                );
+                                                                                            },
+                                                                                        );
+                                                                                    return tableNames.join(
+                                                                                        ', ',
+                                                                                    );
+                                                                                }
+
+                                                                                // Fallback to single table
+                                                                                const tableId =
+                                                                                    reservation.tableId ||
+                                                                                    (
+                                                                                        reservation as any
+                                                                                    )
+                                                                                        .table_id;
+                                                                                const foundTable =
+                                                                                    tables.find(
+                                                                                        (
+                                                                                            t,
+                                                                                        ) =>
+                                                                                            t.id ===
+                                                                                            tableId,
+                                                                                    );
+                                                                                return (
+                                                                                    foundTable?.name ||
+                                                                                    'N/A'
+                                                                                );
+                                                                            })()}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                            {reservation.tableIds &&
+                                                                            reservation
+                                                                                .tableIds
+                                                                                .length >
+                                                                                1
+                                                                                ? 'Tables'
+                                                                                : 'Table'}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Contact */}
+                                                                {reservation.contact && (
+                                                                    <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                                        <Phone className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                                        <div>
+                                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                                {
+                                                                                    reservation.contact
+                                                                                }
+                                                                            </p>
+                                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                Contact
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Notes Section */}
+                                                            {reservation.notes && (
+                                                                <div className="rounded-lg bg-gray-50 p-2 dark:bg-gray-700">
+                                                                    <div className="flex items-start gap-2">
+                                                                        <MessageSquare className="mt-0.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                                        <div>
+                                                                            <p className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                                                Notes
+                                                                            </p>
+                                                                            <p className="text-sm text-gray-900 dark:text-white">
+                                                                                {
+                                                                                    reservation.notes
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </CardContent>
+
+                                                        {/* Card Footer with Action Buttons */}
+                                                        <CardFooter className="flex justify-between gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    handleAssignTables(
+                                                                        reservation,
+                                                                    )
+                                                                }
+                                                                title="Assign Tables"
+                                                            >
+                                                                <Users className="h-4 w-4" />
+                                                            </Button>
+                                                            <div className="flex gap-2">
+                                                                {reservation.status ===
+                                                                    'pending' && (
+                                                                    <>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                onConfirmReservation(
+                                                                                    reservation.id,
+                                                                                )
+                                                                            }
+                                                                            className="bg-green-500 text-white hover:bg-green-600"
+                                                                            title="Confirm Reservation"
+                                                                        >
+                                                                            <Check className="h-4 w-4" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="destructive"
+                                                                            onClick={() =>
+                                                                                onCancelReservation(
+                                                                                    reservation.id,
+                                                                                )
+                                                                            }
+                                                                            title="Cancel Reservation"
+                                                                        >
+                                                                            <X className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                                {reservation.status ===
+                                                                    'confirmed' && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="destructive"
+                                                                        onClick={() =>
+                                                                            onCancelReservation(
+                                                                                reservation.id,
+                                                                            )
+                                                                        }
+                                                                        title="Cancel Reservation"
+                                                                    >
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() =>
+                                                                        onDeleteReservation(
+                                                                            reservation.id,
+                                                                        )
+                                                                    }
+                                                                    title="Delete Reservation"
+                                                                >
+                                                                    <Trash className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </CardFooter>
+                                                    </Card>
+                                                ),
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -1318,19 +1568,45 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                                             <SelectValue placeholder="Code" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="PH">🇵🇭 +63</SelectItem>
-                                            <SelectItem value="US">🇺🇸 +1</SelectItem>
-                                            <SelectItem value="GB">🇬🇧 +44</SelectItem>
-                                            <SelectItem value="AU">🇦🇺 +61</SelectItem>
-                                            <SelectItem value="SG">🇸🇬 +65</SelectItem>
-                                            <SelectItem value="MY">🇲🇾 +60</SelectItem>
-                                            <SelectItem value="TH">🇹🇭 +66</SelectItem>
-                                            <SelectItem value="ID">🇮🇩 +62</SelectItem>
-                                            <SelectItem value="JP">🇯🇵 +81</SelectItem>
-                                            <SelectItem value="KR">🇰🇷 +82</SelectItem>
-                                            <SelectItem value="CN">🇨🇳 +86</SelectItem>
-                                            <SelectItem value="HK">🇭🇰 +852</SelectItem>
-                                            <SelectItem value="IN">🇮🇳 +91</SelectItem>
+                                            <SelectItem value="PH">
+                                                🇵🇭 +63
+                                            </SelectItem>
+                                            <SelectItem value="US">
+                                                🇺🇸 +1
+                                            </SelectItem>
+                                            <SelectItem value="GB">
+                                                🇬🇧 +44
+                                            </SelectItem>
+                                            <SelectItem value="AU">
+                                                🇦🇺 +61
+                                            </SelectItem>
+                                            <SelectItem value="SG">
+                                                🇸🇬 +65
+                                            </SelectItem>
+                                            <SelectItem value="MY">
+                                                🇲🇾 +60
+                                            </SelectItem>
+                                            <SelectItem value="TH">
+                                                🇹🇭 +66
+                                            </SelectItem>
+                                            <SelectItem value="ID">
+                                                🇮🇩 +62
+                                            </SelectItem>
+                                            <SelectItem value="JP">
+                                                🇯🇵 +81
+                                            </SelectItem>
+                                            <SelectItem value="KR">
+                                                🇰🇷 +82
+                                            </SelectItem>
+                                            <SelectItem value="CN">
+                                                🇨🇳 +86
+                                            </SelectItem>
+                                            <SelectItem value="HK">
+                                                🇭🇰 +852
+                                            </SelectItem>
+                                            <SelectItem value="IN">
+                                                🇮🇳 +91
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <Input
@@ -1470,58 +1746,106 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                             </div>
 
                             <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <Label htmlFor="table_assign">Tables *</Label>
+                                <div className="mb-2 flex items-center justify-between">
+                                    <Label htmlFor="table_assign">
+                                        Tables *
+                                    </Label>
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => setIsMultipleTableDialogOpen(true)}
+                                        onClick={() =>
+                                            setIsMultipleTableDialogOpen(true)
+                                        }
                                         className="flex items-center gap-2"
                                     >
                                         <Users className="h-4 w-4" />
                                         Assign
                                     </Button>
                                 </div>
-                                
+
                                 {/* Show assigned tables */}
-                                {newReservation.tableIds && newReservation.tableIds.length > 0 ? (
-                                    <div className="mb-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                                        <div className="flex items-center gap-2 mb-2">
+                                {newReservation.tableIds &&
+                                newReservation.tableIds.length > 0 ? (
+                                    <div className="mb-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                                        <div className="mb-2 flex items-center gap-2">
                                             <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                                             <span className="text-sm font-medium text-green-900 dark:text-green-100">
-                                                Assigned Tables ({newReservation.tableIds.length})
+                                                Assigned Tables (
+                                                {newReservation.tableIds.length}
+                                                )
                                             </span>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
-                                            {newReservation.tableIds.map((tableId) => {
-                                                const table = tables.find(t => {
-                                                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                    return tId === tableId;
-                                                });
-                                                return (
-                                                    <Badge key={tableId} variant="secondary" className="text-xs">
-                                                        {table?.name} ({table?.seats} seats)
-                                                    </Badge>
-                                                );
-                                            })}
+                                            {newReservation.tableIds.map(
+                                                (tableId) => {
+                                                    const table = tables.find(
+                                                        (t) => {
+                                                            const tId =
+                                                                typeof t.id ===
+                                                                'number'
+                                                                    ? t.id
+                                                                    : parseInt(
+                                                                          t.id.toString(),
+                                                                      );
+                                                            return (
+                                                                tId === tableId
+                                                            );
+                                                        },
+                                                    );
+                                                    return (
+                                                        <Badge
+                                                            key={tableId}
+                                                            variant="secondary"
+                                                            className="text-xs"
+                                                        >
+                                                            {table?.name} (
+                                                            {table?.seats}{' '}
+                                                            seats)
+                                                        </Badge>
+                                                    );
+                                                },
+                                            )}
                                         </div>
                                         <div className="mt-2 text-xs text-green-700 dark:text-green-300">
-                                            Total capacity: {newReservation.tableIds.reduce((total, tableId) => {
-                                                const table = tables.find(t => {
-                                                    const tId = typeof t.id === 'number' ? t.id : parseInt(t.id.toString());
-                                                    return tId === tableId;
-                                                });
-                                                return total + (table?.seats || 0);
-                                            }, 0)} seats
+                                            Total capacity:{' '}
+                                            {newReservation.tableIds.reduce(
+                                                (total, tableId) => {
+                                                    const table = tables.find(
+                                                        (t) => {
+                                                            const tId =
+                                                                typeof t.id ===
+                                                                'number'
+                                                                    ? t.id
+                                                                    : parseInt(
+                                                                          t.id.toString(),
+                                                                      );
+                                                            return (
+                                                                tId === tableId
+                                                            );
+                                                        },
+                                                    );
+                                                    return (
+                                                        total +
+                                                        (table?.seats || 0)
+                                                    );
+                                                },
+                                                0,
+                                            )}{' '}
+                                            seats
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                    <div className="mb-3 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800">
                                         <div className="text-center text-gray-500 dark:text-gray-400">
-                                            <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                            <p className="text-sm">No tables assigned</p>
-                                            <p className="text-xs">Click "Assign" to select tables for this reservation</p>
+                                            <Users className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                                            <p className="text-sm">
+                                                No tables assigned
+                                            </p>
+                                            <p className="text-xs">
+                                                Click "Assign" to select tables
+                                                for this reservation
+                                            </p>
                                         </div>
                                     </div>
                                 )}

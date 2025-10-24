@@ -600,6 +600,7 @@ export default function Authenticated({
                             <ResponsiveNavLink
                                 href={route('logout', {
                                     project: auth.project?.identifier,
+                                    ...(new URLSearchParams(window.location.search).get('mobile') === '1' && { mobile: '1' }),
                                 })}
                                 method="post"
                                 as="button"
@@ -1041,6 +1042,7 @@ export default function Authenticated({
                                             href={route('logout', {
                                                 project:
                                                     auth.project?.identifier,
+                                                ...(new URLSearchParams(window.location.search).get('mobile') === '1' && { mobile: '1' }),
                                             })}
                                             method="post"
                                             as="button"
@@ -1111,6 +1113,7 @@ export default function Authenticated({
                                             href={route('logout', {
                                                 project:
                                                     auth.project?.identifier,
+                                                ...(new URLSearchParams(window.location.search).get('mobile') === '1' && { mobile: '1' }),
                                             })}
                                             method="post"
                                             as="button"
@@ -1206,6 +1209,7 @@ export default function Authenticated({
                                             href={route('logout', {
                                                 project:
                                                     auth.project?.identifier,
+                                                ...(new URLSearchParams(window.location.search).get('mobile') === '1' && { mobile: '1' }),
                                             })}
                                             method="post"
                                             as="button"

@@ -86,24 +86,34 @@ export const usePosApi = () => {
     }, []);
 
     const toggleMenuItemAvailability = useCallback(
-        async (id: number, field: 'is_available_personal' | 'is_available_online', value: boolean) => {
+        async (
+            id: number,
+            field: 'is_available_personal' | 'is_available_online',
+            value: boolean,
+        ) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/menu-item/${id}/toggle-availability`, {
-                    field,
-                    value,
-                }, {
-                    onSuccess: () => {
-                        toast.success('Menu item availability updated successfully');
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/menu-item/${id}/toggle-availability`,
+                    {
+                        field,
+                        value,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                'Failed to update menu item availability',
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success(
+                                'Menu item availability updated successfully',
+                            );
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update menu item availability',
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],
@@ -170,21 +180,27 @@ export const usePosApi = () => {
     const toggleOnlineStoreStatus = useCallback(
         async (id: number, is_active: boolean) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/online-store/${id}/toggle-status`, {
-                    is_active,
-                }, {
-                    onSuccess: () => {
-                        toast.success('Online store status updated successfully');
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/online-store/${id}/toggle-status`,
+                    {
+                        is_active,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                'Failed to update online store status',
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success(
+                                'Online store status updated successfully',
+                            );
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update online store status',
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],
@@ -193,21 +209,25 @@ export const usePosApi = () => {
     const updateOnlineStoreMenuItems = useCallback(
         async (id: number, menuItemIds: number[]) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/online-store/${id}/menu-items`, {
-                    menu_items: menuItemIds,
-                }, {
-                    onSuccess: () => {
-                        toast.success('Menu items updated successfully');
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/online-store/${id}/menu-items`,
+                    {
+                        menu_items: menuItemIds,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                'Failed to update menu items',
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success('Menu items updated successfully');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update menu items',
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],
@@ -217,22 +237,26 @@ export const usePosApi = () => {
     const verifyOrder = useCallback(
         async (id: number, status: 'verified' | 'rejected', notes?: string) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/online-order/${id}/verify`, {
-                    verification_status: status,
-                    verification_notes: notes,
-                }, {
-                    onSuccess: () => {
-                        toast.success(`Order ${status} successfully`);
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/online-order/${id}/verify`,
+                    {
+                        verification_status: status,
+                        verification_notes: notes,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                `Failed to ${status} order`,
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success(`Order ${status} successfully`);
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    `Failed to ${status} order`,
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],
@@ -241,22 +265,28 @@ export const usePosApi = () => {
     const negotiatePayment = useCallback(
         async (id: number, amount: number, notes?: string) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/online-order/${id}/negotiate-payment`, {
-                    negotiated_amount: amount,
-                    payment_notes: notes,
-                }, {
-                    onSuccess: () => {
-                        toast.success('Payment negotiation updated successfully');
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/online-order/${id}/negotiate-payment`,
+                    {
+                        negotiated_amount: amount,
+                        payment_notes: notes,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                'Failed to negotiate payment',
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success(
+                                'Payment negotiation updated successfully',
+                            );
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to negotiate payment',
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],
@@ -265,46 +295,61 @@ export const usePosApi = () => {
     const updateOrderStatus = useCallback(
         async (id: number, status: string) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/online-order/${id}/status`, {
-                    status,
-                }, {
-                    onSuccess: () => {
-                        toast.success('Order status updated successfully');
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/online-order/${id}/status`,
+                    {
+                        status,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                'Failed to update order status',
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success('Order status updated successfully');
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update order status',
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],
     );
 
     const updatePaymentStatus = useCallback(
-        async (id: number, paymentStatus: string, paymentMethod?: string, paymentNotes?: string) => {
+        async (
+            id: number,
+            paymentStatus: string,
+            paymentMethod?: string,
+            paymentNotes?: string,
+        ) => {
             return new Promise((resolve) => {
-                router.patch(`/pos-restaurant/online-order/${id}/payment-status`, {
-                    payment_status: paymentStatus,
-                    payment_method: paymentMethod,
-                    payment_notes: paymentNotes,
-                }, {
-                    onSuccess: () => {
-                        toast.success('Payment status updated successfully');
-                        resolve(true);
+                router.patch(
+                    `/pos-restaurant/online-order/${id}/payment-status`,
+                    {
+                        payment_status: paymentStatus,
+                        payment_method: paymentMethod,
+                        payment_notes: paymentNotes,
                     },
-                    onError: (errors) => {
-                        toast.error(
-                            (Object.values(errors)[0] as string) ||
-                                'Failed to update payment status',
-                        );
-                        resolve(false);
+                    {
+                        onSuccess: () => {
+                            toast.success(
+                                'Payment status updated successfully',
+                            );
+                            resolve(true);
+                        },
+                        onError: (errors) => {
+                            toast.error(
+                                (Object.values(errors)[0] as string) ||
+                                    'Failed to update payment status',
+                            );
+                            resolve(false);
+                        },
                     },
-                });
+                );
             });
         },
         [],

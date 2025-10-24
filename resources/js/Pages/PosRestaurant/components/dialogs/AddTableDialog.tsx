@@ -89,7 +89,10 @@ export const AddTableDialog: React.FC<AddTableDialogProps> = ({
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="tableLocation" className="text-right">
+                            <Label
+                                htmlFor="tableLocation"
+                                className="text-right"
+                            >
                                 Location
                             </Label>
                             <Select
@@ -100,14 +103,28 @@ export const AddTableDialog: React.FC<AddTableDialogProps> = ({
                                     <SelectValue placeholder="Select location" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="indoor">Indoor</SelectItem>
-                                    <SelectItem value="outdoor">Outdoor</SelectItem>
+                                    <SelectItem value="indoor">
+                                        Indoor
+                                    </SelectItem>
+                                    <SelectItem value="outdoor">
+                                        Outdoor
+                                    </SelectItem>
                                     <SelectItem value="bar">Bar</SelectItem>
-                                    <SelectItem value="2nd_floor">2nd Floor</SelectItem>
-                                    <SelectItem value="rooftop">Rooftop</SelectItem>
-                                    <SelectItem value="private_room">Private Room</SelectItem>
-                                    <SelectItem value="terrace">Terrace</SelectItem>
-                                    <SelectItem value="garden">Garden</SelectItem>
+                                    <SelectItem value="2nd_floor">
+                                        2nd Floor
+                                    </SelectItem>
+                                    <SelectItem value="rooftop">
+                                        Rooftop
+                                    </SelectItem>
+                                    <SelectItem value="private_room">
+                                        Private Room
+                                    </SelectItem>
+                                    <SelectItem value="terrace">
+                                        Terrace
+                                    </SelectItem>
+                                    <SelectItem value="garden">
+                                        Garden
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

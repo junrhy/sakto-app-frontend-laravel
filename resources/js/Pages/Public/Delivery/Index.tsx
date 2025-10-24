@@ -505,9 +505,10 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                             {basicPlan?.price === 0
                                                 ? 'Free'
                                                 : formatCurrency(
-                                                    basicPlan?.price || 0,
-                                                    basicPlan?.currency || '₱'
-                                                )}
+                                                      basicPlan?.price || 0,
+                                                      basicPlan?.currency ||
+                                                          '₱',
+                                                  )}
                                         </span>
                                         {basicPlan?.period && (
                                             <span className="text-sm text-slate-600">
@@ -614,7 +615,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-slate-900">
                                             {formatCurrency(
                                                 proPlan?.price || 199,
-                                                proPlan?.currency || '₱'
+                                                proPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-slate-600">
@@ -732,7 +733,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-slate-900">
                                             {formatCurrency(
                                                 businessPlan?.price || 399,
-                                                businessPlan?.currency || '₱'
+                                                businessPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-slate-600">

@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost, formatCurrency } from '@/lib/utils';
+import { formatCurrency, getHost } from '@/lib/utils';
 import {
     faChartLine,
     faCheckCircle,
@@ -471,7 +471,7 @@ export default function FnbIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-red-900">
                                             {formatCurrency(
                                                 basicPlan?.price || 299,
-                                                basicPlan?.currency || '₱'
+                                                basicPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-red-700">
@@ -555,7 +555,7 @@ export default function FnbIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-red-900">
                                             {formatCurrency(
                                                 proPlan?.price || 599,
-                                                proPlan?.currency || '₱'
+                                                proPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-red-700">
@@ -635,7 +635,7 @@ export default function FnbIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-red-900">
                                             {formatCurrency(
                                                 businessPlan?.price || 999,
-                                                businessPlan?.currency || '₱'
+                                                businessPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-red-700">

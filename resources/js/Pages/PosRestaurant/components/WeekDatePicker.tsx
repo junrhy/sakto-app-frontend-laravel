@@ -1,12 +1,12 @@
-import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 /**
  * WeekDatePicker - A reusable horizontal week view date picker component
- * 
+ *
  * Features:
  * - Displays dates in a horizontal layout (3 days on mobile, 7 days on desktop)
  * - Automatically highlights the current date (Today)
@@ -14,7 +14,7 @@ import React, { useMemo, useState, useCallback } from 'react';
  * - Previous/Next buttons to navigate through dates (shifts by 1 day)
  * - Fully responsive with dark mode support
  * - Smooth animations and hover effects
- * 
+ *
  * @example
  * ```tsx
  * <WeekDatePicker
@@ -124,10 +124,10 @@ export const WeekDatePicker: React.FC<WeekDatePickerProps> = ({
     const formattedSelectedDate = useMemo(() => {
         if (!selectedDate) return '';
         const date = new Date(selectedDate);
-        return date.toLocaleDateString('en-US', { 
-            month: 'short', 
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
             day: 'numeric',
-            year: 'numeric'
+            year: 'numeric',
         });
     }, [selectedDate]);
 
@@ -155,91 +155,91 @@ export const WeekDatePicker: React.FC<WeekDatePickerProps> = ({
 
                 {/* Week Days Container */}
                 <div className="grid flex-1 grid-cols-3 gap-2 md:grid-cols-7">
-                {weekDates.map((date, index) => {
-                    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                    const isSelected = dateStr === selectedDate;
-                    const isToday = dateStr === todayStr;
-                    const hasIndicator =
-                        datesWithIndicator.includes(dateStr);
+                    {weekDates.map((date, index) => {
+                        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        const isSelected = dateStr === selectedDate;
+                        const isToday = dateStr === todayStr;
+                        const hasIndicator =
+                            datesWithIndicator.includes(dateStr);
 
-                    return (
-                        <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleWeekDateSelect(date)}
-                            className={`relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all duration-200 hover:scale-105 ${
-                                isSelected
-                                    ? 'border-blue-500 bg-blue-500 text-white shadow-lg ring-2 ring-blue-300'
-                                    : isToday
-                                      ? 'border-orange-400 bg-orange-50 text-orange-900 dark:border-orange-500 dark:bg-orange-900/20 dark:text-orange-100'
-                                      : 'border-gray-200 bg-white text-gray-900 hover:border-blue-300 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                            }`}
-                        >
-                            {/* Day of Week */}
-                            <span
-                                className={`mb-1 text-xs font-medium uppercase ${
+                        return (
+                            <button
+                                key={index}
+                                type="button"
+                                onClick={() => handleWeekDateSelect(date)}
+                                className={`relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all duration-200 hover:scale-105 ${
                                     isSelected
-                                        ? 'text-white'
+                                        ? 'border-blue-500 bg-blue-500 text-white shadow-lg ring-2 ring-blue-300'
                                         : isToday
-                                          ? 'text-orange-600 dark:text-orange-400'
-                                          : 'text-gray-500 dark:text-gray-400'
+                                          ? 'border-orange-400 bg-orange-50 text-orange-900 dark:border-orange-500 dark:bg-orange-900/20 dark:text-orange-100'
+                                          : 'border-gray-200 bg-white text-gray-900 hover:border-blue-300 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
                                 }`}
                             >
-                                {date.toLocaleDateString('en-US', {
-                                    weekday: 'short',
-                                })}
-                            </span>
-
-                            {/* Date Number */}
-                            <span
-                                className={`text-xl font-bold ${
-                                    isSelected
-                                        ? 'text-white'
-                                        : isToday
-                                          ? 'text-orange-900 dark:text-orange-100'
-                                          : 'text-gray-900 dark:text-white'
-                                }`}
-                            >
-                                {date.getDate()}
-                            </span>
-
-                            {/* Month */}
-                            <span
-                                className={`mt-1 text-xs ${
-                                    isSelected
-                                        ? 'text-white/90'
-                                        : isToday
-                                          ? 'text-orange-700 dark:text-orange-300'
-                                          : 'text-gray-500 dark:text-gray-400'
-                                }`}
-                            >
-                                {date.toLocaleDateString('en-US', {
-                                    month: 'short',
-                                })}
-                            </span>
-
-                            {/* Indicator Dot */}
-                            {hasIndicator && !isSelected && (
-                                <div
-                                    className={`absolute right-1 top-1 h-2 w-2 rounded-full ${
-                                        isToday
-                                            ? 'bg-orange-500'
-                                            : 'bg-blue-500'
+                                {/* Day of Week */}
+                                <span
+                                    className={`mb-1 text-xs font-medium uppercase ${
+                                        isSelected
+                                            ? 'text-white'
+                                            : isToday
+                                              ? 'text-orange-600 dark:text-orange-400'
+                                              : 'text-gray-500 dark:text-gray-400'
                                     }`}
-                                />
-                            )}
+                                >
+                                    {date.toLocaleDateString('en-US', {
+                                        weekday: 'short',
+                                    })}
+                                </span>
 
-                            {/* Today Badge */}
-                            {isToday && !isSelected && (
-                                <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                                    <Badge className="h-4 bg-orange-500 px-1.5 py-0 text-[10px] text-white">
-                                        Today
-                                    </Badge>
-                                </div>
-                            )}
-                        </button>
-                    );
-                })}
+                                {/* Date Number */}
+                                <span
+                                    className={`text-xl font-bold ${
+                                        isSelected
+                                            ? 'text-white'
+                                            : isToday
+                                              ? 'text-orange-900 dark:text-orange-100'
+                                              : 'text-gray-900 dark:text-white'
+                                    }`}
+                                >
+                                    {date.getDate()}
+                                </span>
+
+                                {/* Month */}
+                                <span
+                                    className={`mt-1 text-xs ${
+                                        isSelected
+                                            ? 'text-white/90'
+                                            : isToday
+                                              ? 'text-orange-700 dark:text-orange-300'
+                                              : 'text-gray-500 dark:text-gray-400'
+                                    }`}
+                                >
+                                    {date.toLocaleDateString('en-US', {
+                                        month: 'short',
+                                    })}
+                                </span>
+
+                                {/* Indicator Dot */}
+                                {hasIndicator && !isSelected && (
+                                    <div
+                                        className={`absolute right-1 top-1 h-2 w-2 rounded-full ${
+                                            isToday
+                                                ? 'bg-orange-500'
+                                                : 'bg-blue-500'
+                                        }`}
+                                    />
+                                )}
+
+                                {/* Today Badge */}
+                                {isToday && !isSelected && (
+                                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                                        <Badge className="h-4 bg-orange-500 px-1.5 py-0 text-[10px] text-white">
+                                            Today
+                                        </Badge>
+                                    </div>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Next Button */}
@@ -256,4 +256,3 @@ export const WeekDatePicker: React.FC<WeekDatePickerProps> = ({
         </div>
     );
 };
-

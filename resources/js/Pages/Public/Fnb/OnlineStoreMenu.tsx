@@ -1,23 +1,18 @@
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
-import { Badge } from '@/Components/ui/badge';
-import { 
-    ShoppingBag, 
-    Plus, 
-    Minus, 
-    ShoppingCart, 
-    User, 
-    Phone, 
-    Mail, 
-    MapPin,
-    ArrowLeft,
-    CheckCircle
-} from 'lucide-react';
-import React, { useState, useCallback } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    Minus,
+    Plus,
+    ShoppingBag,
+    ShoppingCart,
+} from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 interface MenuItem {
@@ -52,7 +47,11 @@ interface OnlineStoreMenuProps {
     domain: string;
 }
 
-export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStoreMenuProps) {
+export default function OnlineStoreMenu({
+    store,
+    menuItems,
+    domain,
+}: OnlineStoreMenuProps) {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -66,12 +65,17 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
     });
 
     // Get unique categories
-    const categories = ['all', ...Array.from(new Set(menuItems.map(item => item.category)))];
+    const categories = [
+        'all',
+        ...Array.from(new Set(menuItems.map((item) => item.category))),
+    ];
 
     // Filter menu items
-    const filteredMenuItems = menuItems.filter(item => {
-        const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-        const matchesSearch = !searchTerm || 
+    const filteredMenuItems = menuItems.filter((item) => {
+        const matchesCategory =
+            selectedCategory === 'all' || item.category === selectedCategory;
+        const matchesSearch =
+            !searchTerm ||
             item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.description.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesCategory && matchesSearch;
@@ -79,49 +83,66 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
 
     // Cart functions
     const addToCart = useCallback((item: MenuItem) => {
-        setCart(prev => {
-            const existingItem = prev.find(cartItem => cartItem.id === item.id);
+        setCart((prev) => {
+            const existingItem = prev.find(
+                (cartItem) => cartItem.id === item.id,
+            );
             if (existingItem) {
-                return prev.map(cartItem =>
+                return prev.map((cartItem) =>
                     cartItem.id === item.id
                         ? { ...cartItem, quantity: cartItem.quantity + 1 }
-                        : cartItem
+                        : cartItem,
                 );
             }
-            return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1 }];
+            return [
+                ...prev,
+                {
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: 1,
+                },
+            ];
         });
     }, []);
 
     const removeFromCart = useCallback((itemId: number) => {
-        setCart(prev => {
-            const existingItem = prev.find(cartItem => cartItem.id === itemId);
+        setCart((prev) => {
+            const existingItem = prev.find(
+                (cartItem) => cartItem.id === itemId,
+            );
             if (existingItem && existingItem.quantity > 1) {
-                return prev.map(cartItem =>
+                return prev.map((cartItem) =>
                     cartItem.id === itemId
                         ? { ...cartItem, quantity: cartItem.quantity - 1 }
-                        : cartItem
+                        : cartItem,
                 );
             }
-            return prev.filter(cartItem => cartItem.id !== itemId);
+            return prev.filter((cartItem) => cartItem.id !== itemId);
         });
     }, []);
 
     const updateQuantity = useCallback((itemId: number, quantity: number) => {
         if (quantity <= 0) {
-            setCart(prev => prev.filter(cartItem => cartItem.id !== itemId));
+            setCart((prev) =>
+                prev.filter((cartItem) => cartItem.id !== itemId),
+            );
         } else {
-            setCart(prev =>
-                prev.map(cartItem =>
+            setCart((prev) =>
+                prev.map((cartItem) =>
                     cartItem.id === itemId
                         ? { ...cartItem, quantity }
-                        : cartItem
-                )
+                        : cartItem,
+                ),
             );
         }
     }, []);
 
     // Calculate totals
-    const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
+    const subtotal = cart.reduce(
+        (sum, item) => sum + Number(item.price) * item.quantity,
+        0,
+    );
     const deliveryFee = 0; // Could be calculated based on distance
     const taxAmount = subtotal * 0.1; // 10% tax
     const totalAmount = subtotal + deliveryFee + taxAmount;
@@ -133,7 +154,12 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
             return;
         }
 
-        if (!orderForm.customer_name || !orderForm.customer_email || !orderForm.customer_phone || !orderForm.delivery_address) {
+        if (
+            !orderForm.customer_name ||
+            !orderForm.customer_email ||
+            !orderForm.customer_phone ||
+            !orderForm.delivery_address
+        ) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -143,7 +169,7 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
         try {
             const orderData = {
                 ...orderForm,
-                items: cart.map(item => ({
+                items: cart.map((item) => ({
                     id: item.id,
                     name: item.name,
                     quantity: item.quantity,
@@ -159,7 +185,10 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
                 },
                 body: JSON.stringify(orderData),
             });
@@ -169,7 +198,9 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
             if (result.status === 'success') {
                 toast.success('Order submitted successfully!');
                 // Redirect to order status page
-                router.visit(`/fnb/store/${domain}/order/${result.data.order_number}`);
+                router.visit(
+                    `/fnb/store/${domain}/order/${result.data.order_number}`,
+                );
             } else {
                 toast.error(result.message || 'Failed to submit order');
             }
@@ -178,42 +209,60 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
         } finally {
             setIsSubmitting(false);
         }
-    }, [cart, orderForm, subtotal, deliveryFee, taxAmount, totalAmount, domain]);
+    }, [
+        cart,
+        orderForm,
+        subtotal,
+        deliveryFee,
+        taxAmount,
+        totalAmount,
+        domain,
+    ]);
 
     return (
         <>
             <Head title={`${store.name} - Menu`} />
-            
+
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 {/* Header */}
-                <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
+                <div className="border-b bg-white shadow-sm dark:bg-gray-800">
                     <div className="container mx-auto px-4 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <Link href={`/fnb/store/${domain}`} className="mr-4">
+                                <Link
+                                    href={`/fnb/store/${domain}`}
+                                    className="mr-4"
+                                >
                                     <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                                 </Link>
                                 <div>
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                         {store.name}
                                     </h1>
-                                    <p className="text-gray-600 dark:text-gray-400">Menu & Order</p>
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                        Menu & Order
+                                    </p>
                                 </div>
                             </div>
                             <Button
                                 onClick={() => setIsCheckoutOpen(true)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                className="bg-blue-600 text-white hover:bg-blue-700"
                                 disabled={cart.length === 0}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
-                                Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)})
+                                Cart (
+                                {cart.reduce(
+                                    (sum, item) => sum + item.quantity,
+                                    0,
+                                )}
+                                )
                             </Button>
                         </div>
                     </div>
                 </div>
 
                 <div className="container mx-auto px-4 py-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
                         {/* Menu Section */}
                         <div className="lg:col-span-3">
                             {/* Search and Filter */}
@@ -221,49 +270,70 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
                                 <Input
                                     placeholder="Search menu items..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
                                     className="w-full"
                                 />
                                 <div className="flex flex-wrap gap-2">
-                                    {categories.map(category => (
+                                    {categories.map((category) => (
                                         <Button
                                             key={category}
-                                            variant={selectedCategory === category ? 'default' : 'outline'}
+                                            variant={
+                                                selectedCategory === category
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                             size="sm"
-                                            onClick={() => setSelectedCategory(category)}
+                                            onClick={() =>
+                                                setSelectedCategory(category)
+                                            }
                                         >
-                                            {category === 'all' ? 'All Items' : category}
+                                            {category === 'all'
+                                                ? 'All Items'
+                                                : category}
                                         </Button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Menu Items */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {filteredMenuItems.map(item => (
-                                    <Card key={item.id} className="hover:shadow-md transition-shadow">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {filteredMenuItems.map((item) => (
+                                    <Card
+                                        key={item.id}
+                                        className="transition-shadow hover:shadow-md"
+                                    >
                                         <CardContent className="p-4">
-                                            <div className="flex justify-between items-start mb-2">
+                                            <div className="mb-2 flex items-start justify-between">
                                                 <div className="flex-1">
                                                     <h3 className="font-semibold text-gray-900 dark:text-white">
                                                         {item.name}
                                                     </h3>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                                         {item.description}
                                                     </p>
                                                 </div>
-                                                <Badge variant="outline" className="ml-2">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="ml-2"
+                                                >
                                                     {item.category}
                                                 </Badge>
                                             </div>
-                                            <div className="flex justify-between items-center mt-3">
+                                            <div className="mt-3 flex items-center justify-between">
                                                 <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                                                    ${Number(item.price).toFixed(2)}
+                                                    $
+                                                    {Number(item.price).toFixed(
+                                                        2,
+                                                    )}
                                                 </span>
                                                 <Button
                                                     size="sm"
-                                                    onClick={() => addToCart(item)}
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                    onClick={() =>
+                                                        addToCart(item)
+                                                    }
+                                                    className="bg-blue-600 text-white hover:bg-blue-700"
                                                 >
                                                     <Plus className="h-4 w-4" />
                                                 </Button>
@@ -274,10 +344,11 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
                             </div>
 
                             {filteredMenuItems.length === 0 && (
-                                <div className="text-center py-12">
-                                    <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <div className="py-12 text-center">
+                                    <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                                     <p className="text-gray-500 dark:text-gray-400">
-                                        No menu items found matching your search.
+                                        No menu items found matching your
+                                        search.
                                     </p>
                                 </div>
                             )}
@@ -294,55 +365,90 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
                                 </CardHeader>
                                 <CardContent>
                                     {cart.length === 0 ? (
-                                        <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                                        <p className="py-4 text-center text-gray-500 dark:text-gray-400">
                                             Your cart is empty
                                         </p>
                                     ) : (
                                         <div className="space-y-3">
-                                            {cart.map(item => (
-                                                <div key={item.id} className="flex items-center justify-between">
+                                            {cart.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="flex items-center justify-between"
+                                                >
                                                     <div className="flex-1">
-                                                        <p className="text-sm font-medium">{item.name}</p>
-                                                        <p className="text-xs text-gray-500">${Number(item.price).toFixed(2)} each</p>
+                                                        <p className="text-sm font-medium">
+                                                            {item.name}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            $
+                                                            {Number(
+                                                                item.price,
+                                                            ).toFixed(2)}{' '}
+                                                            each
+                                                        </p>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
                                                         <Button
                                                             size="sm"
                                                             variant="outline"
-                                                            onClick={() => removeFromCart(item.id)}
+                                                            onClick={() =>
+                                                                removeFromCart(
+                                                                    item.id,
+                                                                )
+                                                            }
                                                         >
                                                             <Minus className="h-3 w-3" />
                                                         </Button>
-                                                        <span className="text-sm font-medium w-8 text-center">
+                                                        <span className="w-8 text-center text-sm font-medium">
                                                             {item.quantity}
                                                         </span>
                                                         <Button
                                                             size="sm"
                                                             variant="outline"
-                                                            onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, description: '', category: '' })}
+                                                            onClick={() =>
+                                                                addToCart({
+                                                                    id: item.id,
+                                                                    name: item.name,
+                                                                    price: item.price,
+                                                                    description:
+                                                                        '',
+                                                                    category:
+                                                                        '',
+                                                                })
+                                                            }
                                                         >
                                                             <Plus className="h-3 w-3" />
                                                         </Button>
                                                     </div>
                                                 </div>
                                             ))}
-                                            
-                                            <div className="border-t pt-3 space-y-2">
+
+                                            <div className="space-y-2 border-t pt-3">
                                                 <div className="flex justify-between text-sm">
                                                     <span>Subtotal:</span>
-                                                    <span>${subtotal.toFixed(2)}</span>
+                                                    <span>
+                                                        ${subtotal.toFixed(2)}
+                                                    </span>
                                                 </div>
                                                 <div className="flex justify-between text-sm">
                                                     <span>Delivery Fee:</span>
-                                                    <span>${deliveryFee.toFixed(2)}</span>
+                                                    <span>
+                                                        $
+                                                        {deliveryFee.toFixed(2)}
+                                                    </span>
                                                 </div>
                                                 <div className="flex justify-between text-sm">
                                                     <span>Tax:</span>
-                                                    <span>${taxAmount.toFixed(2)}</span>
+                                                    <span>
+                                                        ${taxAmount.toFixed(2)}
+                                                    </span>
                                                 </div>
-                                                <div className="flex justify-between font-bold text-lg">
+                                                <div className="flex justify-between text-lg font-bold">
                                                     <span>Total:</span>
-                                                    <span>${totalAmount.toFixed(2)}</span>
+                                                    <span>
+                                                        $
+                                                        {totalAmount.toFixed(2)}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -355,51 +461,80 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
 
                 {/* Checkout Modal */}
                 {isCheckoutOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                        <Card className="max-h-[90vh] w-full max-w-md overflow-y-auto">
                             <CardHeader>
                                 <CardTitle>Complete Your Order</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <Label htmlFor="customer_name">Full Name *</Label>
+                                    <Label htmlFor="customer_name">
+                                        Full Name *
+                                    </Label>
                                     <Input
                                         id="customer_name"
                                         value={orderForm.customer_name}
-                                        onChange={(e) => setOrderForm(prev => ({ ...prev, customer_name: e.target.value }))}
+                                        onChange={(e) =>
+                                            setOrderForm((prev) => ({
+                                                ...prev,
+                                                customer_name: e.target.value,
+                                            }))
+                                        }
                                         placeholder="Enter your full name"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="customer_email">Email *</Label>
+                                    <Label htmlFor="customer_email">
+                                        Email *
+                                    </Label>
                                     <Input
                                         id="customer_email"
                                         type="email"
                                         value={orderForm.customer_email}
-                                        onChange={(e) => setOrderForm(prev => ({ ...prev, customer_email: e.target.value }))}
+                                        onChange={(e) =>
+                                            setOrderForm((prev) => ({
+                                                ...prev,
+                                                customer_email: e.target.value,
+                                            }))
+                                        }
                                         placeholder="Enter your email"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="customer_phone">Phone *</Label>
+                                    <Label htmlFor="customer_phone">
+                                        Phone *
+                                    </Label>
                                     <Input
                                         id="customer_phone"
                                         value={orderForm.customer_phone}
-                                        onChange={(e) => setOrderForm(prev => ({ ...prev, customer_phone: e.target.value }))}
+                                        onChange={(e) =>
+                                            setOrderForm((prev) => ({
+                                                ...prev,
+                                                customer_phone: e.target.value,
+                                            }))
+                                        }
                                         placeholder="Enter your phone number"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="delivery_address">Delivery Address *</Label>
+                                    <Label htmlFor="delivery_address">
+                                        Delivery Address *
+                                    </Label>
                                     <Textarea
                                         id="delivery_address"
                                         value={orderForm.delivery_address}
-                                        onChange={(e) => setOrderForm(prev => ({ ...prev, delivery_address: e.target.value }))}
+                                        onChange={(e) =>
+                                            setOrderForm((prev) => ({
+                                                ...prev,
+                                                delivery_address:
+                                                    e.target.value,
+                                            }))
+                                        }
                                         placeholder="Enter your delivery address"
                                         rows={3}
                                     />
                                 </div>
-                                
+
                                 <div className="border-t pt-4">
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between">
@@ -408,15 +543,19 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Delivery Fee:</span>
-                                            <span>${deliveryFee.toFixed(2)}</span>
+                                            <span>
+                                                ${deliveryFee.toFixed(2)}
+                                            </span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Tax:</span>
                                             <span>${taxAmount.toFixed(2)}</span>
                                         </div>
-                                        <div className="flex justify-between font-bold text-lg">
+                                        <div className="flex justify-between text-lg font-bold">
                                             <span>Total:</span>
-                                            <span>${totalAmount.toFixed(2)}</span>
+                                            <span>
+                                                ${totalAmount.toFixed(2)}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -432,9 +571,11 @@ export default function OnlineStoreMenu({ store, menuItems, domain }: OnlineStor
                                     <Button
                                         onClick={handleSubmitOrder}
                                         disabled={isSubmitting}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                        className="flex-1 bg-green-600 text-white hover:bg-green-700"
                                     >
-                                        {isSubmitting ? 'Submitting...' : 'Place Order'}
+                                        {isSubmitting
+                                            ? 'Submitting...'
+                                            : 'Place Order'}
                                     </Button>
                                 </div>
                             </CardContent>

@@ -487,10 +487,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 period: '/month',
                 features: [
                     'Up to 5 tables',
-                    'Up to 150 reservations', 
+                    'Up to 150 reservations',
                     'Up to 50 menu items',
                     'Email confirmations',
-                    'SMS confirmations'
+                    'SMS confirmations',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',
@@ -508,12 +508,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 period: '/month',
                 features: [
                     'Up to 20 tables',
-                    'Up to 1,000 reservations', 
+                    'Up to 1,000 reservations',
                     'Up to 250 menu items',
                     '5 Online Stores',
                     'Kitchen display system',
                     'Email confirmations',
-                    'SMS confirmations'
+                    'SMS confirmations',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',

@@ -21,7 +21,12 @@ import { EditTableData } from '../../types';
 interface EditTableDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (id: number, name: string, seats: number, location: string) => void;
+    onConfirm: (
+        id: number,
+        name: string,
+        seats: number,
+        location: string,
+    ) => void;
     editTableData: EditTableData | null;
 }
 
@@ -46,7 +51,12 @@ export const EditTableDialog: React.FC<EditTableDialogProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (tableName.trim() && tableSeats > 0 && editTableData) {
-            onConfirm(editTableData.id, tableName.trim(), tableSeats, tableLocation);
+            onConfirm(
+                editTableData.id,
+                tableName.trim(),
+                tableSeats,
+                tableLocation,
+            );
             onClose();
         }
     };
@@ -117,14 +127,28 @@ export const EditTableDialog: React.FC<EditTableDialogProps> = ({
                                     <SelectValue placeholder="Select location" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="indoor">Indoor</SelectItem>
-                                    <SelectItem value="outdoor">Outdoor</SelectItem>
+                                    <SelectItem value="indoor">
+                                        Indoor
+                                    </SelectItem>
+                                    <SelectItem value="outdoor">
+                                        Outdoor
+                                    </SelectItem>
                                     <SelectItem value="bar">Bar</SelectItem>
-                                    <SelectItem value="2nd_floor">2nd Floor</SelectItem>
-                                    <SelectItem value="rooftop">Rooftop</SelectItem>
-                                    <SelectItem value="private_room">Private Room</SelectItem>
-                                    <SelectItem value="terrace">Terrace</SelectItem>
-                                    <SelectItem value="garden">Garden</SelectItem>
+                                    <SelectItem value="2nd_floor">
+                                        2nd Floor
+                                    </SelectItem>
+                                    <SelectItem value="rooftop">
+                                        Rooftop
+                                    </SelectItem>
+                                    <SelectItem value="private_room">
+                                        Private Room
+                                    </SelectItem>
+                                    <SelectItem value="terrace">
+                                        Terrace
+                                    </SelectItem>
+                                    <SelectItem value="garden">
+                                        Garden
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

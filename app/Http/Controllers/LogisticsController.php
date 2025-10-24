@@ -28,6 +28,11 @@ class LogisticsController extends Controller
      */
     public function index(Request $request)
     {
+        // Redirect authenticated users to home
+        if (auth()->check()) {
+            return redirect()->route('home');
+        }
+
         return Inertia::render('Public/Logistics/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),

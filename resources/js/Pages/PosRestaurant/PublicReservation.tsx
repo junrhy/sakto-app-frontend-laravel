@@ -1,20 +1,13 @@
+import { CountryCodeSelector } from '@/Components/CountryCodeSelector';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { CountryCodeSelector } from '@/Components/CountryCodeSelector';
+import axios from 'axios';
 import { Calendar, Clock, MapPin, Phone, User, Users } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import axios from 'axios';
 import { DateCalendar } from './components/DateCalendar';
 import { OpenedDate, Table } from './types';
 
@@ -41,84 +34,84 @@ interface ReservationFormData {
 
 // Country codes mapping for dial codes
 const COUNTRY_DIAL_CODES: Record<string, string> = {
-    'US': '+1',
-    'CA': '+1',
-    'GB': '+44',
-    'AU': '+61',
-    'SG': '+65',
-    'MY': '+60',
-    'TH': '+66',
-    'ID': '+62',
-    'JP': '+81',
-    'KR': '+82',
-    'CN': '+86',
-    'HK': '+852',
-    'TW': '+886',
-    'IN': '+91',
-    'DE': '+49',
-    'FR': '+33',
-    'IT': '+39',
-    'ES': '+34',
-    'NL': '+31',
-    'BE': '+32',
-    'CH': '+41',
-    'AT': '+43',
-    'SE': '+46',
-    'NO': '+47',
-    'DK': '+45',
-    'FI': '+358',
-    'BR': '+55',
-    'MX': '+52',
-    'AR': '+54',
-    'CL': '+56',
-    'CO': '+57',
-    'PE': '+51',
-    'VE': '+58',
-    'ZA': '+27',
-    'EG': '+20',
-    'NG': '+234',
-    'KE': '+254',
-    'MA': '+212',
-    'TN': '+216',
-    'DZ': '+213',
-    'LY': '+218',
-    'SD': '+249',
-    'ET': '+251',
-    'GH': '+233',
-    'CI': '+225',
-    'SN': '+221',
-    'ML': '+223',
-    'BF': '+226',
-    'NE': '+227',
-    'TD': '+235',
-    'CM': '+237',
-    'CF': '+236',
-    'GA': '+241',
-    'CG': '+242',
-    'CD': '+243',
-    'AO': '+244',
-    'ZM': '+260',
-    'ZW': '+263',
-    'BW': '+267',
-    'NA': '+264',
-    'SZ': '+268',
-    'LS': '+266',
-    'MW': '+265',
-    'MZ': '+258',
-    'MG': '+261',
-    'MU': '+230',
-    'SC': '+248',
-    'RE': '+262',
-    'YT': '+262',
-    'KM': '+269',
-    'DJ': '+253',
-    'SO': '+252',
-    'ER': '+291',
-    'UG': '+256',
-    'RW': '+250',
-    'BI': '+257',
-    'TZ': '+255',
-    'PH': '+63',
+    US: '+1',
+    CA: '+1',
+    GB: '+44',
+    AU: '+61',
+    SG: '+65',
+    MY: '+60',
+    TH: '+66',
+    ID: '+62',
+    JP: '+81',
+    KR: '+82',
+    CN: '+86',
+    HK: '+852',
+    TW: '+886',
+    IN: '+91',
+    DE: '+49',
+    FR: '+33',
+    IT: '+39',
+    ES: '+34',
+    NL: '+31',
+    BE: '+32',
+    CH: '+41',
+    AT: '+43',
+    SE: '+46',
+    NO: '+47',
+    DK: '+45',
+    FI: '+358',
+    BR: '+55',
+    MX: '+52',
+    AR: '+54',
+    CL: '+56',
+    CO: '+57',
+    PE: '+51',
+    VE: '+58',
+    ZA: '+27',
+    EG: '+20',
+    NG: '+234',
+    KE: '+254',
+    MA: '+212',
+    TN: '+216',
+    DZ: '+213',
+    LY: '+218',
+    SD: '+249',
+    ET: '+251',
+    GH: '+233',
+    CI: '+225',
+    SN: '+221',
+    ML: '+223',
+    BF: '+226',
+    NE: '+227',
+    TD: '+235',
+    CM: '+237',
+    CF: '+236',
+    GA: '+241',
+    CG: '+242',
+    CD: '+243',
+    AO: '+244',
+    ZM: '+260',
+    ZW: '+263',
+    BW: '+267',
+    NA: '+264',
+    SZ: '+268',
+    LS: '+266',
+    MW: '+265',
+    MZ: '+258',
+    MG: '+261',
+    MU: '+230',
+    SC: '+248',
+    RE: '+262',
+    YT: '+262',
+    KM: '+269',
+    DJ: '+253',
+    SO: '+252',
+    ER: '+291',
+    UG: '+256',
+    RW: '+250',
+    BI: '+257',
+    TZ: '+255',
+    PH: '+63',
 };
 
 export default function PublicReservation({
@@ -201,47 +194,53 @@ export default function PublicReservation({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Validate form
         if (!formData.name.trim()) {
             toast.error('Please enter your name');
             return;
         }
-        
+
         if (!formData.email.trim()) {
             toast.error('Please enter your email');
             return;
         }
-        
+
         if (!formData.phone.trim()) {
             toast.error('Please enter your phone number');
             return;
         }
-        
+
         if (!formData.date || !formData.time) {
             toast.error('Please select date and time');
             return;
         }
-        
+
         if (!isTimeSlotOpened(formData.date, formData.time)) {
             toast.error('This date/time is not available for reservations');
             return;
         }
-        
+
         // Table assignment will be handled by restaurant staff
 
         setIsSubmitting(true);
-        
+
         try {
-            const response = await axios.post('/api/pos-restaurant-public/reservation', {
-                ...formData,
-                countryCode: COUNTRY_DIAL_CODES[formData.countryCode] || '+1', // Convert country code to dial code
-                client_identifier: clientIdentifier,
-            });
-            
+            const response = await axios.post(
+                '/api/pos-restaurant-public/reservation',
+                {
+                    ...formData,
+                    countryCode:
+                        COUNTRY_DIAL_CODES[formData.countryCode] || '+1', // Convert country code to dial code
+                    client_identifier: clientIdentifier,
+                },
+            );
+
             if (response.data.status === 'success') {
-                toast.success('Reservation submitted successfully! We will contact you to confirm.');
-                
+                toast.success(
+                    'Reservation submitted successfully! We will contact you to confirm.',
+                );
+
                 // Reset form
                 const today = new Date();
                 const year = today.getFullYear();
@@ -258,10 +257,15 @@ export default function PublicReservation({
                     notes: '',
                 });
             } else {
-                throw new Error(response.data.message || 'Failed to submit reservation');
+                throw new Error(
+                    response.data.message || 'Failed to submit reservation',
+                );
             }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to submit reservation. Please try again.';
+            const errorMessage =
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to submit reservation. Please try again.';
             toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
@@ -285,8 +289,8 @@ export default function PublicReservation({
                                 <p className="text-gray-600 dark:text-gray-300">
                                     {error}
                                 </p>
-                                <Button 
-                                    onClick={() => window.location.reload()} 
+                                <Button
+                                    onClick={() => window.location.reload()}
                                     className="mt-4"
                                 >
                                     Try Again
@@ -338,7 +342,10 @@ export default function PublicReservation({
                                 {/* Personal Information */}
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div>
-                                        <Label htmlFor="name" className="flex items-center gap-2">
+                                        <Label
+                                            htmlFor="name"
+                                            className="flex items-center gap-2"
+                                        >
                                             <User className="h-4 w-4" />
                                             Full Name *
                                         </Label>
@@ -404,12 +411,21 @@ export default function PublicReservation({
                                             onChange={(e) => {
                                                 let phoneValue = e.target.value;
                                                 // Remove leading zeros
-                                                phoneValue = phoneValue.replace(/^0+/, '');
+                                                phoneValue = phoneValue.replace(
+                                                    /^0+/,
+                                                    '',
+                                                );
                                                 // Only allow numbers
-                                                phoneValue = phoneValue.replace(/[^0-9]/g, '');
+                                                phoneValue = phoneValue.replace(
+                                                    /[^0-9]/g,
+                                                    '',
+                                                );
                                                 // Limit length to 15 digits
-                                                phoneValue = phoneValue.slice(0, 15);
-                                                
+                                                phoneValue = phoneValue.slice(
+                                                    0,
+                                                    15,
+                                                );
+
                                                 setFormData((prev) => ({
                                                     ...prev,
                                                     phone: phoneValue,
@@ -440,7 +456,16 @@ export default function PublicReservation({
                                                     }));
                                                 }}
                                                 blockedDates={[]}
-                                                minDate={new Date(new Date().setHours(0, 0, 0, 0))}
+                                                minDate={
+                                                    new Date(
+                                                        new Date().setHours(
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                        ),
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -459,37 +484,52 @@ export default function PublicReservation({
                                                         AM
                                                     </h4>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {timeSlots.am.map((timeSlot) => {
-                                                            const isOpened = isTimeSlotOpened(
-                                                                formData.date,
-                                                                timeSlot.value,
-                                                            );
-                                                            const isSelected = formData.time === timeSlot.value;
+                                                        {timeSlots.am.map(
+                                                            (timeSlot) => {
+                                                                const isOpened =
+                                                                    isTimeSlotOpened(
+                                                                        formData.date,
+                                                                        timeSlot.value,
+                                                                    );
+                                                                const isSelected =
+                                                                    formData.time ===
+                                                                    timeSlot.value;
 
-                                                            return (
-                                                                <button
-                                                                    key={timeSlot.value}
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        isOpened &&
-                                                                        setFormData((prev) => ({
-                                                                            ...prev,
-                                                                            time: timeSlot.value,
-                                                                        }))
-                                                                    }
-                                                                    disabled={!isOpened}
-                                                                    className={`rounded border px-2 py-1 text-xs font-medium transition-all ${
-                                                                        isSelected
-                                                                            ? 'border-blue-500 bg-blue-500 text-white shadow-md'
-                                                                            : !isOpened
-                                                                              ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                              : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                                                                    }`}
-                                                                >
-                                                                    {timeSlot.display}
-                                                                </button>
-                                                            );
-                                                        })}
+                                                                return (
+                                                                    <button
+                                                                        key={
+                                                                            timeSlot.value
+                                                                        }
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            isOpened &&
+                                                                            setFormData(
+                                                                                (
+                                                                                    prev,
+                                                                                ) => ({
+                                                                                    ...prev,
+                                                                                    time: timeSlot.value,
+                                                                                }),
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            !isOpened
+                                                                        }
+                                                                        className={`rounded border px-2 py-1 text-xs font-medium transition-all ${
+                                                                            isSelected
+                                                                                ? 'border-blue-500 bg-blue-500 text-white shadow-md'
+                                                                                : !isOpened
+                                                                                  ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                                  : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            timeSlot.display
+                                                                        }
+                                                                    </button>
+                                                                );
+                                                            },
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -499,37 +539,52 @@ export default function PublicReservation({
                                                         PM
                                                     </h4>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {timeSlots.pm.map((timeSlot) => {
-                                                            const isOpened = isTimeSlotOpened(
-                                                                formData.date,
-                                                                timeSlot.value,
-                                                            );
-                                                            const isSelected = formData.time === timeSlot.value;
+                                                        {timeSlots.pm.map(
+                                                            (timeSlot) => {
+                                                                const isOpened =
+                                                                    isTimeSlotOpened(
+                                                                        formData.date,
+                                                                        timeSlot.value,
+                                                                    );
+                                                                const isSelected =
+                                                                    formData.time ===
+                                                                    timeSlot.value;
 
-                                                            return (
-                                                                <button
-                                                                    key={timeSlot.value}
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        isOpened &&
-                                                                        setFormData((prev) => ({
-                                                                            ...prev,
-                                                                            time: timeSlot.value,
-                                                                        }))
-                                                                    }
-                                                                    disabled={!isOpened}
-                                                                    className={`rounded border px-2 py-1 text-xs font-medium transition-all ${
-                                                                        isSelected
-                                                                            ? 'border-blue-500 bg-blue-500 text-white shadow-md'
-                                                                            : !isOpened
-                                                                              ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                                                                              : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
-                                                                    }`}
-                                                                >
-                                                                    {timeSlot.display}
-                                                                </button>
-                                                            );
-                                                        })}
+                                                                return (
+                                                                    <button
+                                                                        key={
+                                                                            timeSlot.value
+                                                                        }
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            isOpened &&
+                                                                            setFormData(
+                                                                                (
+                                                                                    prev,
+                                                                                ) => ({
+                                                                                    ...prev,
+                                                                                    time: timeSlot.value,
+                                                                                }),
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            !isOpened
+                                                                        }
+                                                                        className={`rounded border px-2 py-1 text-xs font-medium transition-all ${
+                                                                            isSelected
+                                                                                ? 'border-blue-500 bg-blue-500 text-white shadow-md'
+                                                                                : !isOpened
+                                                                                  ? 'cursor-not-allowed border-gray-400 bg-gray-300 text-gray-600 opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                                                                  : 'cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            timeSlot.display
+                                                                        }
+                                                                    </button>
+                                                                );
+                                                            },
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -539,7 +594,10 @@ export default function PublicReservation({
 
                                 {/* Party Size */}
                                 <div>
-                                    <Label htmlFor="guests" className="flex items-center gap-2">
+                                    <Label
+                                        htmlFor="guests"
+                                        className="flex items-center gap-2"
+                                    >
                                         <Users className="h-4 w-4" />
                                         Party Size *
                                     </Label>
@@ -550,7 +608,8 @@ export default function PublicReservation({
                                         max="20"
                                         value={formData.guests}
                                         onChange={(e) => {
-                                            const newGuests = parseInt(e.target.value) || 1;
+                                            const newGuests =
+                                                parseInt(e.target.value) || 1;
                                             setFormData((prev) => ({
                                                 ...prev,
                                                 guests: newGuests,
@@ -560,7 +619,8 @@ export default function PublicReservation({
                                         className="mt-1"
                                     />
                                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                        We'll assign the best available table for your party size
+                                        We'll assign the best available table
+                                        for your party size
                                     </p>
                                 </div>
 
@@ -591,7 +651,9 @@ export default function PublicReservation({
                                         disabled={isSubmitting}
                                         className="w-full bg-blue-600 hover:bg-blue-700"
                                     >
-                                        {isSubmitting ? 'Submitting...' : 'Submit Reservation'}
+                                        {isSubmitting
+                                            ? 'Submitting...'
+                                            : 'Submit Reservation'}
                                     </Button>
                                 </div>
                             </form>

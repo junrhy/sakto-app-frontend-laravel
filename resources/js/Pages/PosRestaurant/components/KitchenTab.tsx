@@ -108,12 +108,9 @@ export const KitchenTab: React.FC<KitchenTabProps> = ({
     const updateStatus = useCallback(
         async (orderId: number, newStatus: string) => {
             try {
-                await axios.put(
-                    `/fnb/kitchen-orders/${orderId}/status`,
-                    {
-                        status: newStatus,
-                    },
-                );
+                await axios.put(`/fnb/kitchen-orders/${orderId}/status`, {
+                    status: newStatus,
+                });
 
                 toast.success(`Order status updated to ${newStatus}`);
                 fetchOrders();

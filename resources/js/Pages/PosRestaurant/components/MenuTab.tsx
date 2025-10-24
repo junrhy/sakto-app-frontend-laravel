@@ -24,7 +24,11 @@ interface MenuTabProps {
     onEditMenuItem: (item: MenuItem) => void;
     onDeleteMenuItem: (id: number) => void;
     onBulkDeleteMenuItems: (ids: number[]) => void;
-    onToggleAvailability?: (id: number, field: 'is_available_personal' | 'is_available_online', value: boolean) => void;
+    onToggleAvailability?: (
+        id: number,
+        field: 'is_available_personal' | 'is_available_online',
+        value: boolean,
+    ) => void;
 }
 
 export const MenuTab: React.FC<MenuTabProps> = ({
@@ -249,20 +253,31 @@ export const MenuTab: React.FC<MenuTabProps> = ({
                                                                 : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                         }`}
                                                     >
-                                                        {item.is_available_personal ? 'Available' : 'Unavailable'}
+                                                        {item.is_available_personal
+                                                            ? 'Available'
+                                                            : 'Unavailable'}
                                                     </span>
                                                 </div>
-                                                {canEdit && onToggleAvailability && (
-                                                    <Switch
-                                                        checked={item.is_available_personal}
-                                                        onCheckedChange={(checked) =>
-                                                            onToggleAvailability(item.id, 'is_available_personal', checked)
-                                                        }
-                                                        className="data-[state=checked]:bg-green-600"
-                                                    />
-                                                )}
+                                                {canEdit &&
+                                                    onToggleAvailability && (
+                                                        <Switch
+                                                            checked={
+                                                                item.is_available_personal
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                onToggleAvailability(
+                                                                    item.id,
+                                                                    'is_available_personal',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                            className="data-[state=checked]:bg-green-600"
+                                                        />
+                                                    )}
                                             </div>
-                                            
+
                                             {/* Online Availability Toggle */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
@@ -276,18 +291,29 @@ export const MenuTab: React.FC<MenuTabProps> = ({
                                                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                                         }`}
                                                     >
-                                                        {item.is_available_online ? 'Available' : 'Unavailable'}
+                                                        {item.is_available_online
+                                                            ? 'Available'
+                                                            : 'Unavailable'}
                                                     </span>
                                                 </div>
-                                                {canEdit && onToggleAvailability && (
-                                                    <Switch
-                                                        checked={item.is_available_online}
-                                                        onCheckedChange={(checked) =>
-                                                            onToggleAvailability(item.id, 'is_available_online', checked)
-                                                        }
-                                                        className="data-[state=checked]:bg-blue-600"
-                                                    />
-                                                )}
+                                                {canEdit &&
+                                                    onToggleAvailability && (
+                                                        <Switch
+                                                            checked={
+                                                                item.is_available_online
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                onToggleAvailability(
+                                                                    item.id,
+                                                                    'is_available_online',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                            className="data-[state=checked]:bg-blue-600"
+                                                        />
+                                                    )}
                                             </div>
                                         </div>
                                     </TableCell>

@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost, formatCurrency } from '@/lib/utils';
+import { formatCurrency, getHost } from '@/lib/utils';
 import {
     faBolt,
     faChartLine,
@@ -479,7 +479,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-slate-900">
                                             {formatCurrency(
                                                 basicPlan?.price || 299,
-                                                basicPlan?.currency || '₱'
+                                                basicPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-slate-600">
@@ -563,7 +563,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-slate-900">
                                             {formatCurrency(
                                                 proPlan?.price || 499,
-                                                proPlan?.currency || '₱'
+                                                proPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-slate-600">
@@ -644,7 +644,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <span className="text-3xl font-extrabold text-slate-900">
                                             {formatCurrency(
                                                 businessPlan?.price || 699,
-                                                businessPlan?.currency || '₱'
+                                                businessPlan?.currency || '₱',
                                             )}
                                         </span>
                                         <span className="text-sm text-slate-600">

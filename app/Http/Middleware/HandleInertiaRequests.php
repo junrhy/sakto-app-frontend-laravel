@@ -137,6 +137,7 @@ class HandleInertiaRequests extends Middleware
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
                     'subscription' => $user->subscription_data,
+                    'addresses' => \App\Models\UserAddress::where('user_id', $user->id)->get(),
                 ] : null,
                 'project' => $user ? $user->project_data : null,
                 // enabledModules is stored as JSON in DB but cast as array in Project model

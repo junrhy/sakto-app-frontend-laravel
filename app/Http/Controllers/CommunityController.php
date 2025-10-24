@@ -23,6 +23,11 @@ class CommunityController extends Controller
 
     public function index()
     {
+        // Redirect authenticated users to home
+        if (auth()->check()) {
+            return redirect()->route('home');
+        }
+
         $communityUsers = User::where('project_identifier', 'community')
             ->select('id', 'name', 'email', 'created_at', 'slug')
             ->latest()

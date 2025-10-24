@@ -8,7 +8,7 @@ import { FormEventHandler, useEffect, useState } from 'react';
 
 export default function Login() {
     const [hostname, setHostname] = useState('Sakto');
-    
+
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -20,13 +20,12 @@ export default function Login() {
         if (typeof window !== 'undefined') {
             const currentHostname = window.location.hostname;
             // Capitalize the first letter and remove common TLDs for display
-            const displayName = currentHostname
-                .split('.')[0]
-                .charAt(0)
-                .toUpperCase() + currentHostname.split('.')[0].slice(1);
+            const displayName =
+                currentHostname.split('.')[0].charAt(0).toUpperCase() +
+                currentHostname.split('.')[0].slice(1);
             setHostname(displayName);
         }
-        
+
         return () => {
             reset('password');
         };

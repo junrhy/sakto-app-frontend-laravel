@@ -7,13 +7,19 @@ const Ziggy = {
             uri: 'sanctum\/csrf-cookie',
             methods: ['GET', 'HEAD'],
         },
+        'lemon-squeezy.webhook': {
+            uri: 'lemon-squeezy\/webhook',
+            methods: ['POST'],
+        },
         public: { uri: 'public', methods: ['GET', 'HEAD'] },
+        solutions: { uri: 'solutions', methods: ['GET', 'HEAD'] },
         neulify: { uri: 'neulify', methods: ['GET', 'HEAD'] },
         shop: { uri: 'shop', methods: ['GET', 'HEAD'] },
         delivery: { uri: 'delivery', methods: ['GET', 'HEAD'] },
         jobs: { uri: 'jobs', methods: ['GET', 'HEAD'] },
         medical: { uri: 'medical', methods: ['GET', 'HEAD'] },
-        'travel.dashboard': { uri: 'travel', methods: ['GET', 'HEAD'] },
+        travel: { uri: 'travel', methods: ['GET', 'HEAD'] },
+        fnb: { uri: 'fnb', methods: ['GET', 'HEAD'] },
         'travel.show': {
             uri: 'travel\/{identifier}',
             methods: ['GET', 'HEAD'],
@@ -92,6 +98,11 @@ const Ziggy = {
             methods: ['POST'],
             parameters: ['id'],
         },
+        'events.checkout': {
+            uri: 'events\/{id}\/checkout',
+            methods: ['POST'],
+            parameters: ['id'],
+        },
         'events.public-show': {
             uri: 'events\/{id}\/public',
             methods: ['GET', 'HEAD'],
@@ -112,7 +123,6 @@ const Ziggy = {
             methods: ['GET', 'HEAD'],
             parameters: ['id'],
         },
-        'webhooks.maya': { uri: 'webhooks\/maya', methods: ['POST'] },
         'pages.public': {
             uri: 'link\/{slug}',
             methods: ['GET', 'HEAD'],
@@ -153,6 +163,63 @@ const Ziggy = {
             uri: 'driver\/trucks',
             methods: ['GET', 'HEAD'],
         },
+        'education.index': { uri: 'education', methods: ['GET', 'HEAD'] },
+        'finance.index': { uri: 'finance', methods: ['GET', 'HEAD'] },
+        'agriculture.index': { uri: 'agriculture', methods: ['GET', 'HEAD'] },
+        'construction.index': { uri: 'construction', methods: ['GET', 'HEAD'] },
+        'fnb.public.menu': { uri: 'fnb\/menu', methods: ['GET', 'HEAD'] },
+        'fnb.public.submit-order': {
+            uri: 'api\/fnb-public\/customer-order',
+            methods: ['POST'],
+        },
+        'pos-restaurant.kitchen-display': {
+            uri: 'fnb\/kitchen-display\/{clientIdentifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['clientIdentifier'],
+        },
+        'pos-restaurant.customer-display': {
+            uri: 'fnb\/customer-display\/{clientIdentifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['clientIdentifier'],
+        },
+        'pos-restaurant.kitchen-orders.update-status': {
+            uri: 'fnb\/kitchen-orders\/{id}\/status',
+            methods: ['PUT'],
+            parameters: ['id'],
+        },
+        'fnb.public.online-store': {
+            uri: 'fnb\/store\/{domain}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['domain'],
+        },
+        'fnb.public.online-store.menu': {
+            uri: 'fnb\/store\/{domain}\/menu',
+            methods: ['GET', 'HEAD'],
+            parameters: ['domain'],
+        },
+        'fnb.public.online-store.order': {
+            uri: 'fnb\/store\/{domain}\/order',
+            methods: ['POST'],
+            parameters: ['domain'],
+        },
+        'fnb.public.online-store.order-status': {
+            uri: 'fnb\/store\/{domain}\/order\/{orderNumber}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['domain', 'orderNumber'],
+        },
+        'pos-restaurant.public.reservation': {
+            uri: 'pos-restaurant\/reservation',
+            methods: ['GET', 'HEAD'],
+        },
+        'pos-restaurant.public.submit-reservation': {
+            uri: 'api\/pos-restaurant-public\/reservation',
+            methods: ['POST'],
+        },
+        'pos-restaurant.public.confirm-reservation': {
+            uri: 'pos-restaurant\/reservation\/confirm\/{token}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['token'],
+        },
         pricing: { uri: 'pricing', methods: ['GET', 'HEAD'] },
         features: { uri: 'features', methods: ['GET', 'HEAD'] },
         'privacy-policy': {
@@ -176,6 +243,212 @@ const Ziggy = {
             parameters: ['slug'],
         },
         'debug.auth': { uri: 'debug-auth', methods: ['GET', 'HEAD'] },
+        'chat.login': { uri: 'chat\/login', methods: ['GET', 'HEAD'] },
+        'chat.register': { uri: 'chat\/register', methods: ['GET', 'HEAD'] },
+        community: { uri: 'community', methods: ['GET', 'HEAD'] },
+        'community.about': {
+            uri: 'community\/about',
+            methods: ['GET', 'HEAD'],
+        },
+        'community.help': { uri: 'community\/help', methods: ['GET', 'HEAD'] },
+        'community.search': {
+            uri: 'community\/search',
+            methods: ['GET', 'HEAD'],
+        },
+        'community.member': {
+            uri: 'community\/member\/{identifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.product.detail': {
+            uri: 'm\/{identifier}\/product\/{productId}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'productId'],
+        },
+        'member.products.list': {
+            uri: 'm\/{identifier}\/products',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.products.create': {
+            uri: 'm\/{identifier}\/products',
+            methods: ['POST'],
+            parameters: ['identifier'],
+        },
+        'member.products.delete': {
+            uri: 'm\/{identifier}\/products\/{productId}',
+            methods: ['DELETE'],
+            parameters: ['identifier', 'productId'],
+        },
+        'member.products.update': {
+            uri: 'm\/{identifier}\/products\/{productId}',
+            methods: ['PUT'],
+            parameters: ['identifier', 'productId'],
+        },
+        'member.products.images.upload': {
+            uri: 'm\/{identifier}\/products\/{productId}\/images',
+            methods: ['POST'],
+            parameters: ['identifier', 'productId'],
+        },
+        'member.products.images.delete': {
+            uri: 'm\/{identifier}\/products\/{productId}\/images\/{imageId}',
+            methods: ['DELETE'],
+            parameters: ['identifier', 'productId', 'imageId'],
+        },
+        'member.products.orders': {
+            uri: 'm\/{identifier}\/products\/{productId}\/orders',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'productId'],
+        },
+        'member.checkout': {
+            uri: 'm\/{identifier}\/checkout',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.cancel-order': {
+            uri: 'm\/{identifier}\/cancel-order\/{orderId}',
+            methods: ['POST'],
+            parameters: ['identifier', 'orderId'],
+        },
+        'member.search-lending': {
+            uri: 'm\/{identifier}\/search-lending',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.search-healthcare': {
+            uri: 'm\/{identifier}\/search-healthcare',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.search-mortuary': {
+            uri: 'm\/{identifier}\/search-mortuary',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.billers.list': {
+            uri: 'm\/{identifier}\/billers',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.billers.favorite': {
+            uri: 'm\/{identifier}\/billers\/{billerId}\/favorite',
+            methods: ['POST'],
+            parameters: ['identifier', 'billerId'],
+        },
+        'member.bill-payments.store': {
+            uri: 'm\/{identifier}\/bill-payments',
+            methods: ['POST'],
+            parameters: ['identifier'],
+        },
+        'member.courses.list': {
+            uri: 'm\/{identifier}\/courses',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.courses.categories': {
+            uri: 'm\/{identifier}\/courses\/categories',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'member.courses.show': {
+            uri: 'm\/{identifier}\/courses\/{courseId}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'courseId'],
+        },
+        'member.courses.lessons': {
+            uri: 'm\/{identifier}\/courses\/{courseId}\/lessons',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'courseId'],
+        },
+        'member.courses.learn': {
+            uri: 'm\/{identifier}\/courses\/{courseId}\/learn',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'courseId'],
+        },
+        'member.courses.lessons.api': {
+            uri: 'm\/{identifier}\/courses\/{courseId}\/lessons\/api',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'courseId'],
+        },
+        'member.courses.progress': {
+            uri: 'm\/{identifier}\/courses\/progress\/{courseId}\/{contactId}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier', 'courseId', 'contactId'],
+        },
+        'member.courses.check-enrollment': {
+            uri: 'm\/{identifier}\/courses\/{courseId}\/check-enrollment',
+            methods: ['POST'],
+            parameters: ['identifier', 'courseId'],
+        },
+        'member.courses.lessons.start': {
+            uri: 'm\/{identifier}\/courses\/enrollments\/{enrollmentId}\/progress\/{lessonId}\/start',
+            methods: ['POST'],
+            parameters: ['identifier', 'enrollmentId', 'lessonId'],
+        },
+        'member.courses.lessons.complete': {
+            uri: 'm\/{identifier}\/courses\/enrollments\/{enrollmentId}\/progress\/{lessonId}\/complete',
+            methods: ['POST'],
+            parameters: ['identifier', 'enrollmentId', 'lessonId'],
+        },
+        'member.short': {
+            uri: 'm\/{identifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'api.send-signup-link': {
+            uri: 'community\/send-signup-link',
+            methods: ['POST'],
+        },
+        logistics: { uri: 'logistics', methods: ['GET', 'HEAD'] },
+        'logistics.show': {
+            uri: 'logistics\/{identifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'logistics.trucks.list': {
+            uri: 'logistics\/trucks\/list',
+            methods: ['GET', 'HEAD'],
+        },
+        'logistics.users.search': {
+            uri: 'logistics\/user\/search',
+            methods: ['GET', 'HEAD'],
+        },
+        'logistics.bookings.list': {
+            uri: 'logistics\/bookings\/list',
+            methods: ['GET', 'HEAD'],
+        },
+        'logistics.bookings.stats': {
+            uri: 'logistics\/bookings\/stats',
+            methods: ['GET', 'HEAD'],
+        },
+        'logistics.bookings.store': {
+            uri: 'logistics\/bookings\/store',
+            methods: ['POST'],
+        },
+        'logistics.bookings.reference': {
+            uri: 'logistics\/bookings\/reference',
+            methods: ['GET', 'HEAD'],
+        },
+        'logistics.track': {
+            uri: 'logistics\/{identifier}\/track',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'delivery.show': {
+            uri: 'delivery\/{identifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'jobs.show': {
+            uri: 'jobs\/{identifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
+        'shop.show': {
+            uri: 'shop\/{identifier}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['identifier'],
+        },
         'admin.login': { uri: 'admin\/login', methods: ['GET', 'HEAD'] },
         'admin.login.attempt': { uri: 'admin\/login', methods: ['POST'] },
         'admin.logout': { uri: 'admin\/logout', methods: ['POST'] },
@@ -627,18 +900,6 @@ const Ziggy = {
             methods: ['GET', 'HEAD'],
             parameters: ['userIdentifier'],
         },
-        'subscriptions.payment.success': {
-            uri: 'subscriptions\/payment\/success',
-            methods: ['GET', 'HEAD'],
-        },
-        'subscriptions.payment.failure': {
-            uri: 'subscriptions\/payment\/failure',
-            methods: ['GET', 'HEAD'],
-        },
-        'subscriptions.payment.cancel': {
-            uri: 'subscriptions\/payment\/cancel',
-            methods: ['GET', 'HEAD'],
-        },
         'subscriptions.stripe.success': {
             uri: 'subscriptions\/stripe\/success',
             methods: ['GET', 'HEAD'],
@@ -647,9 +908,13 @@ const Ziggy = {
             uri: 'subscriptions\/stripe\/cancel',
             methods: ['GET', 'HEAD'],
         },
-        'subscriptions.stripe.webhook': {
-            uri: 'subscriptions\/stripe\/webhook',
-            methods: ['POST'],
+        'subscriptions.lemonsqueezy.success': {
+            uri: 'subscriptions\/lemonsqueezy\/success',
+            methods: ['GET', 'HEAD'],
+        },
+        'subscriptions.lemonsqueezy.cancel': {
+            uri: 'subscriptions\/lemonsqueezy\/cancel',
+            methods: ['GET', 'HEAD'],
         },
         'credits.buy': { uri: 'credits\/buy', methods: ['GET', 'HEAD'] },
         'credits.balance': {
@@ -669,6 +934,15 @@ const Ziggy = {
             parameters: ['clientIdentifier'],
         },
         'credits.spend': { uri: 'credits\/spend', methods: ['POST'] },
+        'credits.payment.success': {
+            uri: 'credits\/payment\/success',
+            methods: ['GET', 'HEAD'],
+        },
+        'credits.payment.cancel': {
+            uri: 'credits\/payment\/cancel',
+            methods: ['GET', 'HEAD'],
+        },
+        'webhooks.stripe': { uri: 'webhooks\/stripe', methods: ['POST'] },
         'pos-retail': { uri: 'pos-retail', methods: ['GET', 'HEAD'] },
         'retail-sale': { uri: 'retail-sale', methods: ['GET', 'HEAD'] },
         'sales.destroy': {
@@ -712,6 +986,52 @@ const Ziggy = {
         },
         'pos-restaurant.complete-order': {
             uri: 'pos-restaurant\/orders\/complete',
+            methods: ['POST'],
+        },
+        'pos-restaurant.get-table-order': {
+            uri: 'pos-restaurant\/table-order\/get',
+            methods: ['POST'],
+        },
+        'pos-restaurant.save-table-order': {
+            uri: 'pos-restaurant\/table-order\/save',
+            methods: ['POST'],
+        },
+        'pos-restaurant.complete-table-order': {
+            uri: 'pos-restaurant\/table-order\/complete',
+            methods: ['POST'],
+        },
+        'pos-restaurant.all-active-orders': {
+            uri: 'pos-restaurant\/table-orders\/all-active',
+            methods: ['GET', 'HEAD'],
+        },
+        'pos-restaurant.customer-orders.pending': {
+            uri: 'pos-restaurant\/customer-orders\/pending',
+            methods: ['GET', 'HEAD'],
+        },
+        'pos-restaurant.customer-orders.update-status': {
+            uri: 'pos-restaurant\/customer-orders\/{id}\/status',
+            methods: ['PUT'],
+            parameters: ['id'],
+        },
+        'pos-restaurant.customer-orders.cancel': {
+            uri: 'pos-restaurant\/customer-orders\/{id}',
+            methods: ['DELETE'],
+            parameters: ['id'],
+        },
+        'pos-restaurant.kitchen-orders': {
+            uri: 'pos-restaurant\/kitchen-orders',
+            methods: ['GET', 'HEAD'],
+        },
+        'pos-restaurant.kitchen-orders.send': {
+            uri: 'pos-restaurant\/kitchen-orders\/send',
+            methods: ['POST'],
+        },
+        'pos-restaurant.kitchen-orders.complete': {
+            uri: 'pos-restaurant\/kitchen-orders\/complete',
+            methods: ['POST'],
+        },
+        'pos-restaurant.update-item-status': {
+            uri: 'pos-restaurant\/update-item-status',
             methods: ['POST'],
         },
         inventory: { uri: 'inventory', methods: ['GET', 'HEAD'] },
@@ -1048,29 +1368,154 @@ const Ziggy = {
         'sms.settings': { uri: 'sms\/settings', methods: ['GET', 'HEAD'] },
         'twilio-sms': { uri: 'sms-twilio', methods: ['GET', 'HEAD'] },
         'twilio-sms.send': { uri: 'sms-twilio\/send', methods: ['POST'] },
-        'twilio-sms.balance': {
-            uri: 'sms-twilio\/balance',
-            methods: ['GET', 'HEAD'],
-        },
+        'twilio-sms.balance': { uri: 'sms-twilio\/balance', methods: ['POST'] },
         'twilio-sms.status': {
             uri: 'sms-twilio\/status\/{messageId}',
-            methods: ['GET', 'HEAD'],
+            methods: ['POST'],
             parameters: ['messageId'],
         },
         'semaphore-sms': { uri: 'sms-semaphore', methods: ['GET', 'HEAD'] },
         'semaphore-sms.send': { uri: 'sms-semaphore\/send', methods: ['POST'] },
         'semaphore-sms.balance': {
             uri: 'sms-semaphore\/balance',
-            methods: ['GET', 'HEAD'],
+            methods: ['POST'],
         },
         'semaphore-sms.status': {
             uri: 'sms-semaphore\/status\/{messageId}',
-            methods: ['GET', 'HEAD'],
+            methods: ['POST'],
             parameters: ['messageId'],
         },
         'semaphore-sms.pricing': {
             uri: 'sms-semaphore\/pricing',
+            methods: ['POST'],
+        },
+        'whatsapp-sms': { uri: 'sms-whatsapp', methods: ['GET', 'HEAD'] },
+        'whatsapp-sms.send': { uri: 'sms-whatsapp\/send', methods: ['POST'] },
+        'whatsapp-accounts.index': {
+            uri: 'whatsapp-accounts',
             methods: ['GET', 'HEAD'],
+        },
+        'whatsapp-accounts.store': {
+            uri: 'whatsapp-accounts',
+            methods: ['POST'],
+        },
+        'whatsapp-accounts.update': {
+            uri: 'whatsapp-accounts\/{id}',
+            methods: ['PUT'],
+            parameters: ['id'],
+        },
+        'whatsapp-accounts.destroy': {
+            uri: 'whatsapp-accounts\/{id}',
+            methods: ['DELETE'],
+            parameters: ['id'],
+        },
+        'whatsapp-accounts.test': {
+            uri: 'whatsapp-accounts\/{id}\/test',
+            methods: ['POST'],
+            parameters: ['id'],
+        },
+        'whatsapp-accounts.templates.create': {
+            uri: 'whatsapp-accounts\/templates',
+            methods: ['POST'],
+        },
+        'whatsapp-accounts.templates.delete': {
+            uri: 'whatsapp-accounts\/templates',
+            methods: ['DELETE'],
+        },
+        'twilio-accounts.index': {
+            uri: 'twilio-accounts',
+            methods: ['GET', 'HEAD'],
+        },
+        'twilio-accounts.store': { uri: 'twilio-accounts', methods: ['POST'] },
+        'twilio-accounts.update': {
+            uri: 'twilio-accounts\/{twilioAccount}',
+            methods: ['PUT'],
+            parameters: ['twilioAccount'],
+            bindings: { twilioAccount: 'id' },
+        },
+        'twilio-accounts.destroy': {
+            uri: 'twilio-accounts\/{twilioAccount}',
+            methods: ['DELETE'],
+            parameters: ['twilioAccount'],
+            bindings: { twilioAccount: 'id' },
+        },
+        'twilio-accounts.verify': {
+            uri: 'twilio-accounts\/{twilioAccount}\/verify',
+            methods: ['POST'],
+            parameters: ['twilioAccount'],
+            bindings: { twilioAccount: 'id' },
+        },
+        'twilio-accounts.toggle-active': {
+            uri: 'twilio-accounts\/{twilioAccount}\/toggle-active',
+            methods: ['POST'],
+            parameters: ['twilioAccount'],
+            bindings: { twilioAccount: 'id' },
+        },
+        'twilio-accounts.set-default': {
+            uri: 'twilio-accounts\/{twilioAccount}\/set-default',
+            methods: ['POST'],
+            parameters: ['twilioAccount'],
+            bindings: { twilioAccount: 'id' },
+        },
+        'twilio-accounts.unset-default': {
+            uri: 'twilio-accounts\/{twilioAccount}\/unset-default',
+            methods: ['POST'],
+            parameters: ['twilioAccount'],
+            bindings: { twilioAccount: 'id' },
+        },
+        'semaphore-accounts.index': {
+            uri: 'semaphore-accounts',
+            methods: ['GET', 'HEAD'],
+        },
+        'semaphore-accounts.store': {
+            uri: 'semaphore-accounts',
+            methods: ['POST'],
+        },
+        'semaphore-accounts.update': {
+            uri: 'semaphore-accounts\/{semaphoreAccount}',
+            methods: ['PUT'],
+            parameters: ['semaphoreAccount'],
+            bindings: { semaphoreAccount: 'id' },
+        },
+        'semaphore-accounts.destroy': {
+            uri: 'semaphore-accounts\/{semaphoreAccount}',
+            methods: ['DELETE'],
+            parameters: ['semaphoreAccount'],
+            bindings: { semaphoreAccount: 'id' },
+        },
+        'semaphore-accounts.toggle': {
+            uri: 'semaphore-accounts\/{semaphoreAccount}\/toggle',
+            methods: ['POST'],
+            parameters: ['semaphoreAccount'],
+            bindings: { semaphoreAccount: 'id' },
+        },
+        'semaphore-accounts.test': {
+            uri: 'semaphore-accounts\/{semaphoreAccount}\/test',
+            methods: ['POST'],
+            parameters: ['semaphoreAccount'],
+            bindings: { semaphoreAccount: 'id' },
+        },
+        'viber-sms': { uri: 'sms-viber', methods: ['GET', 'HEAD'] },
+        'viber-sms.send': { uri: 'sms-viber\/send', methods: ['POST'] },
+        'viber-accounts.index': {
+            uri: 'viber-accounts',
+            methods: ['GET', 'HEAD'],
+        },
+        'viber-accounts.store': { uri: 'viber-accounts', methods: ['POST'] },
+        'viber-accounts.update': {
+            uri: 'viber-accounts\/{id}',
+            methods: ['PUT'],
+            parameters: ['id'],
+        },
+        'viber-accounts.destroy': {
+            uri: 'viber-accounts\/{id}',
+            methods: ['DELETE'],
+            parameters: ['id'],
+        },
+        'viber-accounts.test': {
+            uri: 'viber-accounts\/{id}\/test',
+            methods: ['POST'],
+            parameters: ['id'],
         },
         'email.index': { uri: 'email', methods: ['GET', 'HEAD'] },
         'email.settings': { uri: 'email\/settings', methods: ['GET', 'HEAD'] },
@@ -1952,210 +2397,6 @@ const Ziggy = {
             methods: ['DELETE'],
             parameters: ['id'],
         },
-        'delivery.show': {
-            uri: 'delivery\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'jobs.show': {
-            uri: 'jobs\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'shop.show': {
-            uri: 'shop\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        logistics: { uri: 'logistics', methods: ['GET', 'HEAD'] },
-        'logistics.show': {
-            uri: 'logistics\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'logistics.trucks.list': {
-            uri: 'logistics\/trucks\/list',
-            methods: ['GET', 'HEAD'],
-        },
-        'logistics.users.search': {
-            uri: 'logistics\/user\/search',
-            methods: ['GET', 'HEAD'],
-        },
-        'logistics.bookings.list': {
-            uri: 'logistics\/bookings\/list',
-            methods: ['GET', 'HEAD'],
-        },
-        'logistics.bookings.stats': {
-            uri: 'logistics\/bookings\/stats',
-            methods: ['GET', 'HEAD'],
-        },
-        'logistics.bookings.store': {
-            uri: 'logistics\/bookings\/store',
-            methods: ['POST'],
-        },
-        'logistics.bookings.reference': {
-            uri: 'logistics\/bookings\/reference',
-            methods: ['GET', 'HEAD'],
-        },
-        'logistics.track': {
-            uri: 'logistics\/{identifier}\/track',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        community: { uri: 'community', methods: ['GET', 'HEAD'] },
-        'community.about': {
-            uri: 'community\/about',
-            methods: ['GET', 'HEAD'],
-        },
-        'community.help': { uri: 'community\/help', methods: ['GET', 'HEAD'] },
-        'community.search': {
-            uri: 'community\/search',
-            methods: ['GET', 'HEAD'],
-        },
-        'community.member': {
-            uri: 'community\/member\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.product.detail': {
-            uri: 'm\/{identifier}\/product\/{productId}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'productId'],
-        },
-        'member.products.list': {
-            uri: 'm\/{identifier}\/products',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.products.create': {
-            uri: 'm\/{identifier}\/products',
-            methods: ['POST'],
-            parameters: ['identifier'],
-        },
-        'member.products.delete': {
-            uri: 'm\/{identifier}\/products\/{productId}',
-            methods: ['DELETE'],
-            parameters: ['identifier', 'productId'],
-        },
-        'member.products.update': {
-            uri: 'm\/{identifier}\/products\/{productId}',
-            methods: ['PUT'],
-            parameters: ['identifier', 'productId'],
-        },
-        'member.products.images.upload': {
-            uri: 'm\/{identifier}\/products\/{productId}\/images',
-            methods: ['POST'],
-            parameters: ['identifier', 'productId'],
-        },
-        'member.products.images.delete': {
-            uri: 'm\/{identifier}\/products\/{productId}\/images\/{imageId}',
-            methods: ['DELETE'],
-            parameters: ['identifier', 'productId', 'imageId'],
-        },
-        'member.products.orders': {
-            uri: 'm\/{identifier}\/products\/{productId}\/orders',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'productId'],
-        },
-        'member.checkout': {
-            uri: 'm\/{identifier}\/checkout',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.cancel-order': {
-            uri: 'm\/{identifier}\/cancel-order\/{orderId}',
-            methods: ['POST'],
-            parameters: ['identifier', 'orderId'],
-        },
-        'member.search-lending': {
-            uri: 'm\/{identifier}\/search-lending',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.search-healthcare': {
-            uri: 'm\/{identifier}\/search-healthcare',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.search-mortuary': {
-            uri: 'm\/{identifier}\/search-mortuary',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.billers.list': {
-            uri: 'm\/{identifier}\/billers',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.billers.favorite': {
-            uri: 'm\/{identifier}\/billers\/{billerId}\/favorite',
-            methods: ['POST'],
-            parameters: ['identifier', 'billerId'],
-        },
-        'member.bill-payments.store': {
-            uri: 'm\/{identifier}\/bill-payments',
-            methods: ['POST'],
-            parameters: ['identifier'],
-        },
-        'member.courses.list': {
-            uri: 'm\/{identifier}\/courses',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.courses.categories': {
-            uri: 'm\/{identifier}\/courses\/categories',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'member.courses.show': {
-            uri: 'm\/{identifier}\/courses\/{courseId}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'courseId'],
-        },
-        'member.courses.lessons': {
-            uri: 'm\/{identifier}\/courses\/{courseId}\/lessons',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'courseId'],
-        },
-        'member.courses.learn': {
-            uri: 'm\/{identifier}\/courses\/{courseId}\/learn',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'courseId'],
-        },
-        'member.courses.lessons.api': {
-            uri: 'm\/{identifier}\/courses\/{courseId}\/lessons\/api',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'courseId'],
-        },
-        'member.courses.progress': {
-            uri: 'm\/{identifier}\/courses\/progress\/{courseId}\/{contactId}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier', 'courseId', 'contactId'],
-        },
-        'member.courses.check-enrollment': {
-            uri: 'm\/{identifier}\/courses\/{courseId}\/check-enrollment',
-            methods: ['POST'],
-            parameters: ['identifier', 'courseId'],
-        },
-        'member.courses.lessons.start': {
-            uri: 'm\/{identifier}\/courses\/enrollments\/{enrollmentId}\/progress\/{lessonId}\/start',
-            methods: ['POST'],
-            parameters: ['identifier', 'enrollmentId', 'lessonId'],
-        },
-        'member.courses.lessons.complete': {
-            uri: 'm\/{identifier}\/courses\/enrollments\/{enrollmentId}\/progress\/{lessonId}\/complete',
-            methods: ['POST'],
-            parameters: ['identifier', 'enrollmentId', 'lessonId'],
-        },
-        'member.short': {
-            uri: 'm\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
-        'api.send-signup-link': {
-            uri: 'community\/send-signup-link',
-            methods: ['POST'],
-        },
         'kiosk.community.index': {
             uri: 'kiosk\/community',
             methods: ['GET', 'HEAD'],
@@ -2186,9 +2427,25 @@ const Ziggy = {
             uri: 'kiosk\/community\/search\/members',
             methods: ['POST'],
         },
+        'chat.index': { uri: 'chat', methods: ['GET', 'HEAD'] },
+        'chat.create-conversation': {
+            uri: 'chat\/conversations',
+            methods: ['POST'],
+        },
+        'chat.send-message': { uri: 'chat\/messages', methods: ['POST'] },
+        'chat.mark-read': { uri: 'chat\/mark-read', methods: ['POST'] },
+        'chat.users': { uri: 'chat\/users', methods: ['GET', 'HEAD'] },
+        'chat.show': {
+            uri: 'chat\/{id}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['id'],
+        },
+        'chat.debug-token': {
+            uri: 'chat-debug-token',
+            methods: ['GET', 'HEAD'],
+        },
         register: { uri: 'register', methods: ['GET', 'HEAD'] },
         login: { uri: 'login', methods: ['GET', 'HEAD'] },
-        'login.mobile': { uri: 'login\/mobile', methods: ['GET', 'HEAD'] },
         'password.request': {
             uri: 'forgot-password',
             methods: ['GET', 'HEAD'],

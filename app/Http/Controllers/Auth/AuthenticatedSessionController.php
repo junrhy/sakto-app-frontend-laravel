@@ -47,7 +47,18 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        $project = $request->input('project') !== 'trial' ? $request->input('project') : 'landing';
+        // Get project parameter, default to 'public' if not provided or if 'trial'
+        $project = $request->input('project');
+        
+        if (!$project || $project === 'trial') {
+            $project = 'public';
+        }
+        
+        // Preserve mobile parameter if present
+        if ($request->input('mobile') === '1') {
+            return redirect()->route($project, ['mobile' => '1']);
+        }
+        
         return redirect()->route($project);
     }
 }

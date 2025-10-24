@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps as InertiaPageProps } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
     Calculator,
@@ -26,7 +27,6 @@ import {
     Sale,
     Table,
 } from './types';
-import { PageProps as InertiaPageProps } from '@/types';
 
 // Lazy load tab components for better performance
 const PosTab = lazy(() =>
@@ -314,13 +314,16 @@ export default function PosRestaurantIndex({
     }, []);
 
     // Handle creating reservation from TablesTab
-    const handleCreateReservationFromTable = useCallback((date: string, time: string, tableIds: number[]) => {
-        // Set pre-filled data
-        setPrefilledReservation({ date, time, tableIds });
-        
-        // Switch to reservations tab
-        handleTabChange('reservations');
-    }, [handleTabChange]);
+    const handleCreateReservationFromTable = useCallback(
+        (date: string, time: string, tableIds: number[]) => {
+            // Set pre-filled data
+            setPrefilledReservation({ date, time, tableIds });
+
+            // Switch to reservations tab
+            handleTabChange('reservations');
+        },
+        [handleTabChange],
+    );
 
     // POS Tab handlers
     const handleCompleteOrder = useCallback(() => {
@@ -783,8 +786,16 @@ export default function PosRestaurantIndex({
     }, []);
 
     const handleToggleAvailability = useCallback(
-        async (id: number, field: 'is_available_personal' | 'is_available_online', value: boolean) => {
-            const result = await api.toggleMenuItemAvailability(id, field, value);
+        async (
+            id: number,
+            field: 'is_available_personal' | 'is_available_online',
+            value: boolean,
+        ) => {
+            const result = await api.toggleMenuItemAvailability(
+                id,
+                field,
+                value,
+            );
             if (result) {
                 api.refreshData();
             }
@@ -1307,8 +1318,14 @@ export default function PosRestaurantIndex({
                                                             onCancelReservation={
                                                                 handleCancelReservation
                                                             }
-                                                            prefilledData={prefilledReservation}
-                                                            onClearPrefilledData={() => setPrefilledReservation(null)}
+                                                            prefilledData={
+                                                                prefilledReservation
+                                                            }
+                                                            onClearPrefilledData={() =>
+                                                                setPrefilledReservation(
+                                                                    null,
+                                                                )
+                                                            }
                                                         />
                                                     </TabsContent>
                                                 )}
@@ -1407,8 +1424,10 @@ export default function PosRestaurantIndex({
                                                                 currency_symbol
                                                             }
                                                             clientIdentifier={
-                                                                (auth.user as any)
-                                                                    .identifier || ''
+                                                                (
+                                                                    auth.user as any
+                                                                ).identifier ||
+                                                                ''
                                                             }
                                                         />
                                                     </TabsContent>
@@ -1428,68 +1447,144 @@ export default function PosRestaurantIndex({
                                                     </TabsContent>
                                                 )}
 
-                                                {currentTab === 'food-delivery' && (
+                                                {currentTab ===
+                                                    'food-delivery' && (
                                                     <TabsContent
                                                         value="food-delivery"
                                                         className="m-0 p-0"
                                                     >
                                                         <FoodDeliveryTab
-                                                            menuItems={posState.menuItems}
-                                                            onlineStores={onlineStores}
-                                                            onlineOrders={onlineOrders}
-                                                            currency_symbol={currency_symbol}
+                                                            menuItems={
+                                                                posState.menuItems
+                                                            }
+                                                            onlineStores={
+                                                                onlineStores
+                                                            }
+                                                            onlineOrders={
+                                                                onlineOrders
+                                                            }
+                                                            currency_symbol={
+                                                                currency_symbol
+                                                            }
                                                             canEdit={true}
                                                             canDelete={true}
-                                                            onAddOnlineStore={async (storeData) => {
-                                                                const result = await api.createOnlineStore(storeData);
+                                                            onAddOnlineStore={async (
+                                                                storeData,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.createOnlineStore(
+                                                                        storeData,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onEditOnlineStore={async (id, storeData) => {
-                                                                const result = await api.updateOnlineStore(id, storeData);
+                                                            onEditOnlineStore={async (
+                                                                id,
+                                                                storeData,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.updateOnlineStore(
+                                                                        id,
+                                                                        storeData,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onDeleteOnlineStore={async (id) => {
-                                                                const result = await api.deleteOnlineStore(id);
+                                                            onDeleteOnlineStore={async (
+                                                                id,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.deleteOnlineStore(
+                                                                        id,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onToggleStoreStatus={async (id, is_active) => {
-                                                                const result = await api.toggleOnlineStoreStatus(id, is_active);
+                                                            onToggleStoreStatus={async (
+                                                                id,
+                                                                is_active,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.toggleOnlineStoreStatus(
+                                                                        id,
+                                                                        is_active,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onUpdateStoreMenuItems={async (id, menuItemIds) => {
-                                                                const result = await api.updateOnlineStoreMenuItems(id, menuItemIds);
+                                                            onUpdateStoreMenuItems={async (
+                                                                id,
+                                                                menuItemIds,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.updateOnlineStoreMenuItems(
+                                                                        id,
+                                                                        menuItemIds,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onVerifyOrder={async (id, status, notes) => {
-                                                                const result = await api.verifyOrder(id, status, notes);
+                                                            onVerifyOrder={async (
+                                                                id,
+                                                                status,
+                                                                notes,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.verifyOrder(
+                                                                        id,
+                                                                        status,
+                                                                        notes,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onNegotiatePayment={async (id, amount, notes) => {
-                                                                const result = await api.negotiatePayment(id, amount, notes);
+                                                            onNegotiatePayment={async (
+                                                                id,
+                                                                amount,
+                                                                notes,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.negotiatePayment(
+                                                                        id,
+                                                                        amount,
+                                                                        notes,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onUpdateOrderStatus={async (id, status) => {
-                                                                const result = await api.updateOrderStatus(id, status);
+                                                            onUpdateOrderStatus={async (
+                                                                id,
+                                                                status,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.updateOrderStatus(
+                                                                        id,
+                                                                        status,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }
                                                             }}
-                                                            onUpdatePaymentStatus={async (id, paymentStatus, paymentMethod, paymentNotes) => {
-                                                                const result = await api.updatePaymentStatus(id, paymentStatus, paymentMethod, paymentNotes);
+                                                            onUpdatePaymentStatus={async (
+                                                                id,
+                                                                paymentStatus,
+                                                                paymentMethod,
+                                                                paymentNotes,
+                                                            ) => {
+                                                                const result =
+                                                                    await api.updatePaymentStatus(
+                                                                        id,
+                                                                        paymentStatus,
+                                                                        paymentMethod,
+                                                                        paymentNotes,
+                                                                    );
                                                                 if (result) {
                                                                     api.refreshData();
                                                                 }

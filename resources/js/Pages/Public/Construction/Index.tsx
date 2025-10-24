@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost, formatCurrency } from '@/lib/utils';
+import { formatCurrency, getHost } from '@/lib/utils';
 import {
     faChartLine,
     faCheckCircle,
@@ -429,7 +429,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {formatCurrency(basicPlan.price || 0, basicPlan.currency || symbol)}
+                                            {formatCurrency(
+                                                basicPlan.price || 0,
+                                                basicPlan.currency || symbol,
+                                            )}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -480,7 +483,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {formatCurrency(proPlan.price || 0, proPlan.currency || symbol)}
+                                            {formatCurrency(
+                                                proPlan.price || 0,
+                                                proPlan.currency || symbol,
+                                            )}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month
@@ -526,7 +532,10 @@ export default function ConstructionIndex({ auth }: PageProps) {
                                     </p>
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                                            {formatCurrency(businessPlan.price || 0, businessPlan.currency || symbol)}
+                                            {formatCurrency(
+                                                businessPlan.price || 0,
+                                                businessPlan.currency || symbol,
+                                            )}
                                         </span>
                                         <span className="text-sm text-gray-600 sm:text-base">
                                             /month

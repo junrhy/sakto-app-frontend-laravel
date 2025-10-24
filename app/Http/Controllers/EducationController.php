@@ -12,6 +12,11 @@ class EducationController extends Controller
      */
     public function index()
     {
+        // Redirect authenticated users to home
+        if (auth()->check()) {
+            return redirect()->route('home');
+        }
+
         return Inertia::render('Public/Education/Index');
     }
 }

@@ -109,50 +109,50 @@ export default function Login({
                 {/* Left side - Login Form */}
                 <div className="flex w-full flex-col md:w-1/2">
                     {/* Logo Section */}
-                    <div className="p-8">
+                    <div className="p-4 sm:p-6 md:p-8">
                         <img
                             src="/images/tetris.png"
-                            className="block h-12 w-auto dark:hidden"
+                            className="block h-8 w-auto dark:hidden sm:h-10 md:h-12"
                             alt="Logo"
                         />
                         <img
                             src="/images/tetris-white.png"
-                            className="hidden h-12 w-auto dark:block"
+                            className="hidden h-8 w-auto dark:block sm:h-10 md:h-12"
                             alt="Logo"
                         />
                     </div>
 
                     {/* Form Section */}
-                    <div className="flex flex-grow items-center justify-center px-8 sm:px-12 lg:px-16">
+                    <div className="flex flex-grow items-center justify-center px-6 sm:px-8 md:px-12 lg:px-16">
                         <div className="w-full max-w-[440px]">
-                            <div className="mb-8">
-                                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            <div className="mb-6 sm:mb-8">
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 sm:text-3xl">
                                     Welcome Back
                                 </h2>
-                                <p className="mt-2 text-base text-gray-600 dark:text-gray-400">
+                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:mt-2 sm:text-base">
                                     Please sign in to your account
                                 </p>
                             </div>
 
                             {status && (
-                                <div className="mb-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-600 dark:bg-green-900/50 dark:text-green-400">
+                                <div className="mb-3 rounded-md bg-green-50 p-3 text-xs font-medium text-green-600 dark:bg-green-900/50 dark:text-green-400 sm:mb-4 sm:p-4 sm:text-sm">
                                     {status}
                                 </div>
                             )}
 
-                            <form onSubmit={submit} className="space-y-6">
+                            <form onSubmit={submit} className="space-y-4 sm:space-y-6">
                                 <div>
                                     <InputLabel
                                         htmlFor="email"
                                         value="Email"
-                                        className="text-base text-gray-700 dark:text-gray-300"
+                                        className="text-sm text-gray-700 dark:text-gray-300 sm:text-base"
                                     />
                                     <TextInput
                                         id="email"
                                         type="email"
                                         name="email"
                                         value={data.email}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
                                         autoComplete="username"
                                         isFocused={true}
                                         onChange={(e) =>
@@ -161,7 +161,7 @@ export default function Login({
                                     />
                                     <InputError
                                         message={errors.email}
-                                        className="mt-2"
+                                        className="mt-1 sm:mt-2"
                                     />
                                 </div>
 
@@ -169,14 +169,14 @@ export default function Login({
                                     <InputLabel
                                         htmlFor="password"
                                         value="Password"
-                                        className="text-base text-gray-700 dark:text-gray-300"
+                                        className="text-sm text-gray-700 dark:text-gray-300 sm:text-base"
                                     />
                                     <TextInput
                                         id="password"
                                         type="password"
                                         name="password"
                                         value={data.password}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
                                         autoComplete="current-password"
                                         onChange={(e) =>
                                             setData('password', e.target.value)
@@ -184,7 +184,7 @@ export default function Login({
                                     />
                                     <InputError
                                         message={errors.password}
-                                        className="mt-2"
+                                        className="mt-1 sm:mt-2"
                                     />
                                 </div>
 
@@ -216,18 +216,18 @@ export default function Login({
                                     )}
                                 </div>
 
-                                <div className="relative my-6">
+                                <div className="relative my-4 sm:my-6">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                                     </div>
-                                    <div className="relative flex justify-center text-sm">
+                                    <div className="relative flex justify-center text-xs sm:text-sm">
                                         <span className="bg-white px-2 text-gray-500 dark:bg-gray-900">
                                             Or continue with
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 gap-3 sm:gap-4">
                                     <SocialButton
                                         provider="Google"
                                         icon="/images/google.svg"
@@ -243,7 +243,7 @@ export default function Login({
 
                                 <div>
                                     <PrimaryButton
-                                        className="w-full justify-center rounded-lg px-4 py-3 text-base font-medium"
+                                        className="w-full justify-center rounded-lg px-4 py-2.5 text-sm font-medium sm:py-3 sm:text-base"
                                         disabled={processing}
                                     >
                                         {processing
