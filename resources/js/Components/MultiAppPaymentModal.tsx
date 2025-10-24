@@ -17,7 +17,7 @@ interface App {
     id?: number;
     identifier?: string;
     title: string;
-    price: number;
+    credits: number;
     pricingType: 'free' | 'one-time' | 'subscription';
     description: string;
     icon?: JSX.Element;
@@ -67,11 +67,8 @@ export default function MultiAppPaymentModal({
         onConfirm(paymentMethod, autoRenew);
     };
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-        }).format(price);
+    const formatCredits = (credits: number) => {
+        return `${new Intl.NumberFormat('en-US').format(credits)} credits`;
     };
 
     const getPricingDescription = (pricingType: string) => {
@@ -87,12 +84,12 @@ export default function MultiAppPaymentModal({
 
     // Calculate totals
     const freeApps = selectedApps.filter(
-        (app) => app.pricingType === 'free' || app.price === 0,
+        (app) => app.pricingType === 'free' || app.credits === 0,
     );
     const paidApps = selectedApps.filter(
-        (app) => app.pricingType !== 'free' && app.price > 0,
+        (app) => app.pricingType !== 'free' && app.credits > 0,
     );
-    const totalAmount = paidApps.reduce((sum, app) => sum + app.price, 0);
+    const totalAmount = paidApps.reduce((sum, app) => sum + app.credits, 0);
     const hasSubscription = paidApps.some(
         (app) => app.pricingType === 'subscription',
     );
@@ -147,9 +144,9 @@ export default function MultiAppPaymentModal({
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        {app.price > 0 ? (
+                                        {app.credits > 0 ? (
                                             <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                {formatPrice(app.price)}
+                                                {formatCredits(app.credits)}
                                             </span>
                                         ) : (
                                             <Badge
@@ -177,7 +174,7 @@ export default function MultiAppPaymentModal({
                         </div>
                     </div>
 
-                    {/* Pricing Summary */}
+                    {/* Credits Summary */}
                     <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                         <div className="space-y-2">
                             {freeApps.length > 0 && (
@@ -191,14 +188,14 @@ export default function MultiAppPaymentModal({
                             {paidApps.length > 0 && (
                                 <div className="flex justify-between text-sm">
                                     <span>Paid apps ({paidApps.length})</span>
-                                    <span>{formatPrice(totalAmount)}</span>
+                                    <span>{formatCredits(totalAmount)}</span>
                                 </div>
                             )}
                             <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
                                 <div className="flex justify-between font-semibold">
                                     <span>Total</span>
                                     <span className="text-lg text-orange-600 dark:text-orange-400">
-                                        {formatPrice(totalAmount)}
+                                        {formatCredits(totalAmount)}
                                     </span>
                                 </div>
                             </div>
@@ -283,7 +280,7 @@ export default function MultiAppPaymentModal({
                     >
                         {isLoading
                             ? 'Processing...'
-                            : `Pay ${formatPrice(totalAmount)} with Credits`}
+                            : `Pay ${formatCredits(totalAmount)}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>

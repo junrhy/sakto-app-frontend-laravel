@@ -28,9 +28,10 @@ interface Props {
     };
     availableRoles: Record<string, string>;
     availableApps: Record<string, string>;
+    requiresAdmin: boolean;
 }
 
-export default function Create({ auth, availableRoles, availableApps }: Props) {
+export default function Create({ auth, availableRoles, availableApps, requiresAdmin }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
         last_name: '',
@@ -128,6 +129,35 @@ export default function Create({ auth, availableRoles, availableApps }: Props) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
+                    {/* Admin Required Warning */}
+                    {requiresAdmin && (
+                        <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
+                                    <svg
+                                        className="h-5 w-5 text-amber-600 dark:text-amber-400"
+                                        fill="none"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-amber-800 dark:text-amber-200">
+                                        Admin Role Required
+                                    </h3>
+                                    <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                                        Since there are no existing admin team members, this team member must be assigned the <strong>Administrator</strong> role to manage the account.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                             {/* Main Form */}
@@ -350,7 +380,7 @@ export default function Create({ auth, availableRoles, availableApps }: Props) {
                                     <CardContent className="space-y-6">
                                         <div>
                                             <Label className="text-base font-medium">
-                                                Roles
+                                                Roles {requiresAdmin && <span className="text-red-500">*</span>}
                                             </Label>
                                             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                                                 {Object.entries(
@@ -358,7 +388,7 @@ export default function Create({ auth, availableRoles, availableApps }: Props) {
                                                 ).map(([key, value]) => (
                                                     <div
                                                         key={key}
-                                                        className="flex items-center space-x-2"
+                                                        className={`flex items-center space-x-2 ${requiresAdmin && key === 'admin' ? 'rounded-md border-2 border-amber-300 bg-amber-50 p-2 dark:border-amber-700 dark:bg-amber-900/20' : ''}`}
                                                     >
                                                         <Checkbox
                                                             id={`role-${key}`}
@@ -376,13 +406,23 @@ export default function Create({ auth, availableRoles, availableApps }: Props) {
                                                         />
                                                         <Label
                                                             htmlFor={`role-${key}`}
-                                                            className="text-sm font-normal"
+                                                            className={`text-sm font-normal ${requiresAdmin && key === 'admin' ? 'font-semibold text-amber-800 dark:text-amber-200' : ''}`}
                                                         >
                                                             {value}
+                                                            {requiresAdmin && key === 'admin' && (
+                                                                <span className="ml-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+                                                                    (Required)
+                                                                </span>
+                                                            )}
                                                         </Label>
                                                     </div>
                                                 ))}
                                             </div>
+                                            {errors.roles && (
+                                                <p className="mt-2 text-sm text-red-500">
+                                                    {errors.roles}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div>

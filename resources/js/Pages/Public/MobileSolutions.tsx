@@ -88,7 +88,7 @@ interface PageProps {
 export default function MobileSolutions({ auth }: PageProps) {
     const handleLogout = () => {
         router.post(route('logout'), {
-            mobile: '1'
+            mobile: '1',
         });
     };
 
@@ -99,7 +99,9 @@ export default function MobileSolutions({ auth }: PageProps) {
         });
     };
 
-    const primaryAddress = auth.user?.addresses?.find((addr) => addr.is_primary) || auth.user?.addresses?.[0];
+    const primaryAddress =
+        auth.user?.addresses?.find((addr) => addr.is_primary) ||
+        auth.user?.addresses?.[0];
 
     const allSolutions: Solution[] = [
         {
@@ -234,7 +236,7 @@ export default function MobileSolutions({ auth }: PageProps) {
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
                 {/* Status Bar */}
-                <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800">
+                <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3 dark:border-gray-800">
                     <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         {new Date().toLocaleTimeString('en-US', {
                             hour: 'numeric',
@@ -253,7 +255,6 @@ export default function MobileSolutions({ auth }: PageProps) {
 
                 {/* App Grid Container */}
                 <div className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 lg:px-8">
-
                     {/* Apps Grid */}
                     {solutions.length > 0 ? (
                         auth.user && solutions.length === 1 ? (
@@ -268,7 +269,8 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                 <h2 className="text-base font-bold text-gray-900 dark:text-white">
                                                     {auth.user.name}
                                                 </h2>
-                                                {auth.user.email_verified_at && (
+                                                {auth.user
+                                                    .email_verified_at && (
                                                     <span title="Verified">
                                                         <BadgeCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                                                     </span>
@@ -285,7 +287,9 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                 {/* Email */}
                                                 <div className="flex items-start gap-1.5">
                                                     <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
-                                                    <span className="text-xs text-gray-900 dark:text-white">{auth.user.email}</span>
+                                                    <span className="text-xs text-gray-900 dark:text-white">
+                                                        {auth.user.email}
+                                                    </span>
                                                 </div>
 
                                                 {/* Two Column Grid */}
@@ -297,7 +301,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                                 Organization
                                                             </p>
                                                             <p className="mt-0.5 text-xs font-semibold text-gray-900 dark:text-white">
-                                                                {auth.project.name}
+                                                                {
+                                                                    auth.project
+                                                                        .name
+                                                                }
                                                             </p>
                                                         </div>
                                                     )}
@@ -308,7 +315,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                             Member Since
                                                         </p>
                                                         <p className="mt-0.5 text-xs font-semibold text-gray-900 dark:text-white">
-                                                            {formatDate(auth.user.created_at)}
+                                                            {formatDate(
+                                                                auth.user
+                                                                    .created_at,
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -320,20 +330,39 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                             <div className="flex items-center gap-1.5">
                                                                 <Crown className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                                                                 <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                                                                    {auth.user.subscription.plan?.name || 'Free'}
+                                                                    {auth.user
+                                                                        .subscription
+                                                                        .plan
+                                                                        ?.name ||
+                                                                        'Free'}
                                                                 </span>
                                                             </div>
-                                                            <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                                                                auth.user.subscription.status === 'active'
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                                            }`}>
-                                                                {auth.user.subscription.status}
+                                                            <span
+                                                                className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
+                                                                    auth.user
+                                                                        .subscription
+                                                                        .status ===
+                                                                    'active'
+                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                                                }`}
+                                                            >
+                                                                {
+                                                                    auth.user
+                                                                        .subscription
+                                                                        .status
+                                                                }
                                                             </span>
                                                         </div>
-                                                        {auth.user.subscription.end_date && (
+                                                        {auth.user.subscription
+                                                            .end_date && (
                                                             <p className="mt-1 text-[10px] text-gray-600 dark:text-gray-400">
-                                                                Until {formatDate(auth.user.subscription.end_date)}
+                                                                Until{' '}
+                                                                {formatDate(
+                                                                    auth.user
+                                                                        .subscription
+                                                                        .end_date,
+                                                                )}
                                                             </p>
                                                         )}
                                                     </div>
@@ -349,13 +378,32 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                     </div>
                                                     {primaryAddress ? (
                                                         <div className="mt-1 text-xs text-gray-900 dark:text-white">
-                                                            <p>{primaryAddress.street}{primaryAddress.unit_number ? `, ${primaryAddress.unit_number}` : ''}</p>
-                                                            <p>{primaryAddress.city}, {primaryAddress.state} {primaryAddress.postal_code}</p>
+                                                            <p>
+                                                                {
+                                                                    primaryAddress.street
+                                                                }
+                                                                {primaryAddress.unit_number
+                                                                    ? `, ${primaryAddress.unit_number}`
+                                                                    : ''}
+                                                            </p>
+                                                            <p>
+                                                                {
+                                                                    primaryAddress.city
+                                                                }
+                                                                ,{' '}
+                                                                {
+                                                                    primaryAddress.state
+                                                                }{' '}
+                                                                {
+                                                                    primaryAddress.postal_code
+                                                                }
+                                                            </p>
                                                         </div>
                                                     ) : (
                                                         <div className="mt-1">
                                                             <p className="text-[10px] italic text-gray-500 dark:text-gray-400">
-                                                                No address specified
+                                                                No address
+                                                                specified
                                                             </p>
                                                             <Link
                                                                 href="/profile"
@@ -401,7 +449,7 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                     </p>
 
                                                     {/* Action Buttons */}
-                                                    <div className="flex flex-row gap-2 justify-center">
+                                                    <div className="flex flex-row justify-center gap-2">
                                                         {/* Open App Button */}
                                                         <Link
                                                             href={solution.href}
@@ -410,7 +458,9 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                             <div
                                                                 className={`inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r px-4 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 ${solution.gradient}`}
                                                             >
-                                                                <span>Open</span>
+                                                                <span>
+                                                                    Open
+                                                                </span>
                                                                 <svg
                                                                     className="ml-1 h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1"
                                                                     fill="none"
@@ -429,7 +479,9 @@ export default function MobileSolutions({ auth }: PageProps) {
 
                                                         {/* Logout Button */}
                                                         <button
-                                                            onClick={handleLogout}
+                                                            onClick={
+                                                                handleLogout
+                                                            }
                                                             className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-red-600 hover:shadow-lg active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
                                                         >
                                                             <LogOut className="h-4 w-4" />
@@ -450,50 +502,55 @@ export default function MobileSolutions({ auth }: PageProps) {
                                     const isDisabled = solution.comingSoon;
 
                                     const appContent = (
-                                    <div className="group relative">
-                                        {/* App Icon */}
-                                        <div
-                                            className={`relative mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg transition-all duration-300 sm:h-20 sm:w-20 lg:h-24 lg:w-24 ${
-                                                solution.gradient
-                                            } ${
-                                                isDisabled
-                                                    ? 'cursor-not-allowed opacity-50 saturate-0'
-                                                    : 'hover:scale-110 hover:shadow-2xl active:scale-95'
-                                            }`}
-                                        >
-                                            <Icon className="h-8 w-8 text-white sm:h-10 sm:w-10 lg:h-12 lg:w-12" />
+                                        <div className="group relative">
+                                            {/* App Icon */}
+                                            <div
+                                                className={`relative mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg transition-all duration-300 sm:h-20 sm:w-20 lg:h-24 lg:w-24 ${
+                                                    solution.gradient
+                                                } ${
+                                                    isDisabled
+                                                        ? 'cursor-not-allowed opacity-50 saturate-0'
+                                                        : 'hover:scale-110 hover:shadow-2xl active:scale-95'
+                                                }`}
+                                            >
+                                                <Icon className="h-8 w-8 text-white sm:h-10 sm:w-10 lg:h-12 lg:w-12" />
 
-                                            {/* Coming Soon Badge */}
-                                            {isDisabled && (
-                                                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-[8px] font-bold text-white dark:bg-gray-200 dark:text-gray-900">
-                                                    !
-                                                </div>
-                                            )}
+                                                {/* Coming Soon Badge */}
+                                                {isDisabled && (
+                                                    <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-[8px] font-bold text-white dark:bg-gray-200 dark:text-gray-900">
+                                                        !
+                                                    </div>
+                                                )}
 
-                                            {/* Shine Effect */}
-                                            {!isDisabled && (
-                                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                                            )}
-                                        </div>
+                                                {/* Shine Effect */}
+                                                {!isDisabled && (
+                                                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                                                )}
+                                            </div>
 
-                                        {/* App Name */}
-                                        <div className="text-center">
-                                            <p className="text-xs font-medium text-gray-900 dark:text-white sm:text-sm">
-                                                {solution.name}
-                                            </p>
-                                            {isDisabled && (
-                                                <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
-                                                    Soon
+                                            {/* App Name */}
+                                            <div className="text-center">
+                                                <p className="text-xs font-medium text-gray-900 dark:text-white sm:text-sm">
+                                                    {solution.name}
                                                 </p>
-                                            )}
+                                                {isDisabled && (
+                                                    <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                                                        Soon
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
+                                    );
 
                                     return isDisabled ? (
-                                        <div key={solution.name}>{appContent}</div>
+                                        <div key={solution.name}>
+                                            {appContent}
+                                        </div>
                                     ) : (
-                                        <Link key={solution.name} href={solution.href}>
+                                        <Link
+                                            key={solution.name}
+                                            href={solution.href}
+                                        >
                                             {appContent}
                                         </Link>
                                     );

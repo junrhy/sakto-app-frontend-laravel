@@ -152,7 +152,7 @@ export default function TeamManagement({
                                     <p className="mb-3 text-gray-600 dark:text-gray-400">
                                         {selectedTeamMember?.email}
                                     </p>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-wrap items-center gap-3">
                                         <Badge
                                             variant="secondary"
                                             className="bg-gray-100 px-3 py-1 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
@@ -453,7 +453,7 @@ export default function TeamManagement({
                                             <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                                                 {member.email}
                                             </p>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-wrap items-center gap-2">
                                                 {member.roles?.map((role) => (
                                                     <Badge
                                                         key={role}

@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import BottomNav from '@/Components/BottomNav';
+import MobileSidebar, { MobileSidebarToggle } from '@/Components/MobileSidebar';
 import { ThemeProvider, useTheme } from '@/Components/ThemeProvider';
 import { Button } from '@/Components/ui/button';
 import {
@@ -123,6 +124,7 @@ export default function Home({ auth }: Props) {
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Use shared subscription data instead of separate state
     const subscription = auth.user.subscription;
@@ -189,7 +191,12 @@ export default function Home({ auth }: Props) {
 
     return (
         <ThemeProvider>
-            <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900">
+            <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900 md:pb-0">
+                {/* Mobile Sidebar */}
+                <MobileSidebar
+                    isOpen={isSidebarOpen}
+                    onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+                />
                 {/* Message for users without subscription */}
                 {!isSubscriptionActive && (
                     <div className="fixed left-0 right-0 top-0 z-20 bg-gradient-to-r from-blue-600 to-indigo-600 py-1 text-center text-sm text-white">
@@ -220,9 +227,14 @@ export default function Home({ auth }: Props) {
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center">
                             <div className="mb-6 flex w-full items-center justify-between">
-                                <div className="mr-4 flex min-w-0 flex-1 items-center">
+                                <div className="mr-4 flex min-w-0 flex-1 items-center gap-2">
+                                    <MobileSidebarToggle
+                                        onClick={() =>
+                                            setIsSidebarOpen(!isSidebarOpen)
+                                        }
+                                    />
                                     <ApplicationLogo className="hidden h-8 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block sm:h-10" />
-                                    <div className="ml-0 min-w-0 flex-1 sm:ml-2">
+                                    <div className="min-w-0 flex-1 sm:ml-2">
                                         <span className="block truncate text-lg font-bold text-gray-900 dark:text-white sm:text-xl">
                                             {auth.user.name}
                                         </span>
@@ -266,18 +278,6 @@ export default function Home({ auth }: Props) {
                                             </Button>
                                         </div>
                                     </div>
-                                    {/* Mobile Credits Button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-white hover:bg-white/10 hover:text-blue-100 sm:hidden"
-                                        onClick={() =>
-                                            (window.location.href =
-                                                route('credits.buy'))
-                                        }
-                                    >
-                                        <CreditCardIcon className="h-5 w-5" />
-                                    </Button>
                                     <div className="relative inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -490,7 +490,10 @@ export default function Home({ auth }: Props) {
                     </div>
                 </div>
 
-                <BottomNav />
+                {/* Bottom Nav - Hidden on mobile, visible on desktop */}
+                <div className="hidden md:block">
+                    <BottomNav />
+                </div>
             </div>
         </ThemeProvider>
     );

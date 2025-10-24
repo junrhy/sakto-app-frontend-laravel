@@ -48,7 +48,7 @@ export default function BottomNav() {
     const items = createNavItems(unreadCount);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
+        <div className="fixed bottom-0 left-0 right-0 hidden border-t border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 md:block">
             <div className="flex h-16 items-center justify-around">
                 {items.map((item, index) => {
                     return (

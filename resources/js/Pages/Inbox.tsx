@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import MessageDialog from '@/Components/MessageDialog';
+import MobileSidebar, { MobileSidebarToggle } from '@/Components/MobileSidebar';
 import { useTheme } from '@/Components/ThemeProvider';
 import { Button } from '@/Components/ui/button';
 import {
@@ -84,6 +85,7 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
     const [messageToDelete, setMessageToDelete] = useState<Message | null>(
         null,
     );
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -209,8 +211,14 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
     };
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-gray-50 pb-16 dark:bg-gray-900">
+        <div className="relative min-h-screen overflow-x-hidden bg-gray-50 pb-16 dark:bg-gray-900 md:pb-0">
             <Head title="Inbox" />
+
+            {/* Mobile Sidebar */}
+            <MobileSidebar
+                isOpen={isSidebarOpen}
+                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
 
             {/* Message for users without subscription */}
             {!isLoadingSubscription && !subscription && (
@@ -239,10 +247,15 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                 <div className="container mx-auto px-4 pt-4">
                     <div className="mb-4 flex flex-col items-center">
                         <div className="mb-2 flex w-full items-center justify-between">
-                            <div className="flex items-center">
-                                <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
-                                <div className="ml-2">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="flex min-w-0 flex-1 items-center gap-2">
+                                <MobileSidebarToggle
+                                    onClick={() =>
+                                        setIsSidebarOpen(!isSidebarOpen)
+                                    }
+                                />
+                                <ApplicationLogo className="hidden h-10 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block" />
+                                <div className="min-w-0 flex-1 sm:ml-2">
+                                    <span className="block truncate text-xl font-bold text-gray-900 dark:text-white">
                                         {auth.user.name}
                                     </span>
                                 </div>
@@ -283,18 +296,6 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                         </Button>
                                     </div>
                                 </div>
-                                {/* Mobile Credits Button */}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-white hover:bg-white/10 hover:text-blue-100 sm:hidden"
-                                    onClick={() =>
-                                        (window.location.href =
-                                            route('credits.buy'))
-                                    }
-                                >
-                                    <CreditCardIcon className="h-5 w-5" />
-                                </Button>
                                 <div className="relative inline-block">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

@@ -16,7 +16,7 @@ interface App {
     id?: number;
     identifier?: string;
     title: string;
-    price: number;
+    credits: number;
     pricingType: 'free' | 'one-time' | 'subscription';
     description: string;
 }
@@ -47,11 +47,8 @@ export default function AppPaymentModal({
         onConfirm(paymentMethod, autoRenew);
     };
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-        }).format(price);
+    const formatCredits = (credits: number) => {
+        return `${new Intl.NumberFormat('en-US').format(credits)} credits`;
     };
 
     const getPricingDescription = () => {
@@ -74,7 +71,7 @@ export default function AppPaymentModal({
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Pricing Information */}
+                    {/* Credits Information */}
                     <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                         <div className="flex items-center justify-between">
                             <div>
@@ -85,7 +82,7 @@ export default function AppPaymentModal({
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                                    {formatPrice(app.price)}
+                                    {formatCredits(app.credits)}
                                 </p>
                                 {app.pricingType === 'subscription' && (
                                     <p className="text-xs text-gray-500">
@@ -171,7 +168,7 @@ export default function AppPaymentModal({
                     >
                         {isLoading
                             ? 'Processing...'
-                            : `Pay ${formatPrice(app.price)} with Credits`}
+                            : `Pay ${formatCredits(app.credits)}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>

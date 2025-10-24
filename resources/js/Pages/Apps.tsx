@@ -12,6 +12,7 @@ import { Head, Link as InertiaLink, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import AppPaymentModal from '@/Components/AppPaymentModal';
+import MobileSidebar, { MobileSidebarToggle } from '@/Components/MobileSidebar';
 import MultiAppPaymentModal from '@/Components/MultiAppPaymentModal';
 import { useTheme } from '@/Components/ThemeProvider';
 import {
@@ -38,7 +39,7 @@ interface App {
     bgColor?: string;
     visible?: boolean;
     description: string;
-    price: number;
+    credits: number;
     rating?: number;
     categories?: string[];
     comingSoon?: boolean;
@@ -83,7 +84,7 @@ const getAppPaymentState = (app: App) => {
         return { state: 'pending', label: 'Payment Pending', color: 'yellow' };
     }
 
-    if (app.pricingType === 'free' || app.price === 0) {
+    if (app.pricingType === 'free' || app.credits === 0) {
         return { state: 'free', label: 'Free', color: 'gray' };
     }
 
@@ -208,6 +209,7 @@ export default function Apps() {
     const [showAllCategories, setShowAllCategories] = useState(false);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Convert app title to module identifier format for matching
     const appTitleToModuleId = (title: string) => {
@@ -248,8 +250,7 @@ export default function Apps() {
             try {
                 setIsLoadingApps(true);
                 const appData = await fetchAppsFromAPI();
-                console.log('Fetched apps:', appData);
-                console.log('Enabled modules from props:', enabledModules);
+
                 setApps(appData);
             } catch (error) {
                 console.error('Failed to fetch apps:', error);
@@ -334,18 +335,17 @@ export default function Apps() {
         return description.slice(0, maxLength).trim() + '...';
     };
 
-    // Format price with user's currency
-    const formatPrice = (price: number) => {
-        if (price === 0) return 'Free';
+    // Format credits
+    const formatCredits = (credits: number) => {
+        if (credits === 0) return 'Free';
         try {
-            const formattedNumber = new Intl.NumberFormat('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(price);
-            return `₱${formattedNumber}`;
+            const formattedNumber = new Intl.NumberFormat('en-US').format(
+                credits,
+            );
+            return `${formattedNumber} credits`;
         } catch (error) {
-            console.error('Price formatting error:', error);
-            return `₱${price.toFixed(2)}`;
+            console.error('Credits formatting error:', error);
+            return `${credits} credits`;
         }
     };
 
@@ -381,15 +381,6 @@ export default function Apps() {
             return matchesSearch && matchesCategory;
         });
 
-        // Debug summary
-        console.log(
-            `Filtered ${filtered.length} apps from ${apps.length} total apps.`,
-        );
-        console.log(
-            'Shown apps:',
-            filtered.map((app) => app.title),
-        );
-
         return filtered;
     }, [searchQuery, selectedCategory, apps]);
 
@@ -416,15 +407,15 @@ export default function Apps() {
     // Handle adding an app to user's collection
     const handleAddApp = async (app: App) => {
         // If it's a free app, add directly
-        if (app.pricingType === 'free' || app.price === 0) {
+        if (app.pricingType === 'free' || app.credits === 0) {
             await addAppToCollection(app.identifier!, 'free', false);
             return;
         }
 
         // Check if user has sufficient credits for paid apps
-        if (credits < app.price) {
+        if (credits < app.credits) {
             toast.error(
-                `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${app.price.toLocaleString()} credits for this app.`,
+                `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${app.credits.toLocaleString()} credits for this app.`,
                 {
                     duration: 5000,
                 },
@@ -479,9 +470,9 @@ export default function Apps() {
         if (selectedApps.length === 0) return;
 
         const paidApps = selectedApps.filter(
-            (app) => app.pricingType !== 'free' && app.price > 0,
+            (app) => app.pricingType !== 'free' && app.credits > 0,
         );
-        const totalCost = paidApps.reduce((sum, app) => sum + app.price, 0);
+        const totalCost = paidApps.reduce((sum, app) => sum + app.credits, 0);
 
         if (paidApps.length > 0 && credits < totalCost) {
             toast.error(
@@ -712,8 +703,14 @@ export default function Apps() {
     };
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-white pb-16 dark:bg-gray-900">
+        <div className="relative min-h-screen overflow-x-hidden bg-white pb-16 dark:bg-gray-900 md:pb-0">
             <Head title="Apps" />
+
+            {/* Mobile Sidebar */}
+            <MobileSidebar
+                isOpen={isSidebarOpen}
+                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
 
             {/* Flash Message */}
             {flash && flash.message && (
@@ -757,10 +754,15 @@ export default function Apps() {
                 <div className="container mx-auto px-4 pt-4">
                     <div className="mb-4 flex flex-col items-center">
                         <div className="mb-2 flex w-full items-center justify-between">
-                            <div className="flex items-center">
-                                <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
-                                <div className="ml-2">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="flex min-w-0 flex-1 items-center gap-2">
+                                <MobileSidebarToggle
+                                    onClick={() =>
+                                        setIsSidebarOpen(!isSidebarOpen)
+                                    }
+                                />
+                                <ApplicationLogo className="hidden h-10 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block" />
+                                <div className="min-w-0 flex-1 sm:ml-2">
+                                    <span className="block truncate text-xl font-bold text-gray-900 dark:text-white">
                                         {auth.user.name}
                                     </span>
                                 </div>
@@ -801,18 +803,6 @@ export default function Apps() {
                                         </Button>
                                     </div>
                                 </div>
-                                {/* Mobile Credits Button */}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-white hover:bg-white/10 hover:text-blue-100 sm:hidden"
-                                    onClick={() =>
-                                        (window.location.href =
-                                            route('credits.buy'))
-                                    }
-                                >
-                                    <CreditCardIcon className="h-5 w-5" />
-                                </Button>
                                 <div className="relative inline-block">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -1087,7 +1077,7 @@ export default function Apps() {
                                                                                     </Badge>
                                                                                 )}
                                                                         </div>
-                                                                        {/* Show price for apps not in plan */}
+                                                                        {/* Show credits for apps not in plan */}
                                                                         {!app.comingSoon &&
                                                                             (() => {
                                                                                 const paymentState =
@@ -1099,14 +1089,14 @@ export default function Apps() {
                                                                                         'not-purchased' ||
                                                                                         paymentState.state ===
                                                                                             'failed') &&
-                                                                                    app.price >
+                                                                                    app.credits >
                                                                                         0
                                                                                 ) {
                                                                                     return (
                                                                                         <div className="mt-1">
                                                                                             <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                                                                {formatPrice(
-                                                                                                    app.price,
+                                                                                                {formatCredits(
+                                                                                                    app.credits,
                                                                                                 )}
                                                                                             </span>
                                                                                             <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
@@ -1154,14 +1144,6 @@ export default function Apps() {
                                                                                             >
                                                                                                 Add
                                                                                             </Button>
-                                                                                            {app.price >
-                                                                                                0 && (
-                                                                                                <span className="mt-1 text-xs font-medium text-orange-600 dark:text-orange-400">
-                                                                                                    {formatPrice(
-                                                                                                        app.price,
-                                                                                                    )}
-                                                                                                </span>
-                                                                                            )}
                                                                                         </div>
                                                                                     );
                                                                                 }
@@ -1332,14 +1314,14 @@ export default function Apps() {
                                                         <div className="space-y-2">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                                                                    {formatPrice(
-                                                                        selectedApp.price,
+                                                                    {formatCredits(
+                                                                        selectedApp.credits,
                                                                     )}
                                                                 </span>
                                                                 <span className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {selectedApp.pricingType ===
                                                                     'one-time'
-                                                                        ? 'one-time payment'
+                                                                        ? 'one-time'
                                                                         : selectedApp.pricingType ===
                                                                             'subscription'
                                                                           ? 'per month'

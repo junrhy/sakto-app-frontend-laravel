@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { MobileSidebarToggle } from '@/Components/MobileSidebar';
 import { Button } from '@/Components/ui/button';
 import {
     DropdownMenu,
@@ -33,6 +34,7 @@ interface ProfileHeaderProps {
         };
     };
     formatNumber: (num: number | undefined | null) => string;
+    onToggleSidebar: () => void;
 }
 
 export default function ProfileHeader({
@@ -41,6 +43,7 @@ export default function ProfileHeader({
     credits,
     auth,
     formatNumber,
+    onToggleSidebar,
 }: ProfileHeaderProps) {
     return (
         <>
@@ -71,10 +74,13 @@ export default function ProfileHeader({
                 <div className="container mx-auto px-4 pt-4">
                     <div className="mb-4 flex flex-col items-center">
                         <div className="mb-2 flex w-full items-center justify-between">
-                            <div className="flex items-center">
-                                <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
-                                <div className="ml-2">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="flex min-w-0 flex-1 items-center gap-2">
+                                <MobileSidebarToggle
+                                    onClick={onToggleSidebar}
+                                />
+                                <ApplicationLogo className="hidden h-10 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block" />
+                                <div className="min-w-0 flex-1 sm:ml-2">
+                                    <span className="block truncate text-xl font-bold text-gray-900 dark:text-white">
                                         {auth.user.name}
                                     </span>
                                 </div>
@@ -115,18 +121,6 @@ export default function ProfileHeader({
                                         </Button>
                                     </div>
                                 </div>
-                                {/* Mobile Credits Button */}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-white hover:bg-white/10 hover:text-blue-100 sm:hidden"
-                                    onClick={() =>
-                                        (window.location.href =
-                                            route('credits.buy'))
-                                    }
-                                >
-                                    <CreditCardIcon className="h-5 w-5" />
-                                </Button>
                                 <div className="relative inline-block">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

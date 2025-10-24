@@ -140,7 +140,10 @@ export default function Login({
                                 </div>
                             )}
 
-                            <form onSubmit={submit} className="space-y-4 sm:space-y-6">
+                            <form
+                                onSubmit={submit}
+                                className="space-y-4 sm:space-y-6"
+                            >
                                 <div>
                                     <InputLabel
                                         htmlFor="email"

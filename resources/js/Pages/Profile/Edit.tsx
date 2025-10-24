@@ -1,7 +1,8 @@
+import MobileSidebar from '@/Components/MobileSidebar';
 import { Badge } from '@/Components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { UserIcon } from '@heroicons/react/24/outline';
-import { Receipt, Settings, Shield, Users } from 'lucide-react';
+import { CreditCard, Receipt, Settings, Shield, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AccountSettings from './Partials/AccountSettings';
 import BillingHistory from './Partials/BillingHistory';
@@ -74,6 +75,7 @@ export default function Edit({
     const [isLoadingSubscription, setIsLoadingSubscription] =
         useState<boolean>(true);
     const [activeTab, setActiveTab] = useState<string>('team');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Check if current team member has administrator role
     const isAdministrator =
@@ -172,13 +174,20 @@ export default function Edit({
     };
 
     return (
-        <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900">
+        <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900 md:pb-0">
+            {/* Mobile Sidebar */}
+            <MobileSidebar
+                isOpen={isSidebarOpen}
+                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+
             <ProfileHeader
                 isLoadingSubscription={isLoadingSubscription}
                 subscription={subscription}
                 credits={credits}
                 auth={auth}
                 formatNumber={formatNumber}
+                onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             />
 
             <div
@@ -228,6 +237,7 @@ export default function Edit({
                                             value="subscriptions"
                                             className="flex items-center gap-2 whitespace-nowrap"
                                         >
+                                            <CreditCard className="h-4 w-4" />
                                             <span className="hidden sm:inline">
                                                 Subscriptions
                                             </span>

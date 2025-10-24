@@ -68,9 +68,15 @@ class TeamsController extends Controller
      */
     public function create()
     {
+        $user = auth()->user();
+        
+        // Check if there are any existing admin team members
+        $hasExistingAdmin = $this->hasAdminTeamMember($user);
+        
         return Inertia::render('Teams/Create', [
             'availableRoles' => $this->getAvailableRoles(),
             'availableApps' => $this->getAvailableApps(),
+            'requiresAdmin' => !$hasExistingAdmin,
         ]);
     }
 
@@ -82,20 +88,36 @@ class TeamsController extends Controller
         try {
             $user = auth()->user();
             
-            $validated = $request->validate([
+            // Check if there are any existing admin team members
+            $hasExistingAdmin = $this->hasAdminTeamMember($user);
+            
+            // Build validation rules
+            $rules = [
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:team_members,email,NULL,id,user_identifier,' . $user->identifier,
                 'contact_number' => 'nullable|string|max:20',
                 'password' => 'required|string|min:8',
-                'roles' => 'nullable|array',
+                'roles' => $hasExistingAdmin ? 'nullable|array' : 'required|array|min:1',
                 'roles.*' => 'string|in:' . implode(',', array_keys($this->getAvailableRoles())),
                 'allowed_apps' => 'nullable|array',
                 'allowed_apps.*' => 'string|in:' . implode(',', array_keys($this->getAvailableApps())),
                 'notes' => 'nullable|string',
                 'timezone' => 'nullable|string|max:50',
                 'language' => 'nullable|string|max:10',
-            ]);
+            ];
+            
+            $messages = [
+                'roles.required' => 'At least one role must be assigned. Since there are no existing admin team members, this member must have the admin role.',
+                'roles.min' => 'At least one role must be assigned.',
+            ];
+            
+            $validated = $request->validate($rules, $messages);
+            
+            // If no existing admin, ensure the new member has admin role
+            if (!$hasExistingAdmin && (!isset($validated['roles']) || !in_array('admin', $validated['roles']))) {
+                return back()->withErrors(['roles' => 'The first team member must have the admin role to manage the account.'])->withInput();
+            }
 
             $validated['user_identifier'] = $user->identifier;
             $validated['project_identifier'] = $user->project_identifier;
@@ -578,5 +600,28 @@ class TeamsController extends Controller
                 'team_member_id' => $teamMember->id,
             ]);
         }
+    }
+
+    /**
+     * Check if there are any existing admin team members.
+     */
+    private function hasAdminTeamMember(User $user): bool
+    {
+        // Check if the main user account has admin role
+        $mainUserRoles = $user->roles ?? [];
+        if (in_array('admin', $mainUserRoles)) {
+            return true;
+        }
+        
+        // Check if any team members have admin role
+        $hasAdminTeamMember = TeamMember::where('user_identifier', $user->identifier)
+            ->where('project_identifier', $user->project_identifier)
+            ->where('is_active', true)
+            ->get()
+            ->contains(function ($member) {
+                return in_array('admin', $member->roles ?? []);
+            });
+        
+        return $hasAdminTeamMember;
     }
 }

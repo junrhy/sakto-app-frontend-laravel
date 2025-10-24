@@ -313,8 +313,7 @@ export default function Buy({
                                 Buy Credits
                             </h1>
                             <p className="mt-1 text-gray-600 dark:text-gray-400">
-                                Purchase credits to unlock premium features and
-                                services
+                                Purchase credits to unlock premium features
                             </p>
                         </div>
                     </div>
@@ -378,7 +377,7 @@ export default function Buy({
                                                 </div>
                                                 <div className="flex items-baseline justify-between">
                                                     <span className="text-3xl font-bold text-green-600 dark:text-green-400">
-                                                        ₱{pkg.price.toFixed(2)}
+                                                        ${pkg.price.toFixed(2)}
                                                     </span>
                                                     {pkg.savings && (
                                                         <Badge
@@ -490,7 +489,7 @@ export default function Buy({
                                                         <p className="text-sm text-gray-600 dark:text-gray-400">
                                                             Amount to Send:{' '}
                                                             <span className="font-bold text-purple-600 dark:text-purple-400">
-                                                                ₱
+                                                                $
                                                                 {selectedPackage.price.toFixed(
                                                                     2,
                                                                 )}
@@ -742,7 +741,7 @@ export default function Buy({
                                                         Credits
                                                     </TableCell>
                                                     <TableCell>
-                                                        ₱
+                                                        $
                                                         {payment.package_amount.toFixed(
                                                             2,
                                                         )}

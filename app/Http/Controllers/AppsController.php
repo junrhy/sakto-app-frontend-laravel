@@ -76,7 +76,7 @@ class AppsController extends Controller
                     'route' => $module->route,
                     'visible' => $module->visible,
                     'description' => $module->description,
-                    'price' => (float) $module->price, // Ensure price is returned as float for frontend
+                    'credits' => (float) $module->price, // Return as credits for frontend
                     'categories' => $module->categories,
                     'comingSoon' => $module->coming_soon,
                     'pricingType' => $module->pricing_type,
