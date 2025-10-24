@@ -6,6 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Label } from '@/Components/ui/label';
 import {
@@ -17,10 +18,13 @@ import {
 } from '@/Components/ui/select';
 import {
     Calculator,
+    Calendar,
+    Check,
     ChevronDown,
     ChevronUp,
     Edit,
     Link2,
+    MapPin,
     Plus,
     Trash,
     Unlink,
@@ -29,7 +33,7 @@ import {
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { BlockedDate, Reservation, Table as TableType } from '../types';
-import { DateCalendar } from './DateCalendar';
+import { WeekDatePicker } from './WeekDatePicker';
 
 interface TableSchedule {
     id: number;
@@ -77,6 +81,7 @@ interface TablesTabProps {
         status: 'available' | 'unavailable' | 'joined';
         joinedWith?: string;
     }) => void;
+    onCreateReservation?: (date: string, time: string, tableIds: number[]) => void;
 }
 
 export const TablesTab: React.FC<TablesTabProps> = ({
@@ -97,6 +102,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
     onSetTableStatusFilter,
     tableStatusFilter,
     onSetTableSchedule,
+    onCreateReservation,
 }) => {
     const [selectedTables, setSelectedTables] = useState<number[]>([]);
     const [selectedDate, setSelectedDate] = useState(() => {
@@ -107,7 +113,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         return `${year}-${month}-${day}`;
     });
     const [selectedTime, setSelectedTime] = useState('');
-    const [showDateTimeSection, setShowDateTimeSection] = useState(false);
+    const [showDateTimeSection, setShowDateTimeSection] = useState(true);
 
     // Local state for optimistic UI updates
     const [tableStatuses, setTableStatuses] = useState<
@@ -282,11 +288,22 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         (tableId: number) => {
             if (!selectedTime) return false;
             return reservations.some(
-                (reservation) =>
-                    reservation.tableId === tableId &&
-                    reservation.date === selectedDate &&
-                    reservation.time === selectedTime &&
-                    reservation.status !== 'cancelled',
+                (reservation) => {
+                    // Check if reservation matches date and time
+                    const matchesDateTime = reservation.date === selectedDate &&
+                        reservation.time === selectedTime &&
+                        reservation.status !== 'cancelled';
+                    
+                    if (!matchesDateTime) return false;
+                    
+                    // Check single table reservation
+                    if (reservation.tableId === tableId) return true;
+                    
+                    // Check multiple table reservation
+                    if (reservation.tableIds && reservation.tableIds.includes(tableId)) return true;
+                    
+                    return false;
+                }
             );
         },
         [reservations, selectedDate, selectedTime],
@@ -564,6 +581,32 @@ export const TablesTab: React.FC<TablesTabProps> = ({
         isTimeSlotBlocked,
     ]);
 
+    // Group filtered tables by location
+    const tablesByLocation = useMemo(() => {
+        const grouped: Record<string, TableType[]> = {};
+        
+        filteredTables.forEach((table) => {
+            const location = table.location || 'indoor';
+            if (!grouped[location]) {
+                grouped[location] = [];
+            }
+            grouped[location].push(table);
+        });
+
+        // Sort locations alphabetically
+        const sortedLocations = Object.keys(grouped).sort();
+        const sortedGrouped: Record<string, TableType[]> = {};
+        sortedLocations.forEach(location => {
+            sortedGrouped[location] = grouped[location];
+        });
+
+        return sortedGrouped;
+    }, [filteredTables]);
+
+    const formatLocationName = (location: string) => {
+        return location.charAt(0).toUpperCase() + location.slice(1).replace(/_/g, ' ');
+    };
+
     return (
         <div className="space-y-6">
                         {/* Date and Time Slot Selection */}
@@ -621,39 +664,18 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                 </CardHeader>
                                 {showDateTimeSection && (
                                     <CardContent className="p-6">
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            {/* Calendar Section */}
-                                            <div>
-                                                <Label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
-                                                    Select Date
-                                                </Label>
-                                                <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-                                                    Choose a date to view and
-                                                    manage table availability
-                                                </p>
-                                                <div className="rounded-lg border border-gray-300 bg-white p-2 dark:border-gray-600 dark:bg-gray-700">
-                                                    <div className="origin-top-left scale-90">
-                                                        <DateCalendar
-                                                            selectedDate={
-                                                                selectedDate
-                                                            }
-                                                            onDateSelect={(
-                                                                dateStr,
-                                                            ) => {
-                                                                setSelectedDate(
-                                                                    dateStr,
-                                                                );
-                                                                setSelectedTime(
-                                                                    '',
-                                                                ); // Reset time when date changes
-                                                            }}
-                                                            blockedDates={[]}
-                                                            minDate={new Date()}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        {/* Week Date Picker */}
+                                        <WeekDatePicker
+                                            selectedDate={selectedDate}
+                                            onDateSelect={(dateStr) => {
+                                                setSelectedDate(dateStr);
+                                                setSelectedTime(''); // Reset time when date changes
+                                            }}
+                                            datesWithIndicator={[]}
+                                            className="mb-6"
+                                        />
 
+                                        <div className="grid grid-cols-1 gap-4">
                                             {/* Time Slots Section */}
                                             <div>
                                                 <Label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
@@ -689,13 +711,13 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                 </div>
 
                                                 <div className="rounded-lg border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-700">
-                                                    <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                                         {/* AM Column */}
                                                         <div>
                                                             <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                                                 AM
                                                             </h4>
-                                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                                            <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
                                                                 {timeSlots.am.map(
                                                                     (
                                                                         timeSlot,
@@ -762,7 +784,7 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                             <h4 className="mb-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 md:mb-3 md:text-sm">
                                                                 PM
                                                             </h4>
-                                                            <div className="grid grid-cols-2 gap-1 md:gap-2">
+                                                            <div className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-3 xl:grid-cols-4">
                                                                 {timeSlots.pm.map(
                                                                     (
                                                                         timeSlot,
@@ -877,8 +899,19 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                                         Set
                                                                         Available
                                                                     </Button>
-                                                                    {selectedTables.length >=
-                                                                        2 && (
+                                                                    {selectedTables.length >= 2 && 
+                                                                        (() => {
+                                                                            // Check if all selected tables are already joined together
+                                                                            const firstTableJoined = getJoinedTablesForSlot(selectedTables[0]);
+                                                                            if (!firstTableJoined) return true;
+                                                                            
+                                                                            const joinedTableIds = firstTableJoined.split(',').map(id => parseInt(id.trim()));
+                                                                            const allTablesJoined = selectedTables.every(tableId => 
+                                                                                joinedTableIds.includes(tableId)
+                                                                            );
+                                                                            
+                                                                            return !allTablesJoined;
+                                                                        })() && (
                                                                         <Button
                                                                             type="button"
                                                                             size="sm"
@@ -896,6 +929,25 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                                                             for
                                                                             this
                                                                             Time
+                                                                        </Button>
+                                                                    )}
+                                                                    {onCreateReservation && (
+                                                                        <Button
+                                                                            type="button"
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            className="h-7 border-orange-300 px-2 py-1 text-xs text-orange-600 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-900/20"
+                                                                            onClick={() => {
+                                                                                onCreateReservation(
+                                                                                    selectedDate,
+                                                                                    selectedTime,
+                                                                                    selectedTables
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            <Calendar className="mr-1 h-3 w-3" />
+                                                                            Add
+                                                                            Reservation
                                                                         </Button>
                                                                     )}
                                                                 </div>
@@ -1137,408 +1189,169 @@ export const TablesTab: React.FC<TablesTabProps> = ({
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                                            {filteredTables.map((table) => {
-                                                // Use local state for optimistic UI, fallback to table.status
-                                                const currentStatus =
-                                                    tableStatuses[table.id] ||
-                                                    table.status;
-                                                const displayStatus =
-                                                    selectedTime
-                                                        ? getTableStatusForSlot(
-                                                              table,
-                                                          )
-                                                        : currentStatus;
-                                                const isReservedForSlot =
-                                                    selectedTime &&
-                                                    isTableReservedForSlot(
-                                                        typeof table.id ===
-                                                            'number'
-                                                            ? table.id
-                                                            : parseInt(
-                                                                  table.id.toString(),
-                                                              ),
-                                                    );
+                                        <div className="space-y-4">
+                                            {Object.entries(tablesByLocation).map(([location, locationTables]) => (
+                                                <Card key={location} className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                                    <CardHeader className="pb-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                                        <CardTitle className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+                                                            <MapPin className="h-4 w-4" />
+                                                            {formatLocationName(location)}
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent className="p-4 bg-white dark:bg-gray-800">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                                                            {locationTables.map((table) => {
+                                                                const tableId = typeof table.id === 'number' ? table.id : parseInt(table.id.toString());
+                                                                const isSelected = selectedTables.includes(tableId);
+                                                                const currentStatus = tableStatuses[table.id] || table.status;
+                                                                const displayStatus = selectedTime ? getTableStatusForSlot(table) : currentStatus;
+                                                                const isReservedForSlot = selectedTime && isTableReservedForSlot(tableId);
+                                                                const joinedWith = selectedTime ? getJoinedTablesForSlot(tableId) : table.joined_with;
 
-                                                return (
-                                                    <Card
-                                                        key={table.id}
-                                                        className={`rounded-lg border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 ${
-                                                            displayStatus ===
-                                                            'available'
-                                                                ? 'border-green-200 hover:border-green-300 dark:border-green-700 dark:hover:border-green-600'
-                                                                : displayStatus ===
-                                                                    'unavailable'
-                                                                  ? 'border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600'
-                                                                  : displayStatus ===
-                                                                      'reserved'
-                                                                    ? 'border-yellow-200 hover:border-yellow-300 dark:border-yellow-700 dark:hover:border-yellow-600'
-                                                                    : 'border-blue-200 hover:border-blue-300 dark:border-blue-700 dark:hover:border-blue-600'
-                                                        } ${isReservedForSlot ? 'ring-2 ring-yellow-300 dark:ring-yellow-700' : ''}`}
-                                                    >
-                                                        <CardHeader className="p-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <CardTitle className="text-sm text-gray-900 dark:text-white">
-                                                                    {currentStatus ===
-                                                                        'joined' &&
-                                                                    table.joined_with ? (
-                                                                        <>
-                                                                            <div className="flex items-center gap-1.5">
-                                                                                <span className="text-base">
-                                                                                    {getStatusIcon(
-                                                                                        currentStatus,
-                                                                                    )}
-                                                                                </span>
-                                                                                <span>
-                                                                                    {
-                                                                                        table.name
-                                                                                    }
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                                Joined
-                                                                                with:{' '}
-                                                                                {
-                                                                                    table.joined_with
-                                                                                }
-                                                                            </div>
-                                                                        </>
-                                                                    ) : (
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <span className="text-base">
-                                                                                {getStatusIcon(
-                                                                                    currentStatus,
-                                                                                )}
-                                                                            </span>
-                                                                            <span>
-                                                                                {
-                                                                                    table.name
-                                                                                }
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                </CardTitle>
-                                                                {table.status ===
-                                                                    'available' && (
-                                                                    <Checkbox
-                                                                        checked={selectedTables.includes(
-                                                                            typeof table.id ===
-                                                                                'number'
-                                                                                ? table.id
-                                                                                : parseInt(
-                                                                                      table.id.toString(),
-                                                                                  ),
-                                                                        )}
-                                                                        onCheckedChange={(
-                                                                            checked,
-                                                                        ) =>
-                                                                            handleTableSelect(
-                                                                                typeof table.id ===
-                                                                                    'number'
-                                                                                    ? table.id
-                                                                                    : parseInt(
-                                                                                          table.id.toString(),
-                                                                                      ),
-                                                                                checked as boolean,
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                        </CardHeader>
-                                                        <CardContent className="p-3">
-                                                            <p className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
-                                                                Seats:{' '}
-                                                                {table.seats}
-                                                                <div className="flex items-center gap-0.5">
-                                                                    {Array.from(
-                                                                        {
-                                                                            length: table.seats,
-                                                                        },
-                                                                        (
-                                                                            _,
-                                                                            i,
-                                                                        ) => (
-                                                                            <User
-                                                                                key={
-                                                                                    i
-                                                                                }
-                                                                                className="h-4 w-4 text-gray-500 dark:text-gray-400"
-                                                                            />
-                                                                        ),
-                                                                    )}
-                                                                </div>
-                                                            </p>
-                                                            <div className="mt-1 space-y-1">
-                                                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                                                    Status:{' '}
-                                                                    <span
-                                                                        className={`rounded-full px-2 py-1 text-sm font-medium ${getStatusColor(displayStatus)}`}
+                                                                // Get status badge info
+                                                                const getStatusBadge = () => {
+                                                                    if (isReservedForSlot) {
+                                                                        return { variant: 'secondary' as const, text: 'Reserved' };
+                                                                    }
+                                                                    if (displayStatus === 'available') {
+                                                                        return { variant: 'default' as const, text: 'Available' };
+                                                                    }
+                                                                    if (displayStatus === 'unavailable') {
+                                                                        return { variant: 'destructive' as const, text: 'Unavailable' };
+                                                                    }
+                                                                    if (displayStatus === 'occupied') {
+                                                                        return { variant: 'secondary' as const, text: 'Occupied' };
+                                                                    }
+                                                                    if (displayStatus === 'joined') {
+                                                                        return { variant: 'default' as const, text: 'Joined' };
+                                                                    }
+                                                                    return { variant: 'default' as const, text: displayStatus };
+                                                                };
+
+                                                                const statusBadge = getStatusBadge();
+
+                                                                return (
+                                                                    <Card
+                                                                        key={table.id}
+                                                                        className={`cursor-pointer transition-all duration-200 border ${
+                                                                            isSelected 
+                                                                                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600' 
+                                                                                : displayStatus === 'available'
+                                                                                ? 'hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                                                                                : displayStatus === 'unavailable'
+                                                                                ? 'opacity-75 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700'
+                                                                                : displayStatus === 'reserved'
+                                                                                ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700'
+                                                                                : displayStatus === 'joined'
+                                                                                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
+                                                                                : 'hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                                                                        }`}
+                                                                        onClick={() => {
+                                                                            if (displayStatus === 'available') {
+                                                                                handleTableSelect(tableId, !isSelected);
+                                                                            }
+                                                                        }}
                                                                     >
-                                                                        {
-                                                                            displayStatus
-                                                                        }
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                            {table.joined_with && (
-                                                                <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                                                                    Joined
-                                                                    Tables:{' '}
-                                                                    {
-                                                                        table.joined_with
-                                                                    }
-                                                                </p>
-                                                            )}
-                                                            {selectedTime &&
-                                                                (() => {
-                                                                    const tableId =
-                                                                        typeof table.id ===
-                                                                        'number'
-                                                                            ? table.id
-                                                                            : parseInt(
-                                                                                  table.id.toString(),
-                                                                              );
-                                                                    const isUnavailable =
-                                                                        isTableUnavailableForSlot(
-                                                                            tableId,
-                                                                            selectedDate,
-                                                                            selectedTime,
-                                                                        );
-                                                                    const joinedWith =
-                                                                        getJoinedTablesForSlot(
-                                                                            tableId,
-                                                                        );
-
-                                                                    if (
-                                                                        joinedWith
-                                                                    ) {
-                                                                        // Get names of joined tables
-                                                                        const joinedTableIds =
-                                                                            joinedWith
-                                                                                .split(
-                                                                                    ',',
-                                                                                )
-                                                                                .map(
-                                                                                    (
-                                                                                        id,
-                                                                                    ) =>
-                                                                                        parseInt(
-                                                                                            id.trim(),
-                                                                                        ),
-                                                                                );
-                                                                        const joinedTableNames =
-                                                                            joinedTableIds
-                                                                                .map(
-                                                                                    (
-                                                                                        id,
-                                                                                    ) => {
-                                                                                        const foundTable =
-                                                                                            tables.find(
-                                                                                                (
-                                                                                                    t,
-                                                                                                ) => {
-                                                                                                    const tId =
-                                                                                                        typeof t.id ===
-                                                                                                        'number'
-                                                                                                            ? t.id
-                                                                                                            : parseInt(
-                                                                                                                  t.id.toString(),
-                                                                                                              );
-                                                                                                    return (
-                                                                                                        tId ===
-                                                                                                        id
-                                                                                                    );
-                                                                                                },
-                                                                                            );
-                                                                                        return foundTable?.name;
-                                                                                    },
-                                                                                )
-                                                                                .filter(
-                                                                                    Boolean,
-                                                                                )
-                                                                                .join(
-                                                                                    ', ',
-                                                                                );
-
-                                                                        return (
-                                                                            <div className="mt-1.5 rounded-md bg-blue-50 p-1.5 dark:bg-blue-900/20">
-                                                                                <p className="text-xs font-semibold text-blue-800 dark:text-blue-200">
-                                                                                    <Link2 className="mr-1 inline h-3 w-3" />
+                                                                        <CardHeader className="p-3 pb-2">
+                                                                            <div className="relative w-full">
+                                                                                <Badge 
+                                                                                    variant={statusBadge.variant}
+                                                                                    className="text-xs w-full justify-center"
+                                                                                >
+                                                                                    {statusBadge.text}
+                                                                                </Badge>
+                                                                                {isSelected && (
+                                                                                    <Check className="h-4 w-4 text-blue-600 dark:text-blue-400 absolute top-1/2 right-2 transform -translate-y-1/2" />
+                                                                                )}
+                                                                            </div>
+                                                                        </CardHeader>
+                                                                        <CardContent className="p-3 pb-2 text-center">
+                                                                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                                                {table.name}
+                                                                            </h4>
+                                                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                                {table.seats} seats
+                                                                            </p>
+                                                                            {joinedWith && (
+                                                                                <div className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                                                                                    <Link2 className="inline h-3 w-3 mr-1" />
                                                                                     Joined
-                                                                                </p>
-                                                                                <p className="text-xs text-blue-700 dark:text-blue-300">
-                                                                                    With:{' '}
-                                                                                    {
-                                                                                        joinedTableNames
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                        );
-                                                                    }
-
-                                                                    if (
-                                                                        isReservedForSlot
-                                                                    ) {
-                                                                        return (
-                                                                            <div className="mt-1.5 rounded-md bg-yellow-50 p-1.5 dark:bg-yellow-900/20">
-                                                                                <p className="text-xs font-medium text-yellow-800 dark:text-yellow-200">
-                                                                                    Reserved
-                                                                                </p>
-                                                                            </div>
-                                                                        );
-                                                                    }
-
-                                                                    return null;
-                                                                })()}
-                                                        </CardContent>
-                                                        <CardFooter className="flex flex-wrap gap-1.5 p-3">
-                                                            {selectedTime &&
-                                                                displayStatus ===
-                                                                    'joined' &&
-                                                                (() => {
-                                                                    const tableId =
-                                                                        typeof table.id ===
-                                                                        'number'
-                                                                            ? table.id
-                                                                            : parseInt(
-                                                                                  table.id.toString(),
-                                                                              );
-                                                                    const joinedWith =
-                                                                        getJoinedTablesForSlot(
-                                                                            tableId,
-                                                                        );
-
-                                                                    if (
-                                                                        joinedWith
-                                                                    ) {
-                                                                        const joinedTableIds =
-                                                                            joinedWith
-                                                                                .split(
-                                                                                    ',',
-                                                                                )
-                                                                                .map(
-                                                                                    (
-                                                                                        id,
-                                                                                    ) =>
-                                                                                        parseInt(
-                                                                                            id.trim(),
-                                                                                        ),
-                                                                                );
-                                                                        return (
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                onClick={() => {
-                                                                                    if (
-                                                                                        onSetTableSchedule
-                                                                                    ) {
-                                                                                        onSetTableSchedule(
-                                                                                            {
-                                                                                                tableIds:
-                                                                                                    joinedTableIds,
+                                                                                </div>
+                                                                            )}
+                                                                        </CardContent>
+                                                                        <CardFooter className="flex justify-center gap-1.5 p-2 border-t border-gray-200 dark:border-gray-600">
+                                                                            {/* Action Buttons */}
+                                                                            {selectedTime && displayStatus === 'available' && onCreateReservation && (
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        onCreateReservation(selectedDate, selectedTime, [tableId]);
+                                                                                    }}
+                                                                                    title="Add Reservation"
+                                                                                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                                                                                >
+                                                                                    <Calendar className="h-4 w-4" />
+                                                                                </Button>
+                                                                            )}
+                                                                            {canEdit && displayStatus === 'available' && (
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        onEditTable(table);
+                                                                                    }}
+                                                                                    title="Edit Table"
+                                                                                >
+                                                                                    <Edit className="h-4 w-4" />
+                                                                                </Button>
+                                                                            )}
+                                                                            {canDelete && displayStatus === 'available' && (
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        onDeleteTable(tableId);
+                                                                                    }}
+                                                                                    title="Delete Table"
+                                                                                    className="text-red-600 hover:text-red-700 dark:text-red-400"
+                                                                                >
+                                                                                    <Trash className="h-4 w-4" />
+                                                                                </Button>
+                                                                            )}
+                                                                            {selectedTime && displayStatus === 'joined' && joinedWith && (
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        if (onSetTableSchedule) {
+                                                                                            const joinedTableIds = joinedWith.split(',').map(id => parseInt(id.trim()));
+                                                                                            onSetTableSchedule({
+                                                                                                tableIds: joinedTableIds,
                                                                                                 date: selectedDate,
                                                                                                 time: selectedTime,
-                                                                                                status: 'available', // Set back to available to remove join
-                                                                                            },
-                                                                                        );
-                                                                                    }
-                                                                                }}
-                                                                                className="h-7 px-2 py-1 text-xs text-orange-600 hover:text-orange-700"
-                                                                            >
-                                                                                <Unlink className="mr-1 h-3 w-3" />
-                                                                                Unjoin
-                                                                            </Button>
-                                                                        );
-                                                                    }
-                                                                    return null;
-                                                                })()}
-
-                                                            {table.status ===
-                                                                'available' && (
-                                                                <>
-                                                                    {canEdit && (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="outline"
-                                                                            onClick={() =>
-                                                                                onEditTable(
-                                                                                    table,
-                                                                                )
-                                                                            }
-                                                                            className="h-7 px-2 py-1 text-xs text-blue-600 hover:text-blue-700"
-                                                                        >
-                                                                            <Edit className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                    )}
-                                                                    {canDelete && (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="destructive"
-                                                                            onClick={() =>
-                                                                                onDeleteTable(
-                                                                                    typeof table.id ===
-                                                                                        'number'
-                                                                                        ? table.id
-                                                                                        : parseInt(
-                                                                                              table.id.toString(),
-                                                                                          ),
-                                                                                )
-                                                                            }
-                                                                            className="h-7 px-2 py-1"
-                                                                        >
-                                                                            <Trash className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                            {table.status ===
-                                                                'occupied' && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    className="h-7 px-2 py-1 text-xs text-green-600 hover:text-green-700"
-                                                                >
-                                                                    Complete
-                                                                    Order
-                                                                </Button>
-                                                            )}
-                                                            {table.status ===
-                                                                'reserved' && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    className="h-7 px-2 py-1 text-xs text-blue-600 hover:text-blue-700"
-                                                                >
-                                                                    Check In
-                                                                </Button>
-                                                            )}
-                                                            {table.status ===
-                                                                'joined' && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={() =>
-                                                                        onUnjoinTables(
-                                                                            [
-                                                                                typeof table.id ===
-                                                                                'number'
-                                                                                    ? table.id
-                                                                                    : parseInt(
-                                                                                          table.id.toString(),
-                                                                                      ),
-                                                                            ],
-                                                                        )
-                                                                    }
-                                                                    className="h-7 px-2 py-1 text-xs text-orange-600 hover:text-orange-700"
-                                                                >
-                                                                    <Unlink className="h-3.5 w-3.5" />
-                                                                </Button>
-                                                            )}
-                                                        </CardFooter>
-                                                    </Card>
-                                                );
-                                            })}
+                                                                                                status: 'available',
+                                                                                            });
+                                                                                        }
+                                                                                    }}
+                                                                                    title="Unjoin Tables"
+                                                                                    className="text-orange-600 hover:text-orange-700 dark:text-orange-400"
+                                                                                >
+                                                                                    <Unlink className="h-4 w-4" />
+                                                                                </Button>
+                                                                            )}
+                                                                        </CardFooter>
+                                                                    </Card>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
                                         </div>
                                     )}
 

@@ -66,6 +66,12 @@ interface ReservationsTabProps {
     onDeleteReservation: (id: number) => void;
     onConfirmReservation: (id: number) => void;
     onCancelReservation: (id: number) => void;
+    prefilledData?: {
+        date: string;
+        time: string;
+        tableIds?: number[];
+    } | null;
+    onClearPrefilledData?: () => void;
 }
 
 export const ReservationsTab: React.FC<ReservationsTabProps> = ({
@@ -81,6 +87,8 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     onDeleteReservation,
     onConfirmReservation,
     onCancelReservation,
+    prefilledData,
+    onClearPrefilledData,
 }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isMultipleTableDialogOpen, setIsMultipleTableDialogOpen] = useState(false);
@@ -140,6 +148,29 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     }, []);
 
     const timeSlots = useMemo(() => generateTimeSlots(), [generateTimeSlots]);
+
+    // Handle pre-filled data from TablesTab
+    useEffect(() => {
+        if (prefilledData) {
+            // Set the selected date
+            setSelectedDate(prefilledData.date);
+            
+            // Update newReservation with pre-filled data
+            setNewReservation(prev => ({
+                ...prev,
+                date: prefilledData.date,
+                time: prefilledData.time,
+                tableIds: prefilledData.tableIds || [],
+            }));
+            
+            // Open the time slot section and dialog
+            setIsTimeSlotSectionVisible(true);
+            setIsDialogOpen(true);
+            
+            // Clear the pre-filled data after using it
+            onClearPrefilledData?.();
+        }
+    }, [prefilledData, onClearPrefilledData]);
 
     const isTimeSlotBlocked = useCallback(
         (date: string, time: string) => {

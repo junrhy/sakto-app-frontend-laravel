@@ -261,6 +261,13 @@ export default function PosRestaurantIndex({
     } | null>(null);
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
+    // Pre-filled reservation data for cross-tab navigation
+    const [prefilledReservation, setPrefilledReservation] = useState<{
+        date: string;
+        time: string;
+        tableIds?: number[];
+    } | null>(null);
+
     // Use custom hooks for state management and API calls
     const posState = usePosState(
         menuItems,
@@ -305,6 +312,15 @@ export default function PosRestaurantIndex({
             },
         );
     }, []);
+
+    // Handle creating reservation from TablesTab
+    const handleCreateReservationFromTable = useCallback((date: string, time: string, tableIds: number[]) => {
+        // Set pre-filled data
+        setPrefilledReservation({ date, time, tableIds });
+        
+        // Switch to reservations tab
+        handleTabChange('reservations');
+    }, [handleTabChange]);
 
     // POS Tab handlers
     const handleCompleteOrder = useCallback(() => {
@@ -1243,6 +1259,9 @@ export default function PosRestaurantIndex({
                                                             onSetTableSchedule={
                                                                 handleSetTableSchedule
                                                             }
+                                                            onCreateReservation={
+                                                                handleCreateReservationFromTable
+                                                            }
                                                         />
                                                     </TabsContent>
                                                 )}
@@ -1288,6 +1307,8 @@ export default function PosRestaurantIndex({
                                                             onCancelReservation={
                                                                 handleCancelReservation
                                                             }
+                                                            prefilledData={prefilledReservation}
+                                                            onClearPrefilledData={() => setPrefilledReservation(null)}
                                                         />
                                                     </TabsContent>
                                                 )}
