@@ -18,7 +18,7 @@ export const menuCategories: MenuCategory[] = [
         title: 'Business',
         items: [
             { id: 'retail', title: 'Retail', href: '/retail?app=retail' },
-            { id: 'fnb', title: 'F&B', href: '/pos-restaurant?app=fnb' },
+            { id: 'fnb', title: 'F&B', href: '/pos-restaurant?app=fnb&tab=reservations' },
             {
                 id: 'warehousing',
                 title: 'Warehousing',

@@ -205,7 +205,7 @@ interface PageProps extends InertiaPageProps {
 export default function PosRestaurantIndex({
     menuItems,
     tables,
-    tab = 'pos',
+    tab = 'reservations',
     joinedTables = [],
     reservations = [],
     blockedDates = [],
