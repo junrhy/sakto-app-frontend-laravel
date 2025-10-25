@@ -1,11 +1,9 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import MobileSidebar, { MobileSidebarToggle } from '@/Components/MobileSidebar';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { ThemeProvider } from '@/Components/ThemeProvider';
 import { Project, User } from '@/types/index';
 import { usePage } from '@inertiajs/react';
-import { ChevronDown, CreditCard, History, Home, Wallet } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -69,7 +67,9 @@ export default function CreditsLayout({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <MobileSidebarToggle
-                                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                    onClick={() =>
+                                        setIsSidebarOpen(!isSidebarOpen)
+                                    }
                                 />
                                 <a
                                     href={route('home')}

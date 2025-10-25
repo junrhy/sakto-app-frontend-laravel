@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use LemonSqueezy\Laravel\Billable;
 
@@ -34,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'identifier',
         'is_admin',
         'slug',
+        'user_type',
     ];
 
     /**
@@ -165,6 +168,30 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->is_admin;
     }
 
+    /**
+     * Check if the user is a customer.
+     *
+     * @return bool
+     */
+    public function isCustomer(): bool
+    {
+        return $this->user_type === 'customer';
+    }
+
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        if ($this->isCustomer()) {
+            $this->notify(new \App\Notifications\CustomerVerifyEmail);
+        } else {
+            parent::sendEmailVerificationNotification();
+        }
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -218,5 +245,69 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getShortUrlAttribute(): string
     {
         return route('member.short', ['identifier' => $this->slug ?? $this->id]);
+    }
+
+    /**
+     * Get all customers for this business (user type account)
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(UserCustomer::class, 'user_id');
+    }
+
+    /**
+     * Get all businesses this customer is connected to (customer type account)
+     */
+    public function businesses(): HasMany
+    {
+        return $this->hasMany(UserCustomer::class, 'customer_id');
+    }
+
+    /**
+     * Check if this user (business) has customers
+     */
+    public function hasCustomers(): bool
+    {
+        return $this->customers()->where('is_active', true)->exists();
+    }
+
+    /**
+     * Check if this customer is connected to any business
+     */
+    public function isConnectedToBusiness(): bool
+    {
+        return $this->businesses()->where('is_active', true)->exists();
+    }
+
+    /**
+     * Get active customers for this business
+     */
+    public function getActiveCustomersAttribute()
+    {
+        return $this->customers()
+            ->with('customer')
+            ->where('is_active', true)
+            ->get()
+            ->pluck('customer');
+    }
+
+    /**
+     * Get total number of customers for this business
+     */
+    public function getTotalCustomersAttribute(): int
+    {
+        return $this->customers()->where('is_active', true)->count();
+    }
+
+    /**
+     * Get all businesses this customer belongs to
+     */
+    public function getMyBusinessesAttribute()
+    {
+        return $this->businesses()
+            ->with('business')
+            ->where('is_active', true)
+            ->get()
+            ->pluck('business');
     }
 }

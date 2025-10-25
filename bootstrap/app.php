@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register route middleware aliases
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'customer' => \App\Http\Middleware\CustomerMiddleware::class,
             'ip_restriction' => \App\Http\Middleware\IpRestrictionMiddleware::class,
             'team.member.selection' => \App\Http\Middleware\TeamMemberSelectionMiddleware::class,
             'cors' => \App\Http\Middleware\CorsMiddleware::class,

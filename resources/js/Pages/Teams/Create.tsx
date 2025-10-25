@@ -31,7 +31,12 @@ interface Props {
     requiresAdmin: boolean;
 }
 
-export default function Create({ auth, availableRoles, availableApps, requiresAdmin }: Props) {
+export default function Create({
+    auth,
+    availableRoles,
+    availableApps,
+    requiresAdmin,
+}: Props) {
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
         last_name: '',
@@ -151,7 +156,11 @@ export default function Create({ auth, availableRoles, availableApps, requiresAd
                                         Admin Role Required
                                     </h3>
                                     <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                                        Since there are no existing admin team members, this team member must be assigned the <strong>Administrator</strong> role to manage the account.
+                                        Since there are no existing admin team
+                                        members, this team member must be
+                                        assigned the{' '}
+                                        <strong>Administrator</strong> role to
+                                        manage the account.
                                     </p>
                                 </div>
                             </div>
@@ -380,7 +389,12 @@ export default function Create({ auth, availableRoles, availableApps, requiresAd
                                     <CardContent className="space-y-6">
                                         <div>
                                             <Label className="text-base font-medium">
-                                                Roles {requiresAdmin && <span className="text-red-500">*</span>}
+                                                Roles{' '}
+                                                {requiresAdmin && (
+                                                    <span className="text-red-500">
+                                                        *
+                                                    </span>
+                                                )}
                                             </Label>
                                             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                                                 {Object.entries(
@@ -409,11 +423,13 @@ export default function Create({ auth, availableRoles, availableApps, requiresAd
                                                             className={`text-sm font-normal ${requiresAdmin && key === 'admin' ? 'font-semibold text-amber-800 dark:text-amber-200' : ''}`}
                                                         >
                                                             {value}
-                                                            {requiresAdmin && key === 'admin' && (
-                                                                <span className="ml-2 text-xs font-medium text-amber-600 dark:text-amber-400">
-                                                                    (Required)
-                                                                </span>
-                                                            )}
+                                                            {requiresAdmin &&
+                                                                key ===
+                                                                    'admin' && (
+                                                                    <span className="ml-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+                                                                        (Required)
+                                                                    </span>
+                                                                )}
                                                         </Label>
                                                     </div>
                                                 ))}

@@ -46,6 +46,9 @@ Route::group(['middleware' => ['web']], function () {
 // Admin routes
 require __DIR__.'/web/admin.php';
 
+// Customer routes
+require __DIR__.'/web/customer.php';
+
 // Authenticated simple routes
 Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     Route::get('/home', function () {
