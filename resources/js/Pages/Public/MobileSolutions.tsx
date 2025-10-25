@@ -9,6 +9,7 @@ import {
     LogOut,
     Mail,
     MapPin,
+    MoreHorizontal,
     Package,
     Plane,
     ShieldCheck,
@@ -20,6 +21,12 @@ import {
     UtensilsCrossed,
 } from 'lucide-react';
 import React from 'react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 
 interface Solution {
     name: string;
@@ -86,9 +93,15 @@ interface PageProps {
 }
 
 export default function MobileSolutions({ auth }: PageProps) {
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeParam = urlParams.get('type');
+
     const handleLogout = () => {
         router.post(route('logout'), {
             mobile: '1',
+        }, {
+            onFinish: () => router.visit('/public?mobile=1')
         });
     };
 
@@ -103,13 +116,23 @@ export default function MobileSolutions({ auth }: PageProps) {
         auth.user?.addresses?.find((addr) => addr.is_primary) ||
         auth.user?.addresses?.[0];
 
+    // Helper function to get dynamic href based on type
+    const getHref = (projectIdentifier: string, defaultHref: string) => {
+        if (typeParam === 'customer') {
+            return `/customer/login?project=${projectIdentifier}`;
+        } else if (typeParam === 'client') {
+            return `/login?project=${projectIdentifier}`;
+        }
+        return defaultHref;
+    };
+
     const allSolutions: Solution[] = [
         {
             name: 'Community',
             description:
                 'Connect teams, manage events, and streamline communications',
             icon: Users,
-            href: '/community',
+            href: getHref('community', '/community'),
             gradient: 'from-blue-500 to-blue-600',
             comingSoon: false,
             projectIdentifier: 'community',
@@ -119,7 +142,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             description:
                 'Streamline appointments, patient records, and clinic operations',
             icon: Stethoscope,
-            href: '/medical',
+            href: getHref('medical', '/medical'),
             gradient: 'from-green-500 to-emerald-600',
             comingSoon: false,
             projectIdentifier: 'medical',
@@ -128,7 +151,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             name: 'Logistics',
             description: 'Manage shipments, routes, and track fleet operations',
             icon: Truck,
-            href: '/logistics',
+            href: getHref('logistics', '/logistics'),
             gradient: 'from-orange-500 to-red-500',
             comingSoon: false,
             projectIdentifier: 'logistics',
@@ -138,7 +161,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             description:
                 'Manage wholesale operations, inventory, and purchasing',
             icon: ShoppingBag,
-            href: '/shop',
+            href: getHref('shop', '/shop'),
             gradient: 'from-purple-500 to-pink-500',
             comingSoon: true,
             projectIdentifier: 'shop',
@@ -148,7 +171,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             description:
                 'Coordinate food service, catering, and supply operations',
             icon: Package,
-            href: '/delivery',
+            href: getHref('delivery', '/delivery'),
             gradient: 'from-red-500 to-rose-600',
             comingSoon: true,
             projectIdentifier: 'delivery',
@@ -157,7 +180,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             name: 'Jobs',
             description: 'Manage hiring, onboarding, and workforce planning',
             icon: Briefcase,
-            href: '/jobs',
+            href: getHref('jobs', '/jobs'),
             gradient: 'from-indigo-500 to-purple-600',
             comingSoon: true,
             projectIdentifier: 'jobs',
@@ -167,7 +190,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             description:
                 'Corporate bookings, expenses, and travel coordination',
             icon: Plane,
-            href: '/travel',
+            href: getHref('travel', '/travel'),
             gradient: 'from-cyan-500 to-blue-500',
             comingSoon: true,
             projectIdentifier: 'travel',
@@ -176,7 +199,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             name: 'F&B',
             description: 'Handle restaurant operations, inventory, and orders',
             icon: UtensilsCrossed,
-            href: '/fnb',
+            href: getHref('fnb', '/fnb'),
             gradient: 'from-amber-500 to-orange-600',
             comingSoon: false,
             projectIdentifier: 'fnb',
@@ -185,7 +208,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             name: 'Education',
             description: 'Manage courses, students, and school administration',
             icon: GraduationCap,
-            href: '/education',
+            href: getHref('education', '/education'),
             gradient: 'from-violet-500 to-purple-600',
             comingSoon: true,
             projectIdentifier: 'education',
@@ -195,7 +218,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             description:
                 'Handle accounting, budgeting, and financial reporting',
             icon: Landmark,
-            href: '/finance',
+            href: getHref('finance', '/finance'),
             gradient: 'from-emerald-500 to-teal-600',
             comingSoon: true,
             projectIdentifier: 'finance',
@@ -204,7 +227,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             name: 'Agriculture',
             description: 'Optimize farm operations, yields, and supply chains',
             icon: Sprout,
-            href: '/agriculture',
+            href: getHref('agriculture', '/agriculture'),
             gradient: 'from-green-500 to-lime-600',
             comingSoon: true,
             projectIdentifier: 'agriculture',
@@ -213,7 +236,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             name: 'Construction',
             description: 'Manage construction projects, teams, and resources',
             icon: HardHat,
-            href: '/construction',
+            href: getHref('construction', '/construction'),
             gradient: 'from-yellow-500 to-orange-600',
             comingSoon: true,
             projectIdentifier: 'construction',
@@ -246,11 +269,42 @@ export default function MobileSolutions({ auth }: PageProps) {
                     <div className="text-sm font-bold text-gray-900 dark:text-white">
                         Neulify
                     </div>
-                    <div className="flex items-center space-x-1">
-                        <div className="h-1 w-1 rounded-full bg-gray-700 dark:bg-gray-300"></div>
-                        <div className="h-1 w-1 rounded-full bg-gray-700 dark:bg-gray-300"></div>
-                        <div className="h-1 w-1 rounded-full bg-gray-700 dark:bg-gray-300"></div>
-                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="flex items-center justify-center rounded-full p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <MoreHorizontal className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            {!auth.user && (
+                                <>
+                                    <DropdownMenuItem
+                                        onClick={() => router.visit('/public?mobile=1&type=customer')}
+                                        className="cursor-pointer"
+                                    >
+                                        <Users className="mr-2 h-4 w-4" />
+                                        <span>Customer</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => router.visit('/public?mobile=1&type=client')}
+                                        className="cursor-pointer"
+                                    >
+                                        <Briefcase className="mr-2 h-4 w-4" />
+                                        <span>Client</span>
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                            {auth.user && (
+                                <DropdownMenuItem
+                                    onClick={handleLogout}
+                                    className="cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Logout</span>
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 {/* App Grid Container */}

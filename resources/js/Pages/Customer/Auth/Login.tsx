@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
+import { Mail, Lock, UserCircle } from 'lucide-react';
 
 interface Props {
     projectParam?: string;
@@ -18,6 +19,28 @@ export default function Login({ projectParam }: Props) {
         password: '',
         remember: false,
     });
+
+    // Get portal name based on project parameter
+    const getPortalName = (project?: string) => {
+        const portalNames: Record<string, string> = {
+            community: 'Member Portal',
+            medical: 'Patient Portal',
+            logistics: 'Client Portal',
+            shop: 'Customer Portal',
+            delivery: 'Customer Portal',
+            jobs: 'Applicant Portal',
+            travel: 'Traveler Portal',
+            fnb: 'Diner Portal',
+            education: 'Student Portal',
+            finance: 'Client Portal',
+            agriculture: 'Farmer Portal',
+            construction: 'Contractor Portal',
+        };
+
+        return portalNames[project || ''] || 'Customer Portal';
+    };
+
+    const portalName = getPortalName(projectParam);
 
     useEffect(() => {
         // Get the hostname from the current URL
@@ -46,82 +69,146 @@ export default function Login({ projectParam }: Props) {
         : route('customer.register');
 
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-indigo-50 to-indigo-100 pt-6 dark:from-indigo-900 dark:to-indigo-800 sm:justify-center sm:pt-0">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950 sm:px-6 lg:px-8">
             <Head title="Customer Login" />
 
-            <div className="mt-6 w-full overflow-hidden border border-indigo-200 bg-white px-6 py-4 shadow-xl dark:border-indigo-700 dark:bg-gray-800 sm:max-w-md sm:rounded-lg">
-                <div className="mb-6 flex justify-center">
-                    <Link href="/">
-                        <div className="flex items-center">
-                            <ApplicationLogo className="h-20 w-20 fill-current text-indigo-800 dark:text-indigo-200" />
-                            <span className="ml-2 text-2xl font-black text-gray-900 dark:text-white">
-                                {hostname}{' '}
-                                <span className="text-indigo-600 dark:text-indigo-400">
-                                    Customer
-                                </span>
-                            </span>
+            {/* Logo and Header Section */}
+            <div className="mb-8 text-center">
+                <Link href="/" className="inline-block">
+                    <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
+                        <div className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-3 shadow-lg">
+                            <ApplicationLogo className="h-12 w-12 fill-current text-white sm:h-14 sm:w-14" />
                         </div>
-                    </Link>
-                </div>
-
-                <form onSubmit={submit}>
-                    <div>
-                        <InputLabel htmlFor="email" value="Email" />
-                        <TextInput
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={data.email}
-                            className="mt-1 block w-full"
-                            autoComplete="username"
-                            isFocused={true}
-                            onChange={(e) => setData('email', e.target.value)}
-                        />
-                        <InputError message={errors.email} className="mt-2" />
+                        <div>
+                            <h1 className="text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
+                                {hostname}
+                            </h1>
+                            <div className="flex items-center justify-center space-x-1.5">
+                                <UserCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                                    {portalName}
+                                </span>
+                            </div>
+                        </div>
                     </div>
+                </Link>
+                <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                    Sign in to access your account
+                </p>
+            </div>
 
-                    <div className="mt-4">
-                        <InputLabel htmlFor="password" value="Password" />
-                        <TextInput
-                            id="password"
-                            type="password"
-                            name="password"
-                            value={data.password}
-                            className="mt-1 block w-full"
-                            autoComplete="current-password"
-                            onChange={(e) =>
-                                setData('password', e.target.value)
-                            }
-                        />
-                        <InputError
-                            message={errors.password}
-                            className="mt-2"
-                        />
-                    </div>
+            {/* Login Card */}
+            <div className="w-full max-w-md">
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900 sm:p-8">
+                    <form onSubmit={submit} className="space-y-6">
+                        {/* Email Field */}
+                        <div>
+                            <InputLabel
+                                htmlFor="email"
+                                value="Email Address"
+                                className="text-gray-900 dark:text-white"
+                            />
+                            <div className="relative mt-2">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                </div>
+                                <TextInput
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={data.email}
+                                    className="block w-full pl-10"
+                                    autoComplete="username"
+                                    isFocused={true}
+                                    placeholder="you@example.com"
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
+                                />
+                            </div>
+                            <InputError
+                                message={errors.email}
+                                className="mt-2"
+                            />
+                        </div>
 
-                    <div className="mt-4 flex items-center justify-between">
-                        <Link
-                            href={registerUrl}
-                            className="rounded-md text-sm text-indigo-600 underline transition-colors duration-200 hover:text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-indigo-400 dark:hover:text-indigo-200 dark:focus:ring-offset-gray-800"
+                        {/* Password Field */}
+                        <div>
+                            <InputLabel
+                                htmlFor="password"
+                                value="Password"
+                                className="text-gray-900 dark:text-white"
+                            />
+                            <div className="relative mt-2">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                </div>
+                                <TextInput
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    value={data.password}
+                                    className="block w-full pl-10"
+                                    autoComplete="current-password"
+                                    placeholder="••••••••"
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
+                                />
+                            </div>
+                            <InputError
+                                message={errors.password}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        {/* Remember Me */}
+                        <div className="flex items-center">
+                            <input
+                                id="remember"
+                                type="checkbox"
+                                checked={data.remember}
+                                onChange={(e) =>
+                                    setData('remember', e.target.checked)
+                                }
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900"
+                            />
+                            <label
+                                htmlFor="remember"
+                                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                            >
+                                Remember me
+                            </label>
+                        </div>
+
+                        {/* Submit Button */}
+                        <PrimaryButton
+                            className="w-full justify-center py-3 text-base font-semibold"
+                            disabled={processing}
                         >
-                            Create an account
-                        </Link>
-
-                        <PrimaryButton className="ml-4" disabled={processing}>
-                            Log in
+                            {processing ? 'Signing in...' : 'Sign in'}
                         </PrimaryButton>
-                    </div>
-                </form>
+                    </form>
 
-                <div className="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
-                    <Link
-                        href={route('login')}
-                        className="block text-center text-sm text-gray-600 underline transition-colors duration-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-200 dark:focus:ring-offset-gray-800"
-                    >
-                        Back to regular login
-                    </Link>
+                    {/* Register Link */}
+                    <div className="mt-6 border-t border-gray-200 pt-6 text-center dark:border-gray-800">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Don't have an account?{' '}
+                            <Link
+                                href={registerUrl}
+                                className="font-semibold text-indigo-600 transition-colors duration-200 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >
+                                Create an account
+                            </Link>
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            {/* Footer */}
+            <p className="mt-8 text-center text-xs text-gray-500 dark:text-gray-500">
+                © {new Date().getFullYear()} {hostname}. All rights reserved.
+            </p>
         </div>
     );
 }
