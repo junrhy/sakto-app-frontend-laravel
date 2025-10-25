@@ -32,6 +32,7 @@ export default function AgricultureIndex({ auth }: PageProps) {
     const symbol = urlParams.get('symbol') || '$';
 
     const pricing = getPricingForService('agriculture', currency, symbol);
+    const starterPlan = pricing?.plans.find((plan) => plan.id === 'starter');
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
@@ -397,15 +398,86 @@ export default function AgricultureIndex({ auth }: PageProps) {
                     </div>
                 </div>
 
+                {/* Free Trial Section */}
+                <div className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
+                    <div className="mx-auto max-w-4xl">
+                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-lime-500 to-green-600 p-1 shadow-2xl">
+                            <div className="rounded-xl bg-white p-8 md:p-12">
+                                <div className="text-center">
+                                    <div className="mb-4 inline-flex items-center rounded-full bg-lime-100 px-4 py-2 text-sm font-semibold text-lime-800">
+                                        <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        14-Day Free Trial
+                                    </div>
+                                    <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+                                        Try Our Agriculture Platform Risk-Free
+                                    </h2>
+                                    <p className="mb-6 text-lg text-gray-600">
+                                        {starterPlan?.description || 'Test drive all features with zero commitment and zero cost'}
+                                    </p>
+                                    {starterPlan?.tagline && (
+                                        <p className="mb-8 text-base italic text-gray-500">
+                                            {starterPlan.tagline}
+                                        </p>
+                                    )}
+                                    <div className="mb-8">
+                                        <div className="mb-2 text-5xl font-extrabold text-lime-600">
+                                            {formatCurrency(
+                                                starterPlan?.price || 0,
+                                                starterPlan?.currency || '$',
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-500">
+                                            No credit card required • Cancel anytime
+                                        </p>
+                                    </div>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="inline-flex items-center justify-center rounded-lg bg-lime-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-lime-700 hover:shadow-xl"
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('register', {
+                                                project: 'agriculture',
+                                                plan: starterPlan?.id || 'starter',
+                                            })}
+                                            className="inline-flex items-center justify-center rounded-lg bg-lime-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-lime-700 hover:shadow-xl"
+                                        >
+                                            {starterPlan?.buttonText || 'Start Free Trial'}
+                                            <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            </svg>
+                                        </Link>
+                                    )}
+                                    <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+                                        {(starterPlan?.features || ['Explore all core features before committing']).map((feature, index) => (
+                                            <div key={index} className="flex items-center">
+                                                <svg className="mr-2 h-5 w-5 text-lime-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                </svg>
+                                                {feature}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Pricing Section */}
                 <div id="pricing" className="bg-white py-12 sm:py-16 lg:py-24">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl lg:text-4xl">
-                                Simple, Transparent Pricing
+                                Choose Your Paid Plan
                             </h2>
                             <p className="mt-3 text-base text-gray-600 sm:mt-4 sm:text-lg lg:text-xl">
-                                Choose the plan that fits your farm size
+                                After your free trial, choose the plan that fits your farm size
                             </p>
                         </div>
 
@@ -419,6 +491,11 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     <p className="mt-3 text-sm text-gray-600 sm:mt-4 sm:text-base">
                                         {basicPlan.description}
                                     </p>
+                                    {basicPlan.tagline && (
+                                        <p className="mt-2 text-xs italic text-gray-500">
+                                            {basicPlan.tagline}
+                                        </p>
+                                    )}
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
                                             {formatCurrency(
@@ -473,6 +550,11 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     <p className="mt-3 text-sm text-gray-600 sm:mt-4 sm:text-base">
                                         {proPlan.description}
                                     </p>
+                                    {proPlan.tagline && (
+                                        <p className="mt-2 text-xs italic text-green-600">
+                                            {proPlan.tagline}
+                                        </p>
+                                    )}
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
                                             {formatCurrency(
@@ -522,6 +604,11 @@ export default function AgricultureIndex({ auth }: PageProps) {
                                     <p className="mt-3 text-sm text-gray-600 sm:mt-4 sm:text-base">
                                         {businessPlan.description}
                                     </p>
+                                    {businessPlan.tagline && (
+                                        <p className="mt-2 text-xs italic text-gray-500">
+                                            {businessPlan.tagline}
+                                        </p>
+                                    )}
                                     <div className="mt-4 sm:mt-6">
                                         <span className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
                                             {formatCurrency(

@@ -1,5 +1,5 @@
 import { getPricingForService } from '@/config/pricing';
-import { getHost } from '@/lib/utils';
+import { formatCurrency, getHost } from '@/lib/utils';
 import {
     faBolt,
     faChartLine,
@@ -32,6 +32,7 @@ export default function Medical({ auth }: PageProps) {
     const symbol = urlParams.get('symbol') || '$';
 
     const pricing = getPricingForService('medical', currency, symbol);
+    const starterPlan = pricing?.plans.find((plan) => plan.id === 'starter');
     const basicPlan = pricing?.plans.find((plan) => plan.id === 'basic');
     const proPlan = pricing?.plans.find((plan) => plan.id === 'pro');
     const businessPlan = pricing?.plans.find((plan) => plan.id === 'business');
@@ -454,14 +455,85 @@ export default function Medical({ auth }: PageProps) {
                     </div>
                 </div>
 
+                {/* Free Trial Section */}
+                <div className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
+                    <div className="mx-auto max-w-4xl">
+                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 p-1 shadow-2xl">
+                            <div className="rounded-xl bg-white p-8 md:p-12">
+                                <div className="text-center">
+                                    <div className="mb-4 inline-flex items-center rounded-full bg-teal-100 px-4 py-2 text-sm font-semibold text-teal-800">
+                                        <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        14-Day Free Trial
+                                    </div>
+                                    <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+                                        Try Our Medical Platform Risk-Free
+                                    </h2>
+                                    <p className="mb-6 text-lg text-gray-600">
+                                        {starterPlan?.description || 'Test drive all features with zero commitment and zero cost'}
+                                    </p>
+                                    {starterPlan?.tagline && (
+                                        <p className="mb-8 text-base italic text-gray-500">
+                                            {starterPlan.tagline}
+                                        </p>
+                                    )}
+                                    <div className="mb-8">
+                                        <div className="mb-2 text-5xl font-extrabold text-teal-600">
+                                            {formatCurrency(
+                                                starterPlan?.price || 0,
+                                                starterPlan?.currency || '$',
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-500">
+                                            No credit card required • Cancel anytime
+                                        </p>
+                                    </div>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-teal-700 hover:shadow-xl"
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('register', {
+                                                project: 'medical',
+                                                plan: starterPlan?.id || 'starter',
+                                            })}
+                                            className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-teal-700 hover:shadow-xl"
+                                        >
+                                            {starterPlan?.buttonText || 'Start Free Trial'}
+                                            <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            </svg>
+                                        </Link>
+                                    )}
+                                    <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+                                        {(starterPlan?.features || ['Explore all core features before committing']).map((feature, index) => (
+                                            <div key={index} className="flex items-center">
+                                                <svg className="mr-2 h-5 w-5 text-teal-500" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                </svg>
+                                                {feature}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Pricing Section */}
                 <div id="pricing" className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
                     <div className="mb-12 text-center">
                         <h2 className="mb-4 text-3xl font-bold text-teal-900">
-                            Choose Your Healthcare Management Plan
+                            Choose Your Paid Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-teal-600">
-                            Select the perfect plan for your clinic operations.
+                            After your free trial, select the perfect plan for your clinic operations.
                             All plans include our core healthcare management
                             features with different levels of support and
                             integrations.
@@ -475,18 +547,25 @@ export default function Medical({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-teal-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-teal-900">
-                                        Basic
+                                        {basicPlan?.name || 'Basic'}
                                     </h3>
-                                    <p className="mb-6 text-sm text-teal-600">
-                                        Perfect for small clinics and startups
+                                    <p className="mb-3 text-sm text-teal-600">
+                                        {basicPlan?.description || 'Perfect for small clinics and startups'}
                                     </p>
+                                    {basicPlan?.tagline && (
+                                        <p className="mb-4 text-xs italic text-teal-500">
+                                            {basicPlan.tagline}
+                                        </p>
+                                    )}
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            {basicPlan?.currency}
-                                            {basicPlan?.price}
+                                            {formatCurrency(
+                                                basicPlan?.price || 0,
+                                                basicPlan?.currency || '$',
+                                            )}
                                         </span>
                                         <span className="text-sm text-teal-600">
-                                            /month
+                                            {basicPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -577,18 +656,25 @@ export default function Medical({ auth }: PageProps) {
                                 </div>
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-teal-900">
-                                        Pro
+                                        {proPlan?.name || 'Pro'}
                                     </h3>
-                                    <p className="mb-6 text-sm text-teal-600">
-                                        Ideal for growing medical practices
+                                    <p className="mb-3 text-sm text-teal-600">
+                                        {proPlan?.description || 'Ideal for growing medical practices'}
                                     </p>
+                                    {proPlan?.tagline && (
+                                        <p className="mb-4 text-xs italic text-emerald-600">
+                                            {proPlan.tagline}
+                                        </p>
+                                    )}
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            {proPlan?.currency}
-                                            {proPlan?.price}
+                                            {formatCurrency(
+                                                proPlan?.price || 0,
+                                                proPlan?.currency || '$',
+                                            )}
                                         </span>
                                         <span className="text-sm text-teal-600">
-                                            /month
+                                            {proPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
@@ -674,18 +760,25 @@ export default function Medical({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-teal-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-teal-900">
-                                        Business
+                                        {businessPlan?.name || 'Business'}
                                     </h3>
-                                    <p className="mb-6 text-sm text-teal-600">
-                                        Perfect for large medical centers
+                                    <p className="mb-3 text-sm text-teal-600">
+                                        {businessPlan?.description || 'Perfect for large medical centers'}
                                     </p>
+                                    {businessPlan?.tagline && (
+                                        <p className="mb-4 text-xs italic text-cyan-600">
+                                            {businessPlan.tagline}
+                                        </p>
+                                    )}
                                     <p className="mb-6">
                                         <span className="text-3xl font-extrabold text-teal-900">
-                                            {businessPlan?.currency}
-                                            {businessPlan?.price}
+                                            {formatCurrency(
+                                                businessPlan?.price || 0,
+                                                businessPlan?.currency || '$',
+                                            )}
                                         </span>
                                         <span className="text-sm text-teal-600">
-                                            /month
+                                            {businessPlan?.period || '/month'}
                                         </span>
                                     </p>
                                     {auth.user ? (
