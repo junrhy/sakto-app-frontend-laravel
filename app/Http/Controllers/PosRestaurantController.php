@@ -12,10 +12,13 @@ use App\Models\Table;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Order;
 use Illuminate\Support\Facades\Storage;
+use App\Models\UserAddress;
+use App\Models\SemaphoreAccount;
 
 class PosRestaurantController extends Controller
 {
     protected $apiUrl, $apiToken;
+    protected $semaphoreApiEndpoint = 'https://api.semaphore.co/api/v4';
 
     public function __construct()
     {
@@ -1231,8 +1234,93 @@ class PosRestaurantController extends Controller
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
+            $userName = auth()->user()->name;
+            $userId = auth()->user()->id;
 
-            // Get the default Twilio account for this client
+            // Get the primary address for the user
+            $primaryAddress = UserAddress::where('user_id', $userId)
+                ->where('is_primary', true)
+                ->first();
+
+            // Format the reservation details
+            $date = date('F j, Y', strtotime($validated['date']));
+            $time = $validated['time'];
+            $guests = $validated['guests'];
+            $name = $validated['name'];
+
+            // Get confirmation token from reservation
+            $confirmationToken = $reservation['confirmation_token'] ?? null;
+            $confirmationUrl = $confirmationToken ? 
+                config('app.url') . "/pos-restaurant/reservation/confirm/{$confirmationToken}" : 
+                null;
+
+            // Create SMS message
+            $messageBody = "Hello {$name}! Your table reservation with {$userName} has been received:\n\n";
+            $messageBody .= "Date: {$date}\n";
+            $messageBody .= "Time: {$time}\n";
+            $messageBody .= "Guests: {$guests}\n";
+            $messageBody .= "Status: pending\n";
+            
+            // Add address if available
+            if ($primaryAddress) {
+                $addressLine = $primaryAddress->street;
+                if ($primaryAddress->unit_number) {
+                    $addressLine .= " " . $primaryAddress->unit_number;
+                }
+                $addressLine .= ", " . $primaryAddress->city;
+                $addressLine .= ", " . $primaryAddress->state . " " . $primaryAddress->postal_code;
+                $addressLine .= ", " . $primaryAddress->country;
+                
+                $messageBody .= "\nLocation: {$addressLine}\n";
+            }
+            
+            $messageBody .= "\n";
+            
+            if ($confirmationUrl) {
+                $messageBody .= "Please confirm your reservation by clicking this link:\n";
+                $messageBody .= "{$confirmationUrl}\n\n";
+            }
+            
+            $messageBody .= "Thank you for choosing us!\n- {$userName}";
+
+            // Check if phone number is Philippine number (starts with +63)
+            $isPhilippineNumber = str_starts_with($validated['contact'], '+63');
+
+            if ($isPhilippineNumber) {
+                // Try to use Semaphore for Philippine numbers
+                $semaphoreAccount = SemaphoreAccount::where('client_identifier', $clientIdentifier)
+                    ->where('is_active', true)
+                    ->where('is_verified', true)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($semaphoreAccount) {
+                    // Use Semaphore
+                    $response = Http::post($this->semaphoreApiEndpoint . '/messages', [
+                        'apikey' => $semaphoreAccount->api_key,
+                        'number' => $validated['contact'],
+                        'message' => $messageBody,
+                        'sendername' => $semaphoreAccount->sender_name,
+                    ]);
+
+                    if ($response->successful()) {
+                        Log::info('Reservation SMS sent successfully via Semaphore', [
+                            'reservation_id' => $reservation['id'] ?? 'N/A',
+                            'to' => $validated['contact'],
+                            'semaphore_account_id' => $semaphoreAccount->id,
+                            'response' => $response->json()
+                        ]);
+                        return;
+                    } else {
+                        Log::warning('Semaphore SMS failed, falling back to Twilio', [
+                            'reservation_id' => $reservation['id'] ?? 'N/A',
+                            'error' => $response->body()
+                        ]);
+                    }
+                }
+            }
+
+            // Fall back to Twilio (for non-Philippine numbers or if Semaphore failed)
             $twilioAccount = TwilioAccount::getDefaultOrFirst($clientIdentifier);
 
             if (!$twilioAccount) {
@@ -1251,33 +1339,7 @@ class PosRestaurantController extends Controller
             // Initialize Twilio client
             $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
 
-            // Format the reservation details
-            $date = date('F j, Y', strtotime($validated['date']));
-            $time = $validated['time'];
-            $guests = $validated['guests'];
-            $name = $validated['name'];
-
-            // Get confirmation token from reservation
-            $confirmationToken = $reservation['confirmation_token'] ?? null;
-            $confirmationUrl = $confirmationToken ? 
-                config('app.url') . "/pos-restaurant/reservation/confirm/{$confirmationToken}" : 
-                null;
-
-            // Create SMS message
-            $messageBody = "Hello {$name}! Your table reservation has been confirmed:\n\n";
-            $messageBody .= "Date: {$date}\n";
-            $messageBody .= "Time: {$time}\n";
-            $messageBody .= "Guests: {$guests}\n";
-            $messageBody .= "Status: pending\n\n";
-            
-            if ($confirmationUrl) {
-                $messageBody .= "Please confirm your reservation by clicking this link:\n";
-                $messageBody .= "{$confirmationUrl}\n\n";
-            }
-            
-            $messageBody .= "Thank you for choosing us!";
-
-            // Send SMS
+            // Send SMS via Twilio
             $message = $client->messages->create(
                 $validated['contact'],
                 [
@@ -1286,7 +1348,7 @@ class PosRestaurantController extends Controller
                 ]
             );
 
-            Log::info('Reservation SMS sent successfully', [
+            Log::info('Reservation SMS sent successfully via Twilio', [
                 'reservation_id' => $reservation['id'] ?? 'N/A',
                 'message_sid' => $message->sid,
                 'to' => $validated['contact'],
@@ -1310,8 +1372,97 @@ class PosRestaurantController extends Controller
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
+            $userName = auth()->user()->name;
+            $userId = auth()->user()->id;
 
-            // Get the default Twilio account for this client
+            // Get the primary address for the user
+            $primaryAddress = UserAddress::where('user_id', $userId)
+                ->where('is_primary', true)
+                ->first();
+
+            // Format the reservation details
+            $date = date('F j, Y', strtotime($reservation['date']));
+            $time = $reservation['time'];
+            $guests = $reservation['guests'];
+            $name = $reservation['name'];
+
+            // Format address if available
+            $addressLine = '';
+            if ($primaryAddress) {
+                $addressLine = $primaryAddress->street;
+                if ($primaryAddress->unit_number) {
+                    $addressLine .= " " . $primaryAddress->unit_number;
+                }
+                $addressLine .= ", " . $primaryAddress->city;
+                $addressLine .= ", " . $primaryAddress->state . " " . $primaryAddress->postal_code;
+                $addressLine .= ", " . $primaryAddress->country;
+            }
+
+            // Create SMS message based on status
+            if ($status === 'confirmed') {
+                $messageBody = "Hello {$name}! Your table reservation with {$userName} has been CONFIRMED:\n\n";
+                $messageBody .= "Date: {$date}\n";
+                $messageBody .= "Time: {$time}\n";
+                $messageBody .= "Guests: {$guests}\n";
+                
+                if ($addressLine) {
+                    $messageBody .= "Location: {$addressLine}\n";
+                }
+                
+                $messageBody .= "\nWe look forward to serving you! Please arrive on time.\n- {$userName}";
+            } else { // cancelled or deleted
+                $messageBody = "Hello {$name}! Your table reservation with {$userName} has been CANCELLED:\n\n";
+                $messageBody .= "Date: {$date}\n";
+                $messageBody .= "Time: {$time}\n";
+                $messageBody .= "Guests: {$guests}\n";
+                
+                if ($addressLine) {
+                    $messageBody .= "Location: {$addressLine}\n";
+                }
+                
+                $messageBody .= "\nIf you did not request this cancellation, please contact us immediately.\n- {$userName}";
+            }
+
+            // Check if phone number is Philippine number (starts with +63)
+            $isPhilippineNumber = str_starts_with($reservation['contact'], '+63');
+
+            if ($isPhilippineNumber) {
+                // Try to use Semaphore for Philippine numbers
+                $semaphoreAccount = SemaphoreAccount::where('client_identifier', $clientIdentifier)
+                    ->where('is_active', true)
+                    ->where('is_verified', true)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($semaphoreAccount) {
+                    // Use Semaphore
+                    $response = Http::post($this->semaphoreApiEndpoint . '/messages', [
+                        'apikey' => $semaphoreAccount->api_key,
+                        'number' => $reservation['contact'],
+                        'message' => $messageBody,
+                        'sendername' => $semaphoreAccount->sender_name,
+                    ]);
+
+                    if ($response->successful()) {
+                        Log::info("Reservation {$status} SMS sent successfully via Semaphore", [
+                            'reservation_id' => $reservation['id'] ?? 'N/A',
+                            'to' => $reservation['contact'],
+                            'status' => $status,
+                            'semaphore_account_id' => $semaphoreAccount->id,
+                            'response' => $response->json()
+                        ]);
+                        return;
+                    } else {
+                        Log::warning("Semaphore SMS failed for {$status}, falling back to Twilio", [
+                            'reservation_id' => $reservation['id'] ?? 'N/A',
+                            'status' => $status,
+                            'error' => $response->body()
+                        ]);
+                    }
+                }
+            }
+
+            // Fall back to Twilio (for non-Philippine numbers or if Semaphore failed)
             $twilioAccount = TwilioAccount::getDefaultOrFirst($clientIdentifier);
 
             if (!$twilioAccount) {
@@ -1330,28 +1481,7 @@ class PosRestaurantController extends Controller
             // Initialize Twilio client
             $client = new Client($twilioAccount->account_sid, $twilioAccount->auth_token);
 
-            // Format the reservation details
-            $date = date('F j, Y', strtotime($reservation['date']));
-            $time = $reservation['time'];
-            $guests = $reservation['guests'];
-            $name = $reservation['name'];
-
-            // Create SMS message based on status
-            if ($status === 'confirmed') {
-                $messageBody = "Hello {$name}! Your table reservation has been CONFIRMED:\n\n";
-                $messageBody .= "Date: {$date}\n";
-                $messageBody .= "Time: {$time}\n";
-                $messageBody .= "Guests: {$guests}\n\n";
-                $messageBody .= "We look forward to serving you! Please arrive on time.";
-            } else { // cancelled or deleted
-                $messageBody = "Hello {$name}! Your table reservation has been CANCELLED:\n\n";
-                $messageBody .= "Date: {$date}\n";
-                $messageBody .= "Time: {$time}\n";
-                $messageBody .= "Guests: {$guests}\n\n";
-                $messageBody .= "If you did not request this cancellation, please contact us immediately.";
-            }
-
-            // Send SMS
+            // Send SMS via Twilio
             $message = $client->messages->create(
                 $reservation['contact'],
                 [
@@ -1360,7 +1490,7 @@ class PosRestaurantController extends Controller
                 ]
             );
 
-            Log::info("Reservation {$status} SMS sent successfully", [
+            Log::info("Reservation {$status} SMS sent successfully via Twilio", [
                 'reservation_id' => $reservation['id'] ?? 'N/A',
                 'message_sid' => $message->sid,
                 'to' => $reservation['contact'],
