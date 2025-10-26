@@ -12,6 +12,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import { Progress } from '@/Components/ui/progress';
 import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
 import {
     ArrowRightStartOnRectangleIcon,
@@ -21,7 +22,6 @@ import {
     UserIcon,
 } from '@heroicons/react/24/outline';
 import { Link as InertiaLink } from '@inertiajs/react';
-import { Progress } from '@/Components/ui/progress';
 import { useEffect, useState } from 'react';
 // App interface and utility functions
 interface App {
@@ -216,9 +216,11 @@ export default function Home({ auth, usageLimits = {} }: Props) {
     };
 
     // Check if any usage limit has reached 90% or more
-    const hasLimitWarning = usageLimits && Object.values(usageLimits).some(
-        (info) => !info.unlimited && info.percentage >= 90
-    );
+    const hasLimitWarning =
+        usageLimits &&
+        Object.values(usageLimits).some(
+            (info) => !info.unlimited && info.percentage >= 90,
+        );
 
     return (
         <ThemeProvider>
@@ -335,118 +337,208 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                                     </div>
 
                                     {/* Usage Limits Dropdown */}
-                                    {hasAccess && usageLimits && Object.keys(usageLimits).length > 0 && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    className="relative flex h-auto items-center gap-2 rounded-lg border-0 px-3 py-2 font-normal text-gray-900 transition-colors duration-200 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                                                >
-                                                    <ChartBarIcon className="h-5 w-5" />
-                                                    <span className="relative hidden sm:inline">
-                                                        Usage
+                                    {hasAccess &&
+                                        usageLimits &&
+                                        Object.keys(usageLimits).length > 0 && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="relative flex h-auto items-center gap-2 rounded-lg border-0 px-3 py-2 font-normal text-gray-900 transition-colors duration-200 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                                                    >
+                                                        <ChartBarIcon className="h-5 w-5" />
+                                                        <span className="relative hidden sm:inline">
+                                                            Usage
+                                                            {hasLimitWarning && (
+                                                                <span className="absolute -right-2 -top-1 flex h-3 w-3">
+                                                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                                                                    <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                        {/* Show badge on icon for mobile when text is hidden */}
                                                         {hasLimitWarning && (
-                                                            <span className="absolute -right-2 -top-1 flex h-3 w-3">
+                                                            <span className="absolute right-1 top-1 flex h-3 w-3 sm:hidden">
                                                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
                                                                 <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
                                                             </span>
                                                         )}
-                                                    </span>
-                                                    {/* Show badge on icon for mobile when text is hidden */}
-                                                    {hasLimitWarning && (
-                                                        <span className="absolute right-1 top-1 flex h-3 w-3 sm:hidden">
-                                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                                                            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
-                                                        </span>
-                                                    )}
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                align="end"
-                                                alignOffset={0}
-                                                sideOffset={8}
-                                                className="z-50 w-80 border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-                                            >
-                                                <div className="space-y-4">
-                                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                        F&B Plan Usage
-                                                    </h3>
-                                                    {Object.entries(usageLimits).map(([resource, info]) => {
-                                                        const formatResourceName = (key: string): string => {
-                                                            return key
-                                                                .split('_')
-                                                                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                                                                .join(' ');
-                                                        };
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent
+                                                    align="end"
+                                                    alignOffset={0}
+                                                    sideOffset={8}
+                                                    className="z-50 w-80 border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                                                >
+                                                    <div className="space-y-4">
+                                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                            F&B Plan Usage
+                                                        </h3>
+                                                        {Object.entries(
+                                                            usageLimits,
+                                                        ).map(
+                                                            ([
+                                                                resource,
+                                                                info,
+                                                            ]) => {
+                                                                const formatResourceName =
+                                                                    (
+                                                                        key: string,
+                                                                    ): string => {
+                                                                        return key
+                                                                            .split(
+                                                                                '_',
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    word,
+                                                                                ) =>
+                                                                                    word
+                                                                                        .charAt(
+                                                                                            0,
+                                                                                        )
+                                                                                        .toUpperCase() +
+                                                                                    word.slice(
+                                                                                        1,
+                                                                                    ),
+                                                                            )
+                                                                            .join(
+                                                                                ' ',
+                                                                            );
+                                                                    };
 
-                                                        const getProgressColor = (percentage: number) => {
-                                                            if (percentage >= 90) return 'bg-red-500 dark:bg-red-400';
-                                                            if (percentage >= 75) return 'bg-orange-500 dark:bg-orange-400';
-                                                            return 'bg-green-500 dark:bg-green-400';
-                                                        };
+                                                                const getProgressColor =
+                                                                    (
+                                                                        percentage: number,
+                                                                    ) => {
+                                                                        if (
+                                                                            percentage >=
+                                                                            90
+                                                                        )
+                                                                            return 'bg-red-500 dark:bg-red-400';
+                                                                        if (
+                                                                            percentage >=
+                                                                            75
+                                                                        )
+                                                                            return 'bg-orange-500 dark:bg-orange-400';
+                                                                        return 'bg-green-500 dark:bg-green-400';
+                                                                    };
 
-                                                        const getStatusColor = (percentage: number) => {
-                                                            if (percentage >= 90) return 'text-red-600 dark:text-red-400';
-                                                            if (percentage >= 75) return 'text-orange-600 dark:text-orange-400';
-                                                            return 'text-green-600 dark:text-green-400';
-                                                        };
+                                                                const getStatusColor =
+                                                                    (
+                                                                        percentage: number,
+                                                                    ) => {
+                                                                        if (
+                                                                            percentage >=
+                                                                            90
+                                                                        )
+                                                                            return 'text-red-600 dark:text-red-400';
+                                                                        if (
+                                                                            percentage >=
+                                                                            75
+                                                                        )
+                                                                            return 'text-orange-600 dark:text-orange-400';
+                                                                        return 'text-green-600 dark:text-green-400';
+                                                                    };
 
-                                                        return (
-                                                            <div key={resource} className="space-y-2">
-                                                                <div className="flex items-center justify-between">
-                                                                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                        {formatResourceName(resource)}
-                                                                    </h4>
-                                                                    {info.unlimited ? (
-                                                                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                                                                            Unlimited
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                                            info.percentage >= 90
-                                                                                ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-                                                                                : info.percentage >= 75
-                                                                                  ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
-                                                                                  : 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300'
-                                                                        }`}>
-                                                                            {info.remaining >= 0 ? `${info.remaining} left` : 'Limit reached'}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-
-                                                                {!info.unlimited && (
-                                                                    <>
-                                                                        <Progress
-                                                                            value={info.percentage}
-                                                                            className="h-2"
-                                                                            indicatorClassName={getProgressColor(info.percentage)}
-                                                                        />
-                                                                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
-                                                                            <span>{info.current} used</span>
-                                                                            <span className={getStatusColor(info.percentage)}>
-                                                                                {info.percentage.toFixed(0)}% of {info.limit}
-                                                                            </span>
+                                                                return (
+                                                                    <div
+                                                                        key={
+                                                                            resource
+                                                                        }
+                                                                        className="space-y-2"
+                                                                    >
+                                                                        <div className="flex items-center justify-between">
+                                                                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                                {formatResourceName(
+                                                                                    resource,
+                                                                                )}
+                                                                            </h4>
+                                                                            {info.unlimited ? (
+                                                                                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                                                                    Unlimited
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span
+                                                                                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                                                                        info.percentage >=
+                                                                                        90
+                                                                                            ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                                                                                            : info.percentage >=
+                                                                                                75
+                                                                                              ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300'
+                                                                                              : 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300'
+                                                                                    }`}
+                                                                                >
+                                                                                    {info.remaining >=
+                                                                                    0
+                                                                                        ? `${info.remaining} left`
+                                                                                        : 'Limit reached'}
+                                                                                </span>
+                                                                            )}
                                                                         </div>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    
-                                                    {/* Upgrade Plan Button */}
-                                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                                        <Button
-                                                            onClick={() => (window.location.href = route('subscriptions.index'))}
-                                                            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 dark:from-blue-600 dark:to-indigo-700 dark:hover:from-blue-700 dark:hover:to-indigo-800"
-                                                        >
-                                                            <CreditCardIcon className="mr-2 h-4 w-4" />
-                                                            Upgrade Plan
-                                                        </Button>
+
+                                                                        {!info.unlimited && (
+                                                                            <>
+                                                                                <Progress
+                                                                                    value={
+                                                                                        info.percentage
+                                                                                    }
+                                                                                    className="h-2"
+                                                                                    indicatorClassName={getProgressColor(
+                                                                                        info.percentage,
+                                                                                    )}
+                                                                                />
+                                                                                <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                                                                                    <span>
+                                                                                        {
+                                                                                            info.current
+                                                                                        }{' '}
+                                                                                        used
+                                                                                    </span>
+                                                                                    <span
+                                                                                        className={getStatusColor(
+                                                                                            info.percentage,
+                                                                                        )}
+                                                                                    >
+                                                                                        {info.percentage.toFixed(
+                                                                                            0,
+                                                                                        )}
+
+                                                                                        %
+                                                                                        of{' '}
+                                                                                        {
+                                                                                            info.limit
+                                                                                        }
+                                                                                    </span>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            },
+                                                        )}
+
+                                                        {/* Upgrade Plan Button */}
+                                                        <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                                                            <Button
+                                                                onClick={() =>
+                                                                    (window.location.href =
+                                                                        route(
+                                                                            'subscriptions.index',
+                                                                        ))
+                                                                }
+                                                                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 dark:from-blue-600 dark:to-indigo-700 dark:hover:from-blue-700 dark:hover:to-indigo-800"
+                                                            >
+                                                                <CreditCardIcon className="mr-2 h-4 w-4" />
+                                                                Upgrade Plan
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
 
                                     <div className="relative inline-block">
                                         <DropdownMenu>

@@ -257,6 +257,8 @@ class CreditsController extends Controller
                     'source' => 'purchase',
                     'reference_id' => $reference,
                     'package_amount' => $packageAmount,
+                    'payment_method' => 'Credit/Debit Card',
+                    'note' => 'Payment via Lemon Squeezy',
                 ]);
             
             if ($response->successful()) {

@@ -215,7 +215,7 @@ export default function IndividualAppSubscriptions() {
                         </div>
                         <div className="text-right">
                             <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                                {formatPrice(app.price)}
+                                {app.credits || 0} credits
                             </div>
                             {app.pricingType === 'subscription' && (
                                 <div className="text-sm text-gray-500 dark:text-gray-400">

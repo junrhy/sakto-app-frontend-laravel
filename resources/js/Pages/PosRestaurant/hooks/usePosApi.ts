@@ -10,13 +10,18 @@ export const usePosApi = () => {
                 onSuccess: (page: any) => {
                     // Check for flash error messages (subscription limits)
                     const flashError = page.props?.flash?.error;
-                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
-                        ? page.props.errors
-                        : null;
-                    
+                    const validationErrors =
+                        page.props?.errors &&
+                        Object.keys(page.props.errors).length > 0
+                            ? page.props.errors
+                            : null;
+
                     if (flashError || validationErrors) {
-                        const errorMessage = flashError || 
-                            (Object.values(validationErrors || {})[0] as string) ||
+                        const errorMessage =
+                            flashError ||
+                            (Object.values(
+                                validationErrors || {},
+                            )[0] as string) ||
                             'Failed to create menu item';
                         toast.error(errorMessage);
                         resolve(false);
@@ -140,13 +145,18 @@ export const usePosApi = () => {
                 onSuccess: (page: any) => {
                     // Check for flash error messages (subscription limits)
                     const flashError = page.props?.flash?.error;
-                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
-                        ? page.props.errors
-                        : null;
-                    
+                    const validationErrors =
+                        page.props?.errors &&
+                        Object.keys(page.props.errors).length > 0
+                            ? page.props.errors
+                            : null;
+
                     if (flashError || validationErrors) {
-                        const errorMessage = flashError || 
-                            (Object.values(validationErrors || {})[0] as string) ||
+                        const errorMessage =
+                            flashError ||
+                            (Object.values(
+                                validationErrors || {},
+                            )[0] as string) ||
                             'Failed to create online store';
                         toast.error(errorMessage);
                         resolve(false);
@@ -390,13 +400,18 @@ export const usePosApi = () => {
                 onSuccess: (page: any) => {
                     // Check for flash error messages (subscription limits)
                     const flashError = page.props?.flash?.error;
-                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
-                        ? page.props.errors
-                        : null;
-                    
+                    const validationErrors =
+                        page.props?.errors &&
+                        Object.keys(page.props.errors).length > 0
+                            ? page.props.errors
+                            : null;
+
                     if (flashError || validationErrors) {
-                        const errorMessage = flashError || 
-                            (Object.values(validationErrors || {})[0] as string) ||
+                        const errorMessage =
+                            flashError ||
+                            (Object.values(
+                                validationErrors || {},
+                            )[0] as string) ||
                             'Failed to create table';
                         toast.error(errorMessage);
                         resolve(false);
@@ -563,13 +578,18 @@ export const usePosApi = () => {
                 onSuccess: (page: any) => {
                     // Check for flash error messages (subscription limits)
                     const flashError = page.props?.flash?.error;
-                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
-                        ? page.props.errors
-                        : null;
-                    
+                    const validationErrors =
+                        page.props?.errors &&
+                        Object.keys(page.props.errors).length > 0
+                            ? page.props.errors
+                            : null;
+
                     if (flashError || validationErrors) {
-                        const errorMessage = flashError || 
-                            (Object.values(validationErrors || {})[0] as string) ||
+                        const errorMessage =
+                            flashError ||
+                            (Object.values(
+                                validationErrors || {},
+                            )[0] as string) ||
                             'Failed to create reservation';
                         toast.error(errorMessage);
                         resolve(false);

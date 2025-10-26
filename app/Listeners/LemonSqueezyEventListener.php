@@ -48,6 +48,8 @@ class LemonSqueezyEventListener
                         'source' => 'purchase',
                         'reference_id' => $referenceNumber,
                         'package_amount' => $packageAmount,
+                        'payment_method' => 'Credit/Debit Card',
+                        'note' => 'Payment via Lemon Squeezy',
                     ]);
                 
                 if ($response->successful()) {
@@ -214,6 +216,8 @@ class LemonSqueezyEventListener
                             'amount' => $subscription->plan->credits_per_month,
                             'source' => 'subscription_renewal',
                             'reference_id' => $subscription->identifier,
+                            'payment_method' => 'Credit/Debit Card',
+                            'note' => 'Subscription renewal via Lemon Squeezy',
                         ]);
                 } catch (\Exception $e) {
                     Log::error('Failed to add subscription renewal credits', [

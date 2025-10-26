@@ -595,7 +595,7 @@ export default function Index({
                                                         <div className="absolute -right-4 bottom-0 h-24 w-24 opacity-10">
                                                             <div className="h-24 w-24 animate-pulse rounded-full bg-white delay-1000"></div>
                                                         </div>
-                                                        
+
                                                         <div className="relative z-10">
                                                             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                                                 <div className="flex-1">
@@ -603,30 +603,57 @@ export default function Index({
                                                                         <Badge className="bg-white/20 text-white backdrop-blur-sm">
                                                                             <CheckIcon className="mr-1 h-3 w-3" />
                                                                             {activeSubscription.status
-                                                                                .charAt(0)
+                                                                                .charAt(
+                                                                                    0,
+                                                                                )
                                                                                 .toUpperCase() +
-                                                                                activeSubscription.status.slice(1)}
+                                                                                activeSubscription.status.slice(
+                                                                                    1,
+                                                                                )}
                                                                         </Badge>
                                                                     </div>
                                                                     <h3 className="mb-3 text-3xl font-bold text-white">
-                                                                        {activeSubscription.plan.name}
+                                                                        {
+                                                                            activeSubscription
+                                                                                .plan
+                                                                                .name
+                                                                        }
                                                                     </h3>
                                                                     <div className="flex items-baseline gap-2">
                                                                         <span className="text-4xl font-bold text-white">
-                                                                            {getCurrencySymbol(activeSubscription.plan.currency)}
-                                                                            {Number(activeSubscription.plan.price).toFixed(0)}
+                                                                            {getCurrencySymbol(
+                                                                                activeSubscription
+                                                                                    .plan
+                                                                                    .currency,
+                                                                            )}
+                                                                            {Number(
+                                                                                activeSubscription
+                                                                                    .plan
+                                                                                    .price,
+                                                                            ).toFixed(
+                                                                                0,
+                                                                            )}
                                                                         </span>
                                                                         <span className="text-lg text-white/80">
-                                                                            /{activeSubscription.plan.duration_in_days === 365 ? 'year' : 'month'}
+                                                                            /
+                                                                            {activeSubscription
+                                                                                .plan
+                                                                                .duration_in_days ===
+                                                                            365
+                                                                                ? 'year'
+                                                                                : 'month'}
                                                                         </span>
                                                                     </div>
                                                                 </div>
                                                                 <div className="rounded-lg bg-white/10 p-4 text-center backdrop-blur-sm sm:min-w-[140px]">
                                                                     <p className="text-xs font-medium uppercase tracking-wide text-white/70">
-                                                                        Valid Until
+                                                                        Valid
+                                                                        Until
                                                                     </p>
                                                                     <p className="mt-1 text-lg font-bold text-white">
-                                                                        {formatDate(activeSubscription.end_date)}
+                                                                        {formatDate(
+                                                                            activeSubscription.end_date,
+                                                                        )}
                                                                     </p>
                                                                 </div>
                                                             </div>
@@ -639,121 +666,174 @@ export default function Index({
                                                             Subscription Details
                                                         </CardTitle>
                                                     </CardHeader>
-                                            <CardContent className="space-y-6 p-6">
-                                                {/* Key Metrics */}
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                            Subscription Started
-                                                        </p>
-                                                        <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                                                            {formatDate(activeSubscription.start_date)}
-                                                        </p>
-                                                    </div>
-                                                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                            Monthly Credits
-                                                        </p>
-                                                        <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                                                            {activeSubscription.plan.credits_per_month} credits
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Subscription Info */}
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Auto-renewal
-                                                        </span>
-                                                        <Badge className={activeSubscription.auto_renew ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}>
-                                                            {activeSubscription.auto_renew ? 'Enabled' : 'Disabled'}
-                                                        </Badge>
-                                                    </div>
-                                                    <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Payment Method
-                                                        </span>
-                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                            {getPaymentMethodLabel(activeSubscription.payment_method)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Duration
-                                                        </span>
-                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                            {activeSubscription.plan.duration_in_days} days
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Plan Features */}
-                                                {activeSubscription.plan.features &&
-                                                    activeSubscription.plan.features.length > 0 && (
-                                                    <div>
-                                                        <Label className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                            Plan Includes
-                                                        </Label>
-                                                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                                            {activeSubscription.plan.features.map((feature, index) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex items-start gap-2 rounded-lg bg-green-50 p-2 dark:bg-green-900/10"
-                                                                >
-                                                                    <CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-                                                                    <span className="text-sm text-gray-900 dark:text-gray-100">
-                                                                        {feature}
-                                                                    </span>
-                                                                </div>
-                                                            ))}
+                                                    <CardContent className="space-y-6 p-6">
+                                                        {/* Key Metrics */}
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
+                                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                                    Subscription
+                                                                    Started
+                                                                </p>
+                                                                <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    {formatDate(
+                                                                        activeSubscription.start_date,
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                            <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
+                                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                                    Monthly
+                                                                    Credits
+                                                                </p>
+                                                                <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    {
+                                                                        activeSubscription
+                                                                            .plan
+                                                                            .credits_per_month
+                                                                    }{' '}
+                                                                    credits
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                            <CardFooter className="border-t border-gray-100 bg-gray-50 pt-6 dark:border-gray-800 dark:bg-gray-800/50">
-                                                <div className="flex w-full flex-col gap-3 sm:flex-row">
-                                                    <Button
-                                                        onClick={() => setActiveTab('plans')}
-                                                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg dark:from-blue-600 dark:to-indigo-700"
-                                                    >
-                                                        <SparklesIcon className="mr-2 h-4 w-4" />
-                                                        Upgrade Plan
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => setActiveTab('history')}
-                                                        className="flex-1 border-gray-300 bg-white font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                                                    >
-                                                        View History
-                                                    </Button>
-                                                    {canDelete && (
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setSubscriptionToCancel(activeSubscription.identifier);
-                                                                setCancelDialogOpen(true);
-                                                            }}
-                                                            className="flex-1 border-red-300 bg-white font-medium text-red-600 shadow-sm hover:bg-red-50 hover:shadow-md dark:border-red-800 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-red-900/20"
-                                                        >
-                                                            Cancel Subscription
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </CardFooter>
+
+                                                        {/* Subscription Info */}
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    Auto-renewal
+                                                                </span>
+                                                                <Badge
+                                                                    className={
+                                                                        activeSubscription.auto_renew
+                                                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                                                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                                                    }
+                                                                >
+                                                                    {activeSubscription.auto_renew
+                                                                        ? 'Enabled'
+                                                                        : 'Disabled'}
+                                                                </Badge>
+                                                            </div>
+                                                            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    Payment
+                                                                    Method
+                                                                </span>
+                                                                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                                    {getPaymentMethodLabel(
+                                                                        activeSubscription.payment_method,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                    Duration
+                                                                </span>
+                                                                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                                    {
+                                                                        activeSubscription
+                                                                            .plan
+                                                                            .duration_in_days
+                                                                    }{' '}
+                                                                    days
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Plan Features */}
+                                                        {activeSubscription.plan
+                                                            .features &&
+                                                            activeSubscription
+                                                                .plan.features
+                                                                .length > 0 && (
+                                                                <div>
+                                                                    <Label className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                                        Plan
+                                                                        Includes
+                                                                    </Label>
+                                                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                                                        {activeSubscription.plan.features.map(
+                                                                            (
+                                                                                feature,
+                                                                                index,
+                                                                            ) => (
+                                                                                <div
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="flex items-start gap-2 rounded-lg bg-green-50 p-2 dark:bg-green-900/10"
+                                                                                >
+                                                                                    <CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+                                                                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                                                        {
+                                                                                            feature
+                                                                                        }
+                                                                                    </span>
+                                                                                </div>
+                                                                            ),
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                    </CardContent>
+                                                    <CardFooter className="border-t border-gray-100 bg-gray-50 pt-6 dark:border-gray-800 dark:bg-gray-800/50">
+                                                        <div className="flex w-full flex-col gap-3 sm:flex-row">
+                                                            <Button
+                                                                onClick={() =>
+                                                                    setActiveTab(
+                                                                        'plans',
+                                                                    )
+                                                                }
+                                                                className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg dark:from-blue-600 dark:to-indigo-700"
+                                                            >
+                                                                <SparklesIcon className="mr-2 h-4 w-4" />
+                                                                Upgrade Plan
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    setActiveTab(
+                                                                        'history',
+                                                                    )
+                                                                }
+                                                                className="flex-1 border-gray-300 bg-white font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                            >
+                                                                View History
+                                                            </Button>
+                                                            {canDelete && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        setSubscriptionToCancel(
+                                                                            activeSubscription.identifier,
+                                                                        );
+                                                                        setCancelDialogOpen(
+                                                                            true,
+                                                                        );
+                                                                    }}
+                                                                    className="flex-1 border-red-300 bg-white font-medium text-red-600 shadow-sm hover:bg-red-50 hover:shadow-md dark:border-red-800 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                                >
+                                                                    Cancel
+                                                                    Subscription
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </CardFooter>
                                                 </Card>
                                             </div>
 
                                             {/* Usage Limits - Takes 1 column on large screens */}
-                                            {usageLimits && Object.keys(usageLimits).length > 0 && (
-                                                <div className="lg:col-span-1">
-                                                    <UsageLimits 
-                                                        limits={usageLimits}
-                                                        title="Current Plan Usage"
-                                                        className="h-full"
-                                                    />
-                                                </div>
-                                            )}
+                                            {usageLimits &&
+                                                Object.keys(usageLimits)
+                                                    .length > 0 && (
+                                                    <div className="lg:col-span-1">
+                                                        <UsageLimits
+                                                            limits={usageLimits}
+                                                            title="Current Plan Usage"
+                                                            className="h-full"
+                                                        />
+                                                    </div>
+                                                )}
                                         </div>
 
                                         {/* Quick Stats */}
@@ -839,11 +919,18 @@ export default function Index({
                                                             Want More Features?
                                                         </h3>
                                                         <p className="text-blue-100 dark:text-blue-200">
-                                                            Upgrade your plan to unlock unlimited access and premium features
+                                                            Upgrade your plan to
+                                                            unlock unlimited
+                                                            access and premium
+                                                            features
                                                         </p>
                                                     </div>
                                                     <Button
-                                                        onClick={() => setActiveTab('plans')}
+                                                        onClick={() =>
+                                                            setActiveTab(
+                                                                'plans',
+                                                            )
+                                                        }
                                                         size="lg"
                                                         className="min-w-[200px] bg-white text-purple-600 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-gray-50 hover:text-purple-700 dark:bg-white dark:text-purple-700 dark:hover:bg-gray-100"
                                                     >
