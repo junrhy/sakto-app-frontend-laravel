@@ -24,6 +24,18 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'Access to all basic features',
+                    'Up to 10 tables',
+                    'Up to 300 reservations',
+                    'Up to 100 menu items',
+                    '1 online store',
+                ],
+                'limits' => [
+                    'fnb' => [
+                        'tables' => 10,
+                        'reservations' => 300,
+                        'menu_items' => 100,
+                        'online_stores' => 1,
+                    ],
                 ],
                 'is_popular' => false,
                 'is_active' => true,
@@ -40,6 +52,18 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'All Basic Plan features',
+                    'Up to 30 tables',
+                    'Up to 2,000 reservations',
+                    'Up to 500 menu items',
+                    'Up to 5 online stores',
+                ],
+                'limits' => [
+                    'fnb' => [
+                        'tables' => 30,
+                        'reservations' => 2000,
+                        'menu_items' => 500,
+                        'online_stores' => 5,
+                    ],
                 ],
                 'is_popular' => true,
                 'is_active' => true,
@@ -55,7 +79,16 @@ class SubscriptionPlanSeeder extends Seeder
                 'duration_in_days' => 0,
                 'unlimited_access' => false,
                 'features' => [
-                    'All Pro Plan features'
+                    'All Pro Plan features',
+                    'Unlimited tables, reservations, menu items, and online stores',
+                ],
+                'limits' => [
+                    'fnb' => [
+                        'tables' => -1,
+                        'reservations' => -1,
+                        'menu_items' => -1,
+                        'online_stores' => -1,
+                    ],
                 ],
                 'is_popular' => false,
                 'is_active' => true,
@@ -72,7 +105,19 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'All Basic Plan features',
-                    '20% savings compared to monthly plan'
+                    '20% savings compared to monthly plan',
+                    'Up to 10 tables',
+                    'Up to 300 reservations',
+                    'Up to 100 menu items',
+                    '1 online store',
+                ],
+                'limits' => [
+                    'fnb' => [
+                        'tables' => 10,
+                        'reservations' => 300,
+                        'menu_items' => 100,
+                        'online_stores' => 1,
+                    ],
                 ],
                 'is_popular' => false,
                 'is_active' => true,
@@ -89,7 +134,44 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'All Pro Plan features',
-                    '20% savings compared to monthly plan'
+                    '20% savings compared to monthly plan',
+                    'Up to 30 tables',
+                    'Up to 2,000 reservations',
+                    'Up to 500 menu items',
+                    'Up to 5 online stores',
+                ],
+                'limits' => [
+                    'fnb' => [
+                        'tables' => 30,
+                        'reservations' => 2000,
+                        'menu_items' => 500,
+                        'online_stores' => 5,
+                    ],
+                ],
+                'is_popular' => false,
+                'is_active' => true,
+                'badge_text' => null,
+                'project_id' => 2, // Community project
+            ],
+            [
+                'name' => 'Annual Business',
+                'slug' => 'annual-business',
+                'description' => 'Save 20% with our annual Business plan subscription.',
+                'price' => 6890.00,
+                'duration_in_days' => 365,
+                'unlimited_access' => false,
+                'features' => [
+                    'All Business Plan features',
+                    '20% savings compared to monthly plan',
+                    'Unlimited tables, reservations, menu items, and online stores',
+                ],
+                'limits' => [
+                    'fnb' => [
+                        'tables' => -1,
+                        'reservations' => -1,
+                        'menu_items' => -1,
+                        'online_stores' => -1,
+                    ],
                 ],
                 'is_popular' => false,
                 'is_active' => true,

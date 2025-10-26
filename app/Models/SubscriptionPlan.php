@@ -26,6 +26,7 @@ class SubscriptionPlan extends Model
         'credits_per_month',
         'unlimited_access',
         'features',
+        'limits',
         'is_popular',
         'is_active',
         'badge_text',
@@ -41,6 +42,7 @@ class SubscriptionPlan extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'features' => 'array',
+        'limits' => 'array',
         'unlimited_access' => 'boolean',
         'is_popular' => 'boolean',
         'is_active' => 'boolean',

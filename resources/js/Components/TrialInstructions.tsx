@@ -1,9 +1,17 @@
 import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { BookOpen, CheckCircle, ChevronDown, ChevronUp, Lightbulb, Rocket, X } from 'lucide-react';
+import {
+    BookOpen,
+    CheckCircle,
+    ChevronDown,
+    ChevronUp,
+    Lightbulb,
+    Rocket,
+    X,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Button } from '@/Components/ui/button';
 
 interface TrialInstructionsProps {
     projectIdentifier: string;
@@ -11,15 +19,19 @@ interface TrialInstructionsProps {
 }
 
 const getInstructionsByProject = (projectIdentifier: string) => {
-    const instructions: Record<string, {
-        title: string;
-        description: string;
-        steps: string[];
-        tips: string[];
-    }> = {
+    const instructions: Record<
+        string,
+        {
+            title: string;
+            description: string;
+            steps: string[];
+            tips: string[];
+        }
+    > = {
         trial: {
             title: 'Welcome to Neulify Platform! 🎉',
-            description: 'Explore all our apps during your 14-day free trial. Here\'s how to get started:',
+            description:
+                "Explore all our apps during your 14-day free trial. Here's how to get started:",
             steps: [
                 'Browse the available apps on your home screen',
                 'Click on any app to explore its features',
@@ -36,7 +48,8 @@ const getInstructionsByProject = (projectIdentifier: string) => {
         },
         community: {
             title: 'Community Management Platform',
-            description: 'Manage your community effectively with these features:',
+            description:
+                'Manage your community effectively with these features:',
             steps: [
                 'Set up your community profile and information',
                 'Add community members and manage their profiles',
@@ -175,7 +188,10 @@ const getInstructionsByProject = (projectIdentifier: string) => {
     return instructions[projectIdentifier] || instructions.trial;
 };
 
-export default function TrialInstructions({ projectIdentifier, className = '' }: TrialInstructionsProps) {
+export default function TrialInstructions({
+    projectIdentifier,
+    className = '',
+}: TrialInstructionsProps) {
     const instructions = getInstructionsByProject(projectIdentifier);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
@@ -185,7 +201,7 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
     useEffect(() => {
         const storageKey = `trial-instructions-${projectIdentifier}`;
         const saved = localStorage.getItem(storageKey);
-        
+
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -193,7 +209,9 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
                 setIsDismissed(parsed.isDismissed || false);
             } catch (e) {
                 // Initialize with false for each step
-                setCompletedSteps(new Array(instructions.steps.length).fill(false));
+                setCompletedSteps(
+                    new Array(instructions.steps.length).fill(false),
+                );
             }
         } else {
             setCompletedSteps(new Array(instructions.steps.length).fill(false));
@@ -204,13 +222,16 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
     useEffect(() => {
         if (completedSteps.length > 0) {
             const storageKey = `trial-instructions-${projectIdentifier}`;
-            localStorage.setItem(storageKey, JSON.stringify({
-                completedSteps,
-                isDismissed
-            }));
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify({
+                    completedSteps,
+                    isDismissed,
+                }),
+            );
 
             // Auto-hide when all steps are completed
-            if (completedSteps.every(step => step === true)) {
+            if (completedSteps.every((step) => step === true)) {
                 setTimeout(() => {
                     setIsDismissed(true);
                 }, 500); // Small delay for better UX
@@ -230,12 +251,14 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
     if (isDismissed) return null;
 
     return (
-        <Alert className={`bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800 ${className}`}>
+        <Alert
+            className={`border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:border-blue-800 dark:from-blue-950 dark:to-indigo-950 ${className}`}
+        >
             <AlertDescription>
                 <div className="space-y-4">
                     {/* Header */}
                     <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-blue-100 dark:bg-blue-900 p-2">
+                        <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900">
                             <Rocket className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div className="flex-1">
@@ -243,7 +266,7 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                     {instructions.title}
                                 </h3>
-                                <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                                     {completedCount}/{totalSteps}
                                 </span>
                             </div>
@@ -252,9 +275,11 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
                             </p>
                             {/* Progress bar */}
                             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                <div 
+                                <div
                                     className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
-                                    style={{ width: `${(completedCount / totalSteps) * 100}%` }}
+                                    style={{
+                                        width: `${(completedCount / totalSteps) * 100}%`,
+                                    }}
                                 />
                             </div>
                         </div>
@@ -294,28 +319,42 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
-                                        {instructions.steps.map((step, index) => (
-                                            <div 
-                                                key={index} 
-                                                className="flex items-start gap-3 cursor-pointer group"
-                                                onClick={() => toggleStep(index)}
-                                            >
-                                                <Checkbox
-                                                    checked={completedSteps[index] || false}
-                                                    onCheckedChange={() => toggleStep(index)}
-                                                    className="mt-0.5 border-blue-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                                                />
-                                                <div className="flex-1">
-                                                    <span className={`text-sm transition-all ${
-                                                        completedSteps[index] 
-                                                            ? 'text-gray-500 dark:text-gray-500 line-through' 
-                                                            : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
-                                                    }`}>
-                                                        {step}
-                                                    </span>
+                                        {instructions.steps.map(
+                                            (step, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="group flex cursor-pointer items-start gap-3"
+                                                    onClick={() =>
+                                                        toggleStep(index)
+                                                    }
+                                                >
+                                                    <Checkbox
+                                                        checked={
+                                                            completedSteps[
+                                                                index
+                                                            ] || false
+                                                        }
+                                                        onCheckedChange={() =>
+                                                            toggleStep(index)
+                                                        }
+                                                        className="mt-0.5 border-blue-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <span
+                                                            className={`text-sm transition-all ${
+                                                                completedSteps[
+                                                                    index
+                                                                ]
+                                                                    ? 'text-gray-500 line-through dark:text-gray-500'
+                                                                    : 'text-gray-700 group-hover:text-gray-900 dark:text-gray-300 dark:group-hover:text-white'
+                                                            }`}
+                                                        >
+                                                            {step}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ),
+                                        )}
                                     </CardContent>
                                 </Card>
 
@@ -329,9 +368,14 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
                                     </CardHeader>
                                     <CardContent className="space-y-2">
                                         {instructions.tips.map((tip, index) => (
-                                            <div key={index} className="flex gap-2 text-sm">
-                                                <CheckCircle className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400 mt-0.5" />
-                                                <span className="text-gray-700 dark:text-gray-300">{tip}</span>
+                                            <div
+                                                key={index}
+                                                className="flex gap-2 text-sm"
+                                            >
+                                                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
+                                                <span className="text-gray-700 dark:text-gray-300">
+                                                    {tip}
+                                                </span>
                                             </div>
                                         ))}
                                     </CardContent>
@@ -339,13 +383,18 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
                             </div>
 
                             {/* Footer CTA */}
-                            <div className="rounded-lg bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800 p-4">
+                            <div className="rounded-lg border border-blue-200 bg-white p-4 dark:border-blue-800 dark:bg-gray-800">
                                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                                    <strong className="text-gray-900 dark:text-white">Need help?</strong> Visit our{' '}
-                                    <a href={`/${projectIdentifier}/help`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                                    <strong className="text-gray-900 dark:text-white">
+                                        Need help?
+                                    </strong>{' '}
+                                    Visit our{' '}
+                                    <a
+                                        href={`/${projectIdentifier}/help`}
+                                        className="text-blue-600 hover:underline dark:text-blue-400"
+                                    >
                                         Help Center
-                                    </a>
-                                    {' '}
+                                    </a>{' '}
                                 </p>
                             </div>
                         </>
@@ -355,4 +404,3 @@ export default function TrialInstructions({ projectIdentifier, className = '' }:
         </Alert>
     );
 }
-

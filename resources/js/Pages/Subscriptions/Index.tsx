@@ -9,6 +9,7 @@ import {
 } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import UsageLimits from '@/Components/UsageLimits';
 import SubscriptionLayout from '@/Layouts/SubscriptionLayout';
 import { PageProps } from '@/types';
 import { Project, User } from '@/types/index';
@@ -82,6 +83,15 @@ interface Props extends PageProps {
     activeSubscription: UserSubscription | null;
     paymentMethods: PaymentMethod[];
     subscriptionHistory: UserSubscription[];
+    usageLimits?: {
+        [key: string]: {
+            current: number;
+            limit: number;
+            percentage: number;
+            remaining: number;
+            unlimited: boolean;
+        };
+    };
 }
 
 const getCurrencySymbol = (currency?: string): string => {
@@ -97,12 +107,23 @@ const getCurrencySymbol = (currency?: string): string => {
     return symbols[currency || 'USD'] || currency || 'USD';
 };
 
+const getPaymentMethodLabel = (method?: string): string => {
+    const labels: Record<string, string> = {
+        lemonsqueezy: 'Credit/Debit Card',
+        stripe: 'Credit/Debit Card',
+        credits: 'Credits',
+        cash: 'Cash',
+    };
+    return labels[method || ''] || method || 'Unknown';
+};
+
 export default function Index({
     auth,
     plans,
     activeSubscription,
     paymentMethods,
     subscriptionHistory,
+    usageLimits = {},
 }: Props) {
     const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
         null,
@@ -559,204 +580,181 @@ export default function Index({
 
                                 {activeSubscription ? (
                                     <div className="space-y-6">
-                                        {/* Current Plan Card */}
-                                        <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-                                            <CardHeader>
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
-                                                            <CheckIcon className="h-5 w-5" />
-                                                            Active Subscription
+                                        {/* Layout with Card and Usage Limits side by side */}
+                                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                            {/* Main Subscription Card - Takes 2 columns on large screens */}
+                                            <div className="lg:col-span-2">
+                                                {/* Current Plan Card */}
+                                                <Card className="overflow-hidden border-0 shadow-lg">
+                                                    {/* Gradient Header */}
+                                                    <div className="relative overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 px-6 py-8 dark:from-green-600 dark:via-emerald-600 dark:to-teal-700">
+                                                        {/* Decorative elements */}
+                                                        <div className="absolute -right-8 -top-8 h-32 w-32 opacity-10">
+                                                            <div className="h-32 w-32 animate-pulse rounded-full bg-white"></div>
+                                                        </div>
+                                                        <div className="absolute -right-4 bottom-0 h-24 w-24 opacity-10">
+                                                            <div className="h-24 w-24 animate-pulse rounded-full bg-white delay-1000"></div>
+                                                        </div>
+                                                        
+                                                        <div className="relative z-10">
+                                                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                                                <div className="flex-1">
+                                                                    <div className="mb-2 flex items-center gap-2">
+                                                                        <Badge className="bg-white/20 text-white backdrop-blur-sm">
+                                                                            <CheckIcon className="mr-1 h-3 w-3" />
+                                                                            {activeSubscription.status
+                                                                                .charAt(0)
+                                                                                .toUpperCase() +
+                                                                                activeSubscription.status.slice(1)}
+                                                                        </Badge>
+                                                                    </div>
+                                                                    <h3 className="mb-3 text-3xl font-bold text-white">
+                                                                        {activeSubscription.plan.name}
+                                                                    </h3>
+                                                                    <div className="flex items-baseline gap-2">
+                                                                        <span className="text-4xl font-bold text-white">
+                                                                            {getCurrencySymbol(activeSubscription.plan.currency)}
+                                                                            {Number(activeSubscription.plan.price).toFixed(0)}
+                                                                        </span>
+                                                                        <span className="text-lg text-white/80">
+                                                                            /{activeSubscription.plan.duration_in_days === 365 ? 'year' : 'month'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="rounded-lg bg-white/10 p-4 text-center backdrop-blur-sm sm:min-w-[140px]">
+                                                                    <p className="text-xs font-medium uppercase tracking-wide text-white/70">
+                                                                        Valid Until
+                                                                    </p>
+                                                                    <p className="mt-1 text-lg font-bold text-white">
+                                                                        {formatDate(activeSubscription.end_date)}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Card Content */}
+                                                    <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+                                                        <CardTitle className="text-lg text-gray-900 dark:text-white">
+                                                            Subscription Details
                                                         </CardTitle>
-                                                        <p className="mt-1 text-sm text-green-600 dark:text-green-300">
-                                                            {
-                                                                activeSubscription
-                                                                    .plan.name
-                                                            }
+                                                    </CardHeader>
+                                            <CardContent className="space-y-6 p-6">
+                                                {/* Key Metrics */}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                            Subscription Started
+                                                        </p>
+                                                        <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                                                            {formatDate(activeSubscription.start_date)}
                                                         </p>
                                                     </div>
-                                                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                        {activeSubscription.status
-                                                            .charAt(0)
-                                                            .toUpperCase() +
-                                                            activeSubscription.status.slice(
-                                                                1,
-                                                            )}
-                                                    </Badge>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="space-y-4">
-                                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                    <div>
-                                                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Plan Details
-                                                        </Label>
-                                                        <div className="mt-1 space-y-1">
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Name:
-                                                                </span>{' '}
-                                                                {
-                                                                    activeSubscription
-                                                                        .plan
-                                                                        .name
-                                                                }
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Price:
-                                                                </span>{' '}
-                                                                {getCurrencySymbol(
-                                                                    activeSubscription
-                                                                        .plan
-                                                                        .currency,
-                                                                )}
-                                                                {Number(
-                                                                    activeSubscription
-                                                                        .plan
-                                                                        .price,
-                                                                ).toFixed(2)}
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Duration:
-                                                                </span>{' '}
-                                                                {
-                                                                    activeSubscription
-                                                                        .plan
-                                                                        .duration_in_days
-                                                                }{' '}
-                                                                days
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Credits:
-                                                                </span>{' '}
-                                                                {
-                                                                    activeSubscription
-                                                                        .plan
-                                                                        .credits_per_month
-                                                                }{' '}
-                                                                credits/month
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Subscription Period
-                                                        </Label>
-                                                        <div className="mt-1 space-y-1">
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Started:
-                                                                </span>{' '}
-                                                                {formatDate(
-                                                                    activeSubscription.start_date,
-                                                                )}
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Expires:
-                                                                </span>{' '}
-                                                                {formatDate(
-                                                                    activeSubscription.end_date,
-                                                                )}
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Auto-renew:
-                                                                </span>{' '}
-                                                                {activeSubscription.auto_renew
-                                                                    ? 'Yes'
-                                                                    : 'No'}
-                                                            </p>
-                                                            <p className="text-sm text-gray-900 dark:text-gray-100">
-                                                                <span className="font-medium">
-                                                                    Payment:
-                                                                </span>{' '}
-                                                                {
-                                                                    activeSubscription.payment_method
-                                                                }
-                                                            </p>
-                                                        </div>
+                                                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                            Monthly Credits
+                                                        </p>
+                                                        <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                                                            {activeSubscription.plan.credits_per_month} credits
+                                                        </p>
                                                     </div>
                                                 </div>
 
-                                                {activeSubscription.plan
-                                                    .description && (
+                                                {/* Subscription Info */}
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Auto-renewal
+                                                        </span>
+                                                        <Badge className={activeSubscription.auto_renew ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}>
+                                                            {activeSubscription.auto_renew ? 'Enabled' : 'Disabled'}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Payment Method
+                                                        </span>
+                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                            {getPaymentMethodLabel(activeSubscription.payment_method)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Duration
+                                                        </span>
+                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                            {activeSubscription.plan.duration_in_days} days
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Plan Features */}
+                                                {activeSubscription.plan.features &&
+                                                    activeSubscription.plan.features.length > 0 && (
                                                     <div>
-                                                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Description
+                                                        <Label className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                            Plan Includes
                                                         </Label>
-                                                        <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                            {
-                                                                activeSubscription
-                                                                    .plan
-                                                                    .description
-                                                            }
-                                                        </p>
+                                                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                                            {activeSubscription.plan.features.map((feature, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="flex items-start gap-2 rounded-lg bg-green-50 p-2 dark:bg-green-900/10"
+                                                                >
+                                                                    <CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+                                                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                                        {feature}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 )}
-
-                                                {activeSubscription.plan
-                                                    .features &&
-                                                    activeSubscription.plan
-                                                        .features.length >
-                                                        0 && (
-                                                        <div>
-                                                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                                Features
-                                                            </Label>
-                                                            <ul className="mt-1 space-y-1">
-                                                                {activeSubscription.plan.features.map(
-                                                                    (
-                                                                        feature,
-                                                                        index,
-                                                                    ) => (
-                                                                        <li
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100"
-                                                                        >
-                                                                            <CheckIcon className="h-4 w-4 text-green-500" />
-                                                                            {
-                                                                                feature
-                                                                            }
-                                                                        </li>
-                                                                    ),
-                                                                )}
-                                                            </ul>
-                                                        </div>
-                                                    )}
                                             </CardContent>
-                                            <CardFooter className="flex gap-3">
-                                                {canDelete && (
+                                            <CardFooter className="border-t border-gray-100 bg-gray-50 pt-6 dark:border-gray-800 dark:bg-gray-800/50">
+                                                <div className="flex w-full flex-col gap-3 sm:flex-row">
+                                                    <Button
+                                                        onClick={() => setActiveTab('plans')}
+                                                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:from-blue-600 hover:to-indigo-700 hover:shadow-lg dark:from-blue-600 dark:to-indigo-700"
+                                                    >
+                                                        <SparklesIcon className="mr-2 h-4 w-4" />
+                                                        Upgrade Plan
+                                                    </Button>
                                                     <Button
                                                         variant="outline"
-                                                        onClick={() => {
-                                                            setSubscriptionToCancel(
-                                                                activeSubscription.identifier,
-                                                            );
-                                                            setCancelDialogOpen(
-                                                                true,
-                                                            );
-                                                        }}
-                                                        className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                        onClick={() => setActiveTab('history')}
+                                                        className="flex-1 border-gray-300 bg-white font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                                                     >
-                                                        Cancel Subscription
+                                                        View History
                                                     </Button>
-                                                )}
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        setActiveTab('history')
-                                                    }
-                                                >
-                                                    View Subscription History
-                                                </Button>
+                                                    {canDelete && (
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setSubscriptionToCancel(activeSubscription.identifier);
+                                                                setCancelDialogOpen(true);
+                                                            }}
+                                                            className="flex-1 border-red-300 bg-white font-medium text-red-600 shadow-sm hover:bg-red-50 hover:shadow-md dark:border-red-800 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                        >
+                                                            Cancel Subscription
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </CardFooter>
-                                        </Card>
+                                                </Card>
+                                            </div>
+
+                                            {/* Usage Limits - Takes 1 column on large screens */}
+                                            {usageLimits && Object.keys(usageLimits).length > 0 && (
+                                                <div className="lg:col-span-1">
+                                                    <UsageLimits 
+                                                        limits={usageLimits}
+                                                        title="Current Plan Usage"
+                                                        className="h-full"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
 
                                         {/* Quick Stats */}
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -831,6 +829,30 @@ export default function Index({
                                                 </CardContent>
                                             </Card>
                                         </div>
+
+                                        {/* CTA Section - Upgrade Plan */}
+                                        <Card className="overflow-hidden border-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 shadow-xl dark:from-blue-600 dark:via-purple-700 dark:to-indigo-800">
+                                            <CardContent className="p-8">
+                                                <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+                                                    <div className="text-center sm:text-left">
+                                                        <h3 className="mb-2 text-2xl font-bold text-white">
+                                                            Want More Features?
+                                                        </h3>
+                                                        <p className="text-blue-100 dark:text-blue-200">
+                                                            Upgrade your plan to unlock unlimited access and premium features
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => setActiveTab('plans')}
+                                                        size="lg"
+                                                        className="min-w-[200px] bg-white text-purple-600 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-gray-50 hover:text-purple-700 dark:bg-white dark:text-purple-700 dark:hover:bg-gray-100"
+                                                    >
+                                                        <SparklesIcon className="mr-2 h-5 w-5" />
+                                                        View All Plans
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
                                     </div>
                                 ) : (
                                     <Card className="border-gray-200 dark:border-gray-700">

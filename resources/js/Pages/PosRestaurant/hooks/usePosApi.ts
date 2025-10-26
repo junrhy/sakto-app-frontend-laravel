@@ -7,9 +7,23 @@ export const usePosApi = () => {
     const createMenuItem = useCallback(async (menuItemData: any) => {
         return new Promise((resolve) => {
             router.post('/pos-restaurant/menu-items', menuItemData, {
-                onSuccess: () => {
-                    toast.success('Menu item created successfully');
-                    resolve(true);
+                onSuccess: (page: any) => {
+                    // Check for flash error messages (subscription limits)
+                    const flashError = page.props?.flash?.error;
+                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
+                        ? page.props.errors
+                        : null;
+                    
+                    if (flashError || validationErrors) {
+                        const errorMessage = flashError || 
+                            (Object.values(validationErrors || {})[0] as string) ||
+                            'Failed to create menu item';
+                        toast.error(errorMessage);
+                        resolve(false);
+                    } else {
+                        toast.success('Menu item created successfully');
+                        resolve(true);
+                    }
                 },
                 onError: (errors) => {
                     toast.error(
@@ -123,9 +137,23 @@ export const usePosApi = () => {
     const createOnlineStore = useCallback(async (storeData: any) => {
         return new Promise((resolve) => {
             router.post('/pos-restaurant/online-stores', storeData, {
-                onSuccess: () => {
-                    toast.success('Online store created successfully');
-                    resolve(true);
+                onSuccess: (page: any) => {
+                    // Check for flash error messages (subscription limits)
+                    const flashError = page.props?.flash?.error;
+                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
+                        ? page.props.errors
+                        : null;
+                    
+                    if (flashError || validationErrors) {
+                        const errorMessage = flashError || 
+                            (Object.values(validationErrors || {})[0] as string) ||
+                            'Failed to create online store';
+                        toast.error(errorMessage);
+                        resolve(false);
+                    } else {
+                        toast.success('Online store created successfully');
+                        resolve(true);
+                    }
                 },
                 onError: (errors) => {
                     toast.error(
@@ -359,9 +387,23 @@ export const usePosApi = () => {
     const createTable = useCallback(async (tableData: any) => {
         return new Promise((resolve) => {
             router.post('/pos-restaurant/tables', tableData, {
-                onSuccess: () => {
-                    toast.success('Table created successfully');
-                    resolve(true);
+                onSuccess: (page: any) => {
+                    // Check for flash error messages (subscription limits)
+                    const flashError = page.props?.flash?.error;
+                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
+                        ? page.props.errors
+                        : null;
+                    
+                    if (flashError || validationErrors) {
+                        const errorMessage = flashError || 
+                            (Object.values(validationErrors || {})[0] as string) ||
+                            'Failed to create table';
+                        toast.error(errorMessage);
+                        resolve(false);
+                    } else {
+                        toast.success('Table created successfully');
+                        resolve(true);
+                    }
                 },
                 onError: (errors) => {
                     toast.error(
@@ -518,9 +560,23 @@ export const usePosApi = () => {
     const createReservation = useCallback(async (reservationData: any) => {
         return new Promise((resolve) => {
             router.post('/pos-restaurant/reservations', reservationData, {
-                onSuccess: () => {
-                    toast.success('Reservation created successfully');
-                    resolve(true);
+                onSuccess: (page: any) => {
+                    // Check for flash error messages (subscription limits)
+                    const flashError = page.props?.flash?.error;
+                    const validationErrors = page.props?.errors && Object.keys(page.props.errors).length > 0
+                        ? page.props.errors
+                        : null;
+                    
+                    if (flashError || validationErrors) {
+                        const errorMessage = flashError || 
+                            (Object.values(validationErrors || {})[0] as string) ||
+                            'Failed to create reservation';
+                        toast.error(errorMessage);
+                        resolve(false);
+                    } else {
+                        toast.success('Reservation created successfully');
+                        resolve(true);
+                    }
                 },
                 onError: (errors) => {
                     toast.error(

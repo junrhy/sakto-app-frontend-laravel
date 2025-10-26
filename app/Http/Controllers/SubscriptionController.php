@@ -82,11 +82,17 @@ class SubscriptionController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
+        // Get usage limits
+        $limitService = app(\App\Services\SubscriptionLimitService::class);
+        $projectIdentifier = $user->project_identifier ?? 'fnb';
+        $usageLimits = $limitService->getUsageSummary($projectIdentifier);
+        
         return Inertia::render('Subscriptions/Index', [
             'plans' => $plans,
             'activeSubscription' => $activeSubscription,
             'paymentMethods' => $paymentMethods,
             'subscriptionHistory' => $subscriptionHistory,
+            'usageLimits' => $usageLimits,
         ]);
     }
     

@@ -52,7 +52,12 @@ require __DIR__.'/web/customer.php';
 // Authenticated simple routes
 Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     Route::get('/home', function () {
-        return Inertia::render('Home');
+        $limitService = app(\App\Services\SubscriptionLimitService::class);
+        $projectIdentifier = auth()->user()->project_identifier ?? 'fnb';
+        
+        return Inertia::render('Home', [
+            'usageLimits' => $limitService->getUsageSummary($projectIdentifier)
+        ]);
     })->name('home');
     
     Route::get('/help', function () {

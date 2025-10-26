@@ -14,16 +14,19 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Storage;
 use App\Models\UserAddress;
 use App\Models\SemaphoreAccount;
+use App\Services\SubscriptionLimitService;
 
 class PosRestaurantController extends Controller
 {
     protected $apiUrl, $apiToken;
     protected $semaphoreApiEndpoint = 'https://api.semaphore.co/api/v4';
+    protected $limitService;
 
-    public function __construct()
+    public function __construct(SubscriptionLimitService $limitService)
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
+        $this->limitService = $limitService;
     }
 
     public function index(Request $request)
@@ -86,6 +89,13 @@ class PosRestaurantController extends Controller
     public function storeMenuItem(Request $request)
     {
         try {
+            // Check subscription limits
+            $limitCheck = $this->limitService->canCreate('fnb', 'menu_items');
+            if (!$limitCheck['allowed']) {
+                return redirect()->back()
+                    ->with('error', $limitCheck['message']);
+            }
+
             // Validate the request data
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -281,6 +291,14 @@ class PosRestaurantController extends Controller
     public function storeTable(Request $request)
     {
         try {
+            // Check subscription limits
+            $limitCheck = $this->limitService->canCreate('fnb', 'tables');
+
+            if (!$limitCheck['allowed']) {
+                return redirect()->back()
+                    ->with('error', $limitCheck['message']);
+            }
+
             // Validate the request data
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -566,6 +584,13 @@ class PosRestaurantController extends Controller
     public function storeReservation(Request $request)
     {
         try {
+            // Check subscription limits
+            $limitCheck = $this->limitService->canCreate('fnb', 'reservations');
+            if (!$limitCheck['allowed']) {
+                return redirect()->back()
+                    ->with('error', $limitCheck['message']);
+            }
+
             // Validate the request data
             $validated = $request->validate([
                 'name' => 'required|string',
@@ -1734,6 +1759,13 @@ class PosRestaurantController extends Controller
     public function storeOnlineStore(Request $request)
     {
         try {
+            // Check subscription limits
+            $limitCheck = $this->limitService->canCreate('fnb', 'online_stores');
+            if (!$limitCheck['allowed']) {
+                return redirect()->back()
+                    ->with('error', $limitCheck['message']);
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
