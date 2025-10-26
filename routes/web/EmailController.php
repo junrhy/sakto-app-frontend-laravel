@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Email (subscription required)
     Route::prefix('email')->group(function () {
         Route::get('/', [EmailController::class, 'index'])->name('email.index');

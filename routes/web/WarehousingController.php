@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Warehousing (one-time payment/subscription required)
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
 });

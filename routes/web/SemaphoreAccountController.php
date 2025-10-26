@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     Route::get('/semaphore-accounts', [SemaphoreAccountController::class, 'index'])->name('semaphore-accounts.index');
     Route::post('/semaphore-accounts', [SemaphoreAccountController::class, 'store'])->name('semaphore-accounts.store');
     Route::put('/semaphore-accounts/{semaphoreAccount}', [SemaphoreAccountController::class, 'update'])->name('semaphore-accounts.update');

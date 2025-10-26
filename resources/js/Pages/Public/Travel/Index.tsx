@@ -484,8 +484,16 @@ export default function TravelIndex({ auth }: PageProps) {
                             <div className="rounded-xl bg-white p-8 md:p-12">
                                 <div className="text-center">
                                     <div className="mb-4 inline-flex items-center rounded-full bg-cyan-100 px-4 py-2 text-sm font-semibold text-cyan-800">
-                                        <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        <svg
+                                            className="mr-2 h-5 w-5"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                            />
                                         </svg>
                                         14-Day Free Trial
                                     </div>
@@ -493,7 +501,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                         Try Our Travel Platform Risk-Free
                                     </h2>
                                     <p className="mb-6 text-lg text-gray-600">
-                                        {starterPlan?.description || 'Test drive all features with zero commitment and zero cost'}
+                                        {starterPlan?.description ||
+                                            'Test drive all features with zero commitment and zero cost'}
                                     </p>
                                     {starterPlan?.tagline && (
                                         <p className="mb-8 text-base italic text-gray-500">
@@ -508,7 +517,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                             )}
                                         </div>
                                         <p className="text-sm text-gray-500">
-                                            No credit card required • Cancel anytime
+                                            No credit card required • Cancel
+                                            anytime
                                         </p>
                                     </div>
                                     {auth.user ? (
@@ -522,21 +532,49 @@ export default function TravelIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'travel',
-                                                plan: starterPlan?.id || 'starter',
+                                                plan:
+                                                    starterPlan?.id ||
+                                                    'starter',
                                             })}
                                             className="inline-flex items-center justify-center rounded-lg bg-cyan-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-cyan-700 hover:shadow-xl"
                                         >
-                                            {starterPlan?.buttonText || 'Start Free Trial'}
-                                            <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            {starterPlan?.buttonText ||
+                                                'Start Free Trial'}
+                                            <svg
+                                                className="ml-2 h-5 w-5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                                />
                                             </svg>
                                         </Link>
                                     )}
                                     <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                                        {(starterPlan?.features || ['Explore all core features before committing']).map((feature, index) => (
-                                            <div key={index} className="flex items-center">
-                                                <svg className="mr-2 h-5 w-5 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        {(
+                                            starterPlan?.features || [
+                                                'Explore all core features before committing',
+                                            ]
+                                        ).map((feature, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center"
+                                            >
+                                                <svg
+                                                    className="mr-2 h-5 w-5 text-cyan-500"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clipRule="evenodd"
+                                                    />
                                                 </svg>
                                                 {feature}
                                             </div>
@@ -555,9 +593,10 @@ export default function TravelIndex({ auth }: PageProps) {
                             Choose Your Paid Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            After your free trial, select the perfect plan for your travel needs. All
-                            plans include our core booking features with
-                            different levels of support and benefits.
+                            After your free trial, select the perfect plan for
+                            your travel needs. All plans include our core
+                            booking features with different levels of support
+                            and benefits.
                         </p>
                     </div>
 
@@ -571,7 +610,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                         {basicPlan?.name || 'Basic'}
                                     </h3>
                                     <p className="mb-3 text-sm text-slate-600">
-                                        {basicPlan?.description || 'Perfect for small travel agencies'}
+                                        {basicPlan?.description ||
+                                            'Perfect for small travel agencies'}
                                     </p>
                                     {basicPlan?.tagline && (
                                         <p className="mb-4 text-xs italic text-slate-500">
@@ -604,7 +644,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-slate-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-slate-700"
                                         >
-                                            {basicPlan?.buttonText || 'Get Started'}
+                                            {basicPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -680,7 +721,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                         {proPlan?.name || 'Pro'}
                                     </h3>
                                     <p className="mb-3 text-sm text-slate-600">
-                                        {proPlan?.description || 'Ideal for growing travel businesses'}
+                                        {proPlan?.description ||
+                                            'Ideal for growing travel businesses'}
                                     </p>
                                     {proPlan?.tagline && (
                                         <p className="mb-4 text-xs italic text-blue-600">
@@ -713,7 +755,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-blue-700"
                                         >
-                                            {proPlan?.buttonText || 'Get Started'}
+                                            {proPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>
@@ -801,7 +844,8 @@ export default function TravelIndex({ auth }: PageProps) {
                                         {businessPlan?.name || 'Business'}
                                     </h3>
                                     <p className="mb-3 text-sm text-slate-600">
-                                        {businessPlan?.description || 'For large travel companies'}
+                                        {businessPlan?.description ||
+                                            'For large travel companies'}
                                     </p>
                                     {businessPlan?.tagline && (
                                         <p className="mb-4 text-xs italic text-purple-600">
@@ -830,11 +874,14 @@ export default function TravelIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'travel',
-                                                plan: businessPlan?.id || 'business',
+                                                plan:
+                                                    businessPlan?.id ||
+                                                    'business',
                                             })}
                                             className="block w-full rounded-lg border border-transparent bg-purple-600 px-4 py-3 text-center text-sm font-medium text-white shadow transition-colors duration-200 hover:bg-purple-700"
                                         >
-                                            {businessPlan?.buttonText || 'Get Started'}
+                                            {businessPlan?.buttonText ||
+                                                'Get Started'}
                                         </Link>
                                     )}
                                 </div>

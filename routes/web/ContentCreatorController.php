@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Content Management (subscription required)
     Route::prefix('content-creator')->group(function () {
         Route::get('/', [ContentCreatorController::class, 'index'])->name('content-creator.index');

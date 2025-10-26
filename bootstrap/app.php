@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ip_restriction' => \App\Http\Middleware\IpRestrictionMiddleware::class,
             'team.member.selection' => \App\Http\Middleware\TeamMemberSelectionMiddleware::class,
             'cors' => \App\Http\Middleware\CorsMiddleware::class,
+            'premium' => \App\Http\Middleware\RequiresPremiumAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

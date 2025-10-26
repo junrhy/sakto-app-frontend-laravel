@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Community Kiosk Terminal (subscription required)
     Route::prefix('kiosk/community')->name('kiosk.community.')->group(function () {
         Route::get('/', [CommunityKioskTerminalController::class, 'index'])->name('index');

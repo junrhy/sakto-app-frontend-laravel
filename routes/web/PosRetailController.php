@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // POS Retail
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
     Route::post('/pos-retail', [PosRetailController::class, 'store']);

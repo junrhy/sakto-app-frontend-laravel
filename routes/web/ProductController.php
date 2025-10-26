@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Products (subscription required)
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');

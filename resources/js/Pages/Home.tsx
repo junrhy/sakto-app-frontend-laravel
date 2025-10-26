@@ -2,6 +2,8 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import BottomNav from '@/Components/BottomNav';
 import MobileSidebar, { MobileSidebarToggle } from '@/Components/MobileSidebar';
 import { ThemeProvider, useTheme } from '@/Components/ThemeProvider';
+import TrialBanner from '@/Components/TrialBanner';
+import TrialInstructions from '@/Components/TrialInstructions';
 import { Button } from '@/Components/ui/button';
 import {
     DropdownMenu,
@@ -90,6 +92,14 @@ interface Props {
                     features: any;
                 };
             } | null;
+            trial?: {
+                active: boolean;
+                started_at: string | null;
+                ends_at: string | null;
+                days_remaining: number;
+                expired: boolean;
+            };
+            has_access?: boolean;
         };
         project: {
             enabledModules: string[];
@@ -126,14 +136,19 @@ export default function Home({ auth }: Props) {
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Use shared subscription data instead of separate state
+    // Use shared subscription and trial data
     const subscription = auth.user.subscription;
+    const trial = auth.user.trial;
+    const hasAccess = auth.user.has_access ?? false;
 
     // Check if subscription is active and not expired
     const isSubscriptionActive =
         subscription &&
         subscription.status === 'active' &&
         new Date(subscription.end_date) > new Date();
+
+    // Check if user is on trial
+    const isOnTrial = trial?.active ?? false;
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -197,13 +212,14 @@ export default function Home({ auth }: Props) {
                     isOpen={isSidebarOpen}
                     onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
                 />
-                {/* Message for users without subscription */}
-                {!isSubscriptionActive && (
+                {/* Trial/Subscription Status Banner */}
+                {!hasAccess && !isOnTrial && (
                     <div className="fixed left-0 right-0 top-0 z-20 bg-gradient-to-r from-blue-600 to-indigo-600 py-1 text-center text-sm text-white">
                         <div className="container mx-auto flex flex-wrap items-center justify-center gap-2 px-4">
                             <span className="font-medium">
-                                Subscribe to a plan to continue using all
-                                features!
+                                {trial?.expired
+                                    ? 'Your trial has expired. Subscribe to continue!'
+                                    : 'Subscribe to a plan to access all features!'}
                             </span>
                             <Button
                                 variant="link"
@@ -220,9 +236,32 @@ export default function Home({ auth }: Props) {
                         </div>
                     </div>
                 )}
+                {isOnTrial && (
+                    <div className="fixed left-0 right-0 top-0 z-20 bg-gradient-to-r from-green-600 to-emerald-600 py-1 text-center text-sm text-white">
+                        <div className="container mx-auto flex flex-wrap items-center justify-center gap-2 px-4">
+                            <span className="font-medium">
+                                🎉 Free Trial Active: {trial?.days_remaining}{' '}
+                                {trial?.days_remaining === 1 ? 'day' : 'days'}{' '}
+                                remaining
+                            </span>
+                            <Button
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-white underline"
+                                onClick={() =>
+                                    (window.location.href = route(
+                                        'subscriptions.index',
+                                    ))
+                                }
+                            >
+                                Subscribe Now
+                            </Button>
+                        </div>
+                    </div>
+                )}
 
                 <div
-                    className={`fixed ${!isSubscriptionActive ? 'top-7' : 'top-0'} left-0 right-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80`}
+                    className={`fixed ${!hasAccess || isOnTrial ? 'top-7' : 'top-0'} left-0 right-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80`}
                 >
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center">
@@ -361,15 +400,37 @@ export default function Home({ auth }: Props) {
                                     </span>
                                 </div>
                             )}
+                            {isOnTrial && !isSubscriptionActive && (
+                                <div className="mt-1 text-sm text-gray-900 text-opacity-80 dark:text-white">
+                                    <span className="mr-1 rounded-full bg-green-500 px-2 py-0.5 text-xs font-medium text-white">
+                                        Trial: {trial?.days_remaining}d left
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 <div
-                    className={`container mx-auto px-4 ${!isSubscriptionActive ? 'pt-[220px]' : 'pt-[200px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[160px]`}
+                    className={`container mx-auto px-4 ${!hasAccess || isOnTrial ? 'pt-[220px]' : 'pt-[200px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[160px]`}
                 >
-                    {/* Show subscription message when user has no subscription */}
-                    {!isSubscriptionActive && (
+                    {/* Show trial banner if user is on trial */}
+                    {isOnTrial && trial && (
+                        <>
+                            <TrialBanner
+                                daysRemaining={trial.days_remaining}
+                                endsAt={trial.ends_at || ''}
+                                className="mb-6"
+                            />
+                            <TrialInstructions
+                                projectIdentifier={auth.project?.identifier || 'trial'}
+                                className="mb-8"
+                            />
+                        </>
+                    )}
+
+                    {/* Show upgrade prompt when user has no access */}
+                    {!hasAccess && !isOnTrial && (
                         <div className="mb-8 text-center">
                             <div className="relative transform overflow-hidden rounded-2xl border-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 p-8 shadow-2xl transition-all duration-300 hover:scale-[1.02] dark:from-blue-600 dark:via-purple-700 dark:to-indigo-800">
                                 {/* Animated background elements */}
@@ -385,7 +446,7 @@ export default function Home({ auth }: Props) {
                                     <div className="mb-6 flex justify-center">
                                         <div className="relative">
                                             <div className="mb-2 animate-bounce text-6xl">
-                                                🚀
+                                                {trial?.expired ? '⏰' : '🚀'}
                                             </div>
                                             <div className="absolute -right-2 -top-2 animate-ping text-2xl">
                                                 ✨
@@ -394,17 +455,32 @@ export default function Home({ auth }: Props) {
                                     </div>
 
                                     <h3 className="mb-3 text-2xl font-bold text-white drop-shadow-lg">
-                                        Unlock Premium Features
+                                        {trial?.expired
+                                            ? 'Your Trial Has Ended'
+                                            : 'Unlock Premium Features'}
                                     </h3>
 
                                     <p className="mx-auto mb-6 max-w-lg text-lg leading-relaxed text-blue-100">
-                                        Get unlimited access to all apps,
-                                        advanced features, and exclusive
-                                        content.
-                                        <span className="font-semibold text-white">
-                                            {' '}
-                                            Start your journey today!
-                                        </span>
+                                        {trial?.expired ? (
+                                            <>
+                                                Thank you for trying our
+                                                platform!{' '}
+                                                <span className="font-semibold text-white">
+                                                    Subscribe now to continue
+                                                    accessing all features.
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                Get unlimited access to all
+                                                apps, advanced features, and
+                                                exclusive content.
+                                                <span className="font-semibold text-white">
+                                                    {' '}
+                                                    Start your journey today!
+                                                </span>
+                                            </>
+                                        )}
                                     </p>
 
                                     <div className="mb-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -436,7 +512,10 @@ export default function Home({ auth }: Props) {
                                         }
                                         className="transform rounded-xl bg-white px-8 py-3 text-lg font-bold text-blue-600 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:bg-blue-50 hover:shadow-2xl"
                                     >
-                                        🎯 Explore Plans Now
+                                        🎯{' '}
+                                        {trial?.expired
+                                            ? 'Subscribe Now'
+                                            : 'Explore Plans Now'}
                                     </Button>
 
                                     <p className="mt-4 text-sm text-blue-200 opacity-90">
@@ -450,8 +529,8 @@ export default function Home({ auth }: Props) {
                     <div className="mx-auto grid w-full grid-cols-4 gap-3 gap-y-6 md:grid-cols-5 md:gap-4 md:gap-y-10 lg:grid-cols-6 lg:gap-6 lg:gap-y-12">
                         {apps
                             .filter((app) => {
-                                // If no active subscription, hide all apps
-                                if (!isSubscriptionActive) {
+                                // If user has no access (no subscription and no trial), hide all apps
+                                if (!hasAccess) {
                                     return false;
                                 }
                                 // Show apps that are available (either in subscription or user-added)
@@ -490,10 +569,12 @@ export default function Home({ auth }: Props) {
                     </div>
                 </div>
 
-                {/* Bottom Nav - Hidden on mobile, visible on desktop */}
-                <div className="hidden md:block">
-                    <BottomNav />
-                </div>
+                {/* Bottom Nav - Hidden on mobile, visible on desktop, and hidden when on trial */}
+                {!isOnTrial && (
+                    <div className="hidden md:block">
+                        <BottomNav />
+                    </div>
+                )}
             </div>
         </ThemeProvider>
     );

@@ -41,6 +41,14 @@ export interface User {
             features: string[];
         };
     };
+    trial?: {
+        active: boolean;
+        started_at: string | null;
+        ends_at: string | null;
+        days_remaining: number;
+        expired: boolean;
+    };
+    has_access?: boolean;
 }
 
 export interface Project {

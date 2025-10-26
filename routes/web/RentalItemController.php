@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Rental Items
     Route::prefix('rental-item')->group(function () {
         Route::get('/', [RentalItemController::class, 'index'])->name('rental-items');

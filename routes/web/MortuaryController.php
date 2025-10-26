@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Mortuary (subscription required)
     Route::prefix('mortuary')->group(function () {
         Route::get('/', [MortuaryController::class, 'index'])->name('mortuary');

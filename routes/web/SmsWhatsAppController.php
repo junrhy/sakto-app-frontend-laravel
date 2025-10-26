@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     Route::get('/sms-whatsapp', [SmsWhatsAppController::class, 'index'])->name('whatsapp-sms');
     Route::post('/sms-whatsapp/send', [SmsWhatsAppController::class, 'sendMessage'])->name('whatsapp-sms.send');
 });

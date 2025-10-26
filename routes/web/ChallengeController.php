@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Challenges (subscription required)
     Route::prefix('challenges')->group(function () {
         Route::get('/', [ChallengeController::class, 'index'])->name('challenges');

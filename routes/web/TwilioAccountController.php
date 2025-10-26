@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     Route::get('/twilio-accounts', [TwilioAccountController::class, 'index'])->name('twilio-accounts.index');
     Route::post('/twilio-accounts', [TwilioAccountController::class, 'store'])->name('twilio-accounts.store');
     Route::put('/twilio-accounts/{twilioAccount}', [TwilioAccountController::class, 'update'])->name('twilio-accounts.update');

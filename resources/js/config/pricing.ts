@@ -31,7 +31,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our logistics platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -39,9 +40,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -49,7 +48,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small fleets and startups',
-                tagline: 'Start tracking your fleet with essential GPS and reporting tools',
+                tagline:
+                    'Start tracking your fleet with essential GPS and reporting tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -70,7 +70,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing logistics companies',
-                tagline: 'Scale your operations with advanced analytics and priority support',
+                tagline:
+                    'Scale your operations with advanced analytics and priority support',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -93,7 +94,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large enterprises and corporations',
-                tagline: 'Enterprise-grade fleet management with unlimited vehicles and custom integrations',
+                tagline:
+                    'Enterprise-grade fleet management with unlimited vehicles and custom integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -119,7 +121,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our medical platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -127,9 +130,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -137,7 +138,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small clinics',
-                tagline: 'Streamline patient care with essential management and scheduling tools',
+                tagline:
+                    'Streamline patient care with essential management and scheduling tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -158,7 +160,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing medical practices',
-                tagline: 'Enhance your practice with advanced scheduling and priority support',
+                tagline:
+                    'Enhance your practice with advanced scheduling and priority support',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -181,7 +184,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large hospitals and medical centers',
-                tagline: 'Hospital-grade platform with unlimited practitioners and full integrations',
+                tagline:
+                    'Hospital-grade platform with unlimited practitioners and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -207,7 +211,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our community platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -215,9 +220,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -225,7 +228,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small communities',
-                tagline: 'Build and engage your community with essential collaboration tools',
+                tagline:
+                    'Build and engage your community with essential collaboration tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -246,7 +250,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing communities',
-                tagline: 'Grow your community with advanced moderation and engagement features',
+                tagline:
+                    'Grow your community with advanced moderation and engagement features',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -269,7 +274,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large communities and organizations',
-                tagline: 'Enterprise community platform with unlimited members and custom integrations',
+                tagline:
+                    'Enterprise community platform with unlimited members and custom integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -295,7 +301,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our travel platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -303,9 +310,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -313,7 +318,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small travel agencies',
-                tagline: 'Launch your travel business with essential booking and itinerary tools',
+                tagline:
+                    'Launch your travel business with essential booking and itinerary tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -334,7 +340,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing travel businesses',
-                tagline: 'Expand your reach with advanced booking management and automation',
+                tagline:
+                    'Expand your reach with advanced booking management and automation',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -357,7 +364,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large travel companies',
-                tagline: 'Enterprise travel platform with unlimited bookings and full integrations',
+                tagline:
+                    'Enterprise travel platform with unlimited bookings and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -383,7 +391,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our delivery platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -391,9 +400,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -401,7 +408,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small delivery services',
-                tagline: 'Start delivering with real-time tracking and essential management tools',
+                tagline:
+                    'Start delivering with real-time tracking and essential management tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -422,7 +430,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing delivery businesses',
-                tagline: 'Scale your delivery operations with advanced tracking and automation',
+                tagline:
+                    'Scale your delivery operations with advanced tracking and automation',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -445,7 +454,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large delivery companies',
-                tagline: 'Enterprise delivery platform with unlimited capacity and full integrations',
+                tagline:
+                    'Enterprise delivery platform with unlimited capacity and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -471,7 +481,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our jobs platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -479,9 +490,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -489,7 +498,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small job boards',
-                tagline: 'Connect talent with opportunities using essential recruitment tools',
+                tagline:
+                    'Connect talent with opportunities using essential recruitment tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -510,7 +520,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing job platforms',
-                tagline: 'Streamline hiring with advanced applicant tracking and automation',
+                tagline:
+                    'Streamline hiring with advanced applicant tracking and automation',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -533,7 +544,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large job platforms',
-                tagline: 'Enterprise recruitment platform with unlimited postings and full integrations',
+                tagline:
+                    'Enterprise recruitment platform with unlimited postings and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -559,7 +571,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our shop platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -567,9 +580,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -577,7 +588,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small online stores',
-                tagline: 'Launch your online store with essential e-commerce and inventory tools',
+                tagline:
+                    'Launch your online store with essential e-commerce and inventory tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -598,7 +610,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing online stores',
-                tagline: 'Grow your sales with advanced inventory management and analytics',
+                tagline:
+                    'Grow your sales with advanced inventory management and analytics',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -621,7 +634,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large online stores',
-                tagline: 'Enterprise e-commerce platform with unlimited products and full integrations',
+                tagline:
+                    'Enterprise e-commerce platform with unlimited products and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -646,8 +660,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'starter',
                 name: 'Starter',
-                description: 'Try Neulify F&B risk-free for 14 days with no credit card required',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                description:
+                    'Try Neulify F&B risk-free for 14 days with no credit card required',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -655,9 +671,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -665,7 +679,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Get organized and save time',
-                tagline: 'Perfect for cafés, stalls, or small diners ready to modernize reservations and menus',
+                tagline:
+                    'Perfect for cafés, stalls, or small diners ready to modernize reservations and menus',
                 prices: {
                     usd: 59,
                     php: 3400,
@@ -689,7 +704,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Grow faster and serve smarter',
-                tagline: 'Ideal for restaurants with high volume that want smooth operations and happy customers',
+                tagline:
+                    'Ideal for restaurants with high volume that want smooth operations and happy customers',
                 prices: {
                     usd: 119,
                     php: 6900,
@@ -716,7 +732,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'Run like a chain — with enterprise power',
-                tagline: 'For multi-branch restaurants that want total automation, real-time analytics, and centralized management',
+                tagline:
+                    'For multi-branch restaurants that want total automation, real-time analytics, and centralized management',
                 prices: {
                     usd: 249,
                     php: 14400,
@@ -746,7 +763,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our education platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -754,9 +772,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -764,7 +780,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small schools and tutors',
-                tagline: 'Start teaching online with essential course management and assessments',
+                tagline:
+                    'Start teaching online with essential course management and assessments',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -786,7 +803,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing educational institutions',
-                tagline: 'Enhance learning with live classes, analytics, and interactive tools',
+                tagline:
+                    'Enhance learning with live classes, analytics, and interactive tools',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -810,7 +828,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large schools and universities',
-                tagline: 'Enterprise learning platform with unlimited students and white-label options',
+                tagline:
+                    'Enterprise learning platform with unlimited students and white-label options',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -838,7 +857,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'starter',
                 name: 'Starter',
                 description: 'Try our finance platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -846,9 +866,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -856,7 +874,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for individuals and freelancers',
-                tagline: 'Take control of your finances with essential tracking and budgeting tools',
+                tagline:
+                    'Take control of your finances with essential tracking and budgeting tools',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -878,7 +897,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for small to medium businesses',
-                tagline: 'Automate accounting with bank sync, invoicing, and multi-currency support',
+                tagline:
+                    'Automate accounting with bank sync, invoicing, and multi-currency support',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -902,7 +922,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large enterprises',
-                tagline: 'Enterprise financial platform with unlimited accounts and full integrations',
+                tagline:
+                    'Enterprise financial platform with unlimited accounts and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -929,8 +950,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'starter',
                 name: 'Starter',
-                description: 'Try our agriculture platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                description:
+                    'Try our agriculture platform risk-free for 14 days',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -938,9 +961,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -948,7 +969,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small family farms',
-                tagline: 'Optimize your farm with essential crop tracking and weather updates',
+                tagline:
+                    'Optimize your farm with essential crop tracking and weather updates',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -970,7 +992,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for commercial farms',
-                tagline: 'Maximize yields with equipment management and advanced analytics',
+                tagline:
+                    'Maximize yields with equipment management and advanced analytics',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -994,7 +1017,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large agricultural operations',
-                tagline: 'Enterprise farm management with multi-farm support and full integrations',
+                tagline:
+                    'Enterprise farm management with multi-farm support and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -1021,8 +1045,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'starter',
                 name: 'Starter',
-                description: 'Try our construction platform risk-free for 14 days',
-                tagline: 'Test drive all features with zero commitment and zero cost',
+                description:
+                    'Try our construction platform risk-free for 14 days',
+                tagline:
+                    'Test drive all features with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -1030,9 +1056,7 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: [
-                    'Explore all core features before committing',
-                ],
+                features: ['Explore all core features before committing'],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
@@ -1040,7 +1064,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'basic',
                 name: 'Basic',
                 description: 'Perfect for small contractors',
-                tagline: 'Manage projects efficiently with team coordination and budget tracking',
+                tagline:
+                    'Manage projects efficiently with team coordination and budget tracking',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -1062,7 +1087,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'pro',
                 name: 'Pro',
                 description: 'Ideal for growing construction firms',
-                tagline: 'Scale operations with equipment tracking and safety compliance tools',
+                tagline:
+                    'Scale operations with equipment tracking and safety compliance tools',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -1086,7 +1112,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 id: 'business',
                 name: 'Business',
                 description: 'For large construction companies',
-                tagline: 'Enterprise construction platform with multi-site support and full integrations',
+                tagline:
+                    'Enterprise construction platform with multi-site support and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,

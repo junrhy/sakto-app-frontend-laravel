@@ -1,3 +1,9 @@
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     BadgeCheck,
@@ -21,12 +27,6 @@ import {
     UtensilsCrossed,
 } from 'lucide-react';
 import React from 'react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
 
 interface Solution {
     name: string;
@@ -98,11 +98,15 @@ export default function MobileSolutions({ auth }: PageProps) {
     const typeParam = urlParams.get('type');
 
     const handleLogout = () => {
-        router.post(route('logout'), {
-            mobile: '1',
-        }, {
-            onFinish: () => router.visit('/public?mobile=1')
-        });
+        router.post(
+            route('logout'),
+            {
+                mobile: '1',
+            },
+            {
+                onFinish: () => router.visit('/public?mobile=1'),
+            },
+        );
     };
 
     const formatDate = (dateString: string) => {
@@ -279,14 +283,22 @@ export default function MobileSolutions({ auth }: PageProps) {
                             {!auth.user && (
                                 <>
                                     <DropdownMenuItem
-                                        onClick={() => router.visit('/public?mobile=1&type=customer')}
+                                        onClick={() =>
+                                            router.visit(
+                                                '/public?mobile=1&type=customer',
+                                            )
+                                        }
                                         className="cursor-pointer"
                                     >
                                         <Users className="mr-2 h-4 w-4" />
                                         <span>Customer</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                        onClick={() => router.visit('/public?mobile=1&type=client')}
+                                        onClick={() =>
+                                            router.visit(
+                                                '/public?mobile=1&type=client',
+                                            )
+                                        }
                                         className="cursor-pointer"
                                     >
                                         <Briefcase className="mr-2 h-4 w-4" />

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Product Orders (subscription required)
     Route::prefix('product-orders')->group(function () {
         Route::get('/', [ProductOrderController::class, 'index'])->name('product-orders.index');

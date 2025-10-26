@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Apps Management
     Route::get('/apps', [AppsController::class, 'index'])->name('apps');
     Route::get('/api/apps', [AppsController::class, 'getApps'])->name('api.apps');

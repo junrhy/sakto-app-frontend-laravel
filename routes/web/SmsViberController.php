@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     Route::get('/sms-viber', [SmsViberController::class, 'index'])->name('viber-sms');
     Route::post('/sms-viber/send', [SmsViberController::class, 'sendMessage'])->name('viber-sms.send');
 });

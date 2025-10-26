@@ -679,16 +679,26 @@ export default function Community({
                                     <div className="rounded-xl bg-white p-8 md:p-12">
                                         <div className="text-center">
                                             <div className="mb-4 inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-semibold text-purple-800">
-                                                <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                <svg
+                                                    className="mr-2 h-5 w-5"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clipRule="evenodd"
+                                                    />
                                                 </svg>
                                                 14-Day Free Trial
                                             </div>
                                             <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
-                                                Try Our Community Platform Risk-Free
+                                                Try Our Community Platform
+                                                Risk-Free
                                             </h2>
                                             <p className="mb-6 text-lg text-gray-600">
-                                                {starterPlan?.description || 'Test drive all features with zero commitment and zero cost'}
+                                                {starterPlan?.description ||
+                                                    'Test drive all features with zero commitment and zero cost'}
                                             </p>
                                             {starterPlan?.tagline && (
                                                 <p className="mb-8 text-base italic text-gray-500">
@@ -699,11 +709,13 @@ export default function Community({
                                                 <div className="mb-2 text-5xl font-extrabold text-purple-600">
                                                     {formatCurrency(
                                                         starterPlan?.price || 0,
-                                                        starterPlan?.currency || '$',
+                                                        starterPlan?.currency ||
+                                                            '$',
                                                     )}
                                                 </div>
                                                 <p className="text-sm text-gray-500">
-                                                    No credit card required • Cancel anytime
+                                                    No credit card required •
+                                                    Cancel anytime
                                                 </p>
                                             </div>
                                             {auth.user ? (
@@ -717,21 +729,49 @@ export default function Community({
                                                 <Link
                                                     href={route('register', {
                                                         project: 'community',
-                                                        plan: starterPlan?.id || 'starter',
+                                                        plan:
+                                                            starterPlan?.id ||
+                                                            'starter',
                                                     })}
                                                     className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-purple-700 hover:shadow-xl"
                                                 >
-                                                    {starterPlan?.buttonText || 'Start Free Trial'}
-                                                    <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                    {starterPlan?.buttonText ||
+                                                        'Start Free Trial'}
+                                                    <svg
+                                                        className="ml-2 h-5 w-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                                        />
                                                     </svg>
                                                 </Link>
                                             )}
                                             <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                                                {(starterPlan?.features || ['Explore all core features before committing']).map((feature, index) => (
-                                                    <div key={index} className="flex items-center">
-                                                        <svg className="mr-2 h-5 w-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                {(
+                                                    starterPlan?.features || [
+                                                        'Explore all core features before committing',
+                                                    ]
+                                                ).map((feature, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center"
+                                                    >
+                                                        <svg
+                                                            className="mr-2 h-5 w-5 text-purple-500"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                                clipRule="evenodd"
+                                                            />
                                                         </svg>
                                                         {feature}
                                                     </div>
@@ -753,10 +793,11 @@ export default function Community({
                                     Choose Your Paid Plan
                                 </h2>
                                 <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                                    After your free trial, select the perfect plan for your community
-                                    needs. All plans include our core community
-                                    features with different levels of support
-                                    and integrations.
+                                    After your free trial, select the perfect
+                                    plan for your community needs. All plans
+                                    include our core community features with
+                                    different levels of support and
+                                    integrations.
                                 </p>
                                 <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-blue-500/20 bg-blue-500/5 px-6 py-4">
                                     <p className="text-center text-base font-medium text-slate-700">
@@ -788,7 +829,8 @@ export default function Community({
                                                 <span className="text-3xl font-extrabold text-slate-900">
                                                     {formatCurrency(
                                                         basicPlan?.price || 99,
-                                                        basicPlan?.currency || '₱',
+                                                        basicPlan?.currency ||
+                                                            '₱',
                                                     )}
                                                 </span>
                                                 <span className="text-sm text-slate-600">
@@ -908,7 +950,8 @@ export default function Community({
                                                 <span className="text-3xl font-extrabold text-slate-900">
                                                     {formatCurrency(
                                                         proPlan?.price || 199,
-                                                        proPlan?.currency || '₱',
+                                                        proPlan?.currency ||
+                                                            '₱',
                                                     )}
                                                 </span>
                                                 <span className="text-sm text-slate-600">
@@ -1034,7 +1077,8 @@ export default function Community({
                                             <p className="mb-6">
                                                 <span className="text-3xl font-extrabold text-slate-900">
                                                     {formatCurrency(
-                                                        businessPlan?.price || 299,
+                                                        businessPlan?.price ||
+                                                            299,
                                                         businessPlan?.currency ||
                                                             '₱',
                                                     )}

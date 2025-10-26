@@ -456,8 +456,16 @@ export default function LogisticsIndex({ auth }: PageProps) {
                             <div className="rounded-xl bg-white p-8 md:p-12">
                                 <div className="text-center">
                                     <div className="mb-4 inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-800">
-                                        <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        <svg
+                                            className="mr-2 h-5 w-5"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                            />
                                         </svg>
                                         14-Day Free Trial
                                     </div>
@@ -465,7 +473,8 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         Try Our Logistics Platform Risk-Free
                                     </h2>
                                     <p className="mb-6 text-lg text-gray-600">
-                                        {starterPlan?.description || 'Test drive all features with zero commitment and zero cost'}
+                                        {starterPlan?.description ||
+                                            'Test drive all features with zero commitment and zero cost'}
                                     </p>
                                     {starterPlan?.tagline && (
                                         <p className="mb-8 text-base italic text-gray-500">
@@ -480,7 +489,8 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                             )}
                                         </div>
                                         <p className="text-sm text-gray-500">
-                                            No credit card required • Cancel anytime
+                                            No credit card required • Cancel
+                                            anytime
                                         </p>
                                     </div>
                                     {auth.user ? (
@@ -494,21 +504,49 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                         <Link
                                             href={route('register', {
                                                 project: 'logistics',
-                                                plan: starterPlan?.id || 'starter',
+                                                plan:
+                                                    starterPlan?.id ||
+                                                    'starter',
                                             })}
                                             className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
                                         >
-                                            {starterPlan?.buttonText || 'Start Free Trial'}
-                                            <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            {starterPlan?.buttonText ||
+                                                'Start Free Trial'}
+                                            <svg
+                                                className="ml-2 h-5 w-5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                                />
                                             </svg>
                                         </Link>
                                     )}
                                     <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                                        {(starterPlan?.features || ['Explore all core features before committing']).map((feature, index) => (
-                                            <div key={index} className="flex items-center">
-                                                <svg className="mr-2 h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        {(
+                                            starterPlan?.features || [
+                                                'Explore all core features before committing',
+                                            ]
+                                        ).map((feature, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center"
+                                            >
+                                                <svg
+                                                    className="mr-2 h-5 w-5 text-blue-500"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clipRule="evenodd"
+                                                    />
                                                 </svg>
                                                 {feature}
                                             </div>
@@ -527,10 +565,10 @@ export default function LogisticsIndex({ auth }: PageProps) {
                             Choose Your Paid Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            After your free trial, select the perfect plan for your logistics
-                            operations. All plans include our core fleet
-                            management features with different levels of support
-                            and integrations.
+                            After your free trial, select the perfect plan for
+                            your logistics operations. All plans include our
+                            core fleet management features with different levels
+                            of support and integrations.
                         </p>
                     </div>
 

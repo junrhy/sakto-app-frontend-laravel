@@ -4,8 +4,8 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Lock, Mail, UserCircle } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
-import { Mail, Lock, UserCircle } from 'lucide-react';
 
 interface Props {
     projectParam?: string;

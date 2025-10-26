@@ -37,6 +37,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_admin',
         'slug',
         'user_type',
+        'trial_started_at',
+        'trial_ends_at',
+        'trial_expired_notification_sent',
     ];
 
     /**
@@ -60,6 +63,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'trial_started_at' => 'datetime',
+            'trial_ends_at' => 'datetime',
+            'trial_expired_notification_sent' => 'boolean',
         ];
     }
 
@@ -169,6 +175,122 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Start a free trial for the user.
+     *
+     * @param int $days Number of days for the trial (default: 14)
+     * @return bool
+     */
+    public function startTrial(int $days = 14): bool
+    {
+        // Don't start trial if user already has an active subscription
+        if ($this->hasActiveSubscription()) {
+            return false;
+        }
+
+        // Don't start trial if user already had a trial
+        if ($this->hasHadTrial()) {
+            return false;
+        }
+
+        $this->trial_started_at = now();
+        $this->trial_ends_at = now()->addDays($days);
+        $this->trial_expired_notification_sent = false;
+
+        return $this->save();
+    }
+
+    /**
+     * Check if the user is currently on a trial.
+     *
+     * @return bool
+     */
+    public function onTrial(): bool
+    {
+        return $this->trial_ends_at !== null && 
+               $this->trial_ends_at->isFuture();
+    }
+
+    /**
+     * Check if the user has ever had a trial.
+     *
+     * @return bool
+     */
+    public function hasHadTrial(): bool
+    {
+        return $this->trial_started_at !== null;
+    }
+
+    /**
+     * Check if the user's trial has expired.
+     *
+     * @return bool
+     */
+    public function trialExpired(): bool
+    {
+        return $this->trial_ends_at !== null && 
+               $this->trial_ends_at->isPast();
+    }
+
+    /**
+     * Get the number of days remaining in the trial.
+     *
+     * @return int
+     */
+    public function trialDaysRemaining(): int
+    {
+        if (!$this->onTrial()) {
+            return 0;
+        }
+
+        return max(0, now()->diffInDays($this->trial_ends_at, false));
+    }
+
+    /**
+     * Check if the user has an active subscription.
+     *
+     * @return bool
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscription !== null;
+    }
+
+    /**
+     * Check if the user has access to premium features.
+     * Returns true if user has active subscription OR is on valid trial.
+     *
+     * @return bool
+     */
+    public function hasAccess(): bool
+    {
+        return $this->hasActiveSubscription() || $this->onTrial();
+    }
+
+    /**
+     * Get the trial data for frontend consumption.
+     */
+    public function getTrialDataAttribute()
+    {
+        if (!$this->trial_started_at) {
+            return [
+                'active' => false,
+                'started_at' => null,
+                'ends_at' => null,
+                'days_remaining' => 0,
+                'expired' => false,
+            ];
+        }
+
+        return [
+            'active' => $this->onTrial(),
+            'started_at' => $this->trial_started_at,
+            'ends_at' => $this->trial_ends_at,
+            'days_remaining' => $this->trialDaysRemaining(),
+            'expired' => $this->trialExpired(),
+        ];
+    }
+
+    /**
      * Check if the user is a customer.
      *
      * @return bool
@@ -202,6 +324,13 @@ class User extends Authenticatable implements MustVerifyEmail
             // Generate slug from name if not provided
             if (empty($user->slug)) {
                 $user->slug = $user->generateSlug();
+            }
+            
+            // Auto-start 14-day trial for new users (except admin users and customer type)
+            if (!$user->is_admin && $user->user_type !== 'customer') {
+                $user->trial_started_at = now();
+                $user->trial_ends_at = now()->addDays(14);
+                $user->trial_expired_notification_sent = false;
             }
         });
 

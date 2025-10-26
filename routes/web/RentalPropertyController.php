@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Real Estate (subscription required)
     Route::prefix('rental-property')->group(function () {
         Route::get('/', [RentalPropertyController::class, 'index'])->name('rental-property');

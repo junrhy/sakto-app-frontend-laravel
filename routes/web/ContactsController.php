@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Contact Management
     Route::resource('contacts', ContactsController::class);
     Route::get('/contacts/settings', [ContactsController::class, 'settings'])->name('contacts.settings');

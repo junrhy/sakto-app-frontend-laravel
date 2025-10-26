@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Payroll
     Route::prefix('payroll')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('payroll');

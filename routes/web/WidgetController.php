@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Widget Management
     Route::post('/widgets', [WidgetController::class, 'store'])->name('widgets.store');
     Route::delete('/widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');

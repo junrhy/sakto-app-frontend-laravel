@@ -79,7 +79,13 @@ export default function Communities({
 
             if (data.status === 'success') {
                 toast.success(data.message);
-                router.reload({ only: ['communities', 'joinedCommunityIds', 'pendingRequestIds'] });
+                router.reload({
+                    only: [
+                        'communities',
+                        'joinedCommunityIds',
+                        'pendingRequestIds',
+                    ],
+                });
             } else {
                 toast.error(data.message || 'Failed to join community');
             }
@@ -112,7 +118,13 @@ export default function Communities({
 
             if (data.status === 'success') {
                 toast.success(data.message);
-                router.reload({ only: ['communities', 'joinedCommunityIds', 'pendingRequestIds'] });
+                router.reload({
+                    only: [
+                        'communities',
+                        'joinedCommunityIds',
+                        'pendingRequestIds',
+                    ],
+                });
             } else {
                 toast.error(data.message || 'Failed to leave community');
             }
@@ -258,7 +270,9 @@ export default function Communities({
                                                             Joined
                                                         </span>
                                                     )}
-                                                    {isPending(community.id) && (
+                                                    {isPending(
+                                                        community.id,
+                                                    ) && (
                                                         <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
                                                             Pending
                                                         </span>

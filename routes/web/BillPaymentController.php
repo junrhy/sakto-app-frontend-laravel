@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Bill Payments (subscription required)
     Route::prefix('bill-payments')->group(function () {
         Route::get('/', [BillPaymentController::class, 'index'])->name('bill-payments');

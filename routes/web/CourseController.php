@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->group(function () {
     // Courses (subscription required)
     Route::prefix('courses')->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('courses.index');
