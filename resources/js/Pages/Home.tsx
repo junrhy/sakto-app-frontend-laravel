@@ -146,6 +146,7 @@ export default function Home({ auth, usageLimits = {} }: Props) {
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showMobileTrialInfo, setShowMobileTrialInfo] = useState(false);
 
     // Use shared subscription and trial data
     const subscription = auth.user.subscription;
@@ -194,6 +195,30 @@ export default function Home({ auth, usageLimits = {} }: Props) {
         fetchCredits();
         fetchApps();
     }, [auth.user.identifier]);
+
+    // Check if we should show the mobile trial info (once per day)
+    useEffect(() => {
+        const checkDailyTrialInfo = () => {
+            // Only show on mobile devices
+            const isMobile = window.innerWidth < 768;
+            if (!isMobile) return;
+
+            // Only show if user is on trial and not subscribed
+            if (!isOnTrial || isSubscriptionActive) return;
+
+            // Check localStorage for last shown date
+            const lastShown = localStorage.getItem('lastMobileTrialInfoShown');
+            const today = new Date().toDateString();
+
+            // Show if never shown or if shown on a different day
+            if (!lastShown || lastShown !== today) {
+                setShowMobileTrialInfo(true);
+                localStorage.setItem('lastMobileTrialInfoShown', today);
+            }
+        };
+
+        checkDailyTrialInfo();
+    }, [isOnTrial, isSubscriptionActive]);
 
     const getBorderColor = (colorClass: string) => {
         const colorMap: { [key: string]: string } = {
@@ -597,7 +622,7 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                             </div>
                         </div>
 
-                        <div className="mb-6 flex flex-col items-center landscape:hidden">
+                        <div className="mb-3 flex items-center justify-center gap-2 landscape:hidden">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -610,47 +635,66 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                                         },
                                     ))
                                 }
-                                className="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                                className="h-auto py-1 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                             >
-                                <span className="mt-1 max-w-2xl text-center text-lg text-gray-900 text-opacity-90 dark:text-white">
+                                <span className="text-center text-sm font-medium text-gray-900 dark:text-white">
                                     {formatNumber(credits)} Credits
                                 </span>
                             </Button>
                             {isSubscriptionActive && (
-                                <div className="mt-1 text-sm text-gray-900 text-opacity-80 dark:text-white">
-                                    <span className="mr-1 rounded-full bg-purple-500 px-2 py-0.5 text-xs font-medium text-white">
-                                        {subscription.plan.name}
-                                    </span>
-                                </div>
+                                <span className="rounded-full bg-purple-500 px-2 py-0.5 text-xs font-medium text-white">
+                                    {subscription.plan.name}
+                                </span>
                             )}
                             {isOnTrial && !isSubscriptionActive && (
-                                <div className="mt-1 text-sm text-gray-900 text-opacity-80 dark:text-white">
-                                    <span className="mr-1 rounded-full bg-green-500 px-2 py-0.5 text-xs font-medium text-white">
-                                        Trial: {trial?.days_remaining}d left
-                                    </span>
-                                </div>
+                                <span className="rounded-full bg-green-500 px-2 py-0.5 text-xs font-medium text-white">
+                                    Trial: {trial?.days_remaining}d left
+                                </span>
                             )}
                         </div>
                     </div>
                 </div>
 
                 <div
-                    className={`container mx-auto px-4 ${!hasAccess || (isOnTrial && !isSubscriptionActive) ? 'pt-[220px]' : 'pt-[200px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[160px]`}
+                    className={`container mx-auto px-4 ${!hasAccess || (isOnTrial && !isSubscriptionActive) ? 'pt-[180px]' : 'pt-[160px]'} mb-4 overflow-y-auto md:pt-[220px] landscape:pt-[140px]`}
                 >
                     {/* Show trial banner if user is on trial AND no active subscription */}
                     {isOnTrial && trial && !isSubscriptionActive && (
                         <>
-                            <TrialBanner
-                                daysRemaining={trial.days_remaining}
-                                endsAt={trial.ends_at || ''}
-                                className="mb-6"
-                            />
-                            <TrialInstructions
-                                projectIdentifier={
-                                    auth.project?.identifier || 'trial'
-                                }
-                                className="mb-8"
-                            />
+                            {/* Mobile: Show simplified trial info once per day */}
+                            {showMobileTrialInfo && (
+                                <div className="mb-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20 md:hidden">
+                                    <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-white">
+                                        Your free trial ends in {trial.days_remaining} {trial.days_remaining === 1 ? 'day' : 'days'}
+                                    </h3>
+                                    <p className="mb-3 text-sm text-gray-700 dark:text-gray-300">
+                                        Subscribe now to continue enjoying all premium features without interruption.
+                                    </p>
+                                    <Button
+                                        onClick={() => {
+                                            window.location.href = route('subscriptions.index');
+                                        }}
+                                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700"
+                                    >
+                                        View Subscription Plans
+                                    </Button>
+                                </div>
+                            )}
+
+                            {/* Desktop: Show full trial banner and instructions */}
+                            <div className="hidden md:block">
+                                <TrialBanner
+                                    daysRemaining={trial.days_remaining}
+                                    endsAt={trial.ends_at || ''}
+                                    className="mb-6"
+                                />
+                                <TrialInstructions
+                                    projectIdentifier={
+                                        auth.project?.identifier || 'trial'
+                                    }
+                                    className="mb-8"
+                                />
+                            </div>
                         </>
                     )}
 
@@ -752,7 +796,7 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                     )}
 
                     {/* Apps Grid */}
-                    <div className="mx-auto grid w-full grid-cols-4 gap-3 gap-y-6 md:grid-cols-5 md:gap-4 md:gap-y-10 lg:grid-cols-6 lg:gap-6 lg:gap-y-12">
+                    <div className="mx-auto grid w-full grid-cols-3 gap-3 gap-y-6 md:grid-cols-5 md:gap-4 md:gap-y-10 lg:grid-cols-6 lg:gap-6 lg:gap-y-12">
                         {apps
                             .filter((app) => {
                                 // If user has no access (no subscription and no trial), hide all apps
