@@ -1,6 +1,8 @@
 import {
+    ArrowRightStartOnRectangleIcon,
     Bars3Icon,
     CreditCardIcon,
+    QuestionMarkCircleIcon,
     XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { Link, usePage } from '@inertiajs/react';
@@ -14,9 +16,11 @@ interface NavItem {
     notifications?: number;
     isHome?: boolean;
     isAction?: boolean;
+    isLogout?: boolean;
+    method?: 'get' | 'post';
 }
 
-const createNavItems = (unreadCount: number = 0): NavItem[] => [
+const createNavItems = (unreadCount: number = 0, projectIdentifier: string = ''): NavItem[] => [
     {
         icon: <RxHome />,
         label: 'Home',
@@ -45,6 +49,18 @@ const createNavItems = (unreadCount: number = 0): NavItem[] => [
         route: '/credits/buy',
         isAction: true,
     },
+    {
+        icon: <QuestionMarkCircleIcon className="h-6 w-6" />,
+        label: 'Help',
+        route: '/help',
+    },
+    {
+        icon: <ArrowRightStartOnRectangleIcon className="h-6 w-6" />,
+        label: 'Logout',
+        route: `/logout/${projectIdentifier}`,
+        isLogout: true,
+        method: 'post',
+    },
 ];
 
 interface MobileSidebarProps {
@@ -69,10 +85,11 @@ export default function MobileSidebar({
     onToggle,
 }: MobileSidebarProps) {
     const { url } = usePage();
-    const page = usePage<{ auth: { user: any }; unreadCount?: number }>();
+    const page = usePage<{ auth: { user: any; project: { identifier: string } }; unreadCount?: number }>();
     const unreadCount = page.props.unreadCount ?? 0;
+    const projectIdentifier = page.props.auth?.project?.identifier ?? '';
 
-    const items = createNavItems(unreadCount);
+    const items = createNavItems(unreadCount, projectIdentifier);
 
     return (
         <>
@@ -113,13 +130,17 @@ export default function MobileSidebar({
                                     <Link
                                         key={index}
                                         href={item.route}
+                                        method={item.method || 'get'}
+                                        as={item.isLogout ? 'button' : undefined}
                                         onClick={onToggle}
-                                        className={`relative flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                                        className={`relative flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                                             item.isAction
                                                 ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white hover:from-orange-500 hover:to-orange-600 dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700'
-                                                : isActive
-                                                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                                                : item.isLogout
+                                                  ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20'
+                                                  : isActive
+                                                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
                                         }`}
                                     >
                                         <div className="relative text-2xl">

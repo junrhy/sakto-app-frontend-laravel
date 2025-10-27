@@ -565,7 +565,7 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                                             </DropdownMenu>
                                         )}
 
-                                    <div className="relative inline-block">
+                                    <div className="relative hidden md:inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button

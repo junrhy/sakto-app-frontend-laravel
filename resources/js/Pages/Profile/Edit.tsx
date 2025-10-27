@@ -1,5 +1,12 @@
 import MobileSidebar from '@/Components/MobileSidebar';
 import { Badge } from '@/Components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { UserIcon } from '@heroicons/react/24/outline';
 import { CreditCard, Receipt, Settings, Shield, Users } from 'lucide-react';
@@ -212,15 +219,65 @@ export default function Edit({
                             onValueChange={setActiveTab}
                             className="space-y-6"
                         >
-                            <TabsList className="flex w-auto justify-start overflow-x-auto rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+                            {/* Mobile Select Dropdown */}
+                            <div className="md:hidden">
+                                <Select value={activeTab} onValueChange={setActiveTab}>
+                                    <SelectTrigger className="w-full bg-white dark:bg-gray-800">
+                                        <SelectValue placeholder="Select a section" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="team">
+                                            <div className="flex items-center gap-2">
+                                                <Users className="h-4 w-4" />
+                                                <span>Team</span>
+                                            </div>
+                                        </SelectItem>
+                                        {(isAdministrator || !hasTeamMembers) && (
+                                            <>
+                                                <SelectItem value="account">
+                                                    <div className="flex items-center gap-2">
+                                                        <UserIcon className="h-4 w-4" />
+                                                        <span>Account</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="subscriptions">
+                                                    <div className="flex items-center gap-2">
+                                                        <CreditCard className="h-4 w-4" />
+                                                        <span>Subscriptions</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="billing">
+                                                    <div className="flex items-center gap-2">
+                                                        <Receipt className="h-4 w-4" />
+                                                        <span>Billing</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="security">
+                                                    <div className="flex items-center gap-2">
+                                                        <Shield className="h-4 w-4" />
+                                                        <span>Security</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="preferences">
+                                                    <div className="flex items-center gap-2">
+                                                        <Settings className="h-4 w-4" />
+                                                        <span>Preferences</span>
+                                                    </div>
+                                                </SelectItem>
+                                            </>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Desktop Tabs */}
+                            <TabsList className="hidden w-auto justify-start overflow-x-auto rounded-lg bg-gray-100 p-1 dark:bg-gray-800 md:flex">
                                 <TabsTrigger
                                     value="team"
                                     className="flex items-center gap-2 whitespace-nowrap"
                                 >
                                     <Users className="h-4 w-4" />
-                                    <span className="hidden sm:inline">
-                                        Team
-                                    </span>
+                                    <span>Team</span>
                                 </TabsTrigger>
                                 {(isAdministrator || !hasTeamMembers) && (
                                     <>
@@ -229,53 +286,41 @@ export default function Edit({
                                             className="flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <UserIcon className="h-4 w-4" />
-                                            <span className="hidden sm:inline">
-                                                Account
-                                            </span>
+                                            <span>Account</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="subscriptions"
                                             className="flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <CreditCard className="h-4 w-4" />
-                                            <span className="hidden sm:inline">
-                                                Subscriptions
-                                            </span>
+                                            <span>Subscriptions</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="billing"
                                             className="flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <Receipt className="h-4 w-4" />
-                                            <span className="hidden sm:inline">
-                                                Billing
-                                            </span>
+                                            <span>Billing</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="security"
                                             className="flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <Shield className="h-4 w-4" />
-                                            <span className="hidden sm:inline">
-                                                Security
-                                            </span>
+                                            <span>Security</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="preferences"
                                             className="flex items-center gap-2 whitespace-nowrap"
                                         >
                                             <Settings className="h-4 w-4" />
-                                            <span className="hidden sm:inline">
-                                                Preferences
-                                            </span>
+                                            <span>Preferences</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="danger"
                                             className="flex items-center gap-2 whitespace-nowrap text-red-600 dark:text-red-400"
                                         >
-                                            <span className="hidden sm:inline">
-                                                Danger
-                                            </span>
+                                            <span>Danger</span>
                                         </TabsTrigger>
                                     </>
                                 )}

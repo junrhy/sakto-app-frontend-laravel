@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import MobileSidebar, { MobileSidebarToggle } from '@/Components/MobileSidebar';
 import { ThemeProvider, useTheme } from '@/Components/ThemeProvider';
 import {
     Accordion,
@@ -98,6 +99,7 @@ export default function Help({ auth }: Props) {
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isLoadingSubscription, setIsLoadingSubscription] =
         useState<boolean>(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -159,6 +161,12 @@ export default function Help({ auth }: Props) {
     return (
         <ThemeProvider>
             <div className="relative min-h-screen bg-gray-50 pb-16 dark:bg-gray-900">
+                {/* Mobile Sidebar */}
+                <MobileSidebar
+                    isOpen={isSidebarOpen}
+                    onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+                />
+
                 {/* Message for users without subscription */}
                 {!isLoadingSubscription && !subscription && (
                     <div className="fixed left-0 right-0 top-0 z-20 bg-gradient-to-r from-blue-600 to-indigo-600 py-1 text-center text-sm text-white shadow-lg dark:from-blue-700 dark:to-indigo-700">
@@ -186,10 +194,15 @@ export default function Help({ auth }: Props) {
                     <div className="container mx-auto px-4 pt-4">
                         <div className="mb-4 flex flex-col items-center">
                             <div className="mb-2 flex w-full items-center justify-between">
-                                <div className="flex items-center">
-                                    <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
-                                    <div className="ml-2">
-                                        <span className="text-xl font-bold text-gray-900 dark:text-white">
+                                <div className="flex min-w-0 flex-1 items-center gap-2">
+                                    <MobileSidebarToggle
+                                        onClick={() =>
+                                            setIsSidebarOpen(!isSidebarOpen)
+                                        }
+                                    />
+                                    <ApplicationLogo className="hidden h-10 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block" />
+                                    <div className="min-w-0 flex-1 sm:ml-2">
+                                        <span className="block truncate text-xl font-bold text-gray-900 dark:text-white">
                                             {auth.user.name}
                                         </span>
                                     </div>
@@ -232,19 +245,7 @@ export default function Help({ auth }: Props) {
                                             </Button>
                                         </div>
                                     </div>
-                                    {/* Mobile Credits Button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-white hover:bg-white/10 hover:text-blue-100 sm:hidden"
-                                        onClick={() =>
-                                            (window.location.href =
-                                                route('credits.buy'))
-                                        }
-                                    >
-                                        <CreditCardIcon className="h-5 w-5" />
-                                    </Button>
-                                    <div className="relative inline-block">
+                                    <div className="relative hidden md:inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button

@@ -296,7 +296,7 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="relative inline-block">
+                                <div className="relative hidden md:inline-block">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button
