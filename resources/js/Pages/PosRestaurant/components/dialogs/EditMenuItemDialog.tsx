@@ -15,7 +15,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import React, { useEffect, useState } from 'react';
+import { ImagePlus, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MenuItem, MenuItemFormData } from '../../types';
 
 interface EditMenuItemDialogProps {
@@ -38,6 +39,9 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
         image: '',
         delivery_fee: 0,
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Update form data when menuItem changes or dialog opens
     useEffect(() => {
@@ -49,6 +53,8 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
                 image: menuItem.image || '',
                 delivery_fee: menuItem.delivery_fee || 0,
             });
+            setImagePreview('');
+            setImageFile(null);
         }
     }, [menuItem, isOpen]);
 
@@ -60,9 +66,24 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
             formData.category &&
             menuItem
         ) {
-            onConfirm(menuItem.id, formData);
-            resetForm();
-            onClose();
+            // If there's a new image file, convert to base64
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const updatedFormData = {
+                        ...formData,
+                        image: reader.result as string,
+                    };
+                    onConfirm(menuItem.id, updatedFormData);
+                    resetForm();
+                    onClose();
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                onConfirm(menuItem.id, formData);
+                resetForm();
+                onClose();
+            }
         }
     };
 
@@ -79,6 +100,11 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
             image: '',
             delivery_fee: 0,
         });
+        setImageFile(null);
+        setImagePreview('');
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const handleInputChange = (
@@ -89,6 +115,27 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
             ...prev,
             [field]: value,
         }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImageFile(null);
+        setImagePreview('');
+        setFormData((prev) => ({ ...prev, image: '' }));
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     return (
@@ -174,19 +221,73 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
                             </Select>
                         </div>
 
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="image" className="text-right">
-                                Image URL
-                            </Label>
-                            <Input
-                                id="image"
-                                value={formData.image}
-                                onChange={(e) =>
-                                    handleInputChange('image', e.target.value)
-                                }
-                                className="col-span-3 border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
-                                placeholder="https://example.com/image.jpg"
-                            />
+                        <div className="grid grid-cols-4 items-start gap-4">
+                            <Label className="pt-2 text-right">Image</Label>
+                            <div className="col-span-3 space-y-3">
+                                {/* Image Preview */}
+                                {(imagePreview || formData.image) && (
+                                    <div className="relative">
+                                        <img
+                                            src={imagePreview || formData.image}
+                                            alt="Preview"
+                                            className="h-32 w-full rounded-lg object-cover"
+                                        />
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="destructive"
+                                            className="absolute right-2 top-2"
+                                            onClick={handleRemoveImage}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* Upload Button */}
+                                <div className="flex gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        className="flex-1"
+                                    >
+                                        <ImagePlus className="mr-2 h-4 w-4" />
+                                        {imagePreview || formData.image
+                                            ? 'Change Image'
+                                            : 'Upload Image'}
+                                    </Button>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                    />
+                                </div>
+
+                                {/* Optional URL Input */}
+                                <div className="text-center text-xs text-gray-500 dark:text-gray-400">
+                                    or
+                                </div>
+                                <Input
+                                    value={formData.image}
+                                    onChange={(e) => {
+                                        handleInputChange(
+                                            'image',
+                                            e.target.value,
+                                        );
+                                        if (e.target.value) {
+                                            setImagePreview('');
+                                            setImageFile(null);
+                                        }
+                                    }}
+                                    className="border border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+                                    placeholder="Or paste image URL"
+                                />
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-4 items-center gap-4">

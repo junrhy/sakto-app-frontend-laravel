@@ -101,7 +101,7 @@ class PosRestaurantController extends Controller
                 'name' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'category' => 'required|string',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|string',
                 'is_available_personal' => 'boolean',
                 'is_available_online' => 'boolean',
                 'delivery_fee' => 'nullable|numeric|min:0'
@@ -111,17 +111,34 @@ class PosRestaurantController extends Controller
             $validated['is_available_personal'] = $request->input('is_available_personal', true);
             $validated['is_available_online'] = $request->input('is_available_online', true);
 
-            // Handle multipart form data with image
+            // Handle image upload (file or base64)
             if ($request->hasFile('image')) {
+                // Handle file upload
                 $path = $request->file('image')->store('fnb-menu-items', 'public');
                 $validated['image'] = Storage::disk('public')->url($path);
-
-                $response = Http::withToken($this->apiToken)
-                    ->post("{$this->apiUrl}/fnb-menu-items", $validated);
-            } else {
-                $response = Http::withToken($this->apiToken)
-                    ->post("{$this->apiUrl}/fnb-menu-items", $validated);
+            } elseif ($request->has('image') && !empty($request->input('image'))) {
+                $imageData = $request->input('image');
+                
+                // Check if it's a base64 image
+                if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
+                    // Extract base64 data
+                    $imageType = $matches[1];
+                    $imageData = substr($imageData, strpos($imageData, ',') + 1);
+                    $imageData = base64_decode($imageData);
+                    
+                    // Generate unique filename
+                    $filename = 'menu_' . time() . '_' . uniqid() . '.' . $imageType;
+                    $path = 'fnb-menu-items/' . $filename;
+                    
+                    // Store the file
+                    Storage::disk('public')->put($path, $imageData);
+                    $validated['image'] = Storage::disk('public')->url($path);
+                }
+                // Otherwise keep the URL as is (for regular URLs)
             }
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-menu-items", $validated);
 
             if (!$response->successful()) {
                 return redirect()->back()
@@ -144,6 +161,10 @@ class PosRestaurantController extends Controller
     public function updateMenuItem(Request $request, string $id)
     {
         try {
+            $requestData = $request->all();
+            $imageUpdated = false;
+
+            // Handle image upload (file or base64)
             if ($request->hasFile('image')) {
                 // Delete old image if exists
                 $getResponse = Http::withToken($this->apiToken)
@@ -151,24 +172,54 @@ class PosRestaurantController extends Controller
                 if ($getResponse->successful()) {
                     $menuItem = $getResponse->json()['data']['fnb_menu_item'];
                     if (!empty($menuItem['image'])) {
-                        $path = str_replace(Storage::disk('public')->url(''), '', $menuItem['image']);
-                        if (Storage::disk('public')->exists($path)) {
-                            Storage::disk('public')->delete($path);
+                        $oldPath = str_replace(Storage::disk('public')->url(''), '', $menuItem['image']);
+                        if (Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
                         }
                     }
                 }
     
+                // Handle file upload
                 $path = $request->file('image')->store('fnb-menu-items', 'public');
-
-                $requestData = $request->all();
                 $requestData['image'] = Storage::disk('public')->url($path);
+                $imageUpdated = true;
+            } elseif ($request->has('image') && !empty($request->input('image'))) {
+                $imageData = $request->input('image');
+                
+                // Check if it's a base64 image
+                if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
+                    // Delete old image if exists
+                    $getResponse = Http::withToken($this->apiToken)
+                        ->get("{$this->apiUrl}/fnb-menu-items/{$id}");
+                    if ($getResponse->successful()) {
+                        $menuItem = $getResponse->json()['data']['fnb_menu_item'];
+                        if (!empty($menuItem['image']) && strpos($menuItem['image'], Storage::disk('public')->url('')) !== false) {
+                            $oldPath = str_replace(Storage::disk('public')->url(''), '', $menuItem['image']);
+                            if (Storage::disk('public')->exists($oldPath)) {
+                                Storage::disk('public')->delete($oldPath);
+                            }
+                        }
+                    }
 
-                $response = Http::withToken($this->apiToken)
-                    ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $requestData);
-            } else {
-                $response = Http::withToken($this->apiToken)
-                    ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
+                    // Extract base64 data
+                    $imageType = $matches[1];
+                    $imageData = substr($imageData, strpos($imageData, ',') + 1);
+                    $imageData = base64_decode($imageData);
+                    
+                    // Generate unique filename
+                    $filename = 'menu_' . time() . '_' . uniqid() . '.' . $imageType;
+                    $path = 'fnb-menu-items/' . $filename;
+                    
+                    // Store the file
+                    Storage::disk('public')->put($path, $imageData);
+                    $requestData['image'] = Storage::disk('public')->url($path);
+                    $imageUpdated = true;
+                }
+                // Otherwise keep the URL as is (for regular URLs)
             }
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $requestData);
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
