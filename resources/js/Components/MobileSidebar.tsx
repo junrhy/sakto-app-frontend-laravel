@@ -175,7 +175,7 @@ export default function MobileSidebar({
                     {/* Sidebar Footer */}
                     <div className="border-t border-gray-200 p-4 dark:border-gray-800">
                         <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                            Sakto App © 2025
+                            Neulify © {new Date().getFullYear()}
                         </p>
                     </div>
                 </div>

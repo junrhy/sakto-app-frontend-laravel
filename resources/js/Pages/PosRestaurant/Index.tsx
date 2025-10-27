@@ -919,8 +919,8 @@ export default function PosRestaurantIndex({
     return (
         <AuthenticatedLayout
             header={
-                <div className="hidden items-center space-x-3 xl:flex">
-                    <div className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-2">
+                <div className="items-center space-x-3 xl:flex">
+                    <div className="hidden rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-2 xl:block">
                         <UtensilsCrossed className="h-6 w-6 text-white" />
                     </div>
                     <div>

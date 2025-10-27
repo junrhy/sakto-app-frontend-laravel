@@ -39,9 +39,9 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
         delivery_fee: 0,
     });
 
-    // Update form data when menuItem changes
+    // Update form data when menuItem changes or dialog opens
     useEffect(() => {
-        if (menuItem) {
+        if (menuItem && isOpen) {
             setFormData({
                 name: menuItem.name || '',
                 price: menuItem.price || 0,
@@ -50,7 +50,7 @@ export const EditMenuItemDialog: React.FC<EditMenuItemDialogProps> = ({
                 delivery_fee: menuItem.delivery_fee || 0,
             });
         }
-    }, [menuItem]);
+    }, [menuItem, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
