@@ -145,11 +145,23 @@ class PosRestaurantController extends Controller
                     ->with('error', $response->json()['message'] ?? 'Failed to create menu item');
             }
 
+            $responseData = $response->json();
+            
+            // Log the response for debugging
+            Log::info('Menu item created successfully', [
+                'response' => $responseData
+            ]);
+
             return redirect()->back()
                 ->with('success', 'Menu item created successfully')
-                ->with('menuItem', $response->json()['data']);
+                ->with('menuItem', $responseData['data'] ?? $responseData);
 
         } catch (\Exception $e) {
+            Log::error('Failed to store menu item', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect()->back()
                 ->with('error', 'Failed to store menu item: ' . $e->getMessage());
         }
@@ -225,9 +237,23 @@ class PosRestaurantController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
+            $responseData = $response->json();
+            
+            // Log the response for debugging
+            Log::info('Menu item updated successfully', [
+                'id' => $id,
+                'response' => $responseData
+            ]);
+
             return redirect()->back()->with('success', 'Menu item updated successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update menu item.');
+            Log::error('Failed to update menu item', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()->with('error', 'Failed to update menu item: ' . $e->getMessage());
         }
     }
 
