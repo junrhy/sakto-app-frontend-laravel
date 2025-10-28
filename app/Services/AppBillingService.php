@@ -691,10 +691,10 @@ class AppBillingService
     private function generateInvoiceHTML(Invoice $invoice): string
     {
         $user = $invoice->user;
-        $companyName = config('app.name', 'Sakto App');
+        $companyName = config('app.name', 'Neulify');
         $companyAddress = 'B2-208 Mivesa Garden Residences, Lahug Cebu City, Philippines';
         $companyPhone = '+63 926 004 9848';
-        $companyEmail = 'billing@sakto.app';
+        $companyEmail = 'billing@neulify.com';
 
         $html = '
         <!DOCTYPE html>
@@ -822,10 +822,10 @@ class AppBillingService
      */
     private function generateUpcomingInvoicesHTML(array $upcomingInvoices): string
     {
-        $companyName = config('app.name', 'Sakto App');
+        $companyName = config('app.name', 'Neulify');
         $companyAddress = 'B2-208 Mivesa Garden Residences, Lahug Cebu City, Philippines';
         $companyPhone = '+63 926 004 9848';
-        $companyEmail = 'billing@sakto.app';
+        $companyEmail = 'billing@neulify.com';
 
         $html = '
         <!DOCTYPE html>
@@ -957,10 +957,10 @@ class AppBillingService
     private function generateMonthlyBillingHTML($invoices, string $monthKey): string
     {
         $user = $invoices->first()->user;
-        $companyName = config('app.name', 'Sakto App');
+        $companyName = config('app.name', 'Neulify');
         $companyAddress = 'B2-208 Mivesa Garden Residences, Lahug Cebu City, Philippines';
         $companyPhone = '+63 926 004 9848';
-        $companyEmail = 'billing@sakto.app';
+        $companyEmail = 'billing@neulify.com';
         
         // Format month display
         $date = \DateTime::createFromFormat('Y-m', $monthKey);

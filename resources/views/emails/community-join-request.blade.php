@@ -130,7 +130,7 @@
         </div>
 
         <div class="footer">
-            <p>This is an automated email from your Sakto App community management system.</p>
+            <p>This is an automated email from your Neulify community management system.</p>
             <p>If you did not expect this email, please ignore it.</p>
         </div>
     </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sakto Appointment Form - Example</title>
+    <title>Neulify Appointment Form - Example</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -68,7 +68,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏥 Sakto Appointment Form</h1>
+            <h1>🏥 Neulify Appointment Form</h1>
             <p>Embeddable appointment booking widget for external websites</p>
         </div>
 
@@ -81,16 +81,16 @@
                 <h3>📋 Basic Embed</h3>
                 <p>Simple appointment form with default styling:</p>
                 <div class="code-block">
-&lt;div id="sakto-appointment-widget"&gt;&lt;/div&gt;
+&lt;div id="neulify-appointment-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
 (function() {
     var script = document.createElement('script');
     script.src = 'https://your-domain.com/embed/appointment/your-clinic-id/widget.js';
     script.async = true;
     script.onload = function() {
-        if (window.SaktoAppointmentWidget) {
-            window.SaktoAppointmentWidget.init({
-                containerId: 'sakto-appointment-widget',
+        if (window.NeulifyAppointmentWidget) {
+            window.NeulifyAppointmentWidget.init({
+                containerId: 'neulify-appointment-widget',
                 clinicId: 'your-clinic-id',
                 apiUrl: 'https://your-domain.com/api/embed/appointment'
             });
@@ -106,16 +106,16 @@
                 <h3>🎨 Customized Theme</h3>
                 <p>Dark theme with custom colors and text:</p>
                 <div class="code-block">
-&lt;div id="sakto-appointment-widget"&gt;&lt;/div&gt;
+&lt;div id="neulify-appointment-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
 (function() {
     var script = document.createElement('script');
     script.src = 'https://your-domain.com/embed/appointment/your-clinic-id/widget.js';
     script.async = true;
     script.onload = function() {
-        if (window.SaktoAppointmentWidget) {
-            window.SaktoAppointmentWidget.init({
-                containerId: 'sakto-appointment-widget',
+        if (window.NeulifyAppointmentWidget) {
+            window.NeulifyAppointmentWidget.init({
+                containerId: 'neulify-appointment-widget',
                 clinicId: 'your-clinic-id',
                 apiUrl: 'https://your-domain.com/api/embed/appointment',
                 theme: 'dark',
@@ -135,16 +135,16 @@
                 <h3>🔔 With Callbacks</h3>
                 <p>Form with success and error handling:</p>
                 <div class="code-block">
-&lt;div id="sakto-appointment-widget"&gt;&lt;/div&gt;
+&lt;div id="neulify-appointment-widget"&gt;&lt;/div&gt;
 &lt;script&gt;
 (function() {
     var script = document.createElement('script');
     script.src = 'https://your-domain.com/embed/appointment/your-clinic-id/widget.js';
     script.async = true;
     script.onload = function() {
-        if (window.SaktoAppointmentWidget) {
-            window.SaktoAppointmentWidget.init({
-                containerId: 'sakto-appointment-widget',
+        if (window.NeulifyAppointmentWidget) {
+            window.NeulifyAppointmentWidget.init({
+                containerId: 'neulify-appointment-widget',
                 clinicId: 'your-clinic-id',
                 apiUrl: 'https://your-domain.com/api/embed/appointment',
                 onSuccess: function(data) {
@@ -172,14 +172,14 @@
 
 &lt;script&gt;
 // Initialize first form
-window.SaktoAppointmentWidget.init({
+window.NeulifyAppointmentWidget.init({
     containerId: 'appointment-form-1',
     clinicId: 'clinic-1',
     apiUrl: 'https://your-domain.com/api/embed/appointment'
 });
 
 // Initialize second form
-window.SaktoAppointmentWidget.init({
+window.NeulifyAppointmentWidget.init({
     containerId: 'appointment-form-2',
     clinicId: 'clinic-2',
     apiUrl: 'https://your-domain.com/api/embed/appointment'
@@ -204,7 +204,7 @@ window.SaktoAppointmentWidget.init({
             <p>All available configuration options:</p>
             <div class="code-block">
 {
-    containerId: 'sakto-appointment-widget',    // Required: HTML element ID
+    containerId: 'neulify-appointment-widget',    // Required: HTML element ID
     clinicId: 'your-clinic-id',                 // Required: Clinic identifier
     apiUrl: 'https://your-domain.com/api/embed/appointment', // Required: API URL
     theme: 'light',                             // Optional: 'light' or 'dark'

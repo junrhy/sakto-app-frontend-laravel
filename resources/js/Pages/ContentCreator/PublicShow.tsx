@@ -84,7 +84,7 @@ export default function PublicShow({
                 {/* PWA Meta Tags */}
                 <meta
                     name="application-name"
-                    content={`${content.title} - Sakto App`}
+                    content={`${content.title} - Neulify`}
                 />
                 <meta
                     name="apple-mobile-web-app-title"

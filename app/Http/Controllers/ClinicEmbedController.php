@@ -346,17 +346,17 @@ class ClinicEmbedController extends Controller
         $embedUrl = url("/embed/appointment/{$clinicId}");
         
         return <<<HTML
-<!-- Sakto Appointment Booking Widget -->
-<div id="sakto-appointment-widget"></div>
+<!-- Neulify Appointment Booking Widget -->
+<div id="neulify-appointment-widget"></div>
 <script>
 (function() {
     var script = document.createElement('script');
     script.src = '{$embedUrl}/widget.js';
     script.async = true;
     script.onload = function() {
-        if (window.SaktoAppointmentWidget) {
-            window.SaktoAppointmentWidget.init({
-                containerId: 'sakto-appointment-widget',
+        if (window.NeulifyAppointmentWidget) {
+            window.NeulifyAppointmentWidget.init({
+                containerId: 'neulify-appointment-widget',
                 clinicId: '{$clinicId}',
                 apiUrl: '{$embedUrl}',
                 theme: 'light', // or 'dark'
@@ -370,7 +370,7 @@ class ClinicEmbedController extends Controller
     document.head.appendChild(script);
 })();
 </script>
-<!-- End Sakto Appointment Booking Widget -->
+<!-- End Neulify Appointment Booking Widget -->
 HTML;
     }
 }

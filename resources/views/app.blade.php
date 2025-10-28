@@ -39,14 +39,14 @@
         </title>
 
         <!-- Add these lines for favicon support -->
-        <link rel="icon" type="image" href="{{ asset('images/tetris-white-bg.png') }}" media="(prefers-color-scheme: light)">
-        <link rel="icon" type="image" href="{{ asset('images/tetris-white.png') }}" media="(prefers-color-scheme: dark)">
+        <link rel="icon" type="image/png" href="{{ asset('images/neulify-logo.png') }}" media="(prefers-color-scheme: light)">
+        <link rel="icon" type="imag/png" href="{{ asset('images/neulify-logo.png') }}" media="(prefers-color-scheme: dark)">
 
         <!-- iOS home screen icons -->
-        <link rel="apple-touch-icon" href="{{ asset('images/tetris-white-bg.png') }}">
-        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('images/tetris-white-bg.png') }}">
-        <link rel="apple-touch-icon" sizes="167x167" href="{{ asset('images/tetris-white-bg.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/tetris-white-bg.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/neulify-logo.png') }}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('images/neulify-logo.png') }}">
+        <link rel="apple-touch-icon" sizes="167x167" href="{{ asset('images/neulify-logo.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/neulify-logo.png') }}">
         
         <!-- iOS web app meta tags -->
         <meta name="apple-mobile-web-app-capable" content="yes">
@@ -67,7 +67,7 @@
         <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
         
         <!-- Splash screen for iOS -->
-        <link href="{{ asset('images/tetris-white-bg.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" rel="apple-touch-startup-image">
+        <link href="{{ asset('images/neulify-logo.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" rel="apple-touch-startup-image">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -97,7 +97,7 @@
             };
 
             // Check user's theme preference first, then fall back to system preference
-            const userTheme = localStorage.getItem('sakto-theme');
+            const userTheme = localStorage.getItem('neulify-theme');
             if (userTheme === 'light') {
                 document.documentElement.classList.remove('dark');
             } else if (userTheme === 'dark') {
@@ -125,7 +125,7 @@
             function updateFavicon() {
                 const isDark = document.documentElement.classList.contains('dark');
                 const favicon = document.querySelector('link[rel="icon"]');
-                favicon.href = isDark ? '{{ asset('images/sakto-white.svg') }}' : '{{ asset('images/sakto.svg') }}';
+                favicon.href = isDark ? '{{ asset('images/neulify-logo.png') }}' : '{{ asset('images/neulify-logo.png') }}';
             }
 
             // Initial update

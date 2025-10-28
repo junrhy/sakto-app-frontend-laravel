@@ -1,5 +1,5 @@
 /**
- * Sakto Appointment Booking Widget
+ * Neulify Appointment Booking Widget
  * Embeddable appointment form for external websites
  */
 
@@ -8,7 +8,7 @@
 
     // Widget configuration
     var defaultConfig = {
-        containerId: 'sakto-appointment-widget',
+        containerId: 'neulify-appointment-widget',
         clinicId: null,
         apiUrl: '/api/embed/appointment',
         theme: 'light',
@@ -194,117 +194,117 @@
         var config = widgetState.config;
 
         container.innerHTML = `
-            <div class="sakto-widget sakto-widget-${config.theme}">
-                <div class="sakto-widget-card">
-                    <div class="sakto-widget-header">
-                        <h2 class="sakto-widget-title">${config.customTitle}</h2>
-                        <p class="sakto-widget-subtitle">${config.customSubtitle}</p>
+            <div class="neulify-widget neulify-widget-${config.theme}">
+                <div class="neulify-widget-card">
+                    <div class="neulify-widget-header">
+                        <h2 class="neulify-widget-title">${config.customTitle}</h2>
+                        <p class="neulify-widget-subtitle">${config.customSubtitle}</p>
                     </div>
-                    <div class="sakto-widget-content">
-                        <form class="sakto-widget-form" onsubmit="window.SaktoAppointmentWidget.handleSubmit(event)">
+                    <div class="neulify-widget-content">
+                        <form class="neulify-widget-form" onsubmit="window.NeulifyAppointmentWidget.handleSubmit(event)">
                             <!-- Patient Information -->
-                            <div class="sakto-widget-section">
-                                <h3 class="sakto-widget-section-title">Patient Information</h3>
+                            <div class="neulify-widget-section">
+                                <h3 class="neulify-widget-section-title">Patient Information</h3>
                                 
-                                <div class="sakto-widget-grid">
-                                    <div class="sakto-widget-field">
-                                        <label class="sakto-widget-label">Full Name *</label>
+                                <div class="neulify-widget-grid">
+                                    <div class="neulify-widget-field">
+                                        <label class="neulify-widget-label">Full Name *</label>
                                         <input 
                                             type="text" 
-                                            class="sakto-widget-input ${widgetState.errors.patient_name ? 'sakto-widget-error' : ''}"
+                                            class="neulify-widget-input ${widgetState.errors.patient_name ? 'neulify-widget-error' : ''}"
                                             value="${widgetState.formData.patient_name}"
-                                            onchange="window.SaktoAppointmentWidget.handleInputChange('patient_name', this.value)"
+                                            onchange="window.NeulifyAppointmentWidget.handleInputChange('patient_name', this.value)"
                                             placeholder="Enter your full name"
                                             maxlength="255"
                                         />
-                                        ${widgetState.errors.patient_name ? `<p class="sakto-widget-error-text">${widgetState.errors.patient_name}</p>` : ''}
+                                        ${widgetState.errors.patient_name ? `<p class="neulify-widget-error-text">${widgetState.errors.patient_name}</p>` : ''}
                                     </div>
 
-                                    <div class="sakto-widget-field">
-                                        <label class="sakto-widget-label">Phone Number *</label>
+                                    <div class="neulify-widget-field">
+                                        <label class="neulify-widget-label">Phone Number *</label>
                                         <input 
                                             type="tel" 
-                                            class="sakto-widget-input ${widgetState.errors.patient_phone ? 'sakto-widget-error' : ''}"
+                                            class="neulify-widget-input ${widgetState.errors.patient_phone ? 'neulify-widget-error' : ''}"
                                             value="${widgetState.formData.patient_phone}"
-                                            onchange="window.SaktoAppointmentWidget.handleInputChange('patient_phone', this.value)"
+                                            onchange="window.NeulifyAppointmentWidget.handleInputChange('patient_phone', this.value)"
                                             placeholder="Enter your phone number"
                                             maxlength="20"
                                         />
-                                        ${widgetState.errors.patient_phone ? `<p class="sakto-widget-error-text">${widgetState.errors.patient_phone}</p>` : ''}
+                                        ${widgetState.errors.patient_phone ? `<p class="neulify-widget-error-text">${widgetState.errors.patient_phone}</p>` : ''}
                                     </div>
                                 </div>
 
-                                <div class="sakto-widget-field">
-                                    <label class="sakto-widget-label">Email Address *</label>
+                                <div class="neulify-widget-field">
+                                    <label class="neulify-widget-label">Email Address *</label>
                                     <input 
                                         type="email" 
-                                        class="sakto-widget-input ${widgetState.errors.patient_email ? 'sakto-widget-error' : ''}"
+                                        class="neulify-widget-input ${widgetState.errors.patient_email ? 'neulify-widget-error' : ''}"
                                         value="${widgetState.formData.patient_email}"
-                                        onchange="window.SaktoAppointmentWidget.handleInputChange('patient_email', this.value)"
+                                        onchange="window.NeulifyAppointmentWidget.handleInputChange('patient_email', this.value)"
                                         placeholder="Enter your email address"
                                         maxlength="255"
                                     />
-                                    ${widgetState.errors.patient_email ? `<p class="sakto-widget-error-text">${widgetState.errors.patient_email}</p>` : ''}
+                                    ${widgetState.errors.patient_email ? `<p class="neulify-widget-error-text">${widgetState.errors.patient_email}</p>` : ''}
                                 </div>
                             </div>
 
                             <!-- Appointment Details -->
-                            <div class="sakto-widget-section">
-                                <h3 class="sakto-widget-section-title">Appointment Details</h3>
+                            <div class="neulify-widget-section">
+                                <h3 class="neulify-widget-section-title">Appointment Details</h3>
                                 
-                                <div class="sakto-widget-grid">
-                                    <div class="sakto-widget-field">
-                                        <label class="sakto-widget-label">Preferred Date *</label>
+                                <div class="neulify-widget-grid">
+                                    <div class="neulify-widget-field">
+                                        <label class="neulify-widget-label">Preferred Date *</label>
                                         <input 
                                             type="date" 
-                                            class="sakto-widget-input ${widgetState.errors.appointment_date ? 'sakto-widget-error' : ''}"
+                                            class="neulify-widget-input ${widgetState.errors.appointment_date ? 'neulify-widget-error' : ''}"
                                             value="${widgetState.formData.appointment_date}"
-                                            onchange="window.SaktoAppointmentWidget.handleInputChange('appointment_date', this.value)"
+                                            onchange="window.NeulifyAppointmentWidget.handleInputChange('appointment_date', this.value)"
                                             min="${new Date().toISOString().split('T')[0]}"
                                         />
-                                        ${widgetState.errors.appointment_date ? `<p class="sakto-widget-error-text">${widgetState.errors.appointment_date}</p>` : ''}
+                                        ${widgetState.errors.appointment_date ? `<p class="neulify-widget-error-text">${widgetState.errors.appointment_date}</p>` : ''}
                                     </div>
 
-                                    <div class="sakto-widget-field">
-                                        <label class="sakto-widget-label">Preferred Time *</label>
+                                    <div class="neulify-widget-field">
+                                        <label class="neulify-widget-label">Preferred Time *</label>
                                         <select 
-                                            class="sakto-widget-select ${widgetState.errors.appointment_time ? 'sakto-widget-error' : ''}"
-                                            onchange="window.SaktoAppointmentWidget.handleInputChange('appointment_time', this.value)"
+                                            class="neulify-widget-select ${widgetState.errors.appointment_time ? 'neulify-widget-error' : ''}"
+                                            onchange="window.NeulifyAppointmentWidget.handleInputChange('appointment_time', this.value)"
                                         >
                                             <option value="">Select time</option>
                                             ${timeSlots.map(function(time) {
                                                 return `<option value="${time}" ${widgetState.formData.appointment_time === time ? 'selected' : ''}>${time}</option>`;
                                             }).join('')}
                                         </select>
-                                        ${widgetState.errors.appointment_time ? `<p class="sakto-widget-error-text">${widgetState.errors.appointment_time}</p>` : ''}
+                                        ${widgetState.errors.appointment_time ? `<p class="neulify-widget-error-text">${widgetState.errors.appointment_time}</p>` : ''}
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Service and Doctor Information -->
-                            <div class="sakto-widget-section">
-                                <h3 class="sakto-widget-section-title">Service & Doctor Information</h3>
+                            <div class="neulify-widget-section">
+                                <h3 class="neulify-widget-section-title">Service & Doctor Information</h3>
                                 
-                                <div class="sakto-widget-grid">
-                                    <div class="sakto-widget-field">
-                                        <label class="sakto-widget-label">Service (Optional)</label>
+                                <div class="neulify-widget-grid">
+                                    <div class="neulify-widget-field">
+                                        <label class="neulify-widget-label">Service (Optional)</label>
                                         <input 
                                             type="text" 
-                                            class="sakto-widget-input"
+                                            class="neulify-widget-input"
                                             value="${widgetState.formData.service_name}"
-                                            onchange="window.SaktoAppointmentWidget.handleInputChange('service_name', this.value)"
+                                            onchange="window.NeulifyAppointmentWidget.handleInputChange('service_name', this.value)"
                                             placeholder="e.g., General Consultation, Dental Cleaning"
                                             maxlength="255"
                                         />
                                     </div>
 
-                                    <div class="sakto-widget-field">
-                                        <label class="sakto-widget-label">Preferred Doctor (Optional)</label>
+                                    <div class="neulify-widget-field">
+                                        <label class="neulify-widget-label">Preferred Doctor (Optional)</label>
                                         <input 
                                             type="text" 
-                                            class="sakto-widget-input"
+                                            class="neulify-widget-input"
                                             value="${widgetState.formData.doctor_name}"
-                                            onchange="window.SaktoAppointmentWidget.handleInputChange('doctor_name', this.value)"
+                                            onchange="window.NeulifyAppointmentWidget.handleInputChange('doctor_name', this.value)"
                                             placeholder="e.g., Dr. Smith, Dr. Johnson"
                                             maxlength="255"
                                         />
@@ -313,14 +313,14 @@
                             </div>
 
                             <!-- Additional Information -->
-                            <div class="sakto-widget-section">
-                                <h3 class="sakto-widget-section-title">Additional Information</h3>
+                            <div class="neulify-widget-section">
+                                <h3 class="neulify-widget-section-title">Additional Information</h3>
                                 
-                                <div class="sakto-widget-field">
-                                    <label class="sakto-widget-label">Preferred Language</label>
+                                <div class="neulify-widget-field">
+                                    <label class="neulify-widget-label">Preferred Language</label>
                                     <select 
-                                        class="sakto-widget-select"
-                                        onchange="window.SaktoAppointmentWidget.handleInputChange('preferred_language', this.value)"
+                                        class="neulify-widget-select"
+                                        onchange="window.NeulifyAppointmentWidget.handleInputChange('preferred_language', this.value)"
                                     >
                                         <option value="English" ${widgetState.formData.preferred_language === 'English' ? 'selected' : ''}>English</option>
                                         <option value="Spanish" ${widgetState.formData.preferred_language === 'Spanish' ? 'selected' : ''}>Spanish</option>
@@ -335,11 +335,11 @@
                                     </select>
                                 </div>
 
-                                <div class="sakto-widget-field">
-                                    <label class="sakto-widget-label">Additional Notes</label>
+                                <div class="neulify-widget-field">
+                                    <label class="neulify-widget-label">Additional Notes</label>
                                     <textarea 
-                                        class="sakto-widget-textarea"
-                                        onchange="window.SaktoAppointmentWidget.handleInputChange('notes', this.value)"
+                                        class="neulify-widget-textarea"
+                                        onchange="window.NeulifyAppointmentWidget.handleInputChange('notes', this.value)"
                                         placeholder="Any specific concerns or information you'd like us to know..."
                                         rows="3"
                                         maxlength="1000"
@@ -349,21 +349,21 @@
 
                             <!-- General Error Display -->
                             ${widgetState.errors.general ? `
-                                <div class="sakto-widget-error-message">
+                                <div class="neulify-widget-error-message">
                                     <p>${widgetState.errors.general}</p>
                                 </div>
                             ` : ''}
 
                             <!-- Submit Button -->
-                            <div class="sakto-widget-submit">
+                            <div class="neulify-widget-submit">
                                 <button 
                                     type="submit" 
-                                    class="sakto-widget-button"
+                                    class="neulify-widget-button"
                                     style="background-color: ${config.primaryColor}"
                                     ${widgetState.isSubmitting ? 'disabled' : ''}
                                 >
                                     ${widgetState.isSubmitting ? 
-                                        '<span class="sakto-widget-spinner"></span> Booking Appointment...' : 
+                                        '<span class="neulify-widget-spinner"></span> Booking Appointment...' : 
                                         'Book Appointment'
                                     }
                                 </button>
@@ -378,18 +378,18 @@
     // Render success message
     function renderSuccessMessage(container) {
         container.innerHTML = `
-            <div class="sakto-widget sakto-widget-${widgetState.config.theme}">
-                <div class="sakto-widget-card">
-                    <div class="sakto-widget-success">
-                        <div class="sakto-widget-success-icon">✓</div>
-                        <h3 class="sakto-widget-success-title">Appointment Booked Successfully!</h3>
-                        <p class="sakto-widget-success-message">
+            <div class="neulify-widget neulify-widget-${widgetState.config.theme}">
+                <div class="neulify-widget-card">
+                    <div class="neulify-widget-success">
+                        <div class="neulify-widget-success-icon">✓</div>
+                        <h3 class="neulify-widget-success-title">Appointment Booked Successfully!</h3>
+                        <p class="neulify-widget-success-message">
                             Thank you for booking your appointment. We will contact you to confirm the details.
                         </p>
                         <button 
-                            class="sakto-widget-button"
+                            class="neulify-widget-button"
                             style="background-color: ${widgetState.config.primaryColor}"
-                            onclick="window.SaktoAppointmentWidget.resetForm()"
+                            onclick="window.NeulifyAppointmentWidget.resetForm()"
                         >
                             Book Another Appointment
                         </button>
@@ -419,13 +419,13 @@
     }
 
     // Public API
-    window.SaktoAppointmentWidget = {
+    window.NeulifyAppointmentWidget = {
         init: function(userConfig) {
             widgetState.config = mergeConfig(userConfig);
             widgetState.isLoaded = true;
             
             // Load CSS if not already loaded
-            if (!document.getElementById('sakto-widget-styles')) {
+            if (!document.getElementById('neulify-widget-styles')) {
                 loadStyles();
             }
             
@@ -459,25 +459,25 @@
     // Load CSS styles
     function loadStyles() {
         var styles = document.createElement('style');
-        styles.id = 'sakto-widget-styles';
+        styles.id = 'neulify-widget-styles';
         styles.textContent = `
-            .sakto-widget {
+            .neulify-widget {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                 line-height: 1.5;
                 color: #374151;
             }
             
-            .sakto-widget-light {
+            .neulify-widget-light {
                 background-color: #ffffff;
                 color: #374151;
             }
             
-            .sakto-widget-dark {
+            .neulify-widget-dark {
                 background-color: #1f2937;
                 color: #f9fafb;
             }
             
-            .sakto-widget-card {
+            .neulify-widget-card {
                 background: #ffffff;
                 border: 1px solid #e5e7eb;
                 border-radius: 8px;
@@ -485,19 +485,19 @@
                 overflow: hidden;
             }
             
-            .sakto-widget-dark .sakto-widget-card {
+            .neulify-widget-dark .neulify-widget-card {
                 background: #1f2937;
                 border-color: #374151;
             }
             
-            .sakto-widget-header {
+            .neulify-widget-header {
                 background: linear-gradient(135deg, #0d9488, #0891b2);
                 color: white;
                 padding: 1.5rem;
                 border-bottom: 1px solid #e5e7eb;
             }
             
-            .sakto-widget-title {
+            .neulify-widget-title {
                 font-size: 1.25rem;
                 font-weight: 700;
                 margin: 0 0 0.5rem 0;
@@ -505,27 +505,27 @@
                 align-items: center;
             }
             
-            .sakto-widget-title::before {
+            .neulify-widget-title::before {
                 content: '📅';
                 margin-right: 0.75rem;
                 font-size: 1.5rem;
             }
             
-            .sakto-widget-subtitle {
+            .neulify-widget-subtitle {
                 margin: 0;
                 opacity: 0.9;
                 font-size: 0.875rem;
             }
             
-            .sakto-widget-content {
+            .neulify-widget-content {
                 padding: 1.5rem;
             }
             
-            .sakto-widget-section {
+            .neulify-widget-section {
                 margin-bottom: 1.5rem;
             }
             
-            .sakto-widget-section-title {
+            .neulify-widget-section-title {
                 font-size: 1.125rem;
                 font-weight: 600;
                 margin: 0 0 1rem 0;
@@ -533,55 +533,55 @@
                 align-items: center;
             }
             
-            .sakto-widget-section-title::before {
+            .neulify-widget-section-title::before {
                 content: '👤';
                 margin-right: 0.5rem;
                 font-size: 1.25rem;
             }
             
-            .sakto-widget-section:nth-child(2) .sakto-widget-section-title::before {
+            .neulify-widget-section:nth-child(2) .neulify-widget-section-title::before {
                 content: '🕐';
             }
             
-            .sakto-widget-section:nth-child(3) .sakto-widget-section-title::before {
+            .neulify-widget-section:nth-child(3) .neulify-widget-section-title::before {
                 content: '🏥';
             }
             
-            .sakto-widget-section:nth-child(4) .sakto-widget-section-title::before {
+            .neulify-widget-section:nth-child(4) .neulify-widget-section-title::before {
                 content: 'ℹ️';
             }
             
-            .sakto-widget-grid {
+            .neulify-widget-grid {
                 display: grid;
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
             
             @media (min-width: 768px) {
-                .sakto-widget-grid {
+                .neulify-widget-grid {
                     grid-template-columns: 1fr 1fr;
                 }
             }
             
-            .sakto-widget-field {
+            .neulify-widget-field {
                 display: flex;
                 flex-direction: column;
             }
             
-            .sakto-widget-label {
+            .neulify-widget-label {
                 font-size: 0.875rem;
                 font-weight: 500;
                 margin-bottom: 0.5rem;
                 color: #374151;
             }
             
-            .sakto-widget-dark .sakto-widget-label {
+            .neulify-widget-dark .neulify-widget-label {
                 color: #d1d5db;
             }
             
-            .sakto-widget-input,
-            .sakto-widget-select,
-            .sakto-widget-textarea {
+            .neulify-widget-input,
+            .neulify-widget-select,
+            .neulify-widget-textarea {
                 padding: 0.75rem;
                 border: 1px solid #d1d5db;
                 border-radius: 6px;
@@ -591,35 +591,35 @@
                 transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
             }
             
-            .sakto-widget-dark .sakto-widget-input,
-            .sakto-widget-dark .sakto-widget-select,
-            .sakto-widget-dark .sakto-widget-textarea {
+            .neulify-widget-dark .neulify-widget-input,
+            .neulify-widget-dark .neulify-widget-select,
+            .neulify-widget-dark .neulify-widget-textarea {
                 background-color: #374151;
                 border-color: #4b5563;
                 color: #f9fafb;
             }
             
-            .sakto-widget-input:focus,
-            .sakto-widget-select:focus,
-            .sakto-widget-textarea:focus {
+            .neulify-widget-input:focus,
+            .neulify-widget-select:focus,
+            .neulify-widget-textarea:focus {
                 outline: none;
                 border-color: #0d9488;
                 box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
             }
             
-            .sakto-widget-input.sakto-widget-error,
-            .sakto-widget-select.sakto-widget-error,
-            .sakto-widget-textarea.sakto-widget-error {
+            .neulify-widget-input.neulify-widget-error,
+            .neulify-widget-select.neulify-widget-error,
+            .neulify-widget-textarea.neulify-widget-error {
                 border-color: #ef4444;
             }
             
-            .sakto-widget-error-text {
+            .neulify-widget-error-text {
                 color: #ef4444;
                 font-size: 0.75rem;
                 margin-top: 0.25rem;
             }
             
-            .sakto-widget-error-message {
+            .neulify-widget-error-message {
                 background-color: #fef2f2;
                 border: 1px solid #fecaca;
                 border-radius: 6px;
@@ -627,26 +627,26 @@
                 margin-bottom: 1rem;
             }
             
-            .sakto-widget-dark .sakto-widget-error-message {
+            .neulify-widget-dark .neulify-widget-error-message {
                 background-color: #7f1d1d;
                 border-color: #991b1b;
             }
             
-            .sakto-widget-error-message p {
+            .neulify-widget-error-message p {
                 color: #dc2626;
                 margin: 0;
                 font-size: 0.875rem;
             }
             
-            .sakto-widget-dark .sakto-widget-error-message p {
+            .neulify-widget-dark .neulify-widget-error-message p {
                 color: #fca5a5;
             }
             
-            .sakto-widget-submit {
+            .neulify-widget-submit {
                 margin-top: 1.5rem;
             }
             
-            .sakto-widget-button {
+            .neulify-widget-button {
                 width: 100%;
                 padding: 0.875rem 1.5rem;
                 background-color: #0d9488;
@@ -663,36 +663,36 @@
                 gap: 0.5rem;
             }
             
-            .sakto-widget-button:hover:not(:disabled) {
+            .neulify-widget-button:hover:not(:disabled) {
                 background-color: #0f766e;
             }
             
-            .sakto-widget-button:disabled {
+            .neulify-widget-button:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
             }
             
-            .sakto-widget-spinner {
+            .neulify-widget-spinner {
                 width: 1rem;
                 height: 1rem;
                 border: 2px solid transparent;
                 border-top: 2px solid currentColor;
                 border-radius: 50%;
-                animation: sakto-widget-spin 1s linear infinite;
+                animation: neulify-widget-spin 1s linear infinite;
             }
             
-            @keyframes sakto-widget-spin {
+            @keyframes neulify-widget-spin {
                 to {
                     transform: rotate(360deg);
                 }
             }
             
-            .sakto-widget-success {
+            .neulify-widget-success {
                 text-align: center;
                 padding: 2rem;
             }
             
-            .sakto-widget-success-icon {
+            .neulify-widget-success-icon {
                 width: 4rem;
                 height: 4rem;
                 background-color: #10b981;
@@ -706,24 +706,24 @@
                 margin: 0 auto 1rem;
             }
             
-            .sakto-widget-success-title {
+            .neulify-widget-success-title {
                 font-size: 1.25rem;
                 font-weight: 700;
                 margin: 0 0 0.5rem 0;
                 color: #374151;
             }
             
-            .sakto-widget-dark .sakto-widget-success-title {
+            .neulify-widget-dark .neulify-widget-success-title {
                 color: #f9fafb;
             }
             
-            .sakto-widget-success-message {
+            .neulify-widget-success-message {
                 color: #6b7280;
                 margin: 0 0 1.5rem 0;
                 font-size: 0.875rem;
             }
             
-            .sakto-widget-dark .sakto-widget-success-message {
+            .neulify-widget-dark .neulify-widget-success-message {
                 color: #9ca3af;
             }
         `;

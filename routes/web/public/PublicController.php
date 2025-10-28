@@ -44,6 +44,20 @@ Route::get('/', function (Request $request) {
         return redirect()->route('logistics');
     }
     
-    // Default welcome page
+    // Default welcome page with mobile detection
+    $userAgent = $request->header('User-Agent');
+    $isMobile = $userAgent && (
+        stripos($userAgent, 'mobile') !== false || 
+        stripos($userAgent, 'android') !== false || 
+        stripos($userAgent, 'iphone') !== false ||
+        stripos($userAgent, 'ipod') !== false ||
+        stripos($userAgent, 'blackberry') !== false ||
+        stripos($userAgent, 'windows phone') !== false
+    );
+    
+    if ($isMobile) {
+        return redirect()->route('public', ['mobile' => 1, 'type' => 'customer']);
+    }
+    
     return redirect()->route('public');
 });

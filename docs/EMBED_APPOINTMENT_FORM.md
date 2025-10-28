@@ -1,6 +1,6 @@
 # Embeddable Appointment Form
 
-This document explains how to embed the Sakto appointment booking form on external websites.
+This document explains how to embed the Neulify appointment booking form on external websites.
 
 ## Overview
 
@@ -23,17 +23,17 @@ The embeddable appointment form allows clinics to integrate appointment booking 
 Add this code to your website where you want the appointment form to appear:
 
 ```html
-<!-- Sakto Appointment Booking Widget -->
-<div id="sakto-appointment-widget"></div>
+<!-- Neulify Appointment Booking Widget -->
+<div id="neulify-appointment-widget"></div>
 <script>
 (function() {
     var script = document.createElement('script');
     script.src = 'https://your-domain.com/embed/appointment/your-clinic-id/widget.js';
     script.async = true;
     script.onload = function() {
-        if (window.SaktoAppointmentWidget) {
-            window.SaktoAppointmentWidget.init({
-                containerId: 'sakto-appointment-widget',
+        if (window.NeulifyAppointmentWidget) {
+            window.NeulifyAppointmentWidget.init({
+                containerId: 'neulify-appointment-widget',
                 clinicId: 'your-clinic-id',
                 apiUrl: 'https://your-domain.com/api/embed/appointment',
                 theme: 'light',
@@ -47,7 +47,7 @@ Add this code to your website where you want the appointment form to appear:
     document.head.appendChild(script);
 })();
 </script>
-<!-- End Sakto Appointment Booking Widget -->
+<!-- End Neulify Appointment Booking Widget -->
 ```
 
 ### 2. Get Your Clinic ID
@@ -78,8 +78,8 @@ To get your clinic ID and generate the embed code:
 ### Example with All Options
 
 ```javascript
-window.SaktoAppointmentWidget.init({
-    containerId: 'sakto-appointment-widget',
+window.NeulifyAppointmentWidget.init({
+    containerId: 'neulify-appointment-widget',
     clinicId: 'your-clinic-id',
     apiUrl: 'https://your-domain.com/api/embed/appointment',
     theme: 'dark',
@@ -138,12 +138,12 @@ If you need to customize the appearance further, you can override the CSS classe
 
 ```css
 /* Override widget styles */
-.sakto-widget-card {
+.neulify-widget-card {
     border-radius: 12px !important;
     box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
 }
 
-.sakto-widget-button {
+.neulify-widget-button {
     background-color: #your-color !important;
 }
 ```
@@ -183,19 +183,19 @@ You can interact with the form programmatically:
 
 ```javascript
 // Get current form data
-var formData = window.SaktoAppointmentWidget.getFormData();
+var formData = window.NeulifyAppointmentWidget.getFormData();
 
 // Set form data
-window.SaktoAppointmentWidget.setFormData({
+window.NeulifyAppointmentWidget.setFormData({
     patient_name: 'John Doe',
     patient_email: 'john@example.com'
 });
 
 // Clear form errors
-window.SaktoAppointmentWidget.clearErrors();
+window.NeulifyAppointmentWidget.clearErrors();
 
 // Reset the form
-window.SaktoAppointmentWidget.resetForm();
+window.NeulifyAppointmentWidget.resetForm();
 ```
 
 ### Multiple Forms on One Page
@@ -208,14 +208,14 @@ You can have multiple appointment forms on the same page:
 
 <script>
 // Initialize first form
-window.SaktoAppointmentWidget.init({
+window.NeulifyAppointmentWidget.init({
     containerId: 'appointment-form-1',
     clinicId: 'clinic-1',
     apiUrl: 'https://your-domain.com/api/embed/appointment'
 });
 
 // Initialize second form
-window.SaktoAppointmentWidget.init({
+window.NeulifyAppointmentWidget.init({
     containerId: 'appointment-form-2',
     clinicId: 'clinic-2',
     apiUrl: 'https://your-domain.com/api/embed/appointment'
@@ -244,7 +244,7 @@ window.SaktoAppointmentWidget.init({
 Enable debug mode by adding this to your page:
 
 ```javascript
-window.SaktoAppointmentWidget.debug = true;
+window.NeulifyAppointmentWidget.debug = true;
 ```
 
 This will log additional information to the browser console.

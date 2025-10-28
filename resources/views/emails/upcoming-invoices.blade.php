@@ -128,12 +128,12 @@
         <p>If you have any questions about these upcoming charges, please don't hesitate to contact our support team.</p>
         
         <p>Best regards,<br>
-        The Sakto App Team</p>
+        The Neulify Team</p>
     </div>
     
     <div class="footer">
         <p>This is an automated notification. Please do not reply to this email.</p>
-        <p>© {{ date('Y') }} Sakto App. All rights reserved.</p>
+        <p>© {{ date('Y') }} Neulify. All rights reserved.</p>
     </div>
 </body>
 </html>
