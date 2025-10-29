@@ -1,4 +1,4 @@
-import NeulifyLogo from '@/Components/NeulifyLogo';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
@@ -67,9 +67,12 @@ export default function Neulify({ auth }: PageProps) {
                             <div className="flex items-center">
                                 <button
                                     onClick={() => window.location.reload()}
-                                    className="flex items-center space-x-3 transition-opacity duration-200 hover:opacity-80"
+                                    className="flex items-center transition-opacity duration-200 hover:opacity-80"
                                 >
-                                    <NeulifyLogo className="block h-12 w-auto" />
+                                    <ApplicationLogo className="block h-9 w-auto rounded-lg border-2 border-gray-800 fill-current p-2 text-gray-800 dark:border-white dark:text-gray-100" />
+                                    <span className="ml-2 bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
+                                        Neulify
+                                    </span>
                                 </button>
                             </div>
                             <div className="flex items-center">
@@ -861,7 +864,10 @@ export default function Neulify({ auth }: PageProps) {
                             {/* Company Info */}
                             <div className="lg:col-span-2">
                                 <div className="mb-6 flex items-center">
-                                    <NeulifyLogo className="h-10 w-auto" />
+                                    <ApplicationLogo className="h-10 w-auto rounded-lg border-2 border-gray-800 fill-current p-2 text-gray-800 dark:border-white dark:text-gray-100" />
+                                    <span className="ml-2 bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
+                                        Neulify
+                                    </span>
                                 </div>
                                 <p className="mb-6 max-w-md text-lg text-[#334155] dark:text-gray-300">
                                     Empowering the next generation of digital
