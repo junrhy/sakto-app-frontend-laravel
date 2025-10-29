@@ -111,13 +111,13 @@ export default function Login({
                     {/* Logo Section */}
                     <div className="p-4 sm:p-6 md:p-8">
                         <img
-                            src="/images/tetris.png"
-                            className="block h-8 w-auto dark:hidden sm:h-10 md:h-12"
+                            src="/images/neulify-logo-big.png"
+                            className="block h-8 w-auto rounded-lg border-2 border-gray-800 p-2 dark:hidden sm:h-10 md:h-12"
                             alt="Logo"
                         />
                         <img
-                            src="/images/tetris-white.png"
-                            className="hidden h-8 w-auto dark:block sm:h-10 md:h-12"
+                            src="/images/neulify-logo-big-white.png"
+                            className="hidden h-8 w-auto rounded-lg border-2 p-2 dark:block dark:border-white sm:h-10 md:h-12"
                             alt="Logo"
                         />
                     </div>

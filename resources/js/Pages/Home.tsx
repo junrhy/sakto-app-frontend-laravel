@@ -315,7 +315,7 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                                             setIsSidebarOpen(!isSidebarOpen)
                                         }
                                     />
-                                    <ApplicationLogo className="hidden h-8 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block sm:h-10" />
+                                    <ApplicationLogo className="hidden h-8 w-auto flex-shrink-0 rounded-lg border-2 border-gray-800 fill-current p-2 text-gray-900 dark:border-white dark:text-white sm:block sm:h-10" />
                                     <div className="min-w-0 flex-1 sm:ml-2">
                                         <span className="block truncate text-lg font-bold text-gray-900 dark:text-white sm:text-xl">
                                             {auth.user.name}

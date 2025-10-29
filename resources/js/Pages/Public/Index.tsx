@@ -390,7 +390,7 @@ export default function Welcome({ auth }: PageProps) {
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex items-center">
-                                <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
+                                <ApplicationLogo className="block h-9 w-auto rounded-lg border-2 border-gray-800 fill-current p-2 text-gray-800 dark:border-white dark:text-gray-100" />
                                 <span className="ml-2 bg-gradient-to-r from-[#1E3A8A] to-[#14B8A6] bg-clip-text text-xl font-bold text-transparent dark:text-gray-100">
                                     {hostname}
                                 </span>

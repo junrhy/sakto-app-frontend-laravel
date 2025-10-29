@@ -40,7 +40,7 @@
 
         <!-- Add these lines for favicon support -->
         <link rel="icon" type="image/png" href="{{ asset('images/neulify-logo.png') }}" media="(prefers-color-scheme: light)">
-        <link rel="icon" type="imag/png" href="{{ asset('images/neulify-logo.png') }}" media="(prefers-color-scheme: dark)">
+        <link rel="icon" type="imag/png" href="{{ asset('images/neulify-logo-white.png') }}" media="(prefers-color-scheme: dark)">
 
         <!-- iOS home screen icons -->
         <link rel="apple-touch-icon" href="{{ asset('images/neulify-logo.png') }}">

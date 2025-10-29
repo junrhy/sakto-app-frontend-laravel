@@ -78,7 +78,7 @@ export default function ProfileHeader({
                                 <MobileSidebarToggle
                                     onClick={onToggleSidebar}
                                 />
-                                <ApplicationLogo className="hidden h-10 w-auto flex-shrink-0 fill-current text-gray-900 dark:text-white sm:block" />
+                                <ApplicationLogo className="hidden h-10 w-auto flex-shrink-0 rounded-lg border-2 border-gray-800 fill-current p-2 text-gray-900 dark:border-white dark:text-white sm:block" />
                                 <div className="min-w-0 flex-1 sm:ml-2">
                                     <span className="block truncate text-xl font-bold text-gray-900 dark:text-white">
                                         {auth.user.name}
