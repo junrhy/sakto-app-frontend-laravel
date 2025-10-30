@@ -39,14 +39,14 @@
         </title>
 
         <!-- Add these lines for favicon support -->
-        <link rel="icon" type="image/png" href="{{ asset('images/neulify-logo.png') }}" media="(prefers-color-scheme: light)">
-        <link rel="icon" type="imag/png" href="{{ asset('images/neulify-logo-white.png') }}" media="(prefers-color-scheme: dark)">
+        <link rel="icon" type="image/png" href="{{ asset('images/neulify-logo-app-icon.png') }}" media="(prefers-color-scheme: light)">
+        <link rel="icon" type="imag/png" href="{{ asset('images/neulify-logo-app-icon.png') }}" media="(prefers-color-scheme: dark)">
 
         <!-- iOS home screen icons -->
-        <link rel="apple-touch-icon" href="{{ asset('images/neulify-logo.png') }}">
-        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('images/neulify-logo.png') }}">
-        <link rel="apple-touch-icon" sizes="167x167" href="{{ asset('images/neulify-logo.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/neulify-logo.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/neulify-logo-app-icon.png') }}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('images/neulify-logo-app-icon.png') }}">
+        <link rel="apple-touch-icon" sizes="167x167" href="{{ asset('images/neulify-logo-app-icon.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/neulify-logo-app-icon.png') }}">
         
         <!-- iOS web app meta tags -->
         <meta name="apple-mobile-web-app-capable" content="yes">

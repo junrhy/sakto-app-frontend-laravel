@@ -1,8 +1,8 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import { getPricingForService } from '@/config/pricing';
 import { formatCurrency, getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { FiUsers } from 'react-icons/fi';
 
 interface PageProps {
     auth: {
@@ -176,7 +176,7 @@ export default function Community({
 
                             {/* Centered Title */}
                             <div className="flex items-center">
-                                <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
+                                <FiUsers className="h-8 w-8 text-white" />
                                 <div className="ml-3">
                                     <div className="text-2xl font-bold leading-tight text-white">
                                         {hostname} Community
@@ -254,7 +254,7 @@ export default function Community({
                             {/* Header with close button */}
                             <div className="flex items-center justify-between border-b border-blue-700 p-6">
                                 <div className="flex items-center">
-                                    <ApplicationLogo className="block h-6 w-auto fill-current text-white" />
+                                    <FiUsers className="h-6 w-6 text-white" />
                                     <span className="ml-2 text-lg font-bold text-white">
                                         {hostname} Community
                                     </span>
@@ -1282,7 +1282,7 @@ export default function Community({
                                 {/* Company Info - Spans 2 columns on large screens */}
                                 <div className="lg:col-span-2">
                                     <div className="mb-4 flex items-center">
-                                        <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
+                                        <FiUsers className="h-8 w-8 text-white" />
                                         <span className="ml-2 text-xl font-bold">
                                             {hostname} Community
                                         </span>

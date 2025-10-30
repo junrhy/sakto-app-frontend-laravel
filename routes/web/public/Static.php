@@ -75,7 +75,7 @@ Route::get('/manifest/member/{identifier}.json', function ($identifier) {
         }
 
         $manifest = [
-            'name' => $user->name . ' - Sakto Member',
+            'name' => $user->name . ' - Neulify Member',
             'short_name' => $user->name,
             'description' => 'Member profile for ' . $user->name,
             'start_url' => '/m/' . $user->identifier,
@@ -84,12 +84,12 @@ Route::get('/manifest/member/{identifier}.json', function ($identifier) {
             'theme_color' => '#000000',
             'icons' => [
                 [
-                    'src' => '/images/icon-192x192.png',
+                    'src' => '/images/neulify-logo-app-icon.png',
                     'sizes' => '192x192',
                     'type' => 'image/png'
                 ],
                 [
-                    'src' => '/images/icon-512x512.png',
+                    'src' => '/images/neulify-logo-white-app-icon.png',
                     'sizes' => '512x512',
                     'type' => 'image/png'
                 ]
@@ -115,12 +115,12 @@ Route::get('/manifest/content/{slug}.json', function ($slug) {
             'theme_color' => '#000000',
             'icons' => [
                 [
-                    'src' => '/images/icon-192x192.png',
+                    'src' => '/images/neulify-logo-app-icon.png',
                     'sizes' => '192x192',
                     'type' => 'image/png'
                 ],
                 [
-                    'src' => '/images/icon-512x512.png',
+                    'src' => '/images/neulify-logo-white-app-icon.png',
                     'sizes' => '512x512',
                     'type' => 'image/png'
                 ]

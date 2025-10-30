@@ -8,13 +8,13 @@
     "theme_color": "#ffffff",
     "icons": [
         {
-            "src": "images/neulify-logo.png",
+            "src": "images/neulify-logo-app-icon.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "images/neulify-logo.png",
+            "src": "images/neulify-logo-app-icon.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

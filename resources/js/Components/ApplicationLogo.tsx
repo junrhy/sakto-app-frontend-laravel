@@ -8,7 +8,7 @@ export default function ApplicationLogo(props: ImgHTMLAttributes<HTMLImageElemen
     return (
         <span className={`relative inline-block ${sizeClasses}`}>
             <img 
-                src="/images/neulify-logo-big.png" 
+                src="/images/neulify-logo-app-icon.png" 
                 className={`absolute left-0 top-0 h-full w-auto dark:opacity-0 ${otherClasses}`}
                 alt="Neulify" 
             />
