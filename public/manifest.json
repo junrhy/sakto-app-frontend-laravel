@@ -2,7 +2,7 @@
     "name": "Neulify",
     "short_name": "Neulify",
     "description": "Neulify is a digital solution provider for businesses and individuals.",
-    "start_url": "/",
+    "start_url": "/public?mobile=1",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#ffffff",
