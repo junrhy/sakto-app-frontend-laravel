@@ -306,7 +306,7 @@ class LoanController extends Controller
             $cbuFunds = $response->json()['data']['cbu_funds'];
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
-            return Inertia::render('Loan/Cbu', [
+            return Inertia::render('Loan/Cbu/Index', [
                 'cbuFunds' => $cbuFunds,
                 'appCurrency' => $jsonAppCurrency
             ]);

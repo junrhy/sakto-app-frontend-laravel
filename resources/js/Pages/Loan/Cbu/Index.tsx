@@ -7,7 +7,23 @@ import {
     CardTitle,
 } from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import {
     Table,
     TableBody,
@@ -1004,876 +1020,109 @@ export default function Cbu({
             </div>
 
             {/* Add Fund Dialog */}
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Add New CBU Fund</DialogTitle>
-                        <DialogDescription>
-                            Create a new Capital Build Up fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSaveFund}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    value={newFund.name}
-                                    onChange={(e) =>
-                                        setNewFund({
-                                            ...newFund,
-                                            name: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Input
-                                    id="description"
-                                    value={newFund.description}
-                                    onChange={(e) =>
-                                        setNewFund({
-                                            ...newFund,
-                                            description: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="target_amount">
-                                    Target Amount
-                                </Label>
-                                <Input
-                                    id="target_amount"
-                                    type="number"
-                                    value={newFund.target_amount}
-                                    onChange={(e) =>
-                                        setNewFund({
-                                            ...newFund,
-                                            target_amount: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="value_per_share">
-                                    Value Per Share
-                                </Label>
-                                <Input
-                                    id="value_per_share"
-                                    type="number"
-                                    min="0"
-                                    value={newFund.value_per_share}
-                                    onChange={(e) =>
-                                        setNewFund({
-                                            ...newFund,
-                                            value_per_share: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="number_of_shares">
-                                    Number of Shares (Calculated)
-                                </Label>
-                                <Input
-                                    id="number_of_shares"
-                                    type="number"
-                                    min="0"
-                                    value={
-                                        newFund.total_amount &&
-                                        newFund.value_per_share
-                                            ? Math.ceil(
-                                                  parseFloat(
-                                                      newFund.total_amount,
-                                                  ) /
-                                                      parseFloat(
-                                                          newFund.value_per_share,
-                                                      ),
-                                              )
-                                            : 0
-                                    }
-                                    disabled
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="start_date">Start Date</Label>
-                                <Input
-                                    id="start_date"
-                                    type="date"
-                                    value={newFund.start_date}
-                                    onChange={(e) =>
-                                        setNewFund({
-                                            ...newFund,
-                                            start_date: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="end_date">
-                                    End Date (Optional)
-                                </Label>
-                                <Input
-                                    id="end_date"
-                                    type="date"
-                                    value={newFund.end_date}
-                                    onChange={(e) =>
-                                        setNewFund({
-                                            ...newFund,
-                                            end_date: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit">Save Fund</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            <AddFundDialog
+                open={isAddDialogOpen}
+                onOpenChange={setIsAddDialogOpen}
+                newFund={newFund}
+                onNewFundChange={(fund) => setNewFund({ ...newFund, ...fund })}
+                onSubmit={handleSaveFund}
+            />
 
             {/* Add Contribution Dialog */}
-            <Dialog
+            <ContributionDialog
                 open={isContributionDialogOpen}
                 onOpenChange={setIsContributionDialogOpen}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Add Contribution</DialogTitle>
-                        <DialogDescription>
-                            Add a new contribution to the CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSaveContribution}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="amount">Amount</Label>
-                                <Input
-                                    id="amount"
-                                    type="number"
-                                    value={contribution.amount}
-                                    onChange={(e) =>
-                                        setContribution({
-                                            ...contribution,
-                                            amount: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="contribution_date">
-                                    Contribution Date
-                                </Label>
-                                <Input
-                                    id="contribution_date"
-                                    type="date"
-                                    value={contribution.contribution_date}
-                                    onChange={(e) =>
-                                        setContribution({
-                                            ...contribution,
-                                            contribution_date: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="notes">Notes</Label>
-                                <Input
-                                    id="notes"
-                                    value={contribution.notes}
-                                    onChange={(e) =>
-                                        setContribution({
-                                            ...contribution,
-                                            notes: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit">Save Contribution</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                contribution={contribution}
+                onContributionChange={(data) =>
+                    setContribution({ ...contribution, ...data })
+                }
+                onSubmit={handleSaveContribution}
+            />
 
             {/* Withdraw Dialog */}
-            <Dialog
+            <WithdrawDialog
                 open={isWithdrawDialogOpen}
                 onOpenChange={setIsWithdrawDialogOpen}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Process Withdrawal</DialogTitle>
-                        <DialogDescription>
-                            Process a withdrawal from the CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleProcessWithdrawal}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="withdrawal_amount">
-                                    Amount
-                                </Label>
-                                <Input
-                                    id="withdrawal_amount"
-                                    type="number"
-                                    value={withdrawal.amount}
-                                    onChange={(e) =>
-                                        setWithdrawal({
-                                            ...withdrawal,
-                                            amount: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="withdrawal_date">
-                                    Withdrawal Date
-                                </Label>
-                                <Input
-                                    id="withdrawal_date"
-                                    type="date"
-                                    value={withdrawal.withdrawal_date}
-                                    onChange={(e) =>
-                                        setWithdrawal({
-                                            ...withdrawal,
-                                            withdrawal_date: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="withdrawal_notes">Notes</Label>
-                                <Input
-                                    id="withdrawal_notes"
-                                    value={withdrawal.notes}
-                                    onChange={(e) =>
-                                        setWithdrawal({
-                                            ...withdrawal,
-                                            notes: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit">Process Withdrawal</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                withdrawal={withdrawal}
+                onWithdrawalChange={(data) =>
+                    setWithdrawal({ ...withdrawal, ...data })
+                }
+                onSubmit={handleProcessWithdrawal}
+            />
 
             {/* Add Dividend Dialog */}
-            <Dialog
+            <DividendDialog
                 open={isDividendDialogOpen}
                 onOpenChange={setIsDividendDialogOpen}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Add Dividend</DialogTitle>
-                        <DialogDescription>
-                            Add a dividend payment to the CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSaveDividend}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="dividend_amount">Amount</Label>
-                                <Input
-                                    id="dividend_amount"
-                                    type="number"
-                                    value={dividend.amount}
-                                    onChange={(e) =>
-                                        setDividend({
-                                            ...dividend,
-                                            amount: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="dividend_date">
-                                    Dividend Date
-                                </Label>
-                                <Input
-                                    id="dividend_date"
-                                    type="date"
-                                    value={dividend.dividend_date}
-                                    onChange={(e) =>
-                                        setDividend({
-                                            ...dividend,
-                                            dividend_date: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="dividend_notes">Notes</Label>
-                                <Input
-                                    id="dividend_notes"
-                                    value={dividend.notes}
-                                    onChange={(e) =>
-                                        setDividend({
-                                            ...dividend,
-                                            notes: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit">Save Dividend</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                dividend={dividend}
+                onDividendChange={(data) =>
+                    setDividend({ ...dividend, ...data })
+                }
+                onSubmit={handleSaveDividend}
+            />
 
             {/* Edit Fund Dialog */}
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Edit CBU Fund</DialogTitle>
-                        <DialogDescription>
-                            Modify the Capital Build Up fund details
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSaveEdit}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_name">Name</Label>
-                                <Input
-                                    id="edit_name"
-                                    value={editingFund?.name || ''}
-                                    onChange={(e) =>
-                                        setEditingFund(
-                                            editingFund
-                                                ? {
-                                                      ...editingFund,
-                                                      name: e.target.value,
-                                                  }
-                                                : null,
-                                        )
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_description">
-                                    Description
-                                </Label>
-                                <Input
-                                    id="edit_description"
-                                    value={editingFund?.description || ''}
-                                    onChange={(e) =>
-                                        setEditingFund(
-                                            editingFund
-                                                ? {
-                                                      ...editingFund,
-                                                      description:
-                                                          e.target.value,
-                                                  }
-                                                : null,
-                                        )
-                                    }
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_target_amount">
-                                    Target Amount
-                                </Label>
-                                <Input
-                                    id="edit_target_amount"
-                                    type="number"
-                                    value={editingFund?.target_amount || ''}
-                                    onChange={(e) =>
-                                        setEditingFund(
-                                            editingFund
-                                                ? {
-                                                      ...editingFund,
-                                                      target_amount:
-                                                          e.target.value,
-                                                  }
-                                                : null,
-                                        )
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_value_per_share">
-                                    Value Per Share
-                                </Label>
-                                <Input
-                                    id="edit_value_per_share"
-                                    type="number"
-                                    min="0"
-                                    value={editingFund?.value_per_share || ''}
-                                    onChange={(e) =>
-                                        setEditingFund(
-                                            editingFund
-                                                ? {
-                                                      ...editingFund,
-                                                      value_per_share:
-                                                          e.target.value,
-                                                  }
-                                                : null,
-                                        )
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_number_of_shares">
-                                    Number of Shares (Calculated)
-                                </Label>
-                                <Input
-                                    id="edit_number_of_shares"
-                                    type="number"
-                                    min="0"
-                                    value={
-                                        editingFund?.total_amount &&
-                                        editingFund?.value_per_share
-                                            ? Math.ceil(
-                                                  parseFloat(
-                                                      editingFund.total_amount,
-                                                  ) /
-                                                      parseFloat(
-                                                          editingFund.value_per_share,
-                                                      ),
-                                              )
-                                            : 0
-                                    }
-                                    disabled
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_start_date">
-                                    Start Date
-                                </Label>
-                                <Input
-                                    id="edit_start_date"
-                                    type="date"
-                                    value={editingFund?.start_date || ''}
-                                    onChange={(e) =>
-                                        setEditingFund(
-                                            editingFund
-                                                ? {
-                                                      ...editingFund,
-                                                      start_date:
-                                                          e.target.value,
-                                                  }
-                                                : null,
-                                        )
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit_end_date">
-                                    End Date (Optional)
-                                </Label>
-                                <Input
-                                    id="edit_end_date"
-                                    type="date"
-                                    value={editingFund?.end_date || ''}
-                                    onChange={(e) =>
-                                        setEditingFund(
-                                            editingFund
-                                                ? {
-                                                      ...editingFund,
-                                                      end_date: e.target.value,
-                                                  }
-                                                : null,
-                                        )
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit">Save Changes</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            <EditFundDialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                editingFund={editingFund}
+                onEditingFundChange={(fund) => {
+                    if (fund === null) {
+                        setEditingFund(null);
+                    } else if (editingFund) {
+                        setEditingFund({ ...editingFund, ...fund });
+                    }
+                }}
+                onSubmit={handleSaveEdit}
+            />
 
             {/* View Contributions Dialog */}
-            <Dialog
+            <ViewContributionsDialog
                 open={isViewContributionsDialogOpen}
                 onOpenChange={setIsViewContributionsDialogOpen}
-            >
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Contributions for {selectedFund?.name}
-                        </DialogTitle>
-                        <DialogDescription>
-                            View all contributions made to this CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="overflow-x-auto">
-                        {isLoadingContributions ? (
-                            <div className="py-4 text-center">
-                                Loading contributions...
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Contribution Date</TableHead>
-                                        <TableHead>Notes</TableHead>
-                                        <TableHead>Created At</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {contributions &&
-                                    contributions.length > 0 ? (
-                                        contributions.map((contribution) => (
-                                            <TableRow key={contribution.id}>
-                                                <TableCell>
-                                                    {formatAmount(
-                                                        contribution.amount,
-                                                        appCurrency,
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        contribution.contribution_date,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {contribution.notes || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        contribution.created_at,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={4}
-                                                className="py-4 text-center"
-                                            >
-                                                No contributions found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+                selectedFund={selectedFund}
+                contributions={contributions}
+                isLoading={isLoadingContributions}
+                appCurrency={appCurrency}
+            />
 
             {/* View Withdrawals Dialog */}
-            <Dialog
+            <ViewWithdrawalsDialog
                 open={isViewWithdrawalsDialogOpen}
                 onOpenChange={setIsViewWithdrawalsDialogOpen}
-            >
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Withdrawals for {selectedFund?.name}
-                        </DialogTitle>
-                        <DialogDescription>
-                            View all withdrawals made from this CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="overflow-x-auto">
-                        {isLoadingWithdrawals ? (
-                            <div className="py-4 text-center">
-                                Loading withdrawals...
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Notes</TableHead>
-                                        <TableHead>Created At</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {withdrawals && withdrawals.length > 0 ? (
-                                        withdrawals.map((withdrawal) => (
-                                            <TableRow key={withdrawal.id}>
-                                                <TableCell>
-                                                    {formatAmount(
-                                                        withdrawal.amount,
-                                                        appCurrency,
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        withdrawal.date,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {withdrawal.notes || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        withdrawal.created_at,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={5}
-                                                className="py-4 text-center"
-                                            >
-                                                No withdrawals found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+                selectedFund={selectedFund}
+                withdrawals={withdrawals}
+                isLoading={isLoadingWithdrawals}
+                appCurrency={appCurrency}
+            />
 
             {/* View Dividends Dialog */}
-            <Dialog
+            <ViewDividendsDialog
                 open={isViewDividendsDialogOpen}
                 onOpenChange={setIsViewDividendsDialogOpen}
-            >
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Dividends for {selectedFund?.name}
-                        </DialogTitle>
-                        <DialogDescription>
-                            View all dividends paid to this CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="overflow-x-auto">
-                        {isLoadingDividends ? (
-                            <div className="py-4 text-center">
-                                Loading dividends...
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Dividend Date</TableHead>
-                                        <TableHead>Notes</TableHead>
-                                        <TableHead>Created At</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {dividends && dividends.length > 0 ? (
-                                        dividends.map((dividend) => (
-                                            <TableRow key={dividend.id}>
-                                                <TableCell>
-                                                    {formatAmount(
-                                                        dividend.amount,
-                                                        appCurrency,
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        dividend.dividend_date,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {dividend.notes || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        dividend.created_at,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={4}
-                                                className="py-4 text-center"
-                                            >
-                                                No dividends found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+                selectedFund={selectedFund}
+                dividends={dividends}
+                isLoading={isLoadingDividends}
+                appCurrency={appCurrency}
+            />
 
             {/* Delete Confirmation Dialog */}
-            <Dialog
+            <DeleteFundDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete CBU Fund</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete the fund "
-                            {fundToDelete?.name}"? This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-sm text-gray-500">
-                            This will permanently delete the fund and all
-                            associated contributions and withdrawals.
-                        </p>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsDeleteDialogOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleDeleteFund}
-                        >
-                            Delete Fund
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                fundToDelete={fundToDelete}
+                onConfirm={handleDeleteFund}
+            />
 
             {/* History Dialog */}
-            <Dialog
+            <HistoryDialog
                 open={isHistoryDialogOpen}
                 onOpenChange={setIsHistoryDialogOpen}
-            >
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Transaction History - {selectedFund?.name}
-                        </DialogTitle>
-                        <DialogDescription>
-                            View all transactions for this CBU fund
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="overflow-x-auto">
-                        {isLoadingHistory ? (
-                            <div className="py-4 text-center">
-                                Loading history...
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Notes</TableHead>
-                                        <TableHead>Created At</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {fundHistory.length > 0 ? (
-                                        fundHistory.map((item) => (
-                                            <TableRow
-                                                key={`${item.type}-${item.id}`}
-                                            >
-                                                <TableCell>
-                                                    <span
-                                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                            item.type ===
-                                                            'contribution'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : item.type ===
-                                                                    'withdrawal'
-                                                                  ? 'bg-red-100 text-red-800'
-                                                                  : 'bg-blue-100 text-blue-800'
-                                                        }`}
-                                                    >
-                                                        {item.type ===
-                                                        'contribution'
-                                                            ? 'Contribution'
-                                                            : item.type ===
-                                                                'withdrawal'
-                                                              ? 'Withdrawal'
-                                                              : 'Dividend'}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span
-                                                        className={
-                                                            item.type ===
-                                                            'withdrawal'
-                                                                ? 'text-red-600'
-                                                                : item.type ===
-                                                                    'contribution'
-                                                                  ? 'text-green-600'
-                                                                  : 'text-blue-600'
-                                                        }
-                                                    >
-                                                        {item.type ===
-                                                        'withdrawal'
-                                                            ? '-'
-                                                            : item.type ===
-                                                                'contribution'
-                                                              ? '+'
-                                                              : '+'}
-                                                        {formatAmount(
-                                                            item.amount,
-                                                            appCurrency,
-                                                        )}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        item.date,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.notes || '-'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {new Date(
-                                                        item.created_at,
-                                                    ).toLocaleDateString()}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={5}
-                                                className="py-4 text-center"
-                                            >
-                                                No transaction history found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+                selectedFund={selectedFund}
+                fundHistory={fundHistory}
+                isLoading={isLoadingHistory}
+                appCurrency={appCurrency}
+            />
 
             {/* Report Generation Dialog */}
             <Dialog
@@ -2285,68 +1534,17 @@ export default function Cbu({
             </Dialog>
 
             {/* Send Fund Report Dialog */}
-            <Dialog
+            <SendReportDialog
                 open={isSendReportDialogOpen}
                 onOpenChange={setIsSendReportDialogOpen}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Send Fund Report</DialogTitle>
-                        <DialogDescription>
-                            Send a detailed report of {selectedFund?.name} to
-                            the fund owner
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSendFundReport}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="report_email">
-                                    Recipient Email
-                                </Label>
-                                <Input
-                                    id="report_email"
-                                    type="email"
-                                    value={reportEmailData.email}
-                                    onChange={(e) =>
-                                        setReportEmailData({
-                                            ...reportEmailData,
-                                            email: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="report_message">
-                                    Message (Optional)
-                                </Label>
-                                <Textarea
-                                    id="report_message"
-                                    value={reportEmailData.message}
-                                    onChange={(e) =>
-                                        setReportEmailData({
-                                            ...reportEmailData,
-                                            message: e.target.value,
-                                        })
-                                    }
-                                    placeholder="Add a personal message to the email..."
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsSendReportDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={isSendingReport}>
-                                {isSendingReport ? 'Sending...' : 'Send Report'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                selectedFund={selectedFund}
+                reportEmailData={reportEmailData}
+                onReportEmailDataChange={(data) =>
+                    setReportEmailData({ ...reportEmailData, ...data })
+                }
+                onSubmit={handleSendFundReport}
+                isSending={isSendingReport}
+            />
         </AuthenticatedLayout>
     );
 }

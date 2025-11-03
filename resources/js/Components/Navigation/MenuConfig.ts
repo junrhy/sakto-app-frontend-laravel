@@ -4,6 +4,8 @@ export interface MenuItem {
     title: string;
     href: string;
     urlCheck?: string; // Custom URL check pattern if different from id
+    moduleCheck?: string; // Custom module to check for access (instead of using id)
+    appParamCheck?: string | string[]; // Custom appParam values that should show this item (for submenu items)
 }
 
 export interface MenuCategory {
@@ -88,7 +90,8 @@ export const menuCategories: MenuCategory[] = [
         id: 'financial',
         title: 'Financial',
         items: [
-            { id: 'lending', title: 'Lending', href: '/loan?app=loan' },
+            { id: 'lending', title: 'Lending', href: '/loan?app=loan', urlCheck: 'cbu', moduleCheck: 'lending', appParamCheck: ['loan', 'lending'] },
+            { id: 'cbu', title: 'CBU', href: '/loan/cbu?app=loan', urlCheck: 'cbu', moduleCheck: 'lending', appParamCheck: ['loan', 'lending'] },
             { id: 'payroll', title: 'Payroll', href: '/payroll?app=payroll' },
             { id: 'billers', title: 'Billers', href: '/billers?app=billers' },
             {
@@ -189,6 +192,8 @@ export const shouldShowMenuItem = (
     url: string,
 ) => {
     const checkUrl = item.urlCheck || item.id;
+    // Use moduleCheck if provided, otherwise use item.id
+    const moduleToCheck = item.moduleCheck || item.id;
 
     // List of standalone modules that have dashes but are not submenus
     const standaloneModules = [
@@ -213,10 +218,25 @@ export const shouldShowMenuItem = (
         return hasParentAccess && isCurrentApp;
     }
 
-    return (
-        hasModuleAccess(item.id) &&
-        (appParam === item.id || url.includes(checkUrl))
-    );
+    // Check if user has access to the module
+    const hasAccess = hasModuleAccess(moduleToCheck);
+    
+    if (!hasAccess) {
+        return false;
+    }
+
+    // Handle items with appParamCheck (like CBU that should show when app=loan or app=lending)
+    if (item.appParamCheck) {
+        const allowedAppParams = Array.isArray(item.appParamCheck) 
+            ? item.appParamCheck 
+            : [item.appParamCheck];
+        const matchesAppParam = appParam && allowedAppParams.includes(appParam);
+        const matchesUrl = url.includes(checkUrl);
+        return matchesAppParam || matchesUrl;
+    }
+
+    // Default logic: show if appParam matches item.id or URL includes checkUrl
+    return appParam === item.id || url.includes(checkUrl);
 };
 
 export const getVisibleItems = (
