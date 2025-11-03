@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('modules', function (Blueprint $table) {
-            $table->string('icon')->nullable()->after('bg_color');
-        });
+        if (!Schema::hasColumn('modules', 'icon')) {
+            Schema::table('modules', function (Blueprint $table) {
+                $table->string('icon')->nullable()->after('bg_color');
+            });
+        }
     }
 
     /**

@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('whats_app_accounts', function (Blueprint $table) {
-            // Add Infobip-specific fields
-            $table->string('infobip_api_key')->nullable()->after('access_token');
-            $table->string('infobip_sender_number')->nullable()->after('phone_number_id');
-            $table->enum('provider', ['facebook', 'infobip'])->default('facebook')->after('account_name');
-            $table->json('available_templates')->nullable()->after('webhook_urls');
-        });
+        if (!Schema::hasColumn('whats_app_accounts', 'provider')) {
+            Schema::table('whats_app_accounts', function (Blueprint $table) {
+                // Add Infobip-specific fields
+                $table->string('infobip_api_key')->nullable()->after('access_token');
+                $table->string('infobip_sender_number')->nullable()->after('phone_number_id');
+                $table->enum('provider', ['facebook', 'infobip'])->default('facebook')->after('account_name');
+                $table->json('available_templates')->nullable()->after('webhook_urls');
+            });
+        }
     }
 
     /**

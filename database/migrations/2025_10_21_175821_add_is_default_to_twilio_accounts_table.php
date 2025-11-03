@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('twilio_accounts', function (Blueprint $table) {
-            $table->boolean('is_default')->default(false)->after('is_verified');
-            $table->index(['client_identifier', 'is_default']);
-        });
+        if (!Schema::hasColumn('twilio_accounts', 'is_default')) {
+            Schema::table('twilio_accounts', function (Blueprint $table) {
+                $table->boolean('is_default')->default(false)->after('is_verified');
+                $table->index(['client_identifier', 'is_default']);
+            });
+        }
     }
 
     /**

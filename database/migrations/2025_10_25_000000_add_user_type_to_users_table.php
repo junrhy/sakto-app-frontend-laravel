@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('user_type', ['user', 'admin', 'customer'])->default('user')->after('is_admin');
-        });
+        if (!Schema::hasColumn('users', 'user_type')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->enum('user_type', ['user', 'admin', 'customer'])->default('user')->after('is_admin');
+            });
+        }
     }
 
     /**

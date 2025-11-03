@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('subscription_plans', function (Blueprint $table) {
-            $table->string('currency', 3)->default('USD')->after('price');
-        });
+        if (!Schema::hasColumn('subscription_plans', 'currency')) {
+            Schema::table('subscription_plans', function (Blueprint $table) {
+                $table->string('currency', 3)->default('USD')->after('price');
+            });
+        }
     }
 
     /**

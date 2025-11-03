@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('trial_started_at')->nullable()->after('updated_at');
-            $table->timestamp('trial_ends_at')->nullable()->after('trial_started_at');
-            $table->boolean('trial_expired_notification_sent')->default(false)->after('trial_ends_at');
-            
-            $table->index('trial_ends_at');
-        });
+        if (!Schema::hasColumn('users', 'trial_started_at')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->timestamp('trial_started_at')->nullable()->after('updated_at');
+                $table->timestamp('trial_ends_at')->nullable()->after('trial_started_at');
+                $table->boolean('trial_expired_notification_sent')->default(false)->after('trial_ends_at');
+                
+                $table->index('trial_ends_at');
+            });
+        }
     }
 
     /**

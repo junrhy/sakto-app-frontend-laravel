@@ -12,15 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         // Add Lemon Squeezy fields to user_subscriptions table
-        Schema::table('user_subscriptions', function (Blueprint $table) {
-            $table->string('lemonsqueezy_checkout_id')->nullable()->after('stripe_subscription_id');
-            $table->string('lemonsqueezy_subscription_id')->nullable()->after('lemonsqueezy_checkout_id');
-        });
+        if (!Schema::hasColumn('user_subscriptions', 'lemonsqueezy_checkout_id')) {
+            Schema::table('user_subscriptions', function (Blueprint $table) {
+                $table->string('lemonsqueezy_checkout_id')->nullable()->after('stripe_subscription_id');
+                $table->string('lemonsqueezy_subscription_id')->nullable()->after('lemonsqueezy_checkout_id');
+            });
+        }
         
         // Add Lemon Squeezy variant ID to subscription_plans table
-        Schema::table('subscription_plans', function (Blueprint $table) {
-            $table->string('lemon_squeezy_variant_id')->nullable()->after('slug');
-        });
+        if (!Schema::hasColumn('subscription_plans', 'lemon_squeezy_variant_id')) {
+            Schema::table('subscription_plans', function (Blueprint $table) {
+                $table->string('lemon_squeezy_variant_id')->nullable()->after('slug');
+            });
+        }
     }
 
     /**

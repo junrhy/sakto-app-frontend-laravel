@@ -12,30 +12,32 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('slug')->nullable()->after('name')->unique();
-        });
+        if (!Schema::hasColumn('users', 'slug')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('slug')->nullable()->after('name')->unique();
+            });
 
-        // Generate slugs for existing users
-        $users = \App\Models\User::all();
-        foreach ($users as $user) {
-            $baseSlug = Str::slug($user->name);
-            $slug = $baseSlug;
-            $counter = 1;
-            
-            // Ensure unique slug
-            while (\App\Models\User::where('slug', $slug)->where('id', '!=', $user->id)->exists()) {
-                $slug = $baseSlug . '-' . $counter;
-                $counter++;
+            // Generate slugs for existing users
+            $users = \App\Models\User::all();
+            foreach ($users as $user) {
+                $baseSlug = Str::slug($user->name);
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                // Ensure unique slug
+                while (\App\Models\User::where('slug', $slug)->where('id', '!=', $user->id)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+                
+                $user->update(['slug' => $slug]);
             }
-            
-            $user->update(['slug' => $slug]);
-        }
 
-        // Make slug required after populating
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('slug')->nullable(false)->change();
-        });
+            // Make slug required after populating
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('slug')->nullable(false)->change();
+            });
+        }
     }
 
     /**
