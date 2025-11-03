@@ -22,6 +22,13 @@ import {
 import { Input } from '../../Components/ui/input';
 import { Label } from '../../Components/ui/label';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '../../Components/ui/select';
+import {
     Tabs,
     TabsContent,
     TabsList,
@@ -177,6 +184,7 @@ export default function Clinic({
     } = useAppointments();
 
     // Local state
+    const [activeTab, setActiveTab] = useState<string>('patients');
     const [newPatient, setNewPatient] = useState<NewPatient>({
         name: '',
     });
@@ -1046,8 +1054,81 @@ export default function Clinic({
             <Head title="Clinic" />
 
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                <Tabs defaultValue="patients" className="space-y-6">
-                    <div className="border-b border-gray-200 dark:border-gray-700">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                    {/* Mobile Dropdown */}
+                    <div className="mb-6 md:hidden">
+                        <Select value={activeTab} onValueChange={setActiveTab}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue>
+                                    {activeTab === 'patients' && (
+                                        <div className="flex items-center">
+                                            <Users className="mr-2 h-4 w-4" />
+                                            Patients ({filteredPatients.length})
+                                        </div>
+                                    )}
+                                    {activeTab === 'appointments' && (
+                                        <div className="flex items-center">
+                                            <Calendar className="mr-2 h-4 w-4" />
+                                            Appointments ({appointments.length})
+                                        </div>
+                                    )}
+                                    {activeTab === 'inventory' && (
+                                        <div className="flex items-center">
+                                            <Package className="mr-2 h-4 w-4" />
+                                            Inventory
+                                        </div>
+                                    )}
+                                    {activeTab === 'payment-accounts' && (
+                                        <div className="flex items-center">
+                                            <CreditCard className="mr-2 h-4 w-4" />
+                                            Payment Accounts
+                                        </div>
+                                    )}
+                                    {activeTab === 'add-patient' && (
+                                        <div className="flex items-center">
+                                            <UserPlus className="mr-2 h-4 w-4" />
+                                            Add Patient
+                                        </div>
+                                    )}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="patients">
+                                    <div className="flex items-center">
+                                        <Users className="mr-2 h-4 w-4" />
+                                        Patients ({filteredPatients.length})
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="appointments">
+                                    <div className="flex items-center">
+                                        <Calendar className="mr-2 h-4 w-4" />
+                                        Appointments ({appointments.length})
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="inventory">
+                                    <div className="flex items-center">
+                                        <Package className="mr-2 h-4 w-4" />
+                                        Inventory
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="payment-accounts">
+                                    <div className="flex items-center">
+                                        <CreditCard className="mr-2 h-4 w-4" />
+                                        Payment Accounts
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="add-patient">
+                                    <div className="flex items-center">
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                        Add Patient
+                                    </div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Desktop Tabs */}
+                    <div className="hidden border-b border-gray-200 dark:border-gray-700 md:block">
                         <TabsList className="h-auto rounded-none border-0 bg-transparent p-0">
                             <TabsTrigger
                                 value="patients"

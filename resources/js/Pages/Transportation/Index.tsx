@@ -1,3 +1,10 @@
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
@@ -54,7 +61,104 @@ export default function Transportation() {
                     onValueChange={handleTabChange}
                     className="w-full"
                 >
-                    <div className="mb-8 overflow-x-auto">
+                    {/* Mobile Dropdown */}
+                    <div className="mb-8 md:hidden">
+                        <Select value={activeTab} onValueChange={handleTabChange}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue>
+                                    {activeTab === 'dashboard' && (
+                                        <div className="flex items-center">
+                                            <BarChart3Icon className="mr-2 h-4 w-4" />
+                                            Overview
+                                        </div>
+                                    )}
+                                    {activeTab === 'shipments' && (
+                                        <div className="flex items-center">
+                                            <PackageIcon className="mr-2 h-4 w-4" />
+                                            Shipments
+                                        </div>
+                                    )}
+                                    {activeTab === 'fleet' && (
+                                        <div className="flex items-center">
+                                            <TruckIcon className="mr-2 h-4 w-4" />
+                                            Fleet
+                                        </div>
+                                    )}
+                                    {activeTab === 'tracking' && (
+                                        <div className="flex items-center">
+                                            <MapIcon className="mr-2 h-4 w-4" />
+                                            Live Tracking
+                                        </div>
+                                    )}
+                                    {activeTab === 'cargo' && (
+                                        <div className="flex items-center">
+                                            <PackageIcon className="mr-2 h-4 w-4" />
+                                            Cargo
+                                        </div>
+                                    )}
+                                    {activeTab === 'bookings' && (
+                                        <div className="flex items-center">
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            Bookings
+                                        </div>
+                                    )}
+                                    {activeTab === 'pricing' && (
+                                        <div className="flex items-center">
+                                            <CreditCardIcon className="mr-2 h-4 w-4" />
+                                            Pricing
+                                        </div>
+                                    )}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="dashboard">
+                                    <div className="flex items-center">
+                                        <BarChart3Icon className="mr-2 h-4 w-4" />
+                                        Overview
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="shipments">
+                                    <div className="flex items-center">
+                                        <PackageIcon className="mr-2 h-4 w-4" />
+                                        Shipments
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="fleet">
+                                    <div className="flex items-center">
+                                        <TruckIcon className="mr-2 h-4 w-4" />
+                                        Fleet
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="tracking">
+                                    <div className="flex items-center">
+                                        <MapIcon className="mr-2 h-4 w-4" />
+                                        Live Tracking
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="cargo">
+                                    <div className="flex items-center">
+                                        <PackageIcon className="mr-2 h-4 w-4" />
+                                        Cargo
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="bookings">
+                                    <div className="flex items-center">
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        Bookings
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="pricing">
+                                    <div className="flex items-center">
+                                        <CreditCardIcon className="mr-2 h-4 w-4" />
+                                        Pricing
+                                    </div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Desktop Tabs */}
+                    <div className="mb-8 hidden overflow-x-auto md:block">
                         <TabsList className="inline-flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 p-1 text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
                             <TabsTrigger
                                 value="dashboard"

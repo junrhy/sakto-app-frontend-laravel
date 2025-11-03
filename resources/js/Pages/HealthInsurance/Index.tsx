@@ -1,5 +1,12 @@
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -384,7 +391,32 @@ export default function HealthInsurance({
                                 onValueChange={handleTabChange}
                                 className="w-full"
                             >
-                                <div className="mb-6 overflow-x-auto">
+                                {/* Mobile Dropdown */}
+                                <div className="mb-6 md:hidden">
+                                    <Select value={activeTab} onValueChange={handleTabChange}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue>
+                                                {activeTab === 'members' && 'Members'}
+                                                {activeTab === 'contributions' && 'Contributions'}
+                                                {activeTab === 'claims' && 'Claims'}
+                                                {activeTab === 'missing' && 'Missing Contributions'}
+                                                {activeTab === 'upcoming' && 'Upcoming Contributions'}
+                                                {activeTab === 'group-contributions' && 'Group Contributions'}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="members">Members</SelectItem>
+                                            <SelectItem value="contributions">Contributions</SelectItem>
+                                            <SelectItem value="claims">Claims</SelectItem>
+                                            <SelectItem value="missing">Missing Contributions</SelectItem>
+                                            <SelectItem value="upcoming">Upcoming Contributions</SelectItem>
+                                            <SelectItem value="group-contributions">Group Contributions</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Desktop Tabs */}
+                                <div className="mb-6 hidden overflow-x-auto md:block">
                                     <TabsList className="w-full rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-gray-700 dark:bg-gray-900 sm:w-auto">
                                         <TabsTrigger
                                             value="members"
