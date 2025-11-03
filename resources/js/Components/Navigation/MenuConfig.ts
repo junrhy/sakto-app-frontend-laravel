@@ -90,8 +90,22 @@ export const menuCategories: MenuCategory[] = [
         id: 'financial',
         title: 'Financial',
         items: [
-            { id: 'lending', title: 'Lending', href: '/loan?app=loan', urlCheck: 'cbu', moduleCheck: 'lending', appParamCheck: ['loan', 'lending'] },
-            { id: 'cbu', title: 'CBU', href: '/loan/cbu?app=loan', urlCheck: 'cbu', moduleCheck: 'lending', appParamCheck: ['loan', 'lending'] },
+            {
+                id: 'lending',
+                title: 'Lending',
+                href: '/loan?app=loan',
+                urlCheck: 'cbu',
+                moduleCheck: 'lending',
+                appParamCheck: ['loan', 'lending'],
+            },
+            {
+                id: 'cbu',
+                title: 'CBU',
+                href: '/loan/cbu?app=loan',
+                urlCheck: 'cbu',
+                moduleCheck: 'lending',
+                appParamCheck: ['loan', 'lending'],
+            },
             { id: 'payroll', title: 'Payroll', href: '/payroll?app=payroll' },
             { id: 'billers', title: 'Billers', href: '/billers?app=billers' },
             {
@@ -220,15 +234,15 @@ export const shouldShowMenuItem = (
 
     // Check if user has access to the module
     const hasAccess = hasModuleAccess(moduleToCheck);
-    
+
     if (!hasAccess) {
         return false;
     }
 
     // Handle items with appParamCheck (like CBU that should show when app=loan or app=lending)
     if (item.appParamCheck) {
-        const allowedAppParams = Array.isArray(item.appParamCheck) 
-            ? item.appParamCheck 
+        const allowedAppParams = Array.isArray(item.appParamCheck)
+            ? item.appParamCheck
             : [item.appParamCheck];
         const matchesAppParam = appParam && allowedAppParams.includes(appParam);
         const matchesUrl = url.includes(checkUrl);

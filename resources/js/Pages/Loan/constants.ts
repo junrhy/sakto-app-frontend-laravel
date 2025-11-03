@@ -1,4 +1,4 @@
-import type { LoanDuration, InstallmentOption } from './types';
+import type { InstallmentOption, LoanDuration } from './types';
 
 export const LOAN_DURATIONS: LoanDuration[] = [
     { label: 'Custom', days: null },
@@ -25,4 +25,3 @@ export const INSTALLMENT_OPTIONS: InstallmentOption[] = [
     { label: 'Quarterly', value: 'quarterly', daysInterval: 90 },
     { label: 'Annually', value: 'annually', daysInterval: 365 },
 ];
-

@@ -32,20 +32,26 @@ export function DeletePaymentDialog({
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto">
                     <div className="py-4">
-                    <p>
-                        Are you sure you want to delete this payment of{' '}
-                        {paymentToDelete
-                            ? formatAmount(paymentToDelete.amount, appCurrency)
-                            : ''}
-                        ?
-                    </p>
-                    <p className="mt-2 text-red-600">
-                        This action cannot be undone.
-                    </p>
+                        <p>
+                            Are you sure you want to delete this payment of{' '}
+                            {paymentToDelete
+                                ? formatAmount(
+                                      paymentToDelete.amount,
+                                      appCurrency,
+                                  )
+                                : ''}
+                            ?
+                        </p>
+                        <p className="mt-2 text-red-600">
+                            This action cannot be undone.
+                        </p>
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                    >
                         Cancel
                     </Button>
                     <Button variant="destructive" onClick={onConfirm}>
@@ -56,4 +62,3 @@ export function DeletePaymentDialog({
         </Dialog>
     );
 }
-

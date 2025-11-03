@@ -35,11 +35,16 @@ export function WithdrawDialog({
                         Process a withdrawal from the CBU fund
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+                <form
+                    onSubmit={onSubmit}
+                    className="flex min-h-0 flex-1 flex-col"
+                >
                     <div className="min-h-0 flex-1 overflow-y-auto">
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="withdrawal_amount">Amount</Label>
+                                <Label htmlFor="withdrawal_amount">
+                                    Amount
+                                </Label>
                                 <Input
                                     id="withdrawal_amount"
                                     type="number"
@@ -91,4 +96,3 @@ export function WithdrawDialog({
         </Dialog>
     );
 }
-

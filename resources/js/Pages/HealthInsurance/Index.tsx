@@ -393,24 +393,47 @@ export default function HealthInsurance({
                             >
                                 {/* Mobile Dropdown */}
                                 <div className="mb-6 md:hidden">
-                                    <Select value={activeTab} onValueChange={handleTabChange}>
+                                    <Select
+                                        value={activeTab}
+                                        onValueChange={handleTabChange}
+                                    >
                                         <SelectTrigger className="w-full">
                                             <SelectValue>
-                                                {activeTab === 'members' && 'Members'}
-                                                {activeTab === 'contributions' && 'Contributions'}
-                                                {activeTab === 'claims' && 'Claims'}
-                                                {activeTab === 'missing' && 'Missing Contributions'}
-                                                {activeTab === 'upcoming' && 'Upcoming Contributions'}
-                                                {activeTab === 'group-contributions' && 'Group Contributions'}
+                                                {activeTab === 'members' &&
+                                                    'Members'}
+                                                {activeTab ===
+                                                    'contributions' &&
+                                                    'Contributions'}
+                                                {activeTab === 'claims' &&
+                                                    'Claims'}
+                                                {activeTab === 'missing' &&
+                                                    'Missing Contributions'}
+                                                {activeTab === 'upcoming' &&
+                                                    'Upcoming Contributions'}
+                                                {activeTab ===
+                                                    'group-contributions' &&
+                                                    'Group Contributions'}
                                             </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="members">Members</SelectItem>
-                                            <SelectItem value="contributions">Contributions</SelectItem>
-                                            <SelectItem value="claims">Claims</SelectItem>
-                                            <SelectItem value="missing">Missing Contributions</SelectItem>
-                                            <SelectItem value="upcoming">Upcoming Contributions</SelectItem>
-                                            <SelectItem value="group-contributions">Group Contributions</SelectItem>
+                                            <SelectItem value="members">
+                                                Members
+                                            </SelectItem>
+                                            <SelectItem value="contributions">
+                                                Contributions
+                                            </SelectItem>
+                                            <SelectItem value="claims">
+                                                Claims
+                                            </SelectItem>
+                                            <SelectItem value="missing">
+                                                Missing Contributions
+                                            </SelectItem>
+                                            <SelectItem value="upcoming">
+                                                Upcoming Contributions
+                                            </SelectItem>
+                                            <SelectItem value="group-contributions">
+                                                Group Contributions
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

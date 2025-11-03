@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -13,9 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Card, CardContent } from '@/Components/ui/card';
+import type { CbuDividend, CbuFund } from '../types';
 import { formatCbuAmount } from '../utils';
-import type { CbuFund, CbuDividend } from '../types';
 
 interface ViewDividendsDialogProps {
     open: boolean;
@@ -38,7 +38,9 @@ export function ViewDividendsDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex max-h-[90vh] max-w-[95vw] flex-col overflow-hidden sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-5xl">
                 <DialogHeader>
-                    <DialogTitle>Dividends for {selectedFund?.name}</DialogTitle>
+                    <DialogTitle>
+                        Dividends for {selectedFund?.name}
+                    </DialogTitle>
                     <DialogDescription>
                         View all dividends paid to this CBU fund
                     </DialogDescription>
@@ -70,7 +72,8 @@ export function ViewDividendsDialog({
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {dividends && dividends.length > 0 ? (
+                                            {dividends &&
+                                            dividends.length > 0 ? (
                                                 dividends.map((dividend) => (
                                                     <TableRow
                                                         key={dividend.id}
@@ -119,4 +122,3 @@ export function ViewDividendsDialog({
         </Dialog>
     );
 }
-

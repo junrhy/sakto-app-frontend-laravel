@@ -1,7 +1,15 @@
 import { formatAmount } from '@/lib/utils';
-import type { CbuFund, CbuContribution, CbuWithdrawal, CbuDividend, CbuHistory } from './types';
+import type {
+    CbuContribution,
+    CbuDividend,
+    CbuHistory,
+    CbuWithdrawal,
+} from './types';
 
-export const formatCbuAmount = (amount: string | number, currency: any): string => {
+export const formatCbuAmount = (
+    amount: string | number,
+    currency: any,
+): string => {
     return formatAmount(amount, currency);
 };
 
@@ -63,4 +71,3 @@ export const combineFundHistory = (
         return dateB - dateA;
     });
 };
-

@@ -81,4 +81,3 @@ export interface DeletePaymentInfo {
     id: number;
     amount: string;
 }
-

@@ -6,44 +6,39 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import {
-    AlertCircle,
     Calculator,
-    CheckCircle,
     Edit,
     FileText,
     History,
-    MoreVertical,
     Plus,
     Search,
     Trash,
-    XCircle,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type {
-    Payment,
-    Loan,
-    Bill,
-    DeleteWarningInfo,
-    DeletePaymentInfo,
-    BillStatusUpdate,
-    InstallmentOption,
-} from './types';
-import { LOAN_DURATIONS, INSTALLMENT_OPTIONS } from './constants';
-import {
-    formatAmount,
-    calculateCreditScore,
-    calculateInstallmentAmount,
-    calculateLoanDetails,
-} from './utils';
+import { BillDetailsDialog } from './components/BillDetailsDialog';
+import { BillHistoryDialog } from './components/BillHistoryDialog';
+import { CreateBillDialog } from './components/CreateBillDialog';
+import { DeleteLoanDialog } from './components/DeleteLoanDialog';
+import { DeletePaymentDialog } from './components/DeletePaymentDialog';
+import { DeleteSelectedLoansDialog } from './components/DeleteSelectedLoansDialog';
 import { LoanFormDialog } from './components/LoanFormDialog';
 import { PaymentDialog } from './components/PaymentDialog';
 import { PaymentHistoryDialog } from './components/PaymentHistoryDialog';
-import { BillHistoryDialog } from './components/BillHistoryDialog';
-import { BillDetailsDialog } from './components/BillDetailsDialog';
-import { CreateBillDialog } from './components/CreateBillDialog';
-import { DeleteLoanDialog } from './components/DeleteLoanDialog';
-import { DeleteSelectedLoansDialog } from './components/DeleteSelectedLoansDialog';
-import { DeletePaymentDialog } from './components/DeletePaymentDialog';
+import { INSTALLMENT_OPTIONS } from './constants';
+import type {
+    Bill,
+    BillStatusUpdate,
+    DeletePaymentInfo,
+    DeleteWarningInfo,
+    Loan,
+    Payment,
+} from './types';
+import {
+    calculateCreditScore,
+    calculateInstallmentAmount,
+    calculateLoanDetails,
+    formatAmount,
+} from './utils';
 
 export default function Loan({
     auth,
@@ -162,12 +157,12 @@ export default function Loan({
     const handleAddLoan = () => {
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
-        
+
         // Default end date: 1 month from today (simple default, not frequency-based)
         const endDate = new Date(today);
         endDate.setMonth(today.getMonth() + 1);
         const endDateStr = endDate.toISOString().split('T')[0];
-        
+
         setCurrentLoan({
             id: 0,
             borrower_name: '',
@@ -671,7 +666,6 @@ export default function Loan({
         }
     };
 
-
     return (
         <AuthenticatedLayout
             header={
@@ -726,13 +720,16 @@ export default function Loan({
                         <div className="mb-4 flex items-center gap-2 px-1">
                             <Checkbox
                                 checked={
-                                    selectedLoans.length === paginatedLoans.length &&
+                                    selectedLoans.length ===
+                                        paginatedLoans.length &&
                                     paginatedLoans.length > 0
                                 }
                                 onCheckedChange={(checked) => {
                                     if (checked) {
                                         setSelectedLoans(
-                                            paginatedLoans.map((loan) => loan.id),
+                                            paginatedLoans.map(
+                                                (loan) => loan.id,
+                                            ),
                                         );
                                     } else {
                                         setSelectedLoans([]);
@@ -749,7 +746,10 @@ export default function Loan({
                                     parseFloat(loan.total_balance) -
                                     parseFloat(loan.paid_amount)
                                 ).toFixed(2);
-                                const creditScore = calculateCreditScore(loan, payments);
+                                const creditScore = calculateCreditScore(
+                                    loan,
+                                    payments,
+                                );
                                 const loanId = (() => {
                                     const date = new Date(loan.created_at);
                                     const month = String(
@@ -818,7 +818,9 @@ export default function Loan({
                                                 <span
                                                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[loan.status]}`}
                                                 >
-                                                    {loan.status.charAt(0).toUpperCase() +
+                                                    {loan.status
+                                                        .charAt(0)
+                                                        .toUpperCase() +
                                                         loan.status.slice(1)}
                                                 </span>
                                             </div>
@@ -855,7 +857,10 @@ export default function Loan({
                                                 </div>
                                                 <div className="mt-2 flex items-center gap-2 text-sm">
                                                     <span className="text-gray-600 dark:text-gray-400">
-                                                        {parseFloat(loan.interest_rate)}%
+                                                        {parseFloat(
+                                                            loan.interest_rate,
+                                                        )}
+                                                        %
                                                     </span>
                                                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-800 dark:text-blue-100">
                                                         {loan.interest_type ===
@@ -883,7 +888,10 @@ export default function Loan({
                                                         Payment Progress
                                                     </span>
                                                     <span className="font-medium text-gray-900 dark:text-white">
-                                                        {progressPercentage.toFixed(1)}%
+                                                        {progressPercentage.toFixed(
+                                                            1,
+                                                        )}
+                                                        %
                                                     </span>
                                                 </div>
                                                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
@@ -1059,7 +1067,10 @@ export default function Loan({
                                                             </div>
                                                             <div>
                                                                 Interest Rate:{' '}
-                                                                {loan.interest_rate}%{' '}
+                                                                {
+                                                                    loan.interest_rate
+                                                                }
+                                                                %{' '}
                                                                 {loan.interest_type ===
                                                                 'fixed'
                                                                     ? '(Fixed)'
@@ -1129,7 +1140,9 @@ export default function Loan({
                                                         Edit
                                                     </Button>
                                                 )}
-                                                {parseFloat(loan.total_balance) -
+                                                {parseFloat(
+                                                    loan.total_balance,
+                                                ) -
                                                     parseFloat(
                                                         loan.paid_amount,
                                                     ) >
@@ -1139,7 +1152,9 @@ export default function Loan({
                                                             variant="default"
                                                             size="sm"
                                                             onClick={() =>
-                                                                handlePayment(loan)
+                                                                handlePayment(
+                                                                    loan,
+                                                                )
                                                             }
                                                             className="flex-1 bg-green-600 hover:bg-green-700"
                                                         >
@@ -1152,7 +1167,9 @@ export default function Loan({
                                                         size="sm"
                                                         className="border-gray-900 bg-black text-white hover:bg-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
                                                         onClick={() =>
-                                                            handleCreateBill(loan)
+                                                            handleCreateBill(
+                                                                loan,
+                                                            )
                                                         }
                                                     >
                                                         Bill
@@ -1208,8 +1225,8 @@ export default function Loan({
                         {paginatedLoans.length === 0 && (
                             <div className="py-12 text-center">
                                 <p className="text-gray-500 dark:text-gray-400">
-                                    No loans found. Create your first loan to get
-                                    started.
+                                    No loans found. Create your first loan to
+                                    get started.
                                 </p>
                             </div>
                         )}
@@ -1368,9 +1385,7 @@ export default function Loan({
                     onCancel={() => {
                         setIsCreateBillDialogOpen(false);
                         setBillPenalty('');
-                        setBillDueDate(
-                            new Date().toISOString().split('T')[0],
-                        );
+                        setBillDueDate(new Date().toISOString().split('T')[0]);
                     }}
                 />
 

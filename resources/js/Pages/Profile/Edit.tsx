@@ -221,7 +221,10 @@ export default function Edit({
                         >
                             {/* Mobile Select Dropdown */}
                             <div className="md:hidden">
-                                <Select value={activeTab} onValueChange={setActiveTab}>
+                                <Select
+                                    value={activeTab}
+                                    onValueChange={setActiveTab}
+                                >
                                     <SelectTrigger className="w-full bg-white dark:bg-gray-800">
                                         <SelectValue placeholder="Select a section" />
                                     </SelectTrigger>
@@ -232,7 +235,8 @@ export default function Edit({
                                                 <span>Team</span>
                                             </div>
                                         </SelectItem>
-                                        {(isAdministrator || !hasTeamMembers) && (
+                                        {(isAdministrator ||
+                                            !hasTeamMembers) && (
                                             <>
                                                 <SelectItem value="account">
                                                     <div className="flex items-center gap-2">
@@ -243,7 +247,9 @@ export default function Edit({
                                                 <SelectItem value="subscriptions">
                                                     <div className="flex items-center gap-2">
                                                         <CreditCard className="h-4 w-4" />
-                                                        <span>Subscriptions</span>
+                                                        <span>
+                                                            Subscriptions
+                                                        </span>
                                                     </div>
                                                 </SelectItem>
                                                 <SelectItem value="billing">

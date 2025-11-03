@@ -39,39 +39,35 @@ import axios from 'axios';
 import { FileDown, FileText, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import type {
-    CbuFund,
-    CbuContribution,
-    CbuWithdrawal,
-    CbuDividend,
-    CbuHistory,
-    CbuReport,
-    Props,
-    NewFundData,
-    ContributionData,
-    WithdrawalData,
-    DividendData,
-    ReportDateRange,
-    ReportEmailData,
-} from './types';
-import { formatCbuAmount } from './utils';
 import { AddFundDialog } from './components/AddFundDialog';
 import { ContributionDialog } from './components/ContributionDialog';
-import { WithdrawDialog } from './components/WithdrawDialog';
+import { DeleteFundDialog } from './components/DeleteFundDialog';
 import { DividendDialog } from './components/DividendDialog';
 import { EditFundDialog } from './components/EditFundDialog';
-import { ViewContributionsDialog } from './components/ViewContributionsDialog';
-import { ViewWithdrawalsDialog } from './components/ViewWithdrawalsDialog';
-import { ViewDividendsDialog } from './components/ViewDividendsDialog';
-import { DeleteFundDialog } from './components/DeleteFundDialog';
 import { HistoryDialog } from './components/HistoryDialog';
 import { SendReportDialog } from './components/SendReportDialog';
+import { ViewContributionsDialog } from './components/ViewContributionsDialog';
+import { ViewDividendsDialog } from './components/ViewDividendsDialog';
+import { ViewWithdrawalsDialog } from './components/ViewWithdrawalsDialog';
+import { WithdrawDialog } from './components/WithdrawDialog';
+import type {
+    CbuContribution,
+    CbuDividend,
+    CbuFund,
+    CbuHistory,
+    CbuReport,
+    CbuWithdrawal,
+    ContributionData,
+    DividendData,
+    NewFundData,
+    Props,
+    ReportDateRange,
+    ReportEmailData,
+    WithdrawalData,
+} from './types';
+import { formatCbuAmount } from './utils';
 
-export default function Cbu({
-    auth,
-    cbuFunds,
-    appCurrency,
-}: Props) {
+export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
             // Team member selected - check their roles
@@ -154,20 +150,18 @@ export default function Cbu({
     const [fundToDelete, setFundToDelete] = useState<CbuFund | null>(null);
     const [fundHistory, setFundHistory] = useState<CbuHistory[]>([]);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-    const [reportDateRange, setReportDateRange] =
-        useState<ReportDateRange>({
-            start_date: new Date().toISOString().split('T')[0],
-            end_date: new Date().toISOString().split('T')[0],
-        });
+    const [reportDateRange, setReportDateRange] = useState<ReportDateRange>({
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date().toISOString().split('T')[0],
+    });
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [reportData, setReportData] = useState<CbuReport | null>(null);
     const [isSendReportDialogOpen, setIsSendReportDialogOpen] = useState(false);
     const [isSendingReport, setIsSendingReport] = useState(false);
-    const [reportEmailData, setReportEmailData] =
-        useState<ReportEmailData>({
-            email: '',
-            message: '',
-        });
+    const [reportEmailData, setReportEmailData] = useState<ReportEmailData>({
+        email: '',
+        message: '',
+    });
 
     const handleAddFund = () => {
         setNewFund({
@@ -730,104 +724,230 @@ export default function Cbu({
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="mb-4">
-                            <div className="relative">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <div className="mb-4 flex flex-col justify-between gap-4 sm:flex-row">
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500" />
                                 <Input
                                     placeholder="Search by name or description..."
                                     value={searchQuery}
                                     onChange={(e) =>
                                         setSearchQuery(e.target.value)
                                     }
-                                    className="pl-8"
+                                    className="w-full pl-8"
                                 />
                             </div>
                         </div>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50px]">
-                                            <Checkbox
-                                                checked={
-                                                    selectedFunds.length ===
-                                                    filteredFunds.length
-                                                }
-                                                onCheckedChange={
-                                                    toggleSelectAll
-                                                }
-                                            />
-                                        </TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead>Target Amount</TableHead>
-                                        <TableHead>Total Amount</TableHead>
-                                        <TableHead>Value Per Share</TableHead>
-                                        <TableHead>Number of Shares</TableHead>
-                                        <TableHead>Start Date</TableHead>
-                                        <TableHead>End Date</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {currentFunds.map((fund) => (
-                                        <TableRow key={fund.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedFunds.includes(
-                                                        fund.id,
-                                                    )}
-                                                    onCheckedChange={() =>
-                                                        toggleSelect(fund.id)
-                                                    }
-                                                />
-                                            </TableCell>
-                                            <TableCell>{fund.name}</TableCell>
-                                            <TableCell>
-                                                {fund.description || '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {fund.target_amount
-                                                    ? formatAmount(
-                                                          fund.target_amount,
-                                                          appCurrency,
-                                                      )
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {fund.total_amount
-                                                    ? formatAmount(
-                                                          fund.total_amount,
-                                                          appCurrency,
-                                                      )
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {fund.value_per_share
-                                                    ? formatAmount(
-                                                          fund.value_per_share,
-                                                          appCurrency,
-                                                      )
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {fund.number_of_shares || '0'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {fund.start_date
-                                                    ? new Date(
-                                                          fund.start_date,
-                                                      ).toLocaleDateString()
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {fund.end_date
-                                                    ? new Date(
-                                                          fund.end_date,
-                                                      ).toLocaleDateString()
-                                                    : '-'}
-                                            </TableCell>
-                                            <TableCell>
+                        <div className="mb-4 flex items-center gap-2 px-1">
+                            <Checkbox
+                                checked={
+                                    selectedFunds.length ===
+                                        currentFunds.length &&
+                                    currentFunds.length > 0
+                                }
+                                onCheckedChange={(checked) => {
+                                    if (checked) {
+                                        setSelectedFunds(
+                                            currentFunds.map((fund) => fund.id),
+                                        );
+                                    } else {
+                                        setSelectedFunds([]);
+                                    }
+                                }}
+                            />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                Select All ({currentFunds.length} funds)
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {currentFunds.map((fund) => {
+                                const progressPercentage =
+                                    fund.target_amount && fund.total_amount
+                                        ? (parseFloat(fund.total_amount) /
+                                              parseFloat(fund.target_amount)) *
+                                          100
+                                        : 0;
+
+                                const targetAmount = fund.target_amount
+                                    ? parseFloat(fund.target_amount)
+                                    : 0;
+                                const totalAmount = fund.total_amount
+                                    ? parseFloat(fund.total_amount)
+                                    : 0;
+                                const remaining =
+                                    targetAmount > 0
+                                        ? Math.max(
+                                              0,
+                                              targetAmount - totalAmount,
+                                          )
+                                        : 0;
+
+                                return (
+                                    <Card
+                                        key={fund.id}
+                                        className={`relative overflow-hidden border-2 transition-all hover:shadow-lg ${
+                                            selectedFunds.includes(fund.id)
+                                                ? 'border-blue-500 ring-2 ring-blue-300 dark:ring-blue-700'
+                                                : 'border-gray-200 dark:border-gray-700'
+                                        }`}
+                                    >
+                                        <CardContent className="p-6">
+                                            {/* Header with Checkbox and Fund Name */}
+                                            <div className="mb-4 flex items-start justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <Checkbox
+                                                        checked={selectedFunds.includes(
+                                                            fund.id,
+                                                        )}
+                                                        onCheckedChange={() =>
+                                                            toggleSelect(
+                                                                fund.id,
+                                                            )
+                                                        }
+                                                        className="mt-1"
+                                                    />
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                            {fund.name}
+                                                        </h3>
+                                                        {fund.description && (
+                                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                                {
+                                                                    fund.description
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Target Amount - Prominent Display */}
+                                            <div className="mb-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 p-4 dark:from-blue-900/20 dark:to-indigo-900/20">
+                                                <div className="mb-1 text-xs text-gray-600 dark:text-gray-400">
+                                                    Target Amount
+                                                </div>
+                                                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                                                    {fund.target_amount
+                                                        ? formatCbuAmount(
+                                                              fund.target_amount,
+                                                              appCurrency,
+                                                          )
+                                                        : 'No Target'}
+                                                </div>
+                                            </div>
+
+                                            {/* Progress Bar */}
+                                            {fund.target_amount && (
+                                                <div className="mb-4">
+                                                    <div className="mb-2 flex items-center justify-between text-sm">
+                                                        <span className="text-gray-600 dark:text-gray-400">
+                                                            Progress
+                                                        </span>
+                                                        <span className="font-medium text-gray-900 dark:text-white">
+                                                            {progressPercentage.toFixed(
+                                                                1,
+                                                            )}
+                                                            %
+                                                        </span>
+                                                    </div>
+                                                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                                                        <div
+                                                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
+                                                            style={{
+                                                                width: `${Math.min(
+                                                                    progressPercentage,
+                                                                    100,
+                                                                )}%`,
+                                                            }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Financial Summary */}
+                                            <div className="mb-4 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="text-gray-600 dark:text-gray-400">
+                                                        Total Amount
+                                                    </span>
+                                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                                        {fund.total_amount
+                                                            ? formatCbuAmount(
+                                                                  fund.total_amount,
+                                                                  appCurrency,
+                                                              )
+                                                            : formatCbuAmount(
+                                                                  '0',
+                                                                  appCurrency,
+                                                              )}
+                                                    </span>
+                                                </div>
+                                                {fund.target_amount && (
+                                                    <div className="flex items-center justify-between border-t border-gray-200 pt-2 text-sm dark:border-gray-700">
+                                                        <span className="text-gray-600 dark:text-gray-400">
+                                                            Remaining
+                                                        </span>
+                                                        <span className="font-medium text-orange-600 dark:text-orange-400">
+                                                            {formatCbuAmount(
+                                                                remaining.toString(),
+                                                                appCurrency,
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center justify-between border-t border-gray-200 pt-2 text-sm dark:border-gray-700">
+                                                    <span className="text-gray-600 dark:text-gray-400">
+                                                        Value Per Share
+                                                    </span>
+                                                    <span className="font-medium text-gray-900 dark:text-white">
+                                                        {fund.value_per_share
+                                                            ? formatCbuAmount(
+                                                                  fund.value_per_share,
+                                                                  appCurrency,
+                                                              )
+                                                            : '-'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between border-t border-gray-200 pt-2 text-sm dark:border-gray-700">
+                                                    <span className="text-gray-600 dark:text-gray-400">
+                                                        Number of Shares
+                                                    </span>
+                                                    <span className="font-medium text-gray-900 dark:text-white">
+                                                        {fund.number_of_shares ||
+                                                            '0'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Date Range */}
+                                            <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
+                                                <div className="rounded-md bg-gray-50 p-2 dark:bg-gray-800/50">
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Start Date
+                                                    </div>
+                                                    <div className="mt-1 font-medium text-gray-900 dark:text-white">
+                                                        {fund.start_date
+                                                            ? new Date(
+                                                                  fund.start_date,
+                                                              ).toLocaleDateString()
+                                                            : '-'}
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-md bg-gray-50 p-2 dark:bg-gray-800/50">
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        End Date
+                                                    </div>
+                                                    <div className="mt-1 font-medium text-gray-900 dark:text-white">
+                                                        {fund.end_date
+                                                            ? new Date(
+                                                                  fund.end_date,
+                                                              ).toLocaleDateString()
+                                                            : '-'}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="mt-4">
                                                 <Select
                                                     onValueChange={(value) => {
                                                         switch (value) {
@@ -899,7 +1019,7 @@ export default function Cbu({
                                                         }
                                                     }}
                                                 >
-                                                    <SelectTrigger className="w-[180px]">
+                                                    <SelectTrigger className="w-full">
                                                         <span>Actions</span>
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -937,13 +1057,16 @@ export default function Cbu({
                                                                 Delete Fund
                                                             </SelectItem>
                                                         )}
+                                                        <SelectItem value="send_report">
+                                                            Send Report
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
                         </div>
                         <div className="mt-4 flex items-center justify-between">
                             <div className="flex items-center gap-2">

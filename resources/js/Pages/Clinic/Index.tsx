@@ -1054,7 +1054,11 @@ export default function Clinic({
             <Head title="Clinic" />
 
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="space-y-6"
+                >
                     {/* Mobile Dropdown */}
                     <div className="mb-6 md:hidden">
                         <Select value={activeTab} onValueChange={setActiveTab}>

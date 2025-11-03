@@ -63,7 +63,10 @@ export default function Transportation() {
                 >
                     {/* Mobile Dropdown */}
                     <div className="mb-8 md:hidden">
-                        <Select value={activeTab} onValueChange={handleTabChange}>
+                        <Select
+                            value={activeTab}
+                            onValueChange={handleTabChange}
+                        >
                             <SelectTrigger className="w-full">
                                 <SelectValue>
                                     {activeTab === 'dashboard' && (

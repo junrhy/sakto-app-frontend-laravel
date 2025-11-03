@@ -52,56 +52,60 @@ export function PaymentHistoryDialog({
                 <div className="flex-1 overflow-y-auto">
                     <div className="overflow-x-auto">
                         <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {loanPayments && loanPayments.length > 0 ? (
-                            loanPayments.map((payment) => (
-                                <TableRow key={payment.id}>
-                                    <TableCell>
-                                        {payment.payment_date
-                                            ? new Date(
-                                                  payment.payment_date,
-                                              ).toLocaleDateString()
-                                            : 'N/A'}
-                                    </TableCell>
-                                    <TableCell>
-                                        {formatAmount(
-                                            payment.amount,
-                                            appCurrency,
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {canDelete && (
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={() =>
-                                                    onDeletePayment(payment)
-                                                }
-                                            >
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </TableCell>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead className="text-right">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={3}
-                                    className="text-center"
-                                >
-                                    No payment records found
-                                </TableCell>
-                            </TableRow>
-                        )}
-                        </TableBody>
+                            </TableHeader>
+                            <TableBody>
+                                {loanPayments && loanPayments.length > 0 ? (
+                                    loanPayments.map((payment) => (
+                                        <TableRow key={payment.id}>
+                                            <TableCell>
+                                                {payment.payment_date
+                                                    ? new Date(
+                                                          payment.payment_date,
+                                                      ).toLocaleDateString()
+                                                    : 'N/A'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {formatAmount(
+                                                    payment.amount,
+                                                    appCurrency,
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {canDelete && (
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            onDeletePayment(
+                                                                payment,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={3}
+                                            className="text-center"
+                                        >
+                                            No payment records found
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
                         </Table>
                     </div>
                 </div>
@@ -112,4 +116,3 @@ export function PaymentHistoryDialog({
         </Dialog>
     );
 }
-

@@ -20,7 +20,10 @@ interface NavItem {
     method?: 'get' | 'post';
 }
 
-const createNavItems = (unreadCount: number = 0, projectIdentifier: string = ''): NavItem[] => [
+const createNavItems = (
+    unreadCount: number = 0,
+    projectIdentifier: string = '',
+): NavItem[] => [
     {
         icon: <RxHome />,
         label: 'Home',
@@ -85,7 +88,10 @@ export default function MobileSidebar({
     onToggle,
 }: MobileSidebarProps) {
     const { url } = usePage();
-    const page = usePage<{ auth: { user: any; project: { identifier: string } }; unreadCount?: number }>();
+    const page = usePage<{
+        auth: { user: any; project: { identifier: string } };
+        unreadCount?: number;
+    }>();
     const unreadCount = page.props.unreadCount ?? 0;
     const projectIdentifier = page.props.auth?.project?.identifier ?? '';
 
@@ -131,7 +137,9 @@ export default function MobileSidebar({
                                         key={index}
                                         href={item.route}
                                         method={item.method || 'get'}
-                                        as={item.isLogout ? 'button' : undefined}
+                                        as={
+                                            item.isLogout ? 'button' : undefined
+                                        }
                                         onClick={onToggle}
                                         className={`relative flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                                             item.isAction

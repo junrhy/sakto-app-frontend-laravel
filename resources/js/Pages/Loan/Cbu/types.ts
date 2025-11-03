@@ -149,4 +149,3 @@ export interface ReportEmailData {
     email: string;
     message: string;
 }
-

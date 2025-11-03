@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -13,9 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Card, CardContent } from '@/Components/ui/card';
+import type { CbuContribution, CbuFund } from '../types';
 import { formatCbuAmount } from '../utils';
-import type { CbuFund, CbuContribution } from '../types';
 
 interface ViewContributionsDialogProps {
     open: boolean;
@@ -77,7 +77,9 @@ export function ViewContributionsDialog({
                                                 contributions.map(
                                                     (contribution) => (
                                                         <TableRow
-                                                            key={contribution.id}
+                                                            key={
+                                                                contribution.id
+                                                            }
                                                             className="hover:bg-gray-50 dark:hover:bg-gray-700"
                                                         >
                                                             <TableCell className="text-gray-900 dark:text-white">
@@ -124,4 +126,3 @@ export function ViewContributionsDialog({
         </Dialog>
     );
 }
-

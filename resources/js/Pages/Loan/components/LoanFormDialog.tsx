@@ -15,8 +15,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import type { Loan, InstallmentOption } from '../types';
-import { LOAN_DURATIONS, INSTALLMENT_OPTIONS } from '../constants';
+import { INSTALLMENT_OPTIONS, LOAN_DURATIONS } from '../constants';
+import type { InstallmentOption, Loan } from '../types';
 import { calculateInstallmentAmount, formatAmount } from '../utils';
 
 interface ValidationErrors {
@@ -68,7 +68,9 @@ export function LoanFormDialog({
         const diffDays = Math.round(
             (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
         );
-        const matchingDuration = LOAN_DURATIONS.find((d) => d.days === diffDays);
+        const matchingDuration = LOAN_DURATIONS.find(
+            (d) => d.days === diffDays,
+        );
         return matchingDuration ? diffDays.toString() : 'null';
     };
 
@@ -108,7 +110,10 @@ export function LoanFormDialog({
                         {currentLoan.id ? 'Edit Loan' : 'Add Loan'}
                     </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+                <form
+                    onSubmit={onSubmit}
+                    className="flex min-h-0 flex-1 flex-col"
+                >
                     <div className="min-h-0 flex-1 overflow-y-auto">
                         <div className="grid gap-3 py-4">
                             {/* Row 1: Borrower Name, Amount, Interest Rate */}
@@ -153,8 +158,12 @@ export function LoanFormDialog({
                                         min="0"
                                         value={currentLoan.amount || ''}
                                         onChange={(e) => {
-                                            onValidationErrorChange({ amount: '' });
-                                            onLoanChange({ amount: e.target.value });
+                                            onValidationErrorChange({
+                                                amount: '',
+                                            });
+                                            onLoanChange({
+                                                amount: e.target.value,
+                                            });
                                         }}
                                         className={
                                             validationErrors.amount
@@ -208,12 +217,17 @@ export function LoanFormDialog({
                                         Interest Type
                                     </Label>
                                     <Select
-                                        value={currentLoan.interest_type || 'fixed'}
-                                        onValueChange={(value: 'fixed' | 'compounding') =>
+                                        value={
+                                            currentLoan.interest_type || 'fixed'
+                                        }
+                                        onValueChange={(
+                                            value: 'fixed' | 'compounding',
+                                        ) =>
                                             onLoanChange({
                                                 interest_type: value,
                                                 frequency:
-                                                    currentLoan.frequency || 'monthly',
+                                                    currentLoan.frequency ||
+                                                    'monthly',
                                             })
                                         }
                                     >
@@ -236,7 +250,9 @@ export function LoanFormDialog({
                                         <span className="text-red-500">*</span>
                                     </Label>
                                     <Select
-                                        value={currentLoan.frequency || 'monthly'}
+                                        value={
+                                            currentLoan.frequency || 'monthly'
+                                        }
                                         onValueChange={(
                                             value:
                                                 | 'daily'
@@ -249,8 +265,12 @@ export function LoanFormDialog({
                                             <SelectValue placeholder="Select frequency" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="daily">Daily</SelectItem>
-                                            <SelectItem value="monthly">Monthly</SelectItem>
+                                            <SelectItem value="daily">
+                                                Daily
+                                            </SelectItem>
+                                            <SelectItem value="monthly">
+                                                Monthly
+                                            </SelectItem>
                                             <SelectItem value="quarterly">
                                                 Quarterly
                                             </SelectItem>
@@ -271,7 +291,9 @@ export function LoanFormDialog({
                                         value={getDurationValue()}
                                         onValueChange={(value) =>
                                             onDurationChange(
-                                                value === 'null' ? null : parseInt(value),
+                                                value === 'null'
+                                                    ? null
+                                                    : parseInt(value),
                                             )
                                         }
                                         disabled={!currentLoan.start_date}
@@ -284,7 +306,8 @@ export function LoanFormDialog({
                                                 <SelectItem
                                                     key={duration.label}
                                                     value={
-                                                        duration.days?.toString() ?? 'null'
+                                                        duration.days?.toString() ??
+                                                        'null'
                                                     }
                                                 >
                                                     {duration.label}
@@ -313,31 +336,54 @@ export function LoanFormDialog({
                                         value={currentLoan.start_date || ''}
                                         onChange={(e) => {
                                             onDateErrorChange('');
-                                            onValidationErrorChange({ start_date: '' });
+                                            onValidationErrorChange({
+                                                start_date: '',
+                                            });
                                             const newStartDate = e.target.value;
-                                            
+
                                             // If end date exists, maintain the same duration
-                                            if (newStartDate && currentLoan.end_date && currentLoan.start_date) {
-                                                const startDate = new Date(newStartDate);
-                                                const oldStartDate = new Date(currentLoan.start_date);
-                                                const oldEndDate = new Date(currentLoan.end_date);
-                                                
+                                            if (
+                                                newStartDate &&
+                                                currentLoan.end_date &&
+                                                currentLoan.start_date
+                                            ) {
+                                                const startDate = new Date(
+                                                    newStartDate,
+                                                );
+                                                const oldStartDate = new Date(
+                                                    currentLoan.start_date,
+                                                );
+                                                const oldEndDate = new Date(
+                                                    currentLoan.end_date,
+                                                );
+
                                                 // Calculate the difference in days
                                                 const diffDays = Math.round(
-                                                    (oldEndDate.getTime() - oldStartDate.getTime()) / (1000 * 60 * 60 * 24)
+                                                    (oldEndDate.getTime() -
+                                                        oldStartDate.getTime()) /
+                                                        (1000 * 60 * 60 * 24),
                                                 );
-                                                
+
                                                 // Apply the same duration from new start date
-                                                const newEndDate = new Date(startDate);
-                                                newEndDate.setDate(newEndDate.getDate() + diffDays);
-                                                
+                                                const newEndDate = new Date(
+                                                    startDate,
+                                                );
+                                                newEndDate.setDate(
+                                                    newEndDate.getDate() +
+                                                        diffDays,
+                                                );
+
                                                 onLoanChange({
                                                     start_date: newStartDate,
-                                                    end_date: newEndDate.toISOString().split('T')[0],
+                                                    end_date: newEndDate
+                                                        .toISOString()
+                                                        .split('T')[0],
                                                 });
                                             } else {
                                                 // Just update start date, let user set end date manually or use Duration
-                                                onLoanChange({ start_date: newStartDate });
+                                                onLoanChange({
+                                                    start_date: newStartDate,
+                                                });
                                             }
                                         }}
                                         className={
@@ -363,11 +409,16 @@ export function LoanFormDialog({
                                         value={currentLoan.end_date || ''}
                                         onChange={(e) => {
                                             onDateErrorChange('');
-                                            onValidationErrorChange({ end_date: '' });
-                                            onLoanChange({ end_date: e.target.value });
+                                            onValidationErrorChange({
+                                                end_date: '',
+                                            });
+                                            onLoanChange({
+                                                end_date: e.target.value,
+                                            });
                                         }}
                                         className={
-                                            validationErrors.end_date || dateError
+                                            validationErrors.end_date ||
+                                            dateError
                                                 ? 'border-red-500'
                                                 : ''
                                         }
@@ -391,22 +442,33 @@ export function LoanFormDialog({
                                     <Select
                                         value={currentLoan.status || ''}
                                         onValueChange={(
-                                            value: 'active' | 'paid' | 'defaulted',
+                                            value:
+                                                | 'active'
+                                                | 'paid'
+                                                | 'defaulted',
                                         ) => {
-                                            onValidationErrorChange({ status: '' });
+                                            onValidationErrorChange({
+                                                status: '',
+                                            });
                                             onLoanChange({ status: value });
                                         }}
                                     >
                                         <SelectTrigger
                                             className={
-                                                validationErrors.status ? 'border-red-500' : ''
+                                                validationErrors.status
+                                                    ? 'border-red-500'
+                                                    : ''
                                             }
                                         >
                                             <SelectValue placeholder="Select status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="paid">Paid</SelectItem>
+                                            <SelectItem value="active">
+                                                Active
+                                            </SelectItem>
+                                            <SelectItem value="paid">
+                                                Paid
+                                            </SelectItem>
                                             <SelectItem value="defaulted">
                                                 Defaulted
                                             </SelectItem>
@@ -427,8 +489,13 @@ export function LoanFormDialog({
                                         Installment Frequency
                                     </Label>
                                     <Select
-                                        value={currentLoan.installment_frequency || ''}
-                                        onValueChange={handleInstallmentFrequencyChange}
+                                        value={
+                                            currentLoan.installment_frequency ||
+                                            ''
+                                        }
+                                        onValueChange={
+                                            handleInstallmentFrequencyChange
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select frequency (optional)" />
@@ -437,14 +504,16 @@ export function LoanFormDialog({
                                             <SelectItem value="none">
                                                 No installments
                                             </SelectItem>
-                                            {INSTALLMENT_OPTIONS.map((option) => (
-                                                <SelectItem
-                                                    key={option.value}
-                                                    value={option.value}
-                                                >
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
+                                            {INSTALLMENT_OPTIONS.map(
+                                                (option) => (
+                                                    <SelectItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                    >
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ),
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -488,7 +557,10 @@ export function LoanFormDialog({
                                                             new Date(
                                                                 currentLoan.start_date,
                                                             ).getTime()) /
-                                                            (1000 * 60 * 60 * 24),
+                                                            (1000 *
+                                                                60 *
+                                                                60 *
+                                                                24),
                                                     );
                                                     const numberOfInstallments =
                                                         Math.ceil(
@@ -512,4 +584,3 @@ export function LoanFormDialog({
         </Dialog>
     );
 }
-

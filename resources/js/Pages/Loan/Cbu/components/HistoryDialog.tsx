@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -13,9 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Card, CardContent } from '@/Components/ui/card';
-import { formatCbuAmount } from '../utils';
 import type { CbuFund, CbuHistory } from '../types';
+import { formatCbuAmount } from '../utils';
 
 interface HistoryDialogProps {
     open: boolean;
@@ -88,7 +88,7 @@ export function HistoryDialog({
                                                                     'contribution'
                                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                                         : item.type ===
-                                                                          'withdrawal'
+                                                                            'withdrawal'
                                                                           ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                                           : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                                                                 }`}
@@ -97,7 +97,7 @@ export function HistoryDialog({
                                                                 'contribution'
                                                                     ? 'Contribution'
                                                                     : item.type ===
-                                                                      'withdrawal'
+                                                                        'withdrawal'
                                                                       ? 'Withdrawal'
                                                                       : 'Dividend'}
                                                             </span>
@@ -109,7 +109,7 @@ export function HistoryDialog({
                                                                     'withdrawal'
                                                                         ? 'text-red-600 dark:text-red-400'
                                                                         : item.type ===
-                                                                          'contribution'
+                                                                            'contribution'
                                                                           ? 'text-green-600 dark:text-green-400'
                                                                           : 'text-blue-600 dark:text-blue-400'
                                                                 }
@@ -161,4 +161,3 @@ export function HistoryDialog({
         </Dialog>
     );
 }
-

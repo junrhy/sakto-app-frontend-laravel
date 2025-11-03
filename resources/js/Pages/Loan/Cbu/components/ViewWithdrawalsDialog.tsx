@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -13,9 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Card, CardContent } from '@/Components/ui/card';
-import { formatCbuAmount } from '../utils';
 import type { CbuFund, CbuWithdrawal } from '../types';
+import { formatCbuAmount } from '../utils';
 
 interface ViewWithdrawalsDialogProps {
     open: boolean;
@@ -124,4 +124,3 @@ export function ViewWithdrawalsDialog({
         </Dialog>
     );
 }
-

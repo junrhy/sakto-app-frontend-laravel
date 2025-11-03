@@ -16,11 +16,11 @@ import { MenuItem } from '../types';
 
 /**
  * Category Display Order Configuration
- * 
+ *
  * Define the order in which menu categories should be displayed.
  * Categories will appear in the order specified in this array.
  * Categories not listed here will appear at the end in alphabetical order.
- * 
+ *
  * To add a new category or change the order:
  * 1. Add/modify the category name in this array (must match backend category values)
  * 2. Update getCategoryDisplayName() function for the display name
@@ -118,14 +118,17 @@ export const MenuTab: React.FC<MenuTabProps> = ({
     const groupedMenuItems = useMemo(() => {
         if (!Array.isArray(paginatedMenuItems)) return {};
 
-        return paginatedMenuItems.reduce((groups, item) => {
-            const category = item.category;
-            if (!groups[category]) {
-                groups[category] = [];
-            }
-            groups[category].push(item);
-            return groups;
-        }, {} as Record<string, MenuItem[]>);
+        return paginatedMenuItems.reduce(
+            (groups, item) => {
+                const category = item.category;
+                if (!groups[category]) {
+                    groups[category] = [];
+                }
+                groups[category].push(item);
+                return groups;
+            },
+            {} as Record<string, MenuItem[]>,
+        );
     }, [paginatedMenuItems]);
 
     const pageCount = useMemo(
@@ -258,7 +261,9 @@ export const MenuTab: React.FC<MenuTabProps> = ({
                                                 key={category}
                                                 value={category}
                                             >
-                                                {getCategoryDisplayName(category)}
+                                                {getCategoryDisplayName(
+                                                    category,
+                                                )}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -286,224 +291,227 @@ export const MenuTab: React.FC<MenuTabProps> = ({
 
                     {/* Grouped Card Grid by Category */}
                     <div className="space-y-6 sm:space-y-8">
-                        {getSortedCategories(
-                            Object.keys(groupedMenuItems),
-                        ).map((category) => {
-                            const items = groupedMenuItems[category];
-                            return (
-                                <div key={category}>
-                                    {/* Category Header */}
-                                    <div className="mb-3 flex items-center gap-2 sm:mb-4 sm:gap-3">
-                                        <div
-                                            className={`rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 ${getCategoryColor(category)}`}
-                                        >
-                                            <h3 className="text-base font-bold sm:text-lg">
-                                                {getCategoryDisplayName(
-                                                    category,
-                                                )}
-                                            </h3>
-                                        </div>
-                                        <div className="h-px flex-1 bg-gray-200 dark:bg-gray-600"></div>
-                                        <span className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
-                                            {items.length}{' '}
-                                            {items.length === 1
-                                                ? 'item'
-                                                : 'items'}
-                                        </span>
-                                    </div>
-
-                                    {/* Cards Grid for this Category */}
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                                        {items.map((item) => (
-                                            <Card
-                                                key={item.id}
-                                                className={`group overflow-hidden transition-all duration-200 hover:shadow-xl ${
-                                                    selectedMenuItems.includes(
-                                                        item.id,
-                                                    )
-                                                        ? 'ring-2 ring-purple-500'
-                                                        : ''
-                                                }`}
+                        {getSortedCategories(Object.keys(groupedMenuItems)).map(
+                            (category) => {
+                                const items = groupedMenuItems[category];
+                                return (
+                                    <div key={category}>
+                                        {/* Category Header */}
+                                        <div className="mb-3 flex items-center gap-2 sm:mb-4 sm:gap-3">
+                                            <div
+                                                className={`rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 ${getCategoryColor(category)}`}
                                             >
-                                                <div className="relative">
-                                                    {/* Image */}
-                                                    <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                                        <img
-                                                            src={
-                                                                item.image ||
-                                                                '/images/no-image.jpg'
-                                                            }
-                                                            alt={item.name}
-                                                            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                                                        />
-                                                        {/* Checkbox Overlay */}
-                                                        <div className="absolute left-2 top-2">
-                                                            <div className="rounded-md bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:bg-gray-800/90">
-                                                                <Checkbox
-                                                                    checked={selectedMenuItems.includes(
-                                                                        item.id,
-                                                                    )}
-                                                                    onCheckedChange={(
-                                                                        checked,
-                                                                    ) =>
-                                                                        handleSelectItem(
+                                                <h3 className="text-base font-bold sm:text-lg">
+                                                    {getCategoryDisplayName(
+                                                        category,
+                                                    )}
+                                                </h3>
+                                            </div>
+                                            <div className="h-px flex-1 bg-gray-200 dark:bg-gray-600"></div>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+                                                {items.length}{' '}
+                                                {items.length === 1
+                                                    ? 'item'
+                                                    : 'items'}
+                                            </span>
+                                        </div>
+
+                                        {/* Cards Grid for this Category */}
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                                            {items.map((item) => (
+                                                <Card
+                                                    key={item.id}
+                                                    className={`group overflow-hidden transition-all duration-200 hover:shadow-xl ${
+                                                        selectedMenuItems.includes(
+                                                            item.id,
+                                                        )
+                                                            ? 'ring-2 ring-purple-500'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    <div className="relative">
+                                                        {/* Image */}
+                                                        <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
+                                                            <img
+                                                                src={
+                                                                    item.image ||
+                                                                    '/images/no-image.jpg'
+                                                                }
+                                                                alt={item.name}
+                                                                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                                            />
+                                                            {/* Checkbox Overlay */}
+                                                            <div className="absolute left-2 top-2">
+                                                                <div className="rounded-md bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:bg-gray-800/90">
+                                                                    <Checkbox
+                                                                        checked={selectedMenuItems.includes(
                                                                             item.id,
-                                                                            checked as boolean,
-                                                                        )
-                                                                    }
-                                                                />
+                                                                        )}
+                                                                        onCheckedChange={(
+                                                                            checked,
+                                                                        ) =>
+                                                                            handleSelectItem(
+                                                                                item.id,
+                                                                                checked as boolean,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    {/* Card Content */}
-                                                    <CardContent className="p-3 sm:p-4">
-                                                        {/* Name and Price */}
-                                                        <div className="mb-2 sm:mb-3">
-                                                            <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 sm:text-base lg:text-lg dark:text-white">
-                                                                {item.name}
-                                                            </h3>
-                                                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                                                <span className="text-xl font-bold text-purple-600 sm:text-2xl dark:text-purple-400">
-                                                                    {
-                                                                        currency_symbol
-                                                                    }
-                                                                    {item.price}
-                                                                </span>
-                                                                {item.delivery_fee && (
-                                                                    <span className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
-                                                                        Delivery:{' '}
+                                                        {/* Card Content */}
+                                                        <CardContent className="p-3 sm:p-4">
+                                                            {/* Name and Price */}
+                                                            <div className="mb-2 sm:mb-3">
+                                                                <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 dark:text-white sm:text-base lg:text-lg">
+                                                                    {item.name}
+                                                                </h3>
+                                                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                                                    <span className="text-xl font-bold text-purple-600 dark:text-purple-400 sm:text-2xl">
                                                                         {
                                                                             currency_symbol
                                                                         }
                                                                         {
-                                                                            item.delivery_fee
+                                                                            item.price
                                                                         }
                                                                     </span>
+                                                                    {item.delivery_fee && (
+                                                                        <span className="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+                                                                            Delivery:{' '}
+                                                                            {
+                                                                                currency_symbol
+                                                                            }
+                                                                            {
+                                                                                item.delivery_fee
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Availability Section */}
+                                                            <div className="mb-2 space-y-1.5 rounded-lg bg-gray-50 p-2 dark:bg-gray-700 sm:mb-3 sm:space-y-2 sm:p-3">
+                                                                {/* In Store Availability */}
+                                                                <div className="flex items-center justify-between gap-1">
+                                                                    <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
+                                                                        <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                            In
+                                                                            Store
+                                                                        </span>
+                                                                        <span
+                                                                            className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium sm:px-2 ${
+                                                                                item.is_available_personal
+                                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                                            }`}
+                                                                        >
+                                                                            {item.is_available_personal
+                                                                                ? 'Yes'
+                                                                                : 'No'}
+                                                                        </span>
+                                                                    </div>
+                                                                    {canEdit &&
+                                                                        onToggleAvailability && (
+                                                                            <Switch
+                                                                                checked={
+                                                                                    item.is_available_personal
+                                                                                }
+                                                                                onCheckedChange={(
+                                                                                    checked,
+                                                                                ) =>
+                                                                                    onToggleAvailability(
+                                                                                        item.id,
+                                                                                        'is_available_personal',
+                                                                                        checked,
+                                                                                    )
+                                                                                }
+                                                                                className="data-[state=checked]:bg-green-600"
+                                                                            />
+                                                                        )}
+                                                                </div>
+
+                                                                {/* Online Availability */}
+                                                                <div className="flex items-center justify-between gap-1">
+                                                                    <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
+                                                                        <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                            Online
+                                                                        </span>
+                                                                        <span
+                                                                            className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium sm:px-2 ${
+                                                                                item.is_available_online
+                                                                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                                            }`}
+                                                                        >
+                                                                            {item.is_available_online
+                                                                                ? 'Yes'
+                                                                                : 'No'}
+                                                                        </span>
+                                                                    </div>
+                                                                    {canEdit &&
+                                                                        onToggleAvailability && (
+                                                                            <Switch
+                                                                                checked={
+                                                                                    item.is_available_online
+                                                                                }
+                                                                                onCheckedChange={(
+                                                                                    checked,
+                                                                                ) =>
+                                                                                    onToggleAvailability(
+                                                                                        item.id,
+                                                                                        'is_available_online',
+                                                                                        checked,
+                                                                                    )
+                                                                                }
+                                                                                className="data-[state=checked]:bg-blue-600"
+                                                                            />
+                                                                        )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Action Buttons */}
+                                                            <div className="flex gap-2">
+                                                                {canEdit && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            onEditMenuItem(
+                                                                                item,
+                                                                            )
+                                                                        }
+                                                                        className="flex-1 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20"
+                                                                        title="Edit"
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
+                                                                {canDelete && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="destructive"
+                                                                        onClick={() =>
+                                                                            onDeleteMenuItem(
+                                                                                item.id,
+                                                                            )
+                                                                        }
+                                                                        className="flex-1"
+                                                                        title="Delete"
+                                                                    >
+                                                                        <Trash className="h-4 w-4" />
+                                                                    </Button>
                                                                 )}
                                                             </div>
-                                                        </div>
-
-                                                        {/* Availability Section */}
-                                                        <div className="mb-2 space-y-1.5 rounded-lg bg-gray-50 p-2 sm:mb-3 sm:space-y-2 sm:p-3 dark:bg-gray-700">
-                                                            {/* In Store Availability */}
-                                                            <div className="flex items-center justify-between gap-1">
-                                                                <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
-                                                                    <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
-                                                                        In Store
-                                                                    </span>
-                                                                    <span
-                                                                        className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium sm:px-2 ${
-                                                                            item.is_available_personal
-                                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                                        }`}
-                                                                    >
-                                                                        {item.is_available_personal
-                                                                            ? 'Yes'
-                                                                            : 'No'}
-                                                                    </span>
-                                                                </div>
-                                                                {canEdit &&
-                                                                    onToggleAvailability && (
-                                                                        <Switch
-                                                                            checked={
-                                                                                item.is_available_personal
-                                                                            }
-                                                                            onCheckedChange={(
-                                                                                checked,
-                                                                            ) =>
-                                                                                onToggleAvailability(
-                                                                                    item.id,
-                                                                                    'is_available_personal',
-                                                                                    checked,
-                                                                                )
-                                                                            }
-                                                                            className="data-[state=checked]:bg-green-600"
-                                                                        />
-                                                                    )}
-                                                            </div>
-
-                                                            {/* Online Availability */}
-                                                            <div className="flex items-center justify-between gap-1">
-                                                                <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
-                                                                    <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
-                                                                        Online
-                                                                    </span>
-                                                                    <span
-                                                                        className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium sm:px-2 ${
-                                                                            item.is_available_online
-                                                                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                                                        }`}
-                                                                    >
-                                                                        {item.is_available_online
-                                                                            ? 'Yes'
-                                                                            : 'No'}
-                                                                    </span>
-                                                                </div>
-                                                                {canEdit &&
-                                                                    onToggleAvailability && (
-                                                                        <Switch
-                                                                            checked={
-                                                                                item.is_available_online
-                                                                            }
-                                                                            onCheckedChange={(
-                                                                                checked,
-                                                                            ) =>
-                                                                                onToggleAvailability(
-                                                                                    item.id,
-                                                                                    'is_available_online',
-                                                                                    checked,
-                                                                                )
-                                                                            }
-                                                                            className="data-[state=checked]:bg-blue-600"
-                                                                        />
-                                                                    )}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Action Buttons */}
-                                                        <div className="flex gap-2">
-                                                            {canEdit && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={() =>
-                                                                        onEditMenuItem(
-                                                                            item,
-                                                                        )
-                                                                    }
-                                                                    className="flex-1 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20"
-                                                                    title="Edit"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                            {canDelete && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="destructive"
-                                                                    onClick={() =>
-                                                                        onDeleteMenuItem(
-                                                                            item.id,
-                                                                        )
-                                                                    }
-                                                                    className="flex-1"
-                                                                    title="Delete"
-                                                                >
-                                                                    <Trash className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </CardContent>
-                                                </div>
-                                            </Card>
-                                        ))}
+                                                        </CardContent>
+                                                    </div>
+                                                </Card>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            },
+                        )}
                     </div>
 
                     {Object.keys(groupedMenuItems).length === 0 && (

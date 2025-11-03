@@ -665,14 +665,21 @@ export default function Home({ auth, usageLimits = {} }: Props) {
                             {showMobileTrialInfo && (
                                 <div className="mb-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20 md:hidden">
                                     <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-white">
-                                        Your free trial ends in {trial.days_remaining} {trial.days_remaining === 1 ? 'day' : 'days'}
+                                        Your free trial ends in{' '}
+                                        {trial.days_remaining}{' '}
+                                        {trial.days_remaining === 1
+                                            ? 'day'
+                                            : 'days'}
                                     </h3>
                                     <p className="mb-3 text-sm text-gray-700 dark:text-gray-300">
-                                        Subscribe now to continue enjoying all premium features without interruption.
+                                        Subscribe now to continue enjoying all
+                                        premium features without interruption.
                                     </p>
                                     <Button
                                         onClick={() => {
-                                            window.location.href = route('subscriptions.index');
+                                            window.location.href = route(
+                                                'subscriptions.index',
+                                            );
                                         }}
                                         className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700"
                                     >

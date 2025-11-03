@@ -24,38 +24,22 @@ import { FileDown, FileText, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type {
-    CbuFund,
     CbuContribution,
-    CbuWithdrawal,
     CbuDividend,
+    CbuFund,
     CbuHistory,
     CbuReport,
-    Props,
-    NewFundData,
+    CbuWithdrawal,
     ContributionData,
-    WithdrawalData,
     DividendData,
+    NewFundData,
+    Props,
     ReportDateRange,
     ReportEmailData,
+    WithdrawalData,
 } from './types';
-import { formatCbuAmount } from './utils';
-import { AddFundDialog } from './components/AddFundDialog';
-import { ContributionDialog } from './components/ContributionDialog';
-import { WithdrawDialog } from './components/WithdrawDialog';
-import { DividendDialog } from './components/DividendDialog';
-import { EditFundDialog } from './components/EditFundDialog';
-import { ViewContributionsDialog } from './components/ViewContributionsDialog';
-import { ViewWithdrawalsDialog } from './components/ViewWithdrawalsDialog';
-import { ViewDividendsDialog } from './components/ViewDividendsDialog';
-import { DeleteFundDialog } from './components/DeleteFundDialog';
-import { HistoryDialog } from './components/HistoryDialog';
-import { SendReportDialog } from './components/SendReportDialog';
 
-export default function Cbu({
-    auth,
-    cbuFunds,
-    appCurrency,
-}: Props) {
+export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
             // Team member selected - check their roles
@@ -138,20 +122,18 @@ export default function Cbu({
     const [fundToDelete, setFundToDelete] = useState<CbuFund | null>(null);
     const [fundHistory, setFundHistory] = useState<CbuHistory[]>([]);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-    const [reportDateRange, setReportDateRange] =
-        useState<ReportDateRange>({
-            start_date: new Date().toISOString().split('T')[0],
-            end_date: new Date().toISOString().split('T')[0],
-        });
+    const [reportDateRange, setReportDateRange] = useState<ReportDateRange>({
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date().toISOString().split('T')[0],
+    });
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [reportData, setReportData] = useState<CbuReport | null>(null);
     const [isSendReportDialogOpen, setIsSendReportDialogOpen] = useState(false);
     const [isSendingReport, setIsSendingReport] = useState(false);
-    const [reportEmailData, setReportEmailData] =
-        useState<ReportEmailData>({
-            email: '',
-            message: '',
-        });
+    const [reportEmailData, setReportEmailData] = useState<ReportEmailData>({
+        email: '',
+        message: '',
+    });
 
     const handleAddFund = () => {
         setNewFund({

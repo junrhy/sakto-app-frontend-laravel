@@ -37,7 +37,10 @@ export function EditFundDialog({
                         Modify the Capital Build Up fund details
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+                <form
+                    onSubmit={onSubmit}
+                    className="flex min-h-0 flex-1 flex-col"
+                >
                     <div className="min-h-0 flex-1 overflow-y-auto">
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
@@ -171,4 +174,3 @@ export function EditFundDialog({
         </Dialog>
     );
 }
-

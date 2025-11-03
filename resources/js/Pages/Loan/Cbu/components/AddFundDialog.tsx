@@ -35,7 +35,10 @@ export function AddFundDialog({
                         Create a new Capital Build Up fund
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+                <form
+                    onSubmit={onSubmit}
+                    className="flex min-h-0 flex-1 flex-col"
+                >
                     <div className="min-h-0 flex-1 overflow-y-auto">
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
@@ -44,7 +47,9 @@ export function AddFundDialog({
                                     id="name"
                                     value={newFund.name}
                                     onChange={(e) =>
-                                        onNewFundChange({ name: e.target.value })
+                                        onNewFundChange({
+                                            name: e.target.value,
+                                        })
                                     }
                                     required
                                 />
@@ -157,4 +162,3 @@ export function AddFundDialog({
         </Dialog>
     );
 }
-

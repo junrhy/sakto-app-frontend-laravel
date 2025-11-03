@@ -1,7 +1,10 @@
-import type { Loan, Payment, CreditScore, InstallmentOption } from './types';
 import { INSTALLMENT_OPTIONS } from './constants';
+import type { CreditScore, InstallmentOption, Loan, Payment } from './types';
 
-export const formatAmount = (amount: string | number, currency: any): string => {
+export const formatAmount = (
+    amount: string | number,
+    currency: any,
+): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     const parts = numAmount.toFixed(2).split('.');
     parts[0] = parts[0].replace(
@@ -11,7 +14,10 @@ export const formatAmount = (amount: string | number, currency: any): string => 
     return `${currency.symbol}${parts.join('.')}`;
 };
 
-export const calculateCreditScore = (loan: Loan, payments: Payment[]): CreditScore => {
+export const calculateCreditScore = (
+    loan: Loan,
+    payments: Payment[],
+): CreditScore => {
     // Base score starts at 650
     let score = 650;
 
@@ -148,4 +154,3 @@ export const calculateLoanDetails = (loan: Loan) => {
             parseFloat(loan.total_balance) - parseFloat(loan.paid_amount),
     };
 };
-

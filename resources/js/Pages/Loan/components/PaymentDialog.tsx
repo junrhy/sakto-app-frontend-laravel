@@ -44,49 +44,56 @@ export function PaymentDialog({
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto">
                     <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="paymentAmount" className="text-right">
-                            Payment Amount
-                        </Label>
-                        <Input
-                            id="paymentAmount"
-                            type="number"
-                            value={paymentAmount}
-                            onChange={(e) => onPaymentAmountChange(e.target.value)}
-                            className="col-span-3"
-                        />
-                    </div>
-                    {paymentError && (
-                        <div className="col-span-4 text-sm text-red-500">
-                            {paymentError}
-                        </div>
-                    )}
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="paymentDate" className="text-right">
-                            Payment Date
-                        </Label>
-                        <Input
-                            id="paymentDate"
-                            type="date"
-                            value={paymentDate}
-                            onChange={(e) => onPaymentDateChange(e.target.value)}
-                            className="col-span-3"
-                        />
-                    </div>
-                    {currentLoan && (
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">
-                                Remaining Balance
+                            <Label
+                                htmlFor="paymentAmount"
+                                className="text-right"
+                            >
+                                Payment Amount
                             </Label>
-                            <div className="col-span-3">
-                                {formatAmount(
-                                    parseFloat(currentLoan.total_balance) -
-                                        parseFloat(currentLoan.paid_amount),
-                                    appCurrency,
-                                )}
-                            </div>
+                            <Input
+                                id="paymentAmount"
+                                type="number"
+                                value={paymentAmount}
+                                onChange={(e) =>
+                                    onPaymentAmountChange(e.target.value)
+                                }
+                                className="col-span-3"
+                            />
                         </div>
-                    )}
+                        {paymentError && (
+                            <div className="col-span-4 text-sm text-red-500">
+                                {paymentError}
+                            </div>
+                        )}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="paymentDate" className="text-right">
+                                Payment Date
+                            </Label>
+                            <Input
+                                id="paymentDate"
+                                type="date"
+                                value={paymentDate}
+                                onChange={(e) =>
+                                    onPaymentDateChange(e.target.value)
+                                }
+                                className="col-span-3"
+                            />
+                        </div>
+                        {currentLoan && (
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">
+                                    Remaining Balance
+                                </Label>
+                                <div className="col-span-3">
+                                    {formatAmount(
+                                        parseFloat(currentLoan.total_balance) -
+                                            parseFloat(currentLoan.paid_amount),
+                                        appCurrency,
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <DialogFooter>
@@ -96,4 +103,3 @@ export function PaymentDialog({
         </Dialog>
     );
 }
-
