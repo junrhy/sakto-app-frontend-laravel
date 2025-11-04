@@ -28,6 +28,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { cn } from '@/lib/utils';
 import { PageProps } from '@/types';
@@ -41,14 +42,21 @@ import {
     startOfWeek,
     subMonths,
 } from 'date-fns';
-import { Calendar as CalendarIcon, Search, Trash2, Printer, BarChart2, List, Download } from 'lucide-react';
+import {
+    BarChart2,
+    Calendar as CalendarIcon,
+    Download,
+    List,
+    Printer,
+    Search,
+    Trash2,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DateRange as CalendarDateRange } from 'react-day-picker';
 import { toast } from 'sonner';
+import ExportDialog, { ExportOptions } from './components/ExportDialog';
 import ReceiptDialog from './components/ReceiptDialog';
 import SalesAnalytics from './components/SalesAnalytics';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import ExportDialog, { ExportOptions } from './components/ExportDialog';
 
 type DateRange = {
     from: Date | undefined;
@@ -126,7 +134,8 @@ export default function Sales({
 
     const [data, setData] = useState<Sale[]>(sales);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
-    const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
+    const [selectedSaleForReceipt, setSelectedSaleForReceipt] =
+        useState<Sale | null>(null);
     const [activeTab, setActiveTab] = useState('list');
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
@@ -170,7 +179,10 @@ export default function Sales({
         const matchesSearch =
             normalizedSearchTerm === '' ||
             sale.items.some((item: SaleItem) => {
-                const itemName = typeof item.name === 'string' ? item.name.toLowerCase() : String(item.name).toLowerCase();
+                const itemName =
+                    typeof item.name === 'string'
+                        ? item.name.toLowerCase()
+                        : String(item.name).toLowerCase();
                 return itemName.includes(normalizedSearchTerm);
             });
 
@@ -265,21 +277,33 @@ export default function Sales({
             });
 
             if (options.dateFrom) {
-                params.append('date_from', format(options.dateFrom, 'yyyy-MM-dd'));
+                params.append(
+                    'date_from',
+                    format(options.dateFrom, 'yyyy-MM-dd'),
+                );
             }
             if (options.dateTo) {
                 params.append('date_to', format(options.dateTo, 'yyyy-MM-dd'));
             }
 
-            const response = await fetch(`/pos-retail-sales/export?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    Accept: options.format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            const response = await fetch(
+                `/pos-retail-sales/export?${params.toString()}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Accept:
+                            options.format === 'csv'
+                                ? 'text/csv'
+                                : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
+                    },
+                    credentials: 'same-origin',
                 },
-                credentials: 'same-origin',
-            });
+            );
 
             if (!response.ok) {
                 throw new Error('Export failed');
@@ -290,16 +314,19 @@ export default function Sales({
             const a = document.createElement('a');
             a.href = url;
             const extension = options.format === 'csv' ? 'csv' : 'xlsx';
-            const dateRange = options.dateFrom && options.dateTo
-                ? `_${format(options.dateFrom, 'yyyy-MM-dd')}_to_${format(options.dateTo, 'yyyy-MM-dd')}`
-                : '';
+            const dateRange =
+                options.dateFrom && options.dateTo
+                    ? `_${format(options.dateFrom, 'yyyy-MM-dd')}_to_${format(options.dateTo, 'yyyy-MM-dd')}`
+                    : '';
             a.download = `sales${dateRange}_${new Date().toISOString().split('T')[0]}.${extension}`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            
-            toast.success(`Sales exported successfully as ${options.format.toUpperCase()}`);
+
+            toast.success(
+                `Sales exported successfully as ${options.format.toUpperCase()}`,
+            );
         } catch (error) {
             console.error('Export error:', error);
             toast.error('Failed to export sales');
@@ -380,7 +407,11 @@ export default function Sales({
             <Head title="Sales" />
 
             <Card className="p-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="w-full"
+                >
                     {/* Mobile Dropdown */}
                     <div className="mb-6 md:hidden">
                         <Select value={activeTab} onValueChange={setActiveTab}>
@@ -439,358 +470,424 @@ export default function Sales({
 
                     {/* Sales List Tab */}
                     <TabsContent value="list" className="mt-0">
-                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:flex-1">
-                        <div className="lg:col-span-2">
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            </span>
-                            <Input
-                                type="text"
-                                placeholder="Search by item name..."
-                                value={searchTerm}
-                                onChange={(
-                                    event: React.ChangeEvent<HTMLInputElement>,
-                                ) => setSearchTerm(event.target.value)}
-                                className="h-10 pl-10"
-                            />
-                        </div>
-                    </div>
-                    <div className="lg:col-span-2">
-                        <Select
-                            value={paymentMethodFilter}
-                            onValueChange={setPaymentMethodFilter}
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue placeholder="Payment Method" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Methods</SelectItem>
-                                {uniquePaymentMethods.map((method) => (
-                                    <SelectItem key={method} value={method}>
-                                        {method}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="lg:col-span-4">
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="h-10">
-                                        Quick Select
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleDateRangeSelect('today')
-                                        }
-                                    >
-                                        Today
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleDateRangeSelect('this-week')
-                                        }
-                                    >
-                                        This Week
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleDateRangeSelect('this-month')
-                                        }
-                                    >
-                                        This Month
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleDateRangeSelect('last-month')
-                                        }
-                                    >
-                                        Last Month
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className={cn(
-                                            'h-10 w-full justify-start text-left font-normal',
-                                            !dateRange.from &&
-                                                'text-muted-foreground',
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateRange.from ? (
-                                            dateRange.to ? (
-                                                <>
-                                                    {format(
-                                                        dateRange.from,
-                                                        'LLL dd, y',
-                                                    )}{' '}
-                                                    -{' '}
-                                                    {format(
-                                                        dateRange.to,
-                                                        'LLL dd, y',
-                                                    )}
-                                                </>
-                                            ) : (
-                                                format(
-                                                    dateRange.from,
-                                                    'LLL dd, y',
+                        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="grid grid-cols-1 gap-4 lg:flex-1 lg:grid-cols-12">
+                                <div className="lg:col-span-2">
+                                    <div className="relative">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                        </span>
+                                        <Input
+                                            type="text"
+                                            placeholder="Search by item name..."
+                                            value={searchTerm}
+                                            onChange={(
+                                                event: React.ChangeEvent<HTMLInputElement>,
+                                            ) =>
+                                                setSearchTerm(
+                                                    event.target.value,
                                                 )
-                                            )
-                                        ) : (
-                                            <span>Pick a date range</span>
-                                        )}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                    className="w-auto p-0"
-                                    align="start"
-                                >
-                                    <Calendar
-                                        initialFocus
-                                        mode="range"
-                                        defaultMonth={dateRange.from}
-                                        selected={{
-                                            from: dateRange.from,
-                                            to: dateRange.to,
-                                        }}
-                                        onSelect={(
-                                            range:
-                                                | CalendarDateRange
-                                                | undefined,
-                                        ) => {
-                                            if (range) {
-                                                setDateRange({
-                                                    from: range.from,
-                                                    to: range.to ?? range.from,
-                                                });
                                             }
-                                        }}
-                                        numberOfMonths={
-                                            window.innerWidth >= 768 ? 2 : 1
-                                        }
-                                    ></Calendar>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-2 lg:col-span-4">
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsExportDialogOpen(true)}
-                            className="h-10"
-                        >
-                            <Download className="mr-2 h-4 w-4" />
-                            Export
-                        </Button>
-                        {canDelete && (
-                            <Button
-                                variant="destructive"
-                                onClick={handleMultipleDelete}
-                                disabled={selectedIds.length === 0}
-                                className="h-10 w-full md:w-auto"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete ({selectedIds.length})
-                            </Button>
-                        )}
-                    </div>
-                </div>
-                </div>
-
-                {/* Add this section before the table */}
-                {searchTerm && (
-                    <div className="mb-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                        <h3 className="mb-2 text-sm font-medium">
-                            Item Quantities for Search Results:
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                            {Object.entries(totalQuantities).map(
-                                ([itemId, quantity]) =>
-                                    itemId
-                                        .toLowerCase()
-                                        .includes(searchTerm.toLowerCase()) && (
-                                        <div
-                                            key={itemId}
-                                            className="flex items-center justify-between rounded-md bg-white p-2 shadow-sm dark:bg-gray-700"
-                                        >
-                                            <span className="font-medium">
-                                                {itemId}:
-                                            </span>
-                                            <span className="text-sm">
-                                                {quantity} units
-                                            </span>
-                                        </div>
-                                    ),
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableCell className="w-[50px]">
-                                    <Checkbox
-                                        checked={
-                                            currentItems.length > 0 &&
-                                            currentItems.every((item) =>
-                                                selectedIds.includes(item.id),
-                                            )
-                                        }
-                                        onCheckedChange={toggleSelectAll}
-                                        aria-label="Select all on current page"
-                                    />
-                                </TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Item</TableCell>
-                                <TableCell>Total</TableCell>
-                                <TableCell>Cash Received</TableCell>
-                                <TableCell>Change</TableCell>
-                                <TableCell>Payment Method</TableCell>
-                                <TableCell className="w-[100px]">
-                                    Actions
-                                </TableCell>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {currentItems.length === 0 ? (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={8}
-                                        className="py-4 text-center"
+                                            className="h-10 pl-10"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-2">
+                                    <Select
+                                        value={paymentMethodFilter}
+                                        onValueChange={setPaymentMethodFilter}
                                     >
-                                        No sales data found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                currentItems.map((sale, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={selectedIds.includes(
-                                                    sale.id,
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleSelect(sale.id)
-                                                }
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            {sale.created_at
-                                                ? new Date(
-                                                      sale.created_at,
-                                                  ).toLocaleDateString()
-                                                : 'N/A'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {sale.items.map(
-                                                (item: SaleItem) => (
-                                                    <div key={item.id}>
-                                                        {item.name} ({appCurrency.symbol}{typeof item.price === 'number' ? item.price.toFixed(2) : item.price}{' '}
-                                                        x {item.quantity})
-                                                    </div>
+                                        <SelectTrigger className="h-10">
+                                            <SelectValue placeholder="Payment Method" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">
+                                                All Methods
+                                            </SelectItem>
+                                            {uniquePaymentMethods.map(
+                                                (method) => (
+                                                    <SelectItem
+                                                        key={method}
+                                                        value={method}
+                                                    >
+                                                        {method}
+                                                    </SelectItem>
                                                 ),
                                             )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {sale.total_amount_formatted || `${appCurrency.symbol}${typeof sale.total_amount === 'number' ? sale.total_amount.toFixed(2) : sale.total_amount}`}
-                                        </TableCell>
-                                        <TableCell>
-                                            {sale.cash_received_formatted || (sale.cash_received ? `${appCurrency.symbol}${typeof sale.cash_received === 'number' ? sale.cash_received.toFixed(2) : sale.cash_received}` : 'N/A')}
-                                        </TableCell>
-                                        <TableCell>
-                                            {sale.change_formatted || (sale.change ? `${appCurrency.symbol}${typeof sale.change === 'number' ? sale.change.toFixed(2) : sale.change}` : 'N/A')}
-                                        </TableCell>
-                                        <TableCell className="capitalize">
-                                            {sale.payment_method}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="lg:col-span-4">
+                                    <div className="flex flex-col gap-2 sm:flex-row">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
                                                 <Button
                                                     variant="outline"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setSelectedSaleForReceipt(sale);
-                                                        setIsReceiptDialogOpen(true);
-                                                    }}
-                                                    title="Print Receipt"
+                                                    className="h-10"
                                                 >
-                                                    <Printer className="h-4 w-4" />
+                                                    Quick Select
                                                 </Button>
-                                                {canDelete && (
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleDelete(sale.id)
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleDateRangeSelect(
+                                                            'today',
+                                                        )
+                                                    }
+                                                >
+                                                    Today
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleDateRangeSelect(
+                                                            'this-week',
+                                                        )
+                                                    }
+                                                >
+                                                    This Week
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleDateRangeSelect(
+                                                            'this-month',
+                                                        )
+                                                    }
+                                                >
+                                                    This Month
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleDateRangeSelect(
+                                                            'last-month',
+                                                        )
+                                                    }
+                                                >
+                                                    Last Month
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        'h-10 w-full justify-start text-left font-normal',
+                                                        !dateRange.from &&
+                                                            'text-muted-foreground',
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {dateRange.from ? (
+                                                        dateRange.to ? (
+                                                            <>
+                                                                {format(
+                                                                    dateRange.from,
+                                                                    'LLL dd, y',
+                                                                )}{' '}
+                                                                -{' '}
+                                                                {format(
+                                                                    dateRange.to,
+                                                                    'LLL dd, y',
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            format(
+                                                                dateRange.from,
+                                                                'LLL dd, y',
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <span>
+                                                            Pick a date range
+                                                        </span>
+                                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                className="w-auto p-0"
+                                                align="start"
+                                            >
+                                                <Calendar
+                                                    initialFocus
+                                                    mode="range"
+                                                    defaultMonth={
+                                                        dateRange.from
+                                                    }
+                                                    selected={{
+                                                        from: dateRange.from,
+                                                        to: dateRange.to,
+                                                    }}
+                                                    onSelect={(
+                                                        range:
+                                                            | CalendarDateRange
+                                                            | undefined,
+                                                    ) => {
+                                                        if (range) {
+                                                            setDateRange({
+                                                                from: range.from,
+                                                                to:
+                                                                    range.to ??
+                                                                    range.from,
+                                                            });
                                                         }
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                )}
-                                            </div>
+                                                    }}
+                                                    numberOfMonths={
+                                                        window.innerWidth >= 768
+                                                            ? 2
+                                                            : 1
+                                                    }
+                                                ></Calendar>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-2 lg:col-span-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() =>
+                                            setIsExportDialogOpen(true)
+                                        }
+                                        className="h-10"
+                                    >
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Export
+                                    </Button>
+                                    {canDelete && (
+                                        <Button
+                                            variant="destructive"
+                                            onClick={handleMultipleDelete}
+                                            disabled={selectedIds.length === 0}
+                                            className="h-10 w-full md:w-auto"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete ({selectedIds.length})
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Add this section before the table */}
+                        {searchTerm && (
+                            <div className="mb-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                                <h3 className="mb-2 text-sm font-medium">
+                                    Item Quantities for Search Results:
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                                    {Object.entries(totalQuantities).map(
+                                        ([itemId, quantity]) =>
+                                            itemId
+                                                .toLowerCase()
+                                                .includes(
+                                                    searchTerm.toLowerCase(),
+                                                ) && (
+                                                <div
+                                                    key={itemId}
+                                                    className="flex items-center justify-between rounded-md bg-white p-2 shadow-sm dark:bg-gray-700"
+                                                >
+                                                    <span className="font-medium">
+                                                        {itemId}:
+                                                    </span>
+                                                    <span className="text-sm">
+                                                        {quantity} units
+                                                    </span>
+                                                </div>
+                                            ),
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableCell className="w-[50px]">
+                                            <Checkbox
+                                                checked={
+                                                    currentItems.length > 0 &&
+                                                    currentItems.every((item) =>
+                                                        selectedIds.includes(
+                                                            item.id,
+                                                        ),
+                                                    )
+                                                }
+                                                onCheckedChange={
+                                                    toggleSelectAll
+                                                }
+                                                aria-label="Select all on current page"
+                                            />
+                                        </TableCell>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell>Item</TableCell>
+                                        <TableCell>Total</TableCell>
+                                        <TableCell>Cash Received</TableCell>
+                                        <TableCell>Change</TableCell>
+                                        <TableCell>Payment Method</TableCell>
+                                        <TableCell className="w-[100px]">
+                                            Actions
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {currentItems.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={8}
+                                                className="py-4 text-center"
+                                            >
+                                                No sales data found
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        currentItems.map((sale, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={selectedIds.includes(
+                                                            sale.id,
+                                                        )}
+                                                        onCheckedChange={() =>
+                                                            toggleSelect(
+                                                                sale.id,
+                                                            )
+                                                        }
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sale.created_at
+                                                        ? new Date(
+                                                              sale.created_at,
+                                                          ).toLocaleDateString()
+                                                        : 'N/A'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sale.items.map(
+                                                        (item: SaleItem) => (
+                                                            <div key={item.id}>
+                                                                {item.name} (
+                                                                {
+                                                                    appCurrency.symbol
+                                                                }
+                                                                {typeof item.price ===
+                                                                'number'
+                                                                    ? item.price.toFixed(
+                                                                          2,
+                                                                      )
+                                                                    : item.price}{' '}
+                                                                x{' '}
+                                                                {item.quantity})
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sale.total_amount_formatted ||
+                                                        `${appCurrency.symbol}${typeof sale.total_amount === 'number' ? sale.total_amount.toFixed(2) : sale.total_amount}`}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sale.cash_received_formatted ||
+                                                        (sale.cash_received
+                                                            ? `${appCurrency.symbol}${typeof sale.cash_received === 'number' ? sale.cash_received.toFixed(2) : sale.cash_received}`
+                                                            : 'N/A')}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sale.change_formatted ||
+                                                        (sale.change
+                                                            ? `${appCurrency.symbol}${typeof sale.change === 'number' ? sale.change.toFixed(2) : sale.change}`
+                                                            : 'N/A')}
+                                                </TableCell>
+                                                <TableCell className="capitalize">
+                                                    {sale.payment_method}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setSelectedSaleForReceipt(
+                                                                    sale,
+                                                                );
+                                                                setIsReceiptDialogOpen(
+                                                                    true,
+                                                                );
+                                                            }}
+                                                            title="Print Receipt"
+                                                        >
+                                                            <Printer className="h-4 w-4" />
+                                                        </Button>
+                                                        {canDelete && (
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        sale.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
 
-                <div className="mt-4 flex flex-col items-center justify-between gap-4 md:flex-row">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                        {Math.min(
-                            currentPage * itemsPerPage,
-                            filteredData.length,
-                        )}{' '}
-                        of {filteredData.length} entries
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() =>
-                                setCurrentPage((prev) => Math.max(prev - 1, 1))
-                            }
-                            disabled={currentPage === 1}
-                        >
-                            Previous
-                        </Button>
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <Button
-                                key={i + 1}
-                                variant={
-                                    currentPage === i + 1
-                                        ? 'default'
-                                        : 'outline'
-                                }
-                                onClick={() => setCurrentPage(i + 1)}
-                            >
-                                {i + 1}
-                            </Button>
-                        ))}
-                        <Button
-                            variant="outline"
-                            onClick={() =>
-                                setCurrentPage((prev) =>
-                                    Math.min(prev + 1, totalPages),
-                                )
-                            }
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </div>
+                        <div className="mt-4 flex flex-col items-center justify-between gap-4 md:flex-row">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                Showing {(currentPage - 1) * itemsPerPage + 1}{' '}
+                                to{' '}
+                                {Math.min(
+                                    currentPage * itemsPerPage,
+                                    filteredData.length,
+                                )}{' '}
+                                of {filteredData.length} entries
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.max(prev - 1, 1),
+                                        )
+                                    }
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </Button>
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <Button
+                                        key={i + 1}
+                                        variant={
+                                            currentPage === i + 1
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        onClick={() => setCurrentPage(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </Button>
+                                ))}
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        setCurrentPage((prev) =>
+                                            Math.min(prev + 1, totalPages),
+                                        )
+                                    }
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
                     </TabsContent>
 
                     {/* Reports & Analytics Tab */}
@@ -810,20 +907,31 @@ export default function Sales({
                     selectedSaleForReceipt
                         ? {
                               saleId: selectedSaleForReceipt.id,
-                              items: selectedSaleForReceipt.items.map((item) => ({
-                                  id: item.id,
-                                  name: item.name,
-                                  quantity: item.quantity,
-                                  price: item.price,
-                              })),
+                              items: selectedSaleForReceipt.items.map(
+                                  (item) => ({
+                                      id: item.id,
+                                      name: item.name,
+                                      quantity: item.quantity,
+                                      price: item.price,
+                                  }),
+                              ),
                               totalAmount: selectedSaleForReceipt.total_amount,
-                              paymentMethod: selectedSaleForReceipt.payment_method as 'cash' | 'card',
-                              cashReceived: selectedSaleForReceipt.cash_received ?? undefined,
-                              change: selectedSaleForReceipt.change ?? undefined,
+                              paymentMethod:
+                                  selectedSaleForReceipt.payment_method as
+                                      | 'cash'
+                                      | 'card',
+                              cashReceived:
+                                  selectedSaleForReceipt.cash_received ??
+                                  undefined,
+                              change:
+                                  selectedSaleForReceipt.change ?? undefined,
                               date: selectedSaleForReceipt.created_at,
                               appCurrency: appCurrency,
                               storeName: auth.project?.name || undefined,
-                              userName: auth.selectedTeamMember?.full_name || auth.user.name || undefined,
+                              userName:
+                                  auth.selectedTeamMember?.full_name ||
+                                  auth.user.name ||
+                                  undefined,
                           }
                         : null
                 }

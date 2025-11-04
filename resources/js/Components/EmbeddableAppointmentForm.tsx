@@ -55,7 +55,7 @@ interface EmbeddableAppointmentFormProps {
     showClinicInfo?: boolean;
     customTitle?: string;
     customSubtitle?: string;
-    onSuccess?: (data: any) => void;
+    onSuccess?: (data: Record<string, unknown>) => void;
     onError?: (error: string) => void;
 }
 
@@ -85,26 +85,26 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
     const [errors, setErrors] = useState<AppointmentFormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [clinicInfo, setClinicInfo] = useState<any>(null);
 
     // Load clinic information if needed
-    useEffect(() => {
-        if (showClinicInfo) {
-            fetchClinicInfo();
-        }
-    }, [clinicId, showClinicInfo]);
-
     const fetchClinicInfo = async () => {
         try {
             const response = await fetch(`${apiUrl}/clinic-info/${clinicId}`);
             if (response.ok) {
-                const data = await response.json();
-                setClinicInfo(data);
+                // Clinic info fetched but not stored as it's not used in the component
+                await response.json();
             }
         } catch (error) {
             console.error('Failed to fetch clinic info:', error);
         }
     };
+
+    useEffect(() => {
+        if (showClinicInfo) {
+            fetchClinicInfo();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [clinicId, showClinicInfo]);
 
     const handleInputChange = (
         field: keyof AppointmentFormData,
@@ -186,14 +186,16 @@ const EmbeddableAppointmentForm: React.FC<EmbeddableAppointmentFormProps> = ({
 
             setIsSuccess(true);
             onSuccess?.(data);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error booking appointment:', error);
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to book appointment. Please try again.';
             setErrors({
-                general:
-                    error.message ||
-                    'Failed to book appointment. Please try again.',
+                general: errorMessage,
             });
-            onError?.(error.message || 'Failed to book appointment');
+            onError?.(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

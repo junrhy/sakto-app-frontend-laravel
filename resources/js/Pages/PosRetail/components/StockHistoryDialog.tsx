@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -12,10 +13,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Card, CardContent } from '@/Components/ui/card';
-import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Plus, Minus, RotateCcw } from 'lucide-react';
+import { Minus, Plus, RotateCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface StockTransaction {
     id: number;
@@ -68,7 +68,10 @@ export default function StockHistoryDialog({
                     headers: {
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
                     },
                     credentials: 'same-origin',
                 },
@@ -119,7 +122,7 @@ export default function StockHistoryDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogContent className="max-h-[90vh] max-w-4xl">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                         Stock History - {product.name}
@@ -197,7 +200,9 @@ export default function StockHistoryDialog({
                                                                 transaction.transaction_type,
                                                             )}`}
                                                         >
-                                                            {transaction.transaction_type}
+                                                            {
+                                                                transaction.transaction_type
+                                                            }
                                                         </span>
                                                     </div>
                                                 </TableCell>
@@ -210,7 +215,9 @@ export default function StockHistoryDialog({
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {transaction.previous_quantity}
+                                                    {
+                                                        transaction.previous_quantity
+                                                    }
                                                 </TableCell>
                                                 <TableCell
                                                     className={`font-semibold ${getTransactionColor(
@@ -230,14 +237,16 @@ export default function StockHistoryDialog({
                                                     {transaction.new_quantity}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {transaction.reason || 'N/A'}
+                                                    {transaction.reason ||
+                                                        'N/A'}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
                                                     {transaction.reference_number ||
                                                         'N/A'}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {transaction.performed_by || 'N/A'}
+                                                    {transaction.performed_by ||
+                                                        'N/A'}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -251,4 +260,3 @@ export default function StockHistoryDialog({
         </Dialog>
     );
 }
-

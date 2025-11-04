@@ -8,10 +8,10 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Plus, Trash2, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import { router } from '@inertiajs/react';
+import { Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface VariantAttribute {
     key: string;
@@ -98,7 +98,11 @@ export default function VariantDialog({
         });
     };
 
-    const updateAttribute = (index: number, field: 'key' | 'value', value: string) => {
+    const updateAttribute = (
+        index: number,
+        field: 'key' | 'value',
+        value: string,
+    ) => {
         const newAttributes = [...formData.attributes];
         newAttributes[index] = { ...newAttributes[index], [field]: value };
         setFormData({ ...formData, attributes: newAttributes });
@@ -109,10 +113,12 @@ export default function VariantDialog({
 
         // Validate attributes
         const validAttributes = formData.attributes.filter(
-            (attr) => attr.key.trim() && attr.value.trim()
+            (attr) => attr.key.trim() && attr.value.trim(),
         );
         if (validAttributes.length === 0) {
-            toast.error('Please add at least one attribute (e.g., Size: L, Color: Red)');
+            toast.error(
+                'Please add at least one attribute (e.g., Size: L, Color: Red)',
+            );
             return;
         }
 
@@ -124,27 +130,34 @@ export default function VariantDialog({
                 barcode: formData.barcode || null,
                 price: formData.price || null,
                 quantity: formData.quantity,
-                attributes: validAttributes.reduce((acc, attr) => {
-                    acc[attr.key] = attr.value;
-                    return acc;
-                }, {} as Record<string, string>),
+                attributes: validAttributes.reduce(
+                    (acc, attr) => {
+                        acc[attr.key] = attr.value;
+                        return acc;
+                    },
+                    {} as Record<string, string>,
+                ),
                 image: formData.image || null,
                 is_active: formData.is_active,
             };
 
             if (isEditing && variant?.id) {
-                router.put(`/inventory/${productId}/variants/${variant.id}`, payload, {
-                    preserveState: true,
-                    onSuccess: () => {
-                        toast.success('Variant updated successfully');
-                        onOpenChange(false);
-                        if (onSuccess) onSuccess();
+                router.put(
+                    `/inventory/${productId}/variants/${variant.id}`,
+                    payload,
+                    {
+                        preserveState: true,
+                        onSuccess: () => {
+                            toast.success('Variant updated successfully');
+                            onOpenChange(false);
+                            if (onSuccess) onSuccess();
+                        },
+                        onError: () => {
+                            toast.error('Failed to update variant');
+                        },
+                        onFinish: () => setIsLoading(false),
                     },
-                    onError: () => {
-                        toast.error('Failed to update variant');
-                    },
-                    onFinish: () => setIsLoading(false),
-                });
+                );
             } else {
                 router.post(`/inventory/${productId}/variants`, payload, {
                     preserveState: true,
@@ -168,7 +181,7 @@ export default function VariantDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh]">
+            <DialogContent className="max-h-[90vh] max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
                         {isEditing ? 'Edit Variant' : 'Add Variant'}
@@ -179,14 +192,20 @@ export default function VariantDialog({
                         {/* SKU and Barcode */}
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="sku" className="text-gray-900 dark:text-white">
+                                <Label
+                                    htmlFor="sku"
+                                    className="text-gray-900 dark:text-white"
+                                >
                                     SKU (Optional)
                                 </Label>
                                 <Input
                                     id="sku"
                                     value={formData.sku}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, sku: e.target.value })
+                                        setFormData({
+                                            ...formData,
+                                            sku: e.target.value,
+                                        })
                                     }
                                     placeholder="Variant SKU"
                                 />
@@ -202,7 +221,10 @@ export default function VariantDialog({
                                     id="barcode"
                                     value={formData.barcode}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, barcode: e.target.value })
+                                        setFormData({
+                                            ...formData,
+                                            barcode: e.target.value,
+                                        })
                                     }
                                     placeholder="Variant barcode"
                                 />
@@ -212,7 +234,10 @@ export default function VariantDialog({
                         {/* Price and Quantity */}
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="price" className="text-gray-900 dark:text-white">
+                                <Label
+                                    htmlFor="price"
+                                    className="text-gray-900 dark:text-white"
+                                >
                                     Price (Optional)
                                 </Label>
                                 <Input
@@ -224,7 +249,9 @@ export default function VariantDialog({
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            price: e.target.value ? parseFloat(e.target.value) : undefined,
+                                            price: e.target.value
+                                                ? parseFloat(e.target.value)
+                                                : undefined,
                                         })
                                     }
                                     placeholder="Override product price"
@@ -238,7 +265,8 @@ export default function VariantDialog({
                                     htmlFor="quantity"
                                     className="text-gray-900 dark:text-white"
                                 >
-                                    Quantity <span className="text-red-500">*</span>
+                                    Quantity{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="quantity"
@@ -248,7 +276,8 @@ export default function VariantDialog({
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            quantity: parseInt(e.target.value) || 0,
+                                            quantity:
+                                                parseInt(e.target.value) || 0,
                                         })
                                     }
                                     required
@@ -260,7 +289,8 @@ export default function VariantDialog({
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label className="text-gray-900 dark:text-white">
-                                    Attributes <span className="text-red-500">*</span>
+                                    Attributes{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Button
                                     type="button"
@@ -272,17 +302,21 @@ export default function VariantDialog({
                                     Add Attribute
                                 </Button>
                             </div>
-                            <div className="space-y-2 max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+                            <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-4 dark:border-gray-600">
                                 {formData.attributes.map((attr, index) => (
                                     <div
                                         key={index}
-                                        className="flex gap-2 items-center"
+                                        className="flex items-center gap-2"
                                     >
                                         <Input
                                             placeholder="Attribute (e.g., Size)"
                                             value={attr.key}
                                             onChange={(e) =>
-                                                updateAttribute(index, 'key', e.target.value)
+                                                updateAttribute(
+                                                    index,
+                                                    'key',
+                                                    e.target.value,
+                                                )
                                             }
                                             className="flex-1"
                                         />
@@ -290,7 +324,11 @@ export default function VariantDialog({
                                             placeholder="Value (e.g., L)"
                                             value={attr.value}
                                             onChange={(e) =>
-                                                updateAttribute(index, 'value', e.target.value)
+                                                updateAttribute(
+                                                    index,
+                                                    'value',
+                                                    e.target.value,
+                                                )
                                             }
                                             className="flex-1"
                                         />
@@ -299,7 +337,9 @@ export default function VariantDialog({
                                                 type="button"
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => removeAttribute(index)}
+                                                onClick={() =>
+                                                    removeAttribute(index)
+                                                }
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -314,14 +354,20 @@ export default function VariantDialog({
 
                         {/* Image URL */}
                         <div className="space-y-2">
-                            <Label htmlFor="image" className="text-gray-900 dark:text-white">
+                            <Label
+                                htmlFor="image"
+                                className="text-gray-900 dark:text-white"
+                            >
                                 Image URL (Optional)
                             </Label>
                             <Input
                                 id="image"
                                 value={formData.image || ''}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, image: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        image: e.target.value,
+                                    })
                                 }
                                 placeholder="https://example.com/image.jpg"
                             />
@@ -334,13 +380,16 @@ export default function VariantDialog({
                                 id="is_active"
                                 checked={formData.is_active}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, is_active: e.target.checked })
+                                    setFormData({
+                                        ...formData,
+                                        is_active: e.target.checked,
+                                    })
                                 }
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
                             <Label
                                 htmlFor="is_active"
-                                className="text-sm font-normal text-gray-900 dark:text-white cursor-pointer"
+                                className="cursor-pointer text-sm font-normal text-gray-900 dark:text-white"
                             >
                                 Active (visible in POS)
                             </Label>
@@ -383,8 +432,10 @@ export default function VariantDialog({
                                     </svg>
                                     {isEditing ? 'Updating...' : 'Creating...'}
                                 </span>
+                            ) : isEditing ? (
+                                'Update Variant'
                             ) : (
-                                isEditing ? 'Update Variant' : 'Create Variant'
+                                'Create Variant'
                             )}
                         </Button>
                     </DialogFooter>
@@ -393,4 +444,3 @@ export default function VariantDialog({
         </Dialog>
     );
 }
-

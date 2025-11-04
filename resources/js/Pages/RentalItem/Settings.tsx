@@ -111,10 +111,29 @@ export default function RentalItemSettings({ auth, settings }: Props) {
 
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings}
+                                    settings={settings as unknown as Record<string, unknown>}
                                     onSubmit={handleSubmit}
                                 >
-                                    {({ data, setData }) => (
+                                    {({ data, setData }) => {
+                                        const typedData = data as {
+                                            default_rental_period?: number;
+                                            rental_period_unit?: string;
+                                            enable_late_fees?: boolean;
+                                            late_fee_rate?: number;
+                                            late_fee_period?: number;
+                                            late_fee_period_unit?: string;
+                                            require_deposit?: boolean;
+                                            deposit_rate?: number;
+                                            enable_insurance?: boolean;
+                                            insurance_rate?: number;
+                                            enable_delivery?: boolean;
+                                            delivery_fee?: number;
+                                            enable_pickup?: boolean;
+                                            pickup_fee?: number;
+                                            enable_maintenance_tracking?: boolean;
+                                            maintenance_reminder_days?: number;
+                                        };
+                                        return (
                                         <div className="space-y-6">
                                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                                 <div className="space-y-2">
@@ -127,7 +146,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             type="number"
                                                             min="1"
                                                             value={
-                                                                data.default_rental_period
+                                                                typedData.default_rental_period ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -142,7 +161,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                         />
                                                         <Select
                                                             value={
-                                                                data.rental_period_unit
+                                                                String(typedData.rental_period_unit ?? '')
                                                             }
                                                             onValueChange={(
                                                                 value,
@@ -192,7 +211,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_late_fees"
                                                                 checked={
-                                                                    data.enable_late_fees
+                                                                    typedData.enable_late_fees ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -205,7 +224,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.enable_late_fees && (
+                                                        {typedData.enable_late_fees && (
                                                             <>
                                                                 <div className="space-y-2">
                                                                     <Label htmlFor="late_fee_rate">
@@ -218,7 +237,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                         min="0"
                                                                         step="0.01"
                                                                         value={
-                                                                            data.late_fee_rate
+                                                                            typedData.late_fee_rate ?? 0
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -246,7 +265,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                             type="number"
                                                                             min="1"
                                                                             value={
-                                                                                data.late_fee_period
+                                                                                typedData.late_fee_period ?? 0
                                                                             }
                                                                             onChange={(
                                                                                 e,
@@ -264,7 +283,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                         />
                                                                         <Select
                                                                             value={
-                                                                                data.late_fee_period_unit
+                                                                                String(typedData.late_fee_period_unit ?? '')
                                                                             }
                                                                             onValueChange={(
                                                                                 value,
@@ -313,7 +332,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="require_deposit"
                                                                 checked={
-                                                                    data.require_deposit
+                                                                    typedData.require_deposit ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -326,7 +345,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.require_deposit && (
+                                                        {typedData.require_deposit && (
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="deposit_rate">
                                                                     Deposit Rate
@@ -340,7 +359,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                     max="100"
                                                                     step="0.01"
                                                                     value={
-                                                                        data.deposit_rate
+                                                                        typedData.deposit_rate ?? 0
                                                                     }
                                                                     onChange={(
                                                                         e,
@@ -367,7 +386,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_insurance"
                                                                 checked={
-                                                                    data.enable_insurance
+                                                                    typedData.enable_insurance ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -380,7 +399,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.enable_insurance && (
+                                                        {typedData.enable_insurance && (
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="insurance_rate">
                                                                     Insurance
@@ -394,7 +413,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                     max="100"
                                                                     step="0.01"
                                                                     value={
-                                                                        data.insurance_rate
+                                                                        typedData.insurance_rate ?? 0
                                                                     }
                                                                     onChange={(
                                                                         e,
@@ -428,7 +447,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_delivery"
                                                                 checked={
-                                                                    data.enable_delivery
+                                                                    typedData.enable_delivery ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -441,7 +460,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.enable_delivery && (
+                                                        {typedData.enable_delivery && (
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="delivery_fee">
                                                                     Delivery Fee
@@ -452,7 +471,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                     min="0"
                                                                     step="0.01"
                                                                     value={
-                                                                        data.delivery_fee
+                                                                        typedData.delivery_fee ?? 0
                                                                     }
                                                                     onChange={(
                                                                         e,
@@ -479,7 +498,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_pickup"
                                                                 checked={
-                                                                    data.enable_pickup
+                                                                    typedData.enable_pickup ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -492,7 +511,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.enable_pickup && (
+                                                        {typedData.enable_pickup && (
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="pickup_fee">
                                                                     Pickup Fee
@@ -503,7 +522,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                     min="0"
                                                                     step="0.01"
                                                                     value={
-                                                                        data.pickup_fee
+                                                                        typedData.pickup_fee ?? 0
                                                                     }
                                                                     onChange={(
                                                                         e,
@@ -534,11 +553,11 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                             Enable Maintenance
                                                             Tracking
                                                         </Label>
-                                                        <Switch
-                                                            id="enable_maintenance_tracking"
-                                                            checked={
-                                                                data.enable_maintenance_tracking
-                                                            }
+                                                            <Switch
+                                                                id="enable_maintenance_tracking"
+                                                                checked={
+                                                                    typedData.enable_maintenance_tracking ?? false
+                                                                }
                                                             onCheckedChange={(
                                                                 checked: boolean,
                                                             ) =>
@@ -550,7 +569,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                         />
                                                     </div>
 
-                                                    {data.enable_maintenance_tracking && (
+                                                    {typedData.enable_maintenance_tracking && (
                                                         <div className="space-y-2">
                                                             <Label htmlFor="maintenance_reminder_days">
                                                                 Maintenance
@@ -561,7 +580,7 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                                 type="number"
                                                                 min="1"
                                                                 value={
-                                                                    data.maintenance_reminder_days
+                                                                    typedData.maintenance_reminder_days ?? 0
                                                                 }
                                                                 onChange={(e) =>
                                                                     setData(
@@ -579,7 +598,8 @@ export default function RentalItemSettings({ auth, settings }: Props) {
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                        );
+                                    }}
                                 </SettingsForm>
                             ) : (
                                 <div className="py-12 text-center">

@@ -8,13 +8,6 @@ import {
 } from '@/Components/ui/dialog';
 import { useEffect, useState } from 'react';
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    identifier: string;
-}
-
 interface Reward {
     type:
         | 'badge'

@@ -624,68 +624,71 @@ export default function Dashboard({
                                             <SelectValue placeholder="Select widget" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {availableWidgets.map((type) => (
+                                            {availableWidgets.map((type) => {
+                                                const widgetType = type as string;
+                                                return (
                                                 <SelectItem
                                                     key={type}
                                                     value={type}
                                                 >
-                                                    {type === 'retail_sales'
+                                                    {widgetType === 'retail_sales'
                                                         ? 'Retail Sales'
-                                                        : type ===
+                                                        : widgetType ===
                                                             'retail_inventory'
                                                           ? 'Retail Inventory'
-                                                          : type ===
+                                                          : widgetType ===
                                                               'retail_orders'
                                                             ? 'Retail Orders'
-                                                            : type ===
+                                                            : widgetType ===
                                                                 'retail_low_stock_alerts'
                                                               ? 'Low Stock Alerts'
-                                                            : type ===
-                                                                'fnb_tables'
-                                                              ? 'F&B Tables'
-                                                              : type ===
-                                                                  'fnb_kitchen'
-                                                                ? 'F&B Kitchen'
-                                                                : type ===
-                                                                    'fnb_reservations'
-                                                                  ? 'F&B Reservations'
-                                                                  : type ===
-                                                                      'genealogy_stats'
-                                                                    ? 'Genealogy Stats'
-                                                                    : type ===
-                                                                        'clinic_patient_overview'
-                                                                      ? 'Patient Overview'
-                                                                      : type ===
-                                                                          'clinic_recent_patients'
-                                                                        ? 'Recent Patients'
-                                                                        : type ===
-                                                                            'clinic_revenue_overview'
-                                                                          ? 'Revenue Overview'
-                                                                          : type ===
-                                                                              'clinic_today_appointments'
-                                                                            ? "Today's Appointments"
-                                                                            : type ===
-                                                                                'clinic_low_stock_alerts'
-                                                                              ? 'Low Stock Alerts'
-                                                                              : type ===
-                                                                                  'clinic_upcoming_appointments'
-                                                                                ? 'Upcoming Appointments'
-                                                                                : (
-                                                                                      type as string
-                                                                                  )
-                                                                                      .replace(
-                                                                                          '_',
-                                                                                          ' ',
-                                                                                      )
-                                                                                      .replace(
-                                                                                          /\b\w/g,
-                                                                                          (
-                                                                                              char,
-                                                                                          ) =>
-                                                                                              char.toUpperCase(),
-                                                                                      )}
+                                                              : widgetType ===
+                                                                  'fnb_tables'
+                                                                ? 'F&B Tables'
+                                                                : widgetType ===
+                                                                    'fnb_kitchen'
+                                                                  ? 'F&B Kitchen'
+                                                                  : widgetType ===
+                                                                      'fnb_reservations'
+                                                                    ? 'F&B Reservations'
+                                                                    : widgetType ===
+                                                                        'genealogy_stats'
+                                                                      ? 'Genealogy Stats'
+                                                                      : widgetType ===
+                                                                          'clinic_patient_overview'
+                                                                        ? 'Patient Overview'
+                                                                        : widgetType ===
+                                                                            'clinic_recent_patients'
+                                                                          ? 'Recent Patients'
+                                                                          : widgetType ===
+                                                                              'clinic_revenue_overview'
+                                                                            ? 'Revenue Overview'
+                                                                            : widgetType ===
+                                                                                'clinic_today_appointments'
+                                                                              ? "Today's Appointments"
+                                                                              : widgetType ===
+                                                                                  'clinic_low_stock_alerts'
+                                                                                ? 'Low Stock Alerts'
+                                                                                : widgetType ===
+                                                                                    'clinic_upcoming_appointments'
+                                                                                  ? 'Upcoming Appointments'
+                                                                                  : (
+                                                                                        widgetType
+                                                                                    )
+                                                                                        .replace(
+                                                                                            '_',
+                                                                                            ' ',
+                                                                                        )
+                                                                                        .replace(
+                                                                                            /\b\w/g,
+                                                                                            (
+                                                                                                char,
+                                                                                            ) =>
+                                                                                                char.toUpperCase(),
+                                                                                        )}
                                                 </SelectItem>
-                                            ))}
+                                                );
+                                            })}
                                         </SelectContent>
                                     </Select>
                                     <Button

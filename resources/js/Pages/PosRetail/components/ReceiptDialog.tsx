@@ -7,7 +7,7 @@ import {
     DialogTitle,
 } from '@/Components/ui/dialog';
 import { Printer } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 interface ReceiptItem {
     id: number;
@@ -48,15 +48,20 @@ export default function ReceiptDialog({
 
     const formatAmount = (amount: number | string | undefined): string => {
         if (!receiptData) return '';
-        const { symbol, decimal_separator = '.', thousands_separator = ',' } = receiptData.appCurrency;
-        
+        const {
+            symbol,
+            decimal_separator = '.',
+            thousands_separator = ',',
+        } = receiptData.appCurrency;
+
         // Convert to number if it's a string or handle undefined
-        const numAmount = typeof amount === 'string' ? parseFloat(amount) : (amount || 0);
-        
+        const numAmount =
+            typeof amount === 'string' ? parseFloat(amount) : amount || 0;
+
         if (isNaN(numAmount)) {
             return `${symbol}0.00`;
         }
-        
+
         return `${symbol}${numAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, thousands_separator)}`;
     };
 
@@ -181,7 +186,7 @@ export default function ReceiptDialog({
         `);
         printWindow.document.close();
         printWindow.focus();
-        
+
         setTimeout(() => {
             printWindow.print();
             printWindow.close();
@@ -202,7 +207,7 @@ export default function ReceiptDialog({
                     {/* Receipt Content - Print Friendly */}
                     <div
                         ref={receiptRef}
-                        className="receipt bg-white p-6 text-black dark:bg-white dark:text-black rounded-lg border"
+                        className="receipt rounded-lg border bg-white p-6 text-black dark:bg-white dark:text-black"
                         style={{
                             fontFamily: "'Courier New', monospace",
                             maxWidth: '80mm',
@@ -301,7 +306,9 @@ export default function ReceiptDialog({
                                             textAlign: 'right',
                                         }}
                                     >
-                                        {formatAmount(item.price * item.quantity)}
+                                        {formatAmount(
+                                            item.price * item.quantity,
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -376,13 +383,17 @@ export default function ReceiptDialog({
                                                 >
                                                     <span
                                                         className="receipt-total-label"
-                                                        style={{ fontWeight: 500 }}
+                                                        style={{
+                                                            fontWeight: 500,
+                                                        }}
                                                     >
                                                         Change:
                                                     </span>
                                                     <span
                                                         className="receipt-total-amount"
-                                                        style={{ fontWeight: 'bold' }}
+                                                        style={{
+                                                            fontWeight: 'bold',
+                                                        }}
                                                     >
                                                         {formatAmount(
                                                             receiptData.change,
@@ -456,14 +467,17 @@ export default function ReceiptDialog({
                         </div>
                     </div>
                 </div>
-                <DialogFooter className="flex justify-between gap-2 no-print">
+                <DialogFooter className="no-print flex justify-between gap-2">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
                         Close
                     </Button>
-                    <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700">
+                    <Button
+                        onClick={handlePrint}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
                         <Printer className="mr-2 h-4 w-4" />
                         Print Receipt
                     </Button>
@@ -472,4 +486,3 @@ export default function ReceiptDialog({
         </Dialog>
     );
 }
-

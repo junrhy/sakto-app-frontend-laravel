@@ -354,7 +354,13 @@ export default function FamilyTreeVisualization({
         return [buildNode(oldestMember)];
     }, [familyMembers, selectedRootMember, getOldestMember]);
 
-    const handleNodeClick = (nodeData: any) => {
+    interface NodeData {
+        data: {
+            name: string;
+        };
+    }
+
+    const handleNodeClick = (nodeData: NodeData) => {
         const memberName = nodeData.data.name;
         const member = familyMembers.find(
             (m) => `${m.first_name} ${m.last_name}` === memberName,
@@ -378,17 +384,32 @@ export default function FamilyTreeVisualization({
         return age;
     };
 
+    interface ForeignObjectNodeProps {
+        nodeDatum: {
+            attributes?: {
+                isBranch?: boolean;
+                birth?: string;
+                death?: string;
+                gender?: string;
+                isReference?: boolean;
+                relationship?: string;
+            };
+            name: string;
+        };
+        foreignObjectProps: Record<string, unknown>;
+    }
+
     const renderForeignObjectNode = ({
         nodeDatum,
         foreignObjectProps,
-    }: any) => {
+    }: ForeignObjectNodeProps) => {
         // Skip rendering for branch nodes but return an empty group to maintain structure
         if (nodeDatum.attributes?.isBranch) {
             return <g />;
         }
 
         const age = calculateAge(
-            nodeDatum.attributes?.birth,
+            nodeDatum.attributes?.birth || '',
             nodeDatum.attributes?.death,
         );
         const isDeceased = !!nodeDatum.attributes?.death;
@@ -560,8 +581,7 @@ export default function FamilyTreeVisualization({
             event.preventDefault();
             if (!containerRef.current) return;
 
-            const { width, height } =
-                containerRef.current.getBoundingClientRect();
+            containerRef.current.getBoundingClientRect();
             const mouseX = event.clientX - containerRef.current.offsetLeft;
             const mouseY = event.clientY - containerRef.current.offsetTop;
 

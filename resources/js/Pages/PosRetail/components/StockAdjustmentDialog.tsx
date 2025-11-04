@@ -8,7 +8,6 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -16,10 +15,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { useState, useEffect } from 'react';
+import { Textarea } from '@/Components/ui/textarea';
 import { router } from '@inertiajs/react';
+import { Minus, Plus, RotateCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Minus, RotateCcw } from 'lucide-react';
 
 interface Product {
     id: number;
@@ -50,8 +50,7 @@ export default function StockAdjustmentDialog({
     performedBy = '',
     onSuccess,
 }: StockAdjustmentDialogProps) {
-    const [adjustmentType, setAdjustmentType] =
-        useState<AdjustmentType>('add');
+    const [adjustmentType, setAdjustmentType] = useState<AdjustmentType>('add');
     const [quantity, setQuantity] = useState<string>('');
     const [newQuantity, setNewQuantity] = useState<string>('');
     const [reason, setReason] = useState<string>('');
@@ -75,7 +74,7 @@ export default function StockAdjustmentDialog({
             setIsLoading(true);
 
             let endpoint = '';
-            let payload: any = {
+            const payload: any = {
                 reason: reason || undefined,
                 reference_number: referenceNumber || undefined,
                 performed_by: performedBy || undefined,
@@ -215,7 +214,10 @@ export default function StockAdjustmentDialog({
                     {/* Quantity Input based on type */}
                     {adjustmentType === 'adjust' ? (
                         <div className="space-y-2">
-                            <Label htmlFor="newQuantity" className="text-gray-900 dark:text-white">
+                            <Label
+                                htmlFor="newQuantity"
+                                className="text-gray-900 dark:text-white"
+                            >
                                 New Quantity{' '}
                                 <span className="text-red-500">*</span>
                             </Label>
@@ -228,30 +230,38 @@ export default function StockAdjustmentDialog({
                                 placeholder="Enter new quantity"
                             />
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Current: {product.quantity} → New: {newQuantity || '0'}
+                                Current: {product.quantity} → New:{' '}
+                                {newQuantity || '0'}
                                 {newQuantity &&
-                                    parseInt(newQuantity) !== product.quantity && (
+                                    parseInt(newQuantity) !==
+                                        product.quantity && (
                                         <span
                                             className={
-                                                parseInt(newQuantity) > product.quantity
+                                                parseInt(newQuantity) >
+                                                product.quantity
                                                     ? 'ml-2 text-green-600'
                                                     : 'ml-2 text-red-600'
                                             }
                                         >
                                             (
-                                            {parseInt(newQuantity) > product.quantity
+                                            {parseInt(newQuantity) >
+                                            product.quantity
                                                 ? '+'
                                                 : ''}
-                                            {parseInt(newQuantity) - product.quantity})
+                                            {parseInt(newQuantity) -
+                                                product.quantity}
+                                            )
                                         </span>
                                     )}
                             </p>
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <Label htmlFor="quantity" className="text-gray-900 dark:text-white">
-                                Quantity{' '}
-                                <span className="text-red-500">*</span>
+                            <Label
+                                htmlFor="quantity"
+                                className="text-gray-900 dark:text-white"
+                            >
+                                Quantity <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="quantity"
@@ -280,7 +290,10 @@ export default function StockAdjustmentDialog({
 
                     {/* Reason */}
                     <div className="space-y-2">
-                        <Label htmlFor="reason" className="text-gray-900 dark:text-white">
+                        <Label
+                            htmlFor="reason"
+                            className="text-gray-900 dark:text-white"
+                        >
                             Reason{' '}
                             {adjustmentType === 'adjust' && (
                                 <span className="text-red-500">*</span>
@@ -297,15 +310,16 @@ export default function StockAdjustmentDialog({
 
                     {/* Reference Number */}
                     <div className="space-y-2">
-                        <Label htmlFor="referenceNumber" className="text-gray-900 dark:text-white">
+                        <Label
+                            htmlFor="referenceNumber"
+                            className="text-gray-900 dark:text-white"
+                        >
                             Reference Number (Optional)
                         </Label>
                         <Input
                             id="referenceNumber"
                             value={referenceNumber}
-                            onChange={(e) =>
-                                setReferenceNumber(e.target.value)
-                            }
+                            onChange={(e) => setReferenceNumber(e.target.value)}
                             placeholder="e.g., PO-12345, Invoice-001"
                         />
                     </div>
@@ -342,4 +356,3 @@ export default function StockAdjustmentDialog({
         </Dialog>
     );
 }
-

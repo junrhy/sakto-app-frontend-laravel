@@ -1,8 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
-import React, { useState, useMemo, useEffect } from 'react';
-import { toast } from 'sonner';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
@@ -10,15 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import {
     Dialog,
     DialogContent,
@@ -26,38 +13,48 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/Components/ui/dialog';
-import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import {
-    Upload,
-    Search,
-    Filter,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
+import { format } from 'date-fns';
+import {
+    Copy,
+    Download,
+    Edit,
+    Eye,
+    File,
+    FileText,
     Folder,
     FolderPlus,
     Grid3X3,
+    Image as ImageIcon,
     List,
     MoreVertical,
-    Copy,
-    Download,
-    Trash2,
-    Edit,
-    Eye,
-    FileText,
-    Image as ImageIcon,
-    Video,
     Music,
-    File,
-    X,
+    Search,
+    Trash2,
+    Upload,
+    Video,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface FileStorageItem {
     id: number;
@@ -87,15 +84,26 @@ interface Props extends PageProps {
     };
 }
 
-export default function Index({ auth, files, folders, filters: initialFilters }: Props) {
+export default function Index({
+    auth,
+    files,
+    folders,
+    filters: initialFilters,
+}: Props) {
     const [search, setSearch] = useState(initialFilters.search || '');
-    const [selectedFolder, setSelectedFolder] = useState(initialFilters.folder || 'all');
-    const [selectedFileType, setSelectedFileType] = useState(initialFilters.file_type || 'all');
+    const [selectedFolder, setSelectedFolder] = useState(
+        initialFilters.folder || 'all',
+    );
+    const [selectedFileType, setSelectedFileType] = useState(
+        initialFilters.file_type || 'all',
+    );
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<FileStorageItem | null>(null);
+    const [selectedFile, setSelectedFile] = useState<FileStorageItem | null>(
+        null,
+    );
     const [newFolderName, setNewFolderName] = useState('');
     const [showNewFolderInput, setShowNewFolderInput] = useState(false);
     const [availableFolders, setAvailableFolders] = useState<string[]>(folders);
@@ -140,7 +148,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
             filtered = filtered.filter((file) => !file.folder);
         } else {
             // Show files in the selected folder
-            filtered = filtered.filter((file) => file.folder === selectedFolder);
+            filtered = filtered.filter(
+                (file) => file.folder === selectedFolder,
+            );
         }
 
         // Search filter
@@ -151,13 +161,17 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                     file.name.toLowerCase().includes(searchLower) ||
                     file.original_name.toLowerCase().includes(searchLower) ||
                     file.description?.toLowerCase().includes(searchLower) ||
-                    file.tags?.some((tag) => tag.toLowerCase().includes(searchLower)),
+                    file.tags?.some((tag) =>
+                        tag.toLowerCase().includes(searchLower),
+                    ),
             );
         }
 
         // File type filter
         if (selectedFileType !== 'all') {
-            filtered = filtered.filter((file) => file.file_type === selectedFileType);
+            filtered = filtered.filter(
+                (file) => file.file_type === selectedFileType,
+            );
         }
 
         // Sort
@@ -187,36 +201,47 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
         if (!search.trim() && selectedFolder === 'all') {
             return availableFolders;
         }
-        
+
         // If searching, only show folders that contain files matching the search
         if (search.trim()) {
             const searchLower = search.toLowerCase();
             return availableFolders.filter((folder) => {
-                const folderFiles = files.filter((file) => file.folder === folder);
+                const folderFiles = files.filter(
+                    (file) => file.folder === folder,
+                );
                 return folderFiles.some(
                     (file) =>
                         file.name.toLowerCase().includes(searchLower) ||
-                        file.original_name.toLowerCase().includes(searchLower) ||
+                        file.original_name
+                            .toLowerCase()
+                            .includes(searchLower) ||
                         file.description?.toLowerCase().includes(searchLower) ||
-                        file.tags?.some((tag) => tag.toLowerCase().includes(searchLower)),
+                        file.tags?.some((tag) =>
+                            tag.toLowerCase().includes(searchLower),
+                        ),
                 );
             });
         }
-        
+
         return availableFolders;
     }, [availableFolders, files, search, selectedFolder]);
 
     const handleFolderClick = (folderName: string) => {
         setSelectedFolder(folderName);
         // Update URL to reflect folder filter
-        router.get(route('file-storage.index'), {
-            folder: folderName,
-            file_type: selectedFileType !== 'all' ? selectedFileType : undefined,
-            search: search || undefined,
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+        router.get(
+            route('file-storage.index'),
+            {
+                folder: folderName,
+                file_type:
+                    selectedFileType !== 'all' ? selectedFileType : undefined,
+                search: search || undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
     };
 
     const handleUpload = async () => {
@@ -229,40 +254,48 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
         const fileSize = uploadForm.data.file.size;
         const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
         const maxSizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
-        
+
         console.log('File size check:', {
             fileSize,
             fileSizeMB,
             MAX_FILE_SIZE,
             maxSizeMB,
-            isTooLarge: fileSize > MAX_FILE_SIZE
+            isTooLarge: fileSize > MAX_FILE_SIZE,
         });
-        
+
         if (fileSize > MAX_FILE_SIZE) {
-            toast.error(`File too large! Selected file is ${fileSizeMB}MB. Maximum allowed size is ${maxSizeMB}MB. Please select a smaller file.`, {
-                duration: 5000,
-            });
+            toast.error(
+                `File too large! Selected file is ${fileSizeMB}MB. Maximum allowed size is ${maxSizeMB}MB. Please select a smaller file.`,
+                {
+                    duration: 5000,
+                },
+            );
             // Clear the file input to prevent accidental submission
             uploadForm.setData('file', null);
             return;
         }
-        
+
         // Additional safety check - show warning if file is close to limit
         if (fileSize > MAX_FILE_SIZE * 0.9) {
-            toast.warning(`File size (${fileSizeMB}MB) is close to the limit. Proceeding with upload...`, {
-                duration: 3000,
-            });
+            toast.warning(
+                `File size (${fileSizeMB}MB) is close to the limit. Proceeding with upload...`,
+                {
+                    duration: 3000,
+                },
+            );
         }
 
         // Only proceed with upload if file size is valid
         // Use router.post directly to have better error handling
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
         if (!csrfToken) {
             toast.error('CSRF token not found. Please refresh the page.');
             return;
         }
-        
+
         const formData = new FormData();
         formData.append('file', uploadForm.data.file);
         formData.append('_token', csrfToken); // Include CSRF token in form data
@@ -275,7 +308,7 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
         if (uploadForm.data.folder) {
             formData.append('folder', uploadForm.data.folder);
         }
-        
+
         // Make the request manually to catch 413 errors properly
         // Note: Don't set Content-Type header - browser will set it with boundary for FormData
         try {
@@ -284,41 +317,47 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': csrfToken, // Also include in header for Laravel
-                    'Accept': 'application/json, text/html',
+                    Accept: 'application/json, text/html',
                 },
                 body: formData,
                 credentials: 'same-origin', // Include cookies for CSRF
             });
-            
+
             console.log('Upload response status:', response.status);
-            
+
             // Handle 413 error directly
             if (response.status === 413) {
-                toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                    duration: 6000,
-                });
+                toast.error(
+                    `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                    {
+                        duration: 6000,
+                    },
+                );
                 return;
             }
-            
+
             // Handle 419 CSRF token mismatch
             if (response.status === 419) {
-                toast.error('CSRF token mismatch. Please refresh the page and try again.', {
-                    duration: 6000,
-                });
+                toast.error(
+                    'CSRF token mismatch. Please refresh the page and try again.',
+                    {
+                        duration: 6000,
+                    },
+                );
                 // Optionally reload the page to get a fresh CSRF token
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
                 return;
             }
-            
+
             // Handle other error statuses (4xx, 5xx)
             if (!response.ok) {
                 let errorMessage = '';
                 const file = uploadForm.data.file;
                 const fileSize = file ? file.size : 0;
                 const isLargeFile = fileSize > MAX_FILE_SIZE;
-                
+
                 try {
                     const errorData = await response.json();
                     // Handle both string error and array of errors
@@ -326,10 +365,15 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                         errorMessage = errorData.error;
                     } else if (errorData.message) {
                         errorMessage = errorData.message;
-                    } else if (errorData.errors && typeof errorData.errors === 'object') {
+                    } else if (
+                        errorData.errors &&
+                        typeof errorData.errors === 'object'
+                    ) {
                         // Laravel validation errors
-                        const errorValues = Object.values(errorData.errors).flat();
-                        errorMessage = errorValues[0] as string || '';
+                        const errorValues = Object.values(
+                            errorData.errors,
+                        ).flat();
+                        errorMessage = (errorValues[0] as string) || '';
                     }
                 } catch (e) {
                     // If response is not JSON, try to get text
@@ -340,32 +384,40 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                         // Use default error message based on status code
                     }
                 }
-                
+
                 const errorMsgLower = errorMessage.toLowerCase();
-                
+
                 // Check if file is large - prioritize file size error if file exceeds limit
                 if (isLargeFile) {
                     const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-                    toast.error(`File is too large (${fileSizeMB}MB). Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                        duration: 6000,
-                    });
+                    toast.error(
+                        `File is too large (${fileSizeMB}MB). Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                        {
+                            duration: 6000,
+                        },
+                    );
                     return;
                 }
-                
+
                 // Handle file size errors from server response
-                if (errorMsgLower.includes('too large') || 
-                    errorMsgLower.includes('413') || 
+                if (
+                    errorMsgLower.includes('too large') ||
+                    errorMsgLower.includes('413') ||
                     errorMsgLower.includes('entity too large') ||
                     errorMsgLower.includes('request entity too large') ||
                     errorMsgLower.includes('exceed') ||
                     errorMsgLower.includes('max') ||
                     errorMsgLower.includes('size') ||
-                    response.status === 413) {
-                    toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                        duration: 6000,
-                    });
+                    response.status === 413
+                ) {
+                    toast.error(
+                        `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                        {
+                            duration: 6000,
+                        },
+                    );
                     return;
-                } 
+                }
                 // Handle validation errors
                 else if (response.status === 422 && errorMessage) {
                     toast.error(errorMessage, {
@@ -377,35 +429,50 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 else if (response.status === 500) {
                     // Check if it might be a file size issue even with 500 status
                     if (fileSize > MAX_FILE_SIZE * 0.8) {
-                        toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                            duration: 6000,
-                        });
+                        toast.error(
+                            `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                            {
+                                duration: 6000,
+                            },
+                        );
                     } else {
-                        toast.error('Server error occurred. Please try again in a few moments. If the problem persists, contact support.', {
-                            duration: 6000,
-                        });
+                        toast.error(
+                            'Server error occurred. Please try again in a few moments. If the problem persists, contact support.',
+                            {
+                                duration: 6000,
+                            },
+                        );
                     }
                     return;
                 }
                 // Handle not found (404)
                 else if (response.status === 404) {
-                    toast.error('Upload endpoint not found. Please refresh the page and try again.', {
-                        duration: 5000,
-                    });
+                    toast.error(
+                        'Upload endpoint not found. Please refresh the page and try again.',
+                        {
+                            duration: 5000,
+                        },
+                    );
                     return;
                 }
                 // Handle unauthorized (401)
                 else if (response.status === 401) {
-                    toast.error('Your session has expired. Please refresh the page and log in again.', {
-                        duration: 6000,
-                    });
+                    toast.error(
+                        'Your session has expired. Please refresh the page and log in again.',
+                        {
+                            duration: 6000,
+                        },
+                    );
                     return;
                 }
                 // Handle forbidden (403)
                 else if (response.status === 403) {
-                    toast.error('You do not have permission to upload files. Please contact your administrator.', {
-                        duration: 6000,
-                    });
+                    toast.error(
+                        'You do not have permission to upload files. Please contact your administrator.',
+                        {
+                            duration: 6000,
+                        },
+                    );
                     return;
                 }
                 // Handle custom error message if available
@@ -419,48 +486,66 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 else {
                     // If file is large but we didn't catch it earlier, assume it's a size issue
                     if (fileSize > MAX_FILE_SIZE * 0.8) {
-                        toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                            duration: 6000,
-                        });
+                        toast.error(
+                            `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                            {
+                                duration: 6000,
+                            },
+                        );
                     } else {
-                        toast.error('Unable to upload file. Please check your connection and try again.', {
-                            duration: 5000,
-                        });
+                        toast.error(
+                            'Unable to upload file. Please check your connection and try again.',
+                            {
+                                duration: 5000,
+                            },
+                        );
                     }
                 }
                 return;
             }
-            
+
             // Response is OK (200-299), now check the content
             const contentType = response.headers.get('content-type') || '';
-            
+
             // Handle JSON response
             if (contentType.includes('application/json')) {
                 const responseData = await response.json();
-                
+
                 // Check if response contains error (even with 200 status)
                 if (responseData.error) {
-                    const errorMsg = typeof responseData.error === 'string' 
-                        ? responseData.error 
-                        : JSON.stringify(responseData.error);
-                    
+                    const errorMsg =
+                        typeof responseData.error === 'string'
+                            ? responseData.error
+                            : JSON.stringify(responseData.error);
+
                     const errorMsgLower = errorMsg.toLowerCase();
-                    
+
                     // Handle file size errors
-                    if (errorMsgLower.includes('too large') || 
-                        errorMsgLower.includes('413') || 
+                    if (
+                        errorMsgLower.includes('too large') ||
+                        errorMsgLower.includes('413') ||
                         errorMsgLower.includes('entity too large') ||
                         errorMsgLower.includes('exceed') ||
-                        errorMsgLower.includes('max')) {
-                        toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                            duration: 6000,
-                        });
+                        errorMsgLower.includes('max')
+                    ) {
+                        toast.error(
+                            `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                            {
+                                duration: 6000,
+                            },
+                        );
                     }
                     // Handle API errors
-                    else if (errorMsgLower.includes('api') || errorMsgLower.includes('backend')) {
-                        toast.error('Unable to save file information. Please try again.', {
-                            duration: 5000,
-                        });
+                    else if (
+                        errorMsgLower.includes('api') ||
+                        errorMsgLower.includes('backend')
+                    ) {
+                        toast.error(
+                            'Unable to save file information. Please try again.',
+                            {
+                                duration: 5000,
+                            },
+                        );
                     }
                     // Handle generic error messages
                     else {
@@ -470,16 +555,18 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                     }
                     return;
                 }
-                
+
                 // Check for success status
                 if (responseData.status === 'success' || responseData.message) {
-                    toast.success(responseData.message || 'File uploaded successfully');
+                    toast.success(
+                        responseData.message || 'File uploaded successfully',
+                    );
                     setUploadDialogOpen(false);
                     uploadForm.reset();
                     router.reload({ only: ['files', 'folders'] });
                     return;
                 }
-                
+
                 // If no error and no success flag, assume success
                 toast.success('File uploaded successfully');
                 setUploadDialogOpen(false);
@@ -487,37 +574,54 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 router.reload({ only: ['files', 'folders'] });
                 return;
             }
-            
+
             // Handle HTML response (redirects) - check for errors in HTML
             if (contentType.includes('text/html')) {
                 const responseText = await response.text();
-                
+
                 // Check if HTML contains error indicators
-                if (responseText.includes('error') || 
-                    responseText.includes('413') || 
+                if (
+                    responseText.includes('error') ||
+                    responseText.includes('413') ||
                     responseText.includes('too large') ||
-                    responseText.includes('Request Entity Too Large')) {
-                    
-                    if (responseText.includes('too large') || responseText.includes('413') || responseText.includes('Request Entity Too Large')) {
-                        toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                            duration: 6000,
-                        });
+                    responseText.includes('Request Entity Too Large')
+                ) {
+                    if (
+                        responseText.includes('too large') ||
+                        responseText.includes('413') ||
+                        responseText.includes('Request Entity Too Large')
+                    ) {
+                        toast.error(
+                            `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                            {
+                                duration: 6000,
+                            },
+                        );
                         return;
                     }
-                    
+
                     // Check for validation errors in HTML
-                    if (responseText.includes('validation') || responseText.includes('required')) {
-                        toast.error('Please check the file and form fields, then try again.', {
-                            duration: 5000,
-                        });
+                    if (
+                        responseText.includes('validation') ||
+                        responseText.includes('required')
+                    ) {
+                        toast.error(
+                            'Please check the file and form fields, then try again.',
+                            {
+                                duration: 5000,
+                            },
+                        );
                     } else {
-                        toast.error('An error occurred during upload. Please try again.', {
-                            duration: 5000,
-                        });
+                        toast.error(
+                            'An error occurred during upload. Please try again.',
+                            {
+                                duration: 5000,
+                            },
+                        );
                     }
                     return;
                 }
-                
+
                 // If HTML doesn't contain errors, treat as success (Laravel redirect)
                 toast.success('File uploaded successfully');
                 setUploadDialogOpen(false);
@@ -525,7 +629,7 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 router.reload({ only: ['files', 'folders'] });
                 return;
             }
-            
+
             // Default: if we got here with OK status and unknown content type, treat as success
             toast.success('File uploaded successfully');
             setUploadDialogOpen(false);
@@ -533,38 +637,58 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
             router.reload({ only: ['files', 'folders'] });
         } catch (error) {
             console.error('Upload catch error:', error);
-            const errorMsg = error instanceof Error ? error.message : String(error);
+            const errorMsg =
+                error instanceof Error ? error.message : String(error);
             const errorMsgLower = errorMsg.toLowerCase();
-            
+
             // Handle network errors
-            if (errorMsgLower.includes('network') || 
-                errorMsgLower.includes('fetch') || 
+            if (
+                errorMsgLower.includes('network') ||
+                errorMsgLower.includes('fetch') ||
                 errorMsgLower.includes('connection') ||
-                errorMsgLower.includes('failed to fetch')) {
-                toast.error('Network connection error. Please check your internet connection and try again.', {
-                    duration: 6000,
-                });
+                errorMsgLower.includes('failed to fetch')
+            ) {
+                toast.error(
+                    'Network connection error. Please check your internet connection and try again.',
+                    {
+                        duration: 6000,
+                    },
+                );
             }
             // Handle file size errors
-            else if (errorMsgLower.includes('413') ||
+            else if (
+                errorMsgLower.includes('413') ||
                 errorMsgLower.includes('too large') ||
                 errorMsgLower.includes('request entity too large') ||
-                errorMsgLower.includes('entity too large')) {
-                toast.error(`File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`, {
-                    duration: 6000,
-                });
+                errorMsgLower.includes('entity too large')
+            ) {
+                toast.error(
+                    `File is too large. Maximum file size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB. Please select a smaller file.`,
+                    {
+                        duration: 6000,
+                    },
+                );
             }
             // Handle timeout errors
-            else if (errorMsgLower.includes('timeout') || errorMsgLower.includes('aborted')) {
-                toast.error('Upload timed out. The file may be too large or your connection is slow. Please try again.', {
-                    duration: 6000,
-                });
+            else if (
+                errorMsgLower.includes('timeout') ||
+                errorMsgLower.includes('aborted')
+            ) {
+                toast.error(
+                    'Upload timed out. The file may be too large or your connection is slow. Please try again.',
+                    {
+                        duration: 6000,
+                    },
+                );
             }
             // Generic error
             else {
-                toast.error('An unexpected error occurred. Please try again. If the problem persists, contact support.', {
-                    duration: 6000,
-                });
+                toast.error(
+                    'An unexpected error occurred. Please try again. If the problem persists, contact support.',
+                    {
+                        duration: 6000,
+                    },
+                );
             }
         }
     };
@@ -671,11 +795,14 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
         setAvailableFolders([...availableFolders, folderName]);
         setNewFolderName('');
         setShowNewFolderInput(false);
-        
+
         // If called from upload/edit dialog, also set it as selected
-        toast.success(`Folder "${folderName}" created. It will be created when you upload a file to it.`, {
-            duration: 3000,
-        });
+        toast.success(
+            `Folder "${folderName}" created. It will be created when you upload a file to it.`,
+            {
+                duration: 3000,
+            },
+        );
     };
 
     // Update available folders when folders prop changes
@@ -720,7 +847,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     <Input
                                         placeholder="Search files..."
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                         className="pl-10"
                                     />
                                 </div>
@@ -734,8 +863,12 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     <SelectValue placeholder="All Folders" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Folders</SelectItem>
-                                    <SelectItem value="none">No Folder</SelectItem>
+                                    <SelectItem value="all">
+                                        All Folders
+                                    </SelectItem>
+                                    <SelectItem value="none">
+                                        No Folder
+                                    </SelectItem>
                                     {availableFolders.map((folder) => (
                                         <SelectItem key={folder} value={folder}>
                                             {folder}
@@ -752,10 +885,18 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     <SelectValue placeholder="All Types" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="image">Images</SelectItem>
-                                    <SelectItem value="document">Documents</SelectItem>
-                                    <SelectItem value="video">Videos</SelectItem>
+                                    <SelectItem value="all">
+                                        All Types
+                                    </SelectItem>
+                                    <SelectItem value="image">
+                                        Images
+                                    </SelectItem>
+                                    <SelectItem value="document">
+                                        Documents
+                                    </SelectItem>
+                                    <SelectItem value="video">
+                                        Videos
+                                    </SelectItem>
                                     <SelectItem value="audio">Audio</SelectItem>
                                     <SelectItem value="other">Other</SelectItem>
                                 </SelectContent>
@@ -763,14 +904,22 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
 
                             <div className="flex gap-2">
                                 <Button
-                                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                                    variant={
+                                        viewMode === 'grid'
+                                            ? 'default'
+                                            : 'outline'
+                                    }
                                     size="icon"
                                     onClick={() => setViewMode('grid')}
                                 >
                                     <Grid3X3 className="h-4 w-4" />
                                 </Button>
                                 <Button
-                                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                                    variant={
+                                        viewMode === 'list'
+                                            ? 'default'
+                                            : 'outline'
+                                    }
                                     size="icon"
                                     onClick={() => setViewMode('list')}
                                 >
@@ -796,8 +945,12 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     <FolderCard
                                         key={folder}
                                         folderName={folder}
-                                        fileCount={folderFileCounts[folder] || 0}
-                                        onClick={() => handleFolderClick(folder)}
+                                        fileCount={
+                                            folderFileCounts[folder] || 0
+                                        }
+                                        onClick={() =>
+                                            handleFolderClick(folder)
+                                        }
                                     />
                                 ))}
                             </div>
@@ -814,20 +967,31 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     <>
                                         <Folder className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                                         <CardTitle className="text-lg">
-                                            {selectedFolder === 'none' ? 'Files without folder' : `Folder: ${selectedFolder}`}
+                                            {selectedFolder === 'none'
+                                                ? 'Files without folder'
+                                                : `Folder: ${selectedFolder}`}
                                         </CardTitle>
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => {
                                                 setSelectedFolder('all');
-                                                router.get(route('file-storage.index'), {
-                                                    file_type: selectedFileType !== 'all' ? selectedFileType : undefined,
-                                                    search: search || undefined,
-                                                }, {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                });
+                                                router.get(
+                                                    route('file-storage.index'),
+                                                    {
+                                                        file_type:
+                                                            selectedFileType !==
+                                                            'all'
+                                                                ? selectedFileType
+                                                                : undefined,
+                                                        search:
+                                                            search || undefined,
+                                                    },
+                                                    {
+                                                        preserveState: true,
+                                                        preserveScroll: true,
+                                                    },
+                                                );
                                             }}
                                             className="ml-2 h-6 text-xs"
                                         >
@@ -836,12 +1000,15 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     </>
                                 )}
                                 {selectedFolder === 'all' && (
-                                    <CardTitle className="text-lg">Files</CardTitle>
+                                    <CardTitle className="text-lg">
+                                        Files
+                                    </CardTitle>
                                 )}
                             </div>
                             {filteredFiles.length > 0 && (
                                 <CardDescription>
-                                    {filteredFiles.length} file{filteredFiles.length !== 1 ? 's' : ''}
+                                    {filteredFiles.length} file
+                                    {filteredFiles.length !== 1 ? 's' : ''}
                                 </CardDescription>
                             )}
                         </div>
@@ -854,11 +1021,15 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     No files found
                                 </p>
                                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-500">
-                                    {selectedFolder === 'all' ? 'Upload your first file to get started' : 'No files in this folder'}
+                                    {selectedFolder === 'all'
+                                        ? 'Upload your first file to get started'
+                                        : 'No files in this folder'}
                                 </p>
                                 {selectedFolder === 'all' && (
                                     <Button
-                                        onClick={() => setUploadDialogOpen(true)}
+                                        onClick={() =>
+                                            setUploadDialogOpen(true)
+                                        }
                                         className="mt-4 gap-2"
                                     >
                                         <Upload className="h-4 w-4" />
@@ -903,7 +1074,10 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 </Card>
 
                 {/* Upload Dialog */}
-                <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+                <Dialog
+                    open={uploadDialogOpen}
+                    onOpenChange={setUploadDialogOpen}
+                >
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Upload File</DialogTitle>
@@ -923,31 +1097,59 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         if (file) {
                                             // Immediate validation on file selection - prevent selecting large files
                                             if (file.size > MAX_FILE_SIZE) {
-                                                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                                                const maxSizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
-                                                toast.error(`File too large! Selected file is ${fileSizeMB}MB. Maximum allowed size is ${maxSizeMB}MB. Please select a smaller file.`, {
-                                                    duration: 5000,
-                                                });
+                                                const fileSizeMB = (
+                                                    file.size /
+                                                    (1024 * 1024)
+                                                ).toFixed(2);
+                                                const maxSizeMB = (
+                                                    MAX_FILE_SIZE /
+                                                    (1024 * 1024)
+                                                ).toFixed(0);
+                                                toast.error(
+                                                    `File too large! Selected file is ${fileSizeMB}MB. Maximum allowed size is ${maxSizeMB}MB. Please select a smaller file.`,
+                                                    {
+                                                        duration: 5000,
+                                                    },
+                                                );
                                                 e.target.value = ''; // Clear the input
-                                                uploadForm.setData('file', null); // Clear form data
+                                                uploadForm.setData(
+                                                    'file',
+                                                    null,
+                                                ); // Clear form data
                                                 return;
                                             }
                                             uploadForm.setData('file', file);
-                                            uploadForm.setData('name', file.name.replace(/\.[^/.]+$/, ''));
+                                            uploadForm.setData(
+                                                'name',
+                                                file.name.replace(
+                                                    /\.[^/.]+$/,
+                                                    '',
+                                                ),
+                                            );
                                         }
                                     }}
                                     className="mt-1"
                                 />
                                 <p className="mt-1 text-sm text-gray-500">
-                                    Max file size: {(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB
+                                    Max file size:{' '}
+                                    {(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}
+                                    MB
                                 </p>
                                 {uploadForm.data.file && (
-                                    <p className={`mt-1 text-sm ${
-                                        uploadForm.data.file.size > MAX_FILE_SIZE 
-                                            ? 'text-red-600 dark:text-red-400' 
-                                            : 'text-gray-600 dark:text-gray-400'
-                                    }`}>
-                                        Selected: {uploadForm.data.file.name} ({(uploadForm.data.file.size / (1024 * 1024)).toFixed(2)}MB)
+                                    <p
+                                        className={`mt-1 text-sm ${
+                                            uploadForm.data.file.size >
+                                            MAX_FILE_SIZE
+                                                ? 'text-red-600 dark:text-red-400'
+                                                : 'text-gray-600 dark:text-gray-400'
+                                        }`}
+                                    >
+                                        Selected: {uploadForm.data.file.name} (
+                                        {(
+                                            uploadForm.data.file.size /
+                                            (1024 * 1024)
+                                        ).toFixed(2)}
+                                        MB)
                                     </p>
                                 )}
                             </div>
@@ -957,7 +1159,12 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                 <Input
                                     id="name"
                                     value={uploadForm.data.name}
-                                    onChange={(e) => uploadForm.setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        uploadForm.setData(
+                                            'name',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="File name (optional)"
                                     className="mt-1"
                                 />
@@ -968,7 +1175,12 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                 <Textarea
                                     id="description"
                                     value={uploadForm.data.description}
-                                    onChange={(e) => uploadForm.setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        uploadForm.setData(
+                                            'description',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="File description (optional)"
                                     className="mt-1"
                                     rows={3}
@@ -983,7 +1195,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
-                                            setShowNewFolderInput(!showNewFolderInput);
+                                            setShowNewFolderInput(
+                                                !showNewFolderInput,
+                                            );
                                             if (!showNewFolderInput) {
                                                 setNewFolderName('');
                                             }
@@ -991,7 +1205,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         className="h-7 gap-1 text-xs"
                                     >
                                         <FolderPlus className="h-3 w-3" />
-                                        {showNewFolderInput ? 'Cancel' : 'New Folder'}
+                                        {showNewFolderInput
+                                            ? 'Cancel'
+                                            : 'New Folder'}
                                     </Button>
                                 </div>
                                 {showNewFolderInput ? (
@@ -999,17 +1215,35 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         <Input
                                             placeholder="Folder name"
                                             value={newFolderName}
-                                            onChange={(e) => setNewFolderName(e.target.value)}
+                                            onChange={(e) =>
+                                                setNewFolderName(e.target.value)
+                                            }
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') {
                                                     e.preventDefault();
-                                                    if (newFolderName.trim() && !availableFolders.includes(newFolderName.trim())) {
-                                                        const folderName = newFolderName.trim();
-                                                        setAvailableFolders([...availableFolders, folderName]);
-                                                        uploadForm.setData('folder', folderName);
+                                                    if (
+                                                        newFolderName.trim() &&
+                                                        !availableFolders.includes(
+                                                            newFolderName.trim(),
+                                                        )
+                                                    ) {
+                                                        const folderName =
+                                                            newFolderName.trim();
+                                                        setAvailableFolders([
+                                                            ...availableFolders,
+                                                            folderName,
+                                                        ]);
+                                                        uploadForm.setData(
+                                                            'folder',
+                                                            folderName,
+                                                        );
                                                         setNewFolderName('');
-                                                        setShowNewFolderInput(false);
-                                                        toast.success(`Folder "${folderName}" created`);
+                                                        setShowNewFolderInput(
+                                                            false,
+                                                        );
+                                                        toast.success(
+                                                            `Folder "${folderName}" created`,
+                                                        );
                                                     }
                                                 }
                                             }}
@@ -1019,15 +1253,38 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                             type="button"
                                             size="sm"
                                             onClick={() => {
-                                                if (newFolderName.trim() && !availableFolders.includes(newFolderName.trim())) {
-                                                    const folderName = newFolderName.trim();
-                                                    setAvailableFolders([...availableFolders, folderName]);
-                                                    uploadForm.setData('folder', folderName);
+                                                if (
+                                                    newFolderName.trim() &&
+                                                    !availableFolders.includes(
+                                                        newFolderName.trim(),
+                                                    )
+                                                ) {
+                                                    const folderName =
+                                                        newFolderName.trim();
+                                                    setAvailableFolders([
+                                                        ...availableFolders,
+                                                        folderName,
+                                                    ]);
+                                                    uploadForm.setData(
+                                                        'folder',
+                                                        folderName,
+                                                    );
                                                     setNewFolderName('');
-                                                    setShowNewFolderInput(false);
-                                                    toast.success(`Folder "${folderName}" created`);
-                                                } else if (newFolderName.trim() && availableFolders.includes(newFolderName.trim())) {
-                                                    toast.error(`Folder "${newFolderName.trim()}" already exists`);
+                                                    setShowNewFolderInput(
+                                                        false,
+                                                    );
+                                                    toast.success(
+                                                        `Folder "${folderName}" created`,
+                                                    );
+                                                } else if (
+                                                    newFolderName.trim() &&
+                                                    availableFolders.includes(
+                                                        newFolderName.trim(),
+                                                    )
+                                                ) {
+                                                    toast.error(
+                                                        `Folder "${newFolderName.trim()}" already exists`,
+                                                    );
                                                 }
                                             }}
                                         >
@@ -1037,15 +1294,25 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                 ) : (
                                     <Select
                                         value={uploadForm.data.folder || 'none'}
-                                        onValueChange={(value) => uploadForm.setData('folder', value === 'none' ? '' : value)}
+                                        onValueChange={(value) =>
+                                            uploadForm.setData(
+                                                'folder',
+                                                value === 'none' ? '' : value,
+                                            )
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select folder" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">No Folder</SelectItem>
+                                            <SelectItem value="none">
+                                                No Folder
+                                            </SelectItem>
                                             {availableFolders.map((folder) => (
-                                                <SelectItem key={folder} value={folder}>
+                                                <SelectItem
+                                                    key={folder}
+                                                    value={folder}
+                                                >
                                                     {folder}
                                                 </SelectItem>
                                             ))}
@@ -1064,9 +1331,14 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                             </Button>
                             <Button
                                 onClick={handleUpload}
-                                disabled={uploadForm.processing || !uploadForm.data.file}
+                                disabled={
+                                    uploadForm.processing ||
+                                    !uploadForm.data.file
+                                }
                             >
-                                {uploadForm.processing ? 'Uploading...' : 'Upload'}
+                                {uploadForm.processing
+                                    ? 'Uploading...'
+                                    : 'Upload'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1088,17 +1360,26 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                 <Input
                                     id="edit-name"
                                     value={editForm.data.name}
-                                    onChange={(e) => editForm.setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        editForm.setData('name', e.target.value)
+                                    }
                                     className="mt-1"
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="edit-description">Description</Label>
+                                <Label htmlFor="edit-description">
+                                    Description
+                                </Label>
                                 <Textarea
                                     id="edit-description"
                                     value={editForm.data.description}
-                                    onChange={(e) => editForm.setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        editForm.setData(
+                                            'description',
+                                            e.target.value,
+                                        )
+                                    }
                                     className="mt-1"
                                     rows={3}
                                 />
@@ -1112,7 +1393,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
-                                            setShowNewFolderInput(!showNewFolderInput);
+                                            setShowNewFolderInput(
+                                                !showNewFolderInput,
+                                            );
                                             if (!showNewFolderInput) {
                                                 setNewFolderName('');
                                             }
@@ -1120,7 +1403,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         className="h-7 gap-1 text-xs"
                                     >
                                         <FolderPlus className="h-3 w-3" />
-                                        {showNewFolderInput ? 'Cancel' : 'New Folder'}
+                                        {showNewFolderInput
+                                            ? 'Cancel'
+                                            : 'New Folder'}
                                     </Button>
                                 </div>
                                 {showNewFolderInput ? (
@@ -1128,17 +1413,35 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         <Input
                                             placeholder="Folder name"
                                             value={newFolderName}
-                                            onChange={(e) => setNewFolderName(e.target.value)}
+                                            onChange={(e) =>
+                                                setNewFolderName(e.target.value)
+                                            }
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') {
                                                     e.preventDefault();
-                                                    if (newFolderName.trim() && !availableFolders.includes(newFolderName.trim())) {
-                                                        const folderName = newFolderName.trim();
-                                                        setAvailableFolders([...availableFolders, folderName]);
-                                                        editForm.setData('folder', folderName);
+                                                    if (
+                                                        newFolderName.trim() &&
+                                                        !availableFolders.includes(
+                                                            newFolderName.trim(),
+                                                        )
+                                                    ) {
+                                                        const folderName =
+                                                            newFolderName.trim();
+                                                        setAvailableFolders([
+                                                            ...availableFolders,
+                                                            folderName,
+                                                        ]);
+                                                        editForm.setData(
+                                                            'folder',
+                                                            folderName,
+                                                        );
                                                         setNewFolderName('');
-                                                        setShowNewFolderInput(false);
-                                                        toast.success(`Folder "${folderName}" created`);
+                                                        setShowNewFolderInput(
+                                                            false,
+                                                        );
+                                                        toast.success(
+                                                            `Folder "${folderName}" created`,
+                                                        );
                                                     }
                                                 }
                                             }}
@@ -1148,15 +1451,38 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                             type="button"
                                             size="sm"
                                             onClick={() => {
-                                                if (newFolderName.trim() && !availableFolders.includes(newFolderName.trim())) {
-                                                    const folderName = newFolderName.trim();
-                                                    setAvailableFolders([...availableFolders, folderName]);
-                                                    editForm.setData('folder', folderName);
+                                                if (
+                                                    newFolderName.trim() &&
+                                                    !availableFolders.includes(
+                                                        newFolderName.trim(),
+                                                    )
+                                                ) {
+                                                    const folderName =
+                                                        newFolderName.trim();
+                                                    setAvailableFolders([
+                                                        ...availableFolders,
+                                                        folderName,
+                                                    ]);
+                                                    editForm.setData(
+                                                        'folder',
+                                                        folderName,
+                                                    );
                                                     setNewFolderName('');
-                                                    setShowNewFolderInput(false);
-                                                    toast.success(`Folder "${folderName}" created`);
-                                                } else if (newFolderName.trim() && availableFolders.includes(newFolderName.trim())) {
-                                                    toast.error(`Folder "${newFolderName.trim()}" already exists`);
+                                                    setShowNewFolderInput(
+                                                        false,
+                                                    );
+                                                    toast.success(
+                                                        `Folder "${folderName}" created`,
+                                                    );
+                                                } else if (
+                                                    newFolderName.trim() &&
+                                                    availableFolders.includes(
+                                                        newFolderName.trim(),
+                                                    )
+                                                ) {
+                                                    toast.error(
+                                                        `Folder "${newFolderName.trim()}" already exists`,
+                                                    );
                                                 }
                                             }}
                                         >
@@ -1166,15 +1492,25 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                 ) : (
                                     <Select
                                         value={editForm.data.folder || 'none'}
-                                        onValueChange={(value) => editForm.setData('folder', value === 'none' ? '' : value)}
+                                        onValueChange={(value) =>
+                                            editForm.setData(
+                                                'folder',
+                                                value === 'none' ? '' : value,
+                                            )
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select folder" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">No Folder</SelectItem>
+                                            <SelectItem value="none">
+                                                No Folder
+                                            </SelectItem>
                                             {availableFolders.map((folder) => (
-                                                <SelectItem key={folder} value={folder}>
+                                                <SelectItem
+                                                    key={folder}
+                                                    value={folder}
+                                                >
                                                     {folder}
                                                 </SelectItem>
                                             ))}
@@ -1202,7 +1538,10 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                 </Dialog>
 
                 {/* Preview Dialog */}
-                <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+                <Dialog
+                    open={previewDialogOpen}
+                    onOpenChange={setPreviewDialogOpen}
+                >
                     <DialogContent className="max-w-4xl">
                         <DialogHeader>
                             <DialogTitle>{selectedFile?.name}</DialogTitle>
@@ -1223,33 +1562,47 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                     <div className="flex h-64 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
                                         {getFileIcon(selectedFile.file_type)}
                                         <p className="ml-2 text-gray-600 dark:text-gray-400">
-                                            Preview not available for this file type
+                                            Preview not available for this file
+                                            type
                                         </p>
                                     </div>
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
-                                        <span className="font-medium">Size:</span>{' '}
+                                        <span className="font-medium">
+                                            Size:
+                                        </span>{' '}
                                         {formatFileSize(selectedFile.file_size)}
                                     </div>
                                     <div>
-                                        <span className="font-medium">Type:</span>{' '}
+                                        <span className="font-medium">
+                                            Type:
+                                        </span>{' '}
                                         {selectedFile.file_type}
                                     </div>
                                     <div>
-                                        <span className="font-medium">Uploaded:</span>{' '}
-                                        {format(new Date(selectedFile.created_at), 'PPp')}
+                                        <span className="font-medium">
+                                            Uploaded:
+                                        </span>{' '}
+                                        {format(
+                                            new Date(selectedFile.created_at),
+                                            'PPp',
+                                        )}
                                     </div>
                                     <div>
-                                        <span className="font-medium">Downloads:</span>{' '}
+                                        <span className="font-medium">
+                                            Downloads:
+                                        </span>{' '}
                                         {selectedFile.download_count}
                                     </div>
                                 </div>
 
                                 <div className="flex gap-2">
                                     <Button
-                                        onClick={() => handleCopyUrl(selectedFile)}
+                                        onClick={() =>
+                                            handleCopyUrl(selectedFile)
+                                        }
                                         variant="outline"
                                         className="gap-2"
                                     >
@@ -1257,7 +1610,9 @@ export default function Index({ auth, files, folders, filters: initialFilters }:
                                         Copy URL
                                     </Button>
                                     <Button
-                                        onClick={() => handleDownload(selectedFile)}
+                                        onClick={() =>
+                                            handleDownload(selectedFile)
+                                        }
                                         variant="outline"
                                         className="gap-2"
                                     >
@@ -1283,8 +1638,8 @@ interface FolderCardProps {
 
 function FolderCard({ folderName, fileCount, onClick }: FolderCardProps) {
     return (
-        <Card 
-            className="group cursor-pointer overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-indigo-50 transition-all duration-300 hover:shadow-lg hover:scale-105 dark:from-blue-900/20 dark:to-indigo-900/20"
+        <Card
+            className="group cursor-pointer overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-indigo-50 transition-all duration-300 hover:scale-105 hover:shadow-lg dark:from-blue-900/20 dark:to-indigo-900/20"
             onClick={onClick}
         >
             <CardContent className="p-6">
@@ -1292,7 +1647,7 @@ function FolderCard({ folderName, fileCount, onClick }: FolderCardProps) {
                     <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
                         <Folder className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                         <CardTitle className="truncate text-base font-semibold text-gray-900 dark:text-white">
                             {folderName}
                         </CardTitle>
@@ -1376,7 +1731,7 @@ function FileCard({
 
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                         <CardTitle className="truncate text-base font-semibold text-gray-900 dark:text-white">
                             {file.name}
                         </CardTitle>
@@ -1424,11 +1779,15 @@ function FileCard({
                 <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                     <div className="flex items-center justify-between">
                         <span>Size:</span>
-                        <span className="font-medium">{formatFileSize(file.file_size)}</span>
+                        <span className="font-medium">
+                            {formatFileSize(file.file_size)}
+                        </span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span>Type:</span>
-                        <span className="font-medium capitalize">{file.file_type}</span>
+                        <span className="font-medium capitalize">
+                            {file.file_type}
+                        </span>
                     </div>
                     {file.folder && (
                         <div className="flex items-center gap-1">
@@ -1438,7 +1797,9 @@ function FileCard({
                     )}
                     <div className="flex items-center justify-between">
                         <span>Uploaded:</span>
-                        <span>{format(new Date(file.created_at), 'MMM d, yyyy')}</span>
+                        <span>
+                            {format(new Date(file.created_at), 'MMM d, yyyy')}
+                        </span>
                     </div>
                 </div>
             </CardContent>
@@ -1474,7 +1835,7 @@ function FileListItem({
                 )}
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                     <h3 className="font-medium text-gray-900 dark:text-white">
                         {file.name}
@@ -1492,7 +1853,9 @@ function FileListItem({
                 <div className="mt-1 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span>{formatFileSize(file.file_size)}</span>
                     <span className="capitalize">{file.file_type}</span>
-                    <span>{format(new Date(file.created_at), 'MMM d, yyyy')}</span>
+                    <span>
+                        {format(new Date(file.created_at), 'MMM d, yyyy')}
+                    </span>
                     <span>{file.download_count} downloads</span>
                 </div>
             </div>
@@ -1535,4 +1898,3 @@ function FileListItem({
         </div>
     );
 }
-

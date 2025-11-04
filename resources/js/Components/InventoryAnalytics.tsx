@@ -24,9 +24,15 @@ ChartJS.register(
     Legend,
 );
 
+interface AppCurrency {
+    symbol: string;
+    decimal_separator: string;
+    thousands_separator: string;
+}
+
 interface AnalyticsProps {
     products: Product[];
-    appCurrency: any;
+    appCurrency: AppCurrency;
 }
 
 export default function InventoryAnalytics({

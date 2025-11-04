@@ -58,7 +58,7 @@ export default function MultiAppPaymentModal({
     userCredits = 0,
     onRemoveApp,
 }: MultiAppPaymentModalProps) {
-    const [paymentMethod, setPaymentMethod] = useState<string>('credits');
+    const [paymentMethod] = useState<string>('credits');
     const [autoRenew, setAutoRenew] = useState<boolean>(true);
 
     if (!selectedApps || selectedApps.length === 0) return null;

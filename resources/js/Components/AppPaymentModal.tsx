@@ -38,7 +38,7 @@ export default function AppPaymentModal({
     isLoading = false,
     userCredits = 0,
 }: AppPaymentModalProps) {
-    const [paymentMethod, setPaymentMethod] = useState<string>('credits');
+    const [paymentMethod] = useState<string>('credits');
     const [autoRenew, setAutoRenew] = useState<boolean>(true);
 
     if (!app) return null;

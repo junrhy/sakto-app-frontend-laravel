@@ -85,10 +85,12 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                         <CardContent>
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings}
+                                    settings={settings as unknown as Record<string, unknown>}
                                     onSubmit={handleSubmit}
                                 >
-                                    {({ data, setData }) => (
+                                    {({ data, setData }) => {
+                                        const notifications = (data.notifications as { email_notifications?: boolean }) || {};
+                                        return (
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-0.5">
@@ -102,8 +104,7 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                                                 </div>
                                                 <Switch
                                                     checked={
-                                                        data.notifications
-                                                            .email_notifications
+                                                        notifications.email_notifications ?? false
                                                     }
                                                     onCheckedChange={(
                                                         checked,
@@ -116,7 +117,8 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                                                 />
                                             </div>
                                         </div>
-                                    )}
+                                        );
+                                    }}
                                 </SettingsForm>
                             ) : (
                                 <div className="py-8 text-center">

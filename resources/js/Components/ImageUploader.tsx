@@ -139,6 +139,7 @@ export default function ImageUploader({
         onImagesChange(newImages);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const moveImage = (fromIndex: number, toIndex: number) => {
         if (fromIndex === toIndex) return;
 

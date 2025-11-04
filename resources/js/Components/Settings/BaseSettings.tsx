@@ -22,7 +22,6 @@ export default function BaseSettings({
     description,
     backUrl,
     children,
-    auth,
 }: Props) {
     return (
         <ThemeProvider>

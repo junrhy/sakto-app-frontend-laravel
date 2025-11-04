@@ -7,34 +7,41 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    PieChart,
-    Pie,
-    Cell,
-} from 'recharts';
+    endOfDay,
+    endOfMonth,
+    endOfWeek,
+    format,
+    startOfDay,
+    startOfMonth,
+    startOfWeek,
+    subDays,
+    subMonths,
+    subWeeks,
+} from 'date-fns';
+import {
+    CreditCard,
+    DollarSign,
+    ShoppingCart,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
-    startOfDay,
-    startOfWeek,
-    startOfMonth,
-    endOfDay,
-    endOfWeek,
-    endOfMonth,
-    subDays,
-    subWeeks,
-    subMonths,
-    format,
-} from 'date-fns';
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, CreditCard, Wallet } from 'lucide-react';
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Legend,
+    Line,
+    LineChart,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 
 interface SaleItem {
     id: number;
@@ -62,13 +69,22 @@ interface SalesAnalyticsProps {
     };
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = [
+    '#0088FE',
+    '#00C49F',
+    '#FFBB28',
+    '#FF8042',
+    '#8884d8',
+    '#82ca9d',
+];
 
 export default function SalesAnalytics({
     sales,
     appCurrency,
 }: SalesAnalyticsProps) {
-    const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month');
+    const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'all'>(
+        'month',
+    );
 
     const formatAmount = (amount: number): string => {
         const { symbol, thousands_separator = ',' } = appCurrency;
@@ -107,10 +123,15 @@ export default function SalesAnalytics({
         );
         const totalItems = filteredSales.reduce(
             (sum, sale) =>
-                sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+                sum +
+                sale.items.reduce(
+                    (itemSum, item) => itemSum + item.quantity,
+                    0,
+                ),
             0,
         );
-        const averageOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
+        const averageOrderValue =
+            totalSales > 0 ? totalRevenue / totalSales : 0;
 
         // Payment method breakdown
         const paymentMethods = filteredSales.reduce(
@@ -159,11 +180,17 @@ export default function SalesAnalytics({
                 acc[date].count += 1;
                 return acc;
             },
-            {} as Record<string, { date: string; revenue: number; count: number }>,
+            {} as Record<
+                string,
+                { date: string; revenue: number; count: number }
+            >,
         );
 
         const dailyChartData = Object.values(dailySales)
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .sort(
+                (a, b) =>
+                    new Date(a.date).getTime() - new Date(b.date).getTime(),
+            )
             .slice(-7); // Last 7 days
 
         return {
@@ -241,7 +268,10 @@ export default function SalesAnalytics({
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Sales Analytics
                 </h3>
-                <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
+                <Select
+                    value={period}
+                    onValueChange={(value: any) => setPeriod(value)}
+                >
                     <SelectTrigger className="w-40">
                         <SelectValue placeholder="Select period" />
                     </SelectTrigger>
@@ -275,10 +305,13 @@ export default function SalesAnalytics({
                             )}
                             <span
                                 className={
-                                    revenueChange >= 0 ? 'text-green-500' : 'text-red-500'
+                                    revenueChange >= 0
+                                        ? 'text-green-500'
+                                        : 'text-red-500'
                                 }
                             >
-                                {Math.abs(revenueChange).toFixed(1)}% from previous
+                                {Math.abs(revenueChange).toFixed(1)}% from
+                                previous
                             </span>
                         </div>
                     </CardContent>
@@ -303,10 +336,13 @@ export default function SalesAnalytics({
                             )}
                             <span
                                 className={
-                                    salesChange >= 0 ? 'text-green-500' : 'text-red-500'
+                                    salesChange >= 0
+                                        ? 'text-green-500'
+                                        : 'text-red-500'
                                 }
                             >
-                                {Math.abs(salesChange).toFixed(1)}% from previous
+                                {Math.abs(salesChange).toFixed(1)}% from
+                                previous
                             </span>
                         </div>
                     </CardContent>
@@ -364,13 +400,14 @@ export default function SalesAnalytics({
                                     dataKey="date"
                                     className="text-xs text-gray-600 dark:text-gray-400"
                                 />
-                                <YAxis
-                                    className="text-xs text-gray-600 dark:text-gray-400"
-                                />
+                                <YAxis className="text-xs text-gray-600 dark:text-gray-400" />
                                 <Tooltip
-                                    formatter={(value: number) => formatAmount(value)}
+                                    formatter={(value: number) =>
+                                        formatAmount(value)
+                                    }
                                     contentStyle={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        backgroundColor:
+                                            'rgba(255, 255, 255, 0.95)',
                                         border: '1px solid #e5e7eb',
                                     }}
                                 />
@@ -424,7 +461,9 @@ export default function SalesAnalytics({
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    formatter={(value: number) => formatAmount(value)}
+                                    formatter={(value: number) =>
+                                        formatAmount(value)
+                                    }
                                 />
                             </PieChart>
                         </ResponsiveContainer>
@@ -454,10 +493,16 @@ export default function SalesAnalytics({
                                 className="text-xs text-gray-600 dark:text-gray-400"
                             />
                             <Tooltip
-                                formatter={(value: number) => formatAmount(value)}
+                                formatter={(value: number) =>
+                                    formatAmount(value)
+                                }
                             />
                             <Legend />
-                            <Bar dataKey="revenue" fill="#0088FE" name="Revenue" />
+                            <Bar
+                                dataKey="revenue"
+                                fill="#0088FE"
+                                name="Revenue"
+                            />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -465,4 +510,3 @@ export default function SalesAnalytics({
         </div>
     );
 }
-

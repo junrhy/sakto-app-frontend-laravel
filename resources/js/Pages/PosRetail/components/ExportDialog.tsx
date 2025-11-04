@@ -1,4 +1,6 @@
 import { Button } from '@/Components/ui/button';
+import { Calendar } from '@/Components/ui/calendar';
+import { Checkbox } from '@/Components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -7,7 +9,11 @@ import {
     DialogTitle,
 } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
-import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -15,16 +21,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Calendar } from '@/Components/ui/calendar';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/Components/ui/popover';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Download } from 'lucide-react';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 interface ExportDialogProps {
     open: boolean;
@@ -72,27 +72,29 @@ export default function ExportDialog({
     const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
     const [selectedFields, setSelectedFields] = useState<string[]>(() => {
         const fields = type === 'inventory' ? inventoryFields : salesFields;
-        return fields.filter(f => f.default).map(f => f.id);
+        return fields.filter((f) => f.default).map((f) => f.id);
     });
     const [dateFrom, setDateFrom] = useState<Date | undefined>(
-        type === 'sales' ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : undefined
+        type === 'sales'
+            ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+            : undefined,
     );
     const [dateTo, setDateTo] = useState<Date | undefined>(
-        type === 'sales' ? new Date() : undefined
+        type === 'sales' ? new Date() : undefined,
     );
 
     const fields = type === 'inventory' ? inventoryFields : salesFields;
 
     const toggleField = (fieldId: string) => {
-        setSelectedFields(prev =>
+        setSelectedFields((prev) =>
             prev.includes(fieldId)
-                ? prev.filter(id => id !== fieldId)
-                : [...prev, fieldId]
+                ? prev.filter((id) => id !== fieldId)
+                : [...prev, fieldId],
         );
     };
 
     const selectAllFields = () => {
-        setSelectedFields(fields.map(f => f.id));
+        setSelectedFields(fields.map((f) => f.id));
     };
 
     const deselectAllFields = () => {
@@ -116,10 +118,11 @@ export default function ExportDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh]">
+            <DialogContent className="max-h-[90vh] max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Export {type === 'inventory' ? 'Inventory' : 'Sales'} Data
+                        Export {type === 'inventory' ? 'Inventory' : 'Sales'}{' '}
+                        Data
                     </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 overflow-y-auto py-4">
@@ -128,13 +131,22 @@ export default function ExportDialog({
                         <Label className="text-gray-900 dark:text-white">
                             Export Format
                         </Label>
-                        <Select value={exportFormat} onValueChange={(value: 'csv' | 'excel') => setExportFormat(value)}>
+                        <Select
+                            value={exportFormat}
+                            onValueChange={(value: 'csv' | 'excel') =>
+                                setExportFormat(value)
+                            }
+                        >
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="csv">CSV (Comma Separated Values)</SelectItem>
-                                <SelectItem value="excel">Excel (.xlsx)</SelectItem>
+                                <SelectItem value="csv">
+                                    CSV (Comma Separated Values)
+                                </SelectItem>
+                                <SelectItem value="excel">
+                                    Excel (.xlsx)
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -156,7 +168,8 @@ export default function ExportDialog({
                                                 variant="outline"
                                                 className={cn(
                                                     'w-full justify-start text-left font-normal',
-                                                    !dateFrom && 'text-muted-foreground',
+                                                    !dateFrom &&
+                                                        'text-muted-foreground',
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -187,7 +200,8 @@ export default function ExportDialog({
                                                 variant="outline"
                                                 className={cn(
                                                     'w-full justify-start text-left font-normal',
-                                                    !dateTo && 'text-muted-foreground',
+                                                    !dateTo &&
+                                                        'text-muted-foreground',
                                                 )}
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -243,14 +257,16 @@ export default function ExportDialog({
                                 >
                                     <Checkbox
                                         id={field.id}
-                                        checked={selectedFields.includes(field.id)}
+                                        checked={selectedFields.includes(
+                                            field.id,
+                                        )}
                                         onCheckedChange={() =>
                                             toggleField(field.id)
                                         }
                                     />
                                     <Label
                                         htmlFor={field.id}
-                                        className="text-sm font-normal text-gray-900 dark:text-white cursor-pointer"
+                                        className="cursor-pointer text-sm font-normal text-gray-900 dark:text-white"
                                     >
                                         {field.label}
                                     </Label>
@@ -277,11 +293,11 @@ export default function ExportDialog({
                         className="bg-blue-600 hover:bg-blue-700"
                     >
                         <Download className="mr-2 h-4 w-4" />
-                        Export {selectedFields.length} Field{selectedFields.length !== 1 ? 's' : ''}
+                        Export {selectedFields.length} Field
+                        {selectedFields.length !== 1 ? 's' : ''}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
-

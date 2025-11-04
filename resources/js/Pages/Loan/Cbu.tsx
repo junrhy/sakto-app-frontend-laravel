@@ -7,7 +7,23 @@ import {
     CardTitle,
 } from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import {
     Table,
     TableBody,
@@ -16,6 +32,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatAmount } from '@/lib/utils';
 import { Head } from '@inertiajs/react';
@@ -37,7 +54,7 @@ import type {
     ReportDateRange,
     ReportEmailData,
     WithdrawalData,
-} from './types';
+} from './Cbu/types';
 
 export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
     const canEdit = useMemo(() => {
@@ -2305,7 +2322,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Textarea
                                     id="report_message"
                                     value={reportEmailData.message}
-                                    onChange={(e) =>
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                                         setReportEmailData({
                                             ...reportEmailData,
                                             message: e.target.value,

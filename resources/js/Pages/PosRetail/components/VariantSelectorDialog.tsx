@@ -49,7 +49,9 @@ export default function VariantSelectorDialog({
         if (selectedVariantId === 'base') {
             onSelectVariant(null);
         } else {
-            const variant = variants.find((v) => v.id.toString() === selectedVariantId);
+            const variant = variants.find(
+                (v) => v.id.toString() === selectedVariantId,
+            );
             if (variant) {
                 onSelectVariant(variant);
             }
@@ -85,7 +87,7 @@ export default function VariantSelectorDialog({
                         onValueChange={setSelectedVariantId}
                     >
                         {/* Base Product Option */}
-                        <div className="flex items-center space-x-2 rounded-lg border border-gray-200 dark:border-gray-600 p-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <div className="flex items-center space-x-2 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700">
                             <RadioGroupItem value="base" id="base" />
                             <Label
                                 htmlFor="base"
@@ -108,7 +110,7 @@ export default function VariantSelectorDialog({
                             .map((variant) => (
                                 <div
                                     key={variant.id}
-                                    className="flex items-center space-x-2 rounded-lg border border-gray-200 dark:border-gray-600 p-3 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    className="flex items-center space-x-2 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
                                 >
                                     <RadioGroupItem
                                         value={variant.id.toString()}
@@ -120,7 +122,9 @@ export default function VariantSelectorDialog({
                                     >
                                         <div>
                                             <div className="font-medium text-gray-900 dark:text-white">
-                                                {formatAttributes(variant.attributes)}
+                                                {formatAttributes(
+                                                    variant.attributes,
+                                                )}
                                             </div>
                                             <div className="text-xs text-gray-500 dark:text-gray-400">
                                                 {variant.price
@@ -137,7 +141,8 @@ export default function VariantSelectorDialog({
                             ))}
                     </RadioGroup>
 
-                    {variants.filter((v) => v.is_active && v.quantity > 0).length === 0 && (
+                    {variants.filter((v) => v.is_active && v.quantity > 0)
+                        .length === 0 && (
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             No active variants available. Using base product.
                         </p>
@@ -150,7 +155,10 @@ export default function VariantSelectorDialog({
                     >
                         Cancel
                     </Button>
-                    <Button onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
+                    <Button
+                        onClick={handleConfirm}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
                         Add to Cart
                     </Button>
                 </DialogFooter>
@@ -158,4 +166,3 @@ export default function VariantSelectorDialog({
         </Dialog>
     );
 }
-

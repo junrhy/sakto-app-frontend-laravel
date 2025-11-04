@@ -9,13 +9,13 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { format } from 'date-fns';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import DiscountDialog from './components/DiscountDialog';
-import { format } from 'date-fns';
 
 interface Discount {
     id: number;
@@ -62,12 +62,25 @@ interface Props extends PageProps {
     items?: Array<{ id: number; name: string }> | null;
 }
 
-export default function Discounts({ discounts: initialDiscounts, categories: initialCategories, items: initialItems, auth }: Props & { auth: AuthWithTeamMember }) {
-    const [discounts, setDiscounts] = useState<Discount[]>(initialDiscounts || []);
-    const [categories] = useState<Array<{ id: number; name: string }>>(initialCategories || []);
-    const [items] = useState<Array<{ id: number; name: string }>>(initialItems || []);
+export default function Discounts({
+    discounts: initialDiscounts,
+    categories: initialCategories,
+    items: initialItems,
+    auth,
+}: Props & { auth: AuthWithTeamMember }) {
+    const [discounts, setDiscounts] = useState<Discount[]>(
+        initialDiscounts || [],
+    );
+    const [categories] = useState<Array<{ id: number; name: string }>>(
+        initialCategories || [],
+    );
+    const [items] = useState<Array<{ id: number; name: string }>>(
+        initialItems || [],
+    );
     const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
-    const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(null);
+    const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(
+        null,
+    );
 
     useEffect(() => {
         setDiscounts(initialDiscounts || []);
@@ -113,21 +126,40 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
 
     const getDiscountStatus = (discount: Discount) => {
         if (!discount.is_active) {
-            return { text: 'Inactive', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' };
+            return {
+                text: 'Inactive',
+                color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+            };
         }
 
         const now = new Date();
         if (discount.start_date && new Date(discount.start_date) > now) {
-            return { text: 'Scheduled', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' };
+            return {
+                text: 'Scheduled',
+                color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            };
         }
         if (discount.end_date && new Date(discount.end_date) < now) {
-            return { text: 'Expired', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' };
+            return {
+                text: 'Expired',
+                color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+            };
         }
-        if (discount.usage_limit && discount.usage_count && discount.usage_count >= discount.usage_limit) {
-            return { text: 'Limit Reached', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' };
+        if (
+            discount.usage_limit &&
+            discount.usage_count &&
+            discount.usage_count >= discount.usage_limit
+        ) {
+            return {
+                text: 'Limit Reached',
+                color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+            };
         }
 
-        return { text: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' };
+        return {
+            text: 'Active',
+            color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+        };
     };
 
     return (
@@ -142,7 +174,10 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                         Discounts & Promotions
                     </h2>
-                    <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                    <Button
+                        onClick={handleCreate}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
                         <Plus className="mr-2 h-4 w-4" />
                         Create Discount
                     </Button>
@@ -161,20 +196,38 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Value</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Valid Period</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Usage</TableHead>
-                                <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Name
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Type
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Value
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Valid Period
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Usage
+                                </TableHead>
+                                <TableHead className="text-right text-gray-900 dark:text-white">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {discounts.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                        No discounts found. Create your first discount to get started.
+                                    <TableCell
+                                        colSpan={7}
+                                        className="py-8 text-center text-gray-500 dark:text-gray-400"
+                                    >
+                                        No discounts found. Create your first
+                                        discount to get started.
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -187,16 +240,25 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
                                         >
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div>
-                                                    <div className="font-medium">{discount.name}</div>
+                                                    <div className="font-medium">
+                                                        {discount.name}
+                                                    </div>
                                                     {discount.description && (
                                                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {discount.description}
+                                                            {
+                                                                discount.description
+                                                            }
                                                         </div>
                                                     )}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                <span className="capitalize">{discount.type.replace('_', ' ')}</span>
+                                                <span className="capitalize">
+                                                    {discount.type.replace(
+                                                        '_',
+                                                        ' ',
+                                                    )}
+                                                </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {formatDiscountValue(discount)}
@@ -209,14 +271,25 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {discount.start_date || discount.end_date ? (
+                                                {discount.start_date ||
+                                                discount.end_date ? (
                                                     <div className="text-xs">
                                                         {discount.start_date
-                                                            ? format(new Date(discount.start_date), 'MMM dd, yyyy')
+                                                            ? format(
+                                                                  new Date(
+                                                                      discount.start_date,
+                                                                  ),
+                                                                  'MMM dd, yyyy',
+                                                              )
                                                             : 'No start'}
                                                         {' - '}
                                                         {discount.end_date
-                                                            ? format(new Date(discount.end_date), 'MMM dd, yyyy')
+                                                            ? format(
+                                                                  new Date(
+                                                                      discount.end_date,
+                                                                  ),
+                                                                  'MMM dd, yyyy',
+                                                              )
                                                             : 'No end'}
                                                     </div>
                                                 ) : (
@@ -228,11 +301,15 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {discount.usage_limit ? (
                                                     <span className="text-xs">
-                                                        {discount.usage_count || 0} / {discount.usage_limit}
+                                                        {discount.usage_count ||
+                                                            0}{' '}
+                                                        / {discount.usage_limit}
                                                     </span>
                                                 ) : (
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {discount.usage_count || 0} uses
+                                                        {discount.usage_count ||
+                                                            0}{' '}
+                                                        uses
                                                     </span>
                                                 )}
                                             </TableCell>
@@ -241,14 +318,20 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleEdit(discount)}
+                                                        onClick={() =>
+                                                            handleEdit(discount)
+                                                        }
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="destructive"
                                                         size="sm"
-                                                        onClick={() => handleDelete(discount.id)}
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                discount.id,
+                                                            )
+                                                        }
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -277,4 +360,3 @@ export default function Discounts({ discounts: initialDiscounts, categories: ini
         </AuthenticatedLayout>
     );
 }
-

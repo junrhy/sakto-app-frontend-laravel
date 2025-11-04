@@ -19,6 +19,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { router } from '@inertiajs/react';
+import type { FormDataConvertible } from '@inertiajs/core';
 import React, { useState } from 'react';
 
 interface AppointmentFormData {
@@ -65,16 +66,14 @@ interface Doctor {
 
 interface AppointmentBookingFormProps {
     clinicId: string;
-    services: Service[];
-    doctors: Doctor[];
+    services?: Service[];
+    doctors?: Doctor[];
     onSuccess?: () => void;
     onCancel?: () => void;
 }
 
 const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
     clinicId,
-    services,
-    doctors,
     onSuccess,
     onCancel,
 }) => {
@@ -154,7 +153,7 @@ const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
         try {
             await router.post(
                 route('medical.clinic.book-appointment', clinicId),
-                formData as any,
+                formData as unknown as Record<string, FormDataConvertible>,
                 {
                     onSuccess: () => {
                         onSuccess?.();

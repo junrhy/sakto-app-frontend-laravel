@@ -1,8 +1,8 @@
-import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Scan, X } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface BarcodeScannerProps {
     onScan: (barcode: string) => void;
@@ -96,7 +96,7 @@ export default function BarcodeScanner({
                         onChange={(e) => setBarcode(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder={placeholder}
-                        className="pl-10 pr-10 border-gray-300 dark:border-gray-600"
+                        className="border-gray-300 pl-10 pr-10 dark:border-gray-600"
                         autoFocus={autoFocus}
                     />
                     {barcode && (
@@ -113,9 +113,9 @@ export default function BarcodeScanner({
                 </div>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-                Enter barcode and press Enter, or it will auto-submit after typing stops
+                Enter barcode and press Enter, or it will auto-submit after
+                typing stops
             </p>
         </div>
     );
 }
-

@@ -29,10 +29,11 @@ interface QueueNumber {
 }
 
 interface Props {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onQueueFound?: (queueNumber: QueueNumber) => void;
 }
 
-export default function QueueStatusChecker({ onQueueFound }: Props) {
+export default function QueueStatusChecker() {
     const [queueNumber, setQueueNumber] = useState('');
     const [loading, setLoading] = useState(false);
     const [foundQueue, setFoundQueue] = useState<QueueNumber | null>(null);

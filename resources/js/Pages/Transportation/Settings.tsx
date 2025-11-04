@@ -242,10 +242,16 @@ export default function Settings({ settings, auth }: Props) {
                     <CardContent className="p-0">
                         {canEdit ? (
                             <SettingsForm
-                                settings={mergedSettings}
+                                settings={mergedSettings as unknown as Record<string, unknown>}
                                 onSubmit={handleSubmit}
                             >
-                                {({ data, setData }) => (
+                                {({ data, setData }) => {
+                                    const general = (data.general as { company_name?: string; description?: string; address?: string; phone?: string; email?: string; website?: string; operating_hours?: Record<string, OperatingHours> }) || {};
+                                    const fleet = (data.fleet as { max_trucks?: number; truck_types?: string[]; capacity_units?: string; insurance_required?: boolean; insurance_providers?: string[] }) || {};
+                                    const pricing = (data.pricing as { base_rate_per_km?: number; minimum_charge?: number; currency?: string; payment_methods?: string[]; tax_rate?: number }) || {};
+                                    const booking = (data.booking as { advance_booking_days?: number; cancellation_hours?: number; auto_approval?: boolean; require_documents?: boolean; tracking_enabled?: boolean }) || {};
+                                    const notifications = (data.notifications as { email_notifications?: boolean; sms_notifications?: boolean; booking_confirmations?: boolean; status_updates?: boolean }) || {};
+                                    return (
                                     <Tabs
                                         defaultValue="general"
                                         className="space-y-6"
@@ -288,8 +294,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Input
                                                             value={
-                                                                data.general
-                                                                    .company_name
+                                                                general.company_name ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -310,8 +315,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="email"
                                                             value={
-                                                                data.general
-                                                                    .email
+                                                                general.email ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -331,8 +335,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Input
                                                             value={
-                                                                data.general
-                                                                    .phone
+                                                                general.phone ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -352,8 +355,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Input
                                                             value={
-                                                                data.general
-                                                                    .website
+                                                                general.website ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -374,8 +376,7 @@ export default function Settings({ settings, auth }: Props) {
                                                     </Label>
                                                     <Textarea
                                                         value={
-                                                            data.general
-                                                                .description
+                                                            general.description ?? ''
                                                         }
                                                         onChange={(e) =>
                                                             setData(
@@ -395,7 +396,7 @@ export default function Settings({ settings, auth }: Props) {
                                                     </Label>
                                                     <Textarea
                                                         value={
-                                                            data.general.address
+                                                            general.address ?? ''
                                                         }
                                                         onChange={(e) =>
                                                             setData(
@@ -430,11 +431,7 @@ export default function Settings({ settings, auth }: Props) {
                                                             <div className="flex items-center gap-2">
                                                                 <Switch
                                                                     checked={
-                                                                        !data
-                                                                            .general
-                                                                            .operating_hours[
-                                                                            day
-                                                                        ].closed
+                                                                        !((general.operating_hours?.[day] as OperatingHours)?.closed ?? true)
                                                                     }
                                                                     onCheckedChange={(
                                                                         checked,
@@ -449,20 +446,12 @@ export default function Settings({ settings, auth }: Props) {
                                                                     Open
                                                                 </span>
                                                             </div>
-                                                            {!data.general
-                                                                .operating_hours[
-                                                                day
-                                                            ].closed && (
+                                                            {!((general.operating_hours?.[day] as OperatingHours)?.closed ?? true) && (
                                                                 <div className="flex items-center gap-2">
                                                                     <Input
                                                                         type="time"
                                                                         value={
-                                                                            data
-                                                                                .general
-                                                                                .operating_hours[
-                                                                                day
-                                                                            ]
-                                                                                .open
+                                                                            ((general.operating_hours?.[day] as OperatingHours)?.open ?? '09:00')
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -482,12 +471,7 @@ export default function Settings({ settings, auth }: Props) {
                                                                     <Input
                                                                         type="time"
                                                                         value={
-                                                                            data
-                                                                                .general
-                                                                                .operating_hours[
-                                                                                day
-                                                                            ]
-                                                                                .close
+                                                                            ((general.operating_hours?.[day] as OperatingHours)?.close ?? '17:00')
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -525,8 +509,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="number"
                                                             value={
-                                                                data.fleet
-                                                                    .max_trucks
+                                                                fleet.max_trucks ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -548,8 +531,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Select
                                                             value={
-                                                                data.fleet
-                                                                    .capacity_units
+                                                                String(fleet.capacity_units ?? '')
                                                             }
                                                             onValueChange={(
                                                                 value,
@@ -594,8 +576,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data.fleet
-                                                                    .insurance_required
+                                                                fleet.insurance_required ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -628,8 +609,7 @@ export default function Settings({ settings, auth }: Props) {
                                                             type="number"
                                                             step="0.01"
                                                             value={
-                                                                data.pricing
-                                                                    .base_rate_per_km
+                                                                pricing.base_rate_per_km ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -653,8 +633,7 @@ export default function Settings({ settings, auth }: Props) {
                                                             type="number"
                                                             step="0.01"
                                                             value={
-                                                                data.pricing
-                                                                    .minimum_charge
+                                                                pricing.minimum_charge ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -676,8 +655,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Select
                                                             value={
-                                                                data.pricing
-                                                                    .currency
+                                                                String(pricing.currency ?? '')
                                                             }
                                                             onValueChange={(
                                                                 value,
@@ -716,8 +694,7 @@ export default function Settings({ settings, auth }: Props) {
                                                             type="number"
                                                             step="0.01"
                                                             value={
-                                                                data.pricing
-                                                                    .tax_rate
+                                                                pricing.tax_rate ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -752,8 +729,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="number"
                                                             value={
-                                                                data.booking
-                                                                    .advance_booking_days
+                                                                booking.advance_booking_days ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -776,8 +752,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="number"
                                                             value={
-                                                                data.booking
-                                                                    .cancellation_hours
+                                                                booking.cancellation_hours ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -807,8 +782,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data.booking
-                                                                    .auto_approval
+                                                                booking.auto_approval ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -835,8 +809,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data.booking
-                                                                    .require_documents
+                                                                booking.require_documents ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -861,8 +834,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data.booking
-                                                                    .tracking_enabled
+                                                                booking.tracking_enabled ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -900,9 +872,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .email_notifications
+                                                                notifications.email_notifications ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -928,9 +898,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .sms_notifications
+                                                                notifications.sms_notifications ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -956,9 +924,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .booking_confirmations
+                                                                notifications.booking_confirmations ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -984,9 +950,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .status_updates
+                                                                notifications.status_updates ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -1002,7 +966,8 @@ export default function Settings({ settings, auth }: Props) {
                                             </div>
                                         </TabsContent>
                                     </Tabs>
-                                )}
+                                    );
+                                }}
                             </SettingsForm>
                         ) : (
                             <div className="py-8 text-center">

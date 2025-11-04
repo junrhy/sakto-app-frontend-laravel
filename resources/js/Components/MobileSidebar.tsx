@@ -88,12 +88,13 @@ export default function MobileSidebar({
     onToggle,
 }: MobileSidebarProps) {
     const { url } = usePage();
-    const page = usePage<{
-        auth: { user: any; project: { identifier: string } };
+    const page = usePage();
+    const pageProps = page.props as {
+        auth?: { project?: { identifier?: string } };
         unreadCount?: number;
-    }>();
-    const unreadCount = page.props.unreadCount ?? 0;
-    const projectIdentifier = page.props.auth?.project?.identifier ?? '';
+    };
+    const unreadCount = pageProps.unreadCount ?? 0;
+    const projectIdentifier = pageProps.auth?.project?.identifier ?? '';
 
     const items = createNavItems(unreadCount, projectIdentifier);
 

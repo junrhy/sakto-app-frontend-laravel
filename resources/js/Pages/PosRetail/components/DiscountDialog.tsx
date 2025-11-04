@@ -1,4 +1,6 @@
 import { Button } from '@/Components/ui/button';
+import { Calendar } from '@/Components/ui/calendar';
+import { Checkbox } from '@/Components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -9,26 +11,24 @@ import {
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Calendar } from '@/Components/ui/calendar';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/Components/ui/popover';
 import { Textarea } from '@/Components/ui/textarea';
-import { Checkbox } from '@/Components/ui/checkbox';
+import { cn } from '@/lib/utils';
+import { router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Tag } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
-import { cn } from '@/lib/utils';
 
 interface Discount {
     id?: number;
@@ -154,8 +154,10 @@ export default function DiscountDialog({
                 start_date: formData.start_date || null,
                 end_date: formData.end_date || null,
                 is_active: formData.is_active,
-                applicable_items: selectedItems.length > 0 ? selectedItems : null,
-                applicable_categories: selectedCategories.length > 0 ? selectedCategories : null,
+                applicable_items:
+                    selectedItems.length > 0 ? selectedItems : null,
+                applicable_categories:
+                    selectedCategories.length > 0 ? selectedCategories : null,
                 usage_limit: formData.usage_limit || null,
             };
 
@@ -197,7 +199,7 @@ export default function DiscountDialog({
         setSelectedItems((prev) =>
             prev.includes(itemId)
                 ? prev.filter((id) => id !== itemId)
-                : [...prev, itemId]
+                : [...prev, itemId],
         );
     };
 
@@ -205,15 +207,15 @@ export default function DiscountDialog({
         setSelectedCategories((prev) =>
             prev.includes(categoryId)
                 ? prev.filter((id) => id !== categoryId)
-                : [...prev, categoryId]
+                : [...prev, categoryId],
         );
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh]">
+            <DialogContent className="max-h-[90vh] max-w-3xl">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                         <Tag className="h-5 w-5" />
                         {isEditing ? 'Edit Discount' : 'Create Discount'}
                     </DialogTitle>
@@ -223,50 +225,81 @@ export default function DiscountDialog({
                         {/* Basic Info */}
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="name" className="text-gray-900 dark:text-white">
-                                    Discount Name <span className="text-red-500">*</span>
+                                <Label
+                                    htmlFor="name"
+                                    className="text-gray-900 dark:text-white"
+                                >
+                                    Discount Name{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="name"
                                     value={formData.name}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, name: e.target.value })
+                                        setFormData({
+                                            ...formData,
+                                            name: e.target.value,
+                                        })
                                     }
                                     required
                                     placeholder="Summer Sale 2025"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="type" className="text-gray-900 dark:text-white">
-                                    Discount Type <span className="text-red-500">*</span>
+                                <Label
+                                    htmlFor="type"
+                                    className="text-gray-900 dark:text-white"
+                                >
+                                    Discount Type{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Select
                                     value={formData.type}
-                                    onValueChange={(value: 'percentage' | 'fixed' | 'buy_x_get_y') =>
-                                        setFormData({ ...formData, type: value })
+                                    onValueChange={(
+                                        value:
+                                            | 'percentage'
+                                            | 'fixed'
+                                            | 'buy_x_get_y',
+                                    ) =>
+                                        setFormData({
+                                            ...formData,
+                                            type: value,
+                                        })
                                     }
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="percentage">Percentage</SelectItem>
-                                        <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                        <SelectItem value="buy_x_get_y">Buy X Get Y</SelectItem>
+                                        <SelectItem value="percentage">
+                                            Percentage
+                                        </SelectItem>
+                                        <SelectItem value="fixed">
+                                            Fixed Amount
+                                        </SelectItem>
+                                        <SelectItem value="buy_x_get_y">
+                                            Buy X Get Y
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description" className="text-gray-900 dark:text-white">
+                            <Label
+                                htmlFor="description"
+                                className="text-gray-900 dark:text-white"
+                            >
                                 Description
                             </Label>
                             <Textarea
                                 id="description"
                                 value={formData.description || ''}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, description: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        description: e.target.value,
+                                    })
                                 }
                                 placeholder="Discount description..."
                                 rows={2}
@@ -277,8 +310,12 @@ export default function DiscountDialog({
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             {formData.type === 'percentage' && (
                                 <div className="space-y-2">
-                                    <Label htmlFor="value" className="text-gray-900 dark:text-white">
-                                        Percentage <span className="text-red-500">*</span>
+                                    <Label
+                                        htmlFor="value"
+                                        className="text-gray-900 dark:text-white"
+                                    >
+                                        Percentage{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="value"
@@ -290,7 +327,10 @@ export default function DiscountDialog({
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                value: parseFloat(e.target.value) || 0,
+                                                value:
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
                                             })
                                         }
                                         required
@@ -304,8 +344,12 @@ export default function DiscountDialog({
 
                             {formData.type === 'fixed' && (
                                 <div className="space-y-2">
-                                    <Label htmlFor="value" className="text-gray-900 dark:text-white">
-                                        Fixed Amount <span className="text-red-500">*</span>
+                                    <Label
+                                        htmlFor="value"
+                                        className="text-gray-900 dark:text-white"
+                                    >
+                                        Fixed Amount{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="value"
@@ -316,7 +360,10 @@ export default function DiscountDialog({
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                value: parseFloat(e.target.value) || 0,
+                                                value:
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
                                             })
                                         }
                                         required
@@ -332,7 +379,10 @@ export default function DiscountDialog({
                                             htmlFor="buy_quantity"
                                             className="text-gray-900 dark:text-white"
                                         >
-                                            Buy Quantity <span className="text-red-500">*</span>
+                                            Buy Quantity{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="buy_quantity"
@@ -342,10 +392,15 @@ export default function DiscountDialog({
                                             onChange={(e) =>
                                                 setFormData({
                                                     ...formData,
-                                                    buy_quantity: parseInt(e.target.value) || undefined,
+                                                    buy_quantity:
+                                                        parseInt(
+                                                            e.target.value,
+                                                        ) || undefined,
                                                 })
                                             }
-                                            required={formData.type === 'buy_x_get_y'}
+                                            required={
+                                                formData.type === 'buy_x_get_y'
+                                            }
                                             placeholder="2"
                                         />
                                     </div>
@@ -354,7 +409,10 @@ export default function DiscountDialog({
                                             htmlFor="get_quantity"
                                             className="text-gray-900 dark:text-white"
                                         >
-                                            Get Quantity <span className="text-red-500">*</span>
+                                            Get Quantity{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="get_quantity"
@@ -364,10 +422,15 @@ export default function DiscountDialog({
                                             onChange={(e) =>
                                                 setFormData({
                                                     ...formData,
-                                                    get_quantity: parseInt(e.target.value) || undefined,
+                                                    get_quantity:
+                                                        parseInt(
+                                                            e.target.value,
+                                                        ) || undefined,
                                                 })
                                             }
-                                            required={formData.type === 'buy_x_get_y'}
+                                            required={
+                                                formData.type === 'buy_x_get_y'
+                                            }
                                             placeholder="1"
                                         />
                                     </div>
@@ -438,12 +501,18 @@ export default function DiscountDialog({
                                             variant="outline"
                                             className={cn(
                                                 'w-full justify-start text-left font-normal',
-                                                !formData.start_date && 'text-muted-foreground',
+                                                !formData.start_date &&
+                                                    'text-muted-foreground',
                                             )}
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {formData.start_date ? (
-                                                format(new Date(formData.start_date), 'PPP')
+                                                format(
+                                                    new Date(
+                                                        formData.start_date,
+                                                    ),
+                                                    'PPP',
+                                                )
                                             ) : (
                                                 <span>Pick a date</span>
                                             )}
@@ -454,14 +523,19 @@ export default function DiscountDialog({
                                             mode="single"
                                             selected={
                                                 formData.start_date
-                                                    ? new Date(formData.start_date)
+                                                    ? new Date(
+                                                          formData.start_date,
+                                                      )
                                                     : undefined
                                             }
                                             onSelect={(date) =>
                                                 setFormData({
                                                     ...formData,
                                                     start_date: date
-                                                        ? format(date, 'yyyy-MM-dd')
+                                                        ? format(
+                                                              date,
+                                                              'yyyy-MM-dd',
+                                                          )
                                                         : undefined,
                                                 })
                                             }
@@ -480,12 +554,16 @@ export default function DiscountDialog({
                                             variant="outline"
                                             className={cn(
                                                 'w-full justify-start text-left font-normal',
-                                                !formData.end_date && 'text-muted-foreground',
+                                                !formData.end_date &&
+                                                    'text-muted-foreground',
                                             )}
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {formData.end_date ? (
-                                                format(new Date(formData.end_date), 'PPP')
+                                                format(
+                                                    new Date(formData.end_date),
+                                                    'PPP',
+                                                )
                                             ) : (
                                                 <span>Pick a date</span>
                                             )}
@@ -496,14 +574,19 @@ export default function DiscountDialog({
                                             mode="single"
                                             selected={
                                                 formData.end_date
-                                                    ? new Date(formData.end_date)
+                                                    ? new Date(
+                                                          formData.end_date,
+                                                      )
                                                     : undefined
                                             }
                                             onSelect={(date) =>
                                                 setFormData({
                                                     ...formData,
                                                     end_date: date
-                                                        ? format(date, 'yyyy-MM-dd')
+                                                        ? format(
+                                                              date,
+                                                              'yyyy-MM-dd',
+                                                          )
                                                         : undefined,
                                                 })
                                             }
@@ -523,7 +606,7 @@ export default function DiscountDialog({
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                     Leave empty to apply to all items
                                 </p>
-                                <div className="max-h-32 space-y-2 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-2">
+                                <div className="max-h-32 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-2 dark:border-gray-600">
                                     {items.map((item) => (
                                         <div
                                             key={item.id}
@@ -531,12 +614,16 @@ export default function DiscountDialog({
                                         >
                                             <Checkbox
                                                 id={`item-${item.id}`}
-                                                checked={selectedItems.includes(item.id)}
-                                                onCheckedChange={() => toggleItem(item.id)}
+                                                checked={selectedItems.includes(
+                                                    item.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleItem(item.id)
+                                                }
                                             />
                                             <Label
                                                 htmlFor={`item-${item.id}`}
-                                                className="text-sm font-normal text-gray-900 dark:text-white cursor-pointer"
+                                                className="cursor-pointer text-sm font-normal text-gray-900 dark:text-white"
                                             >
                                                 {item.name}
                                             </Label>
@@ -555,7 +642,7 @@ export default function DiscountDialog({
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                     Leave empty to apply to all categories
                                 </p>
-                                <div className="max-h-32 space-y-2 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-2">
+                                <div className="max-h-32 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-2 dark:border-gray-600">
                                     {categories.map((category) => (
                                         <div
                                             key={category.id}
@@ -563,12 +650,16 @@ export default function DiscountDialog({
                                         >
                                             <Checkbox
                                                 id={`category-${category.id}`}
-                                                checked={selectedCategories.includes(category.id)}
-                                                onCheckedChange={() => toggleCategory(category.id)}
+                                                checked={selectedCategories.includes(
+                                                    category.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleCategory(category.id)
+                                                }
                                             />
                                             <Label
                                                 htmlFor={`category-${category.id}`}
-                                                className="text-sm font-normal text-gray-900 dark:text-white cursor-pointer"
+                                                className="cursor-pointer text-sm font-normal text-gray-900 dark:text-white"
                                             >
                                                 {category.name}
                                             </Label>
@@ -580,7 +671,10 @@ export default function DiscountDialog({
 
                         {/* Usage Limit */}
                         <div className="space-y-2">
-                            <Label htmlFor="usage_limit" className="text-gray-900 dark:text-white">
+                            <Label
+                                htmlFor="usage_limit"
+                                className="text-gray-900 dark:text-white"
+                            >
                                 Usage Limit (Optional)
                             </Label>
                             <Input
@@ -609,12 +703,15 @@ export default function DiscountDialog({
                                 id="is_active"
                                 checked={formData.is_active}
                                 onCheckedChange={(checked) =>
-                                    setFormData({ ...formData, is_active: checked as boolean })
+                                    setFormData({
+                                        ...formData,
+                                        is_active: checked as boolean,
+                                    })
                                 }
                             />
                             <Label
                                 htmlFor="is_active"
-                                className="text-sm font-normal text-gray-900 dark:text-white cursor-pointer"
+                                className="cursor-pointer text-sm font-normal text-gray-900 dark:text-white"
                             >
                                 Active (discount is currently active)
                             </Label>
@@ -657,8 +754,10 @@ export default function DiscountDialog({
                                     </svg>
                                     {isEditing ? 'Updating...' : 'Creating...'}
                                 </span>
+                            ) : isEditing ? (
+                                'Update Discount'
                             ) : (
-                                isEditing ? 'Update Discount' : 'Create Discount'
+                                'Create Discount'
                             )}
                         </Button>
                     </DialogFooter>
@@ -667,4 +766,3 @@ export default function DiscountDialog({
         </Dialog>
     );
 }
-

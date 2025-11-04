@@ -62,12 +62,13 @@ interface ReviewListProps {
     };
 }
 
+type FilterValue = string | number | boolean | undefined;
+
 const ReviewList: React.FC<ReviewListProps> = ({
     productId,
     productName,
     reviews,
     pagination,
-    summary,
     currentUserEmail,
     currentUserId,
     isAdmin = false,
@@ -75,9 +76,8 @@ const ReviewList: React.FC<ReviewListProps> = ({
 }) => {
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [currentFilters, setCurrentFilters] = useState(filters);
-    const [isLoading, setIsLoading] = useState(false);
 
-    const handleFilterChange = (key: string, value: any) => {
+    const handleFilterChange = (key: string, value: FilterValue) => {
         const newFilters = { ...currentFilters, [key]: value };
         setCurrentFilters(newFilters);
 
@@ -203,7 +203,15 @@ const ReviewList: React.FC<ReviewListProps> = ({
         }
     };
 
-    const handleReviewSubmit = async (reviewData: any) => {
+    interface ReviewData {
+        rating: number;
+        comment: string;
+        product_id: number;
+        reviewer_name?: string;
+        reviewer_email?: string;
+    }
+
+    const handleReviewSubmit = async (reviewData: ReviewData) => {
         try {
             const response = await fetch(`/products/${productId}/reviews`, {
                 method: 'POST',
@@ -216,8 +224,6 @@ const ReviewList: React.FC<ReviewListProps> = ({
                 },
                 body: JSON.stringify({
                     ...reviewData,
-                    reviewer_name: reviewData.reviewer_name,
-                    reviewer_email: reviewData.reviewer_email,
                     client_identifier: 'default',
                 }),
             });
@@ -251,7 +257,13 @@ const ReviewList: React.FC<ReviewListProps> = ({
                 <ReviewForm
                     productId={productId}
                     productName={productName}
-                    onSubmit={handleReviewSubmit}
+                    onSubmit={async (data) => {
+                        await handleReviewSubmit({
+                            rating: data.rating,
+                            comment: data.content,
+                            product_id: productId,
+                        });
+                    }}
                     onCancel={() => setShowReviewForm(false)}
                     currentUserEmail={currentUserEmail}
                 />

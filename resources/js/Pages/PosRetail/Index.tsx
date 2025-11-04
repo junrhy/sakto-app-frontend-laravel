@@ -11,16 +11,23 @@ import {
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { Search, ShoppingCart, Plus, Minus } from 'lucide-react';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { Minus, Plus, Search, ShoppingCart } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import BarcodeScanner from './components/BarcodeScanner';
 import Cart from './components/Cart';
 import ImagePreview from './components/ImagePreview';
 import PaymentDialog from './components/PaymentDialog';
 import ReceiptDialog from './components/ReceiptDialog';
-import BarcodeScanner from './components/BarcodeScanner';
 import VariantSelectorDialog from './components/VariantSelectorDialog';
-import type { Category, OrderItem, Product, Props, Variant, Discount } from './types';
+import type {
+    Category,
+    Discount,
+    OrderItem,
+    Product,
+    Props,
+    Variant,
+} from './types';
 import { calculateTotal, searchProducts } from './utils';
 
 interface AuthWithTeamMember {
@@ -62,13 +69,21 @@ export default function PosRetail({
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isVariantDialogOpen, setIsVariantDialogOpen] = useState(false);
-    const [selectedProductForVariant, setSelectedProductForVariant] = useState<Product | null>(null);
+    const [selectedProductForVariant, setSelectedProductForVariant] =
+        useState<Product | null>(null);
     const [activeDiscounts] = useState<Discount[]>(initialActiveDiscounts);
-    const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+    const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(
+        null,
+    );
     const [discountAmount, setDiscountAmount] = useState(0);
     const [receiptData, setReceiptData] = useState<{
         saleId?: number;
-        items: Array<{ id: number; name: string; quantity: number; price: number }>;
+        items: Array<{
+            id: number;
+            name: string;
+            quantity: number;
+            price: number;
+        }>;
         totalAmount: number;
         paymentMethod: 'cash' | 'card';
         cashReceived?: number;
@@ -99,20 +114,21 @@ export default function PosRetail({
 
     // Store current order items reference for receipt generation
     const currentOrderItemsRef = useRef<OrderItem[]>([]);
-    
+
     useEffect(() => {
         currentOrderItemsRef.current = orderItems;
     }, [orderItems]);
 
     const filteredProducts = useMemo(() => {
         let filtered = searchProducts(products, searchTerm);
-        
+
         if (selectedCategory !== 'all') {
             filtered = filtered.filter(
-                (product) => product.category_id?.toString() === selectedCategory
+                (product) =>
+                    product.category_id?.toString() === selectedCategory,
             );
         }
-        
+
         return filtered;
     }, [products, searchTerm, selectedCategory]);
 
@@ -136,14 +152,20 @@ export default function PosRetail({
                     toast.error('This variant is out of stock.');
                     return;
                 }
-                
+
                 // Use variant price if available, otherwise use base price
-                const itemPrice = variant.price ?? selectedProductForVariant.price;
-                const itemPriceFormatted = variant.price 
+                const itemPrice =
+                    variant.price ?? selectedProductForVariant.price;
+                const itemPriceFormatted = variant.price
                     ? appCurrency.symbol + variant.price.toFixed(2)
                     : selectedProductForVariant.price_formatted;
-                
-                addItemToOrder(selectedProductForVariant, variant, itemPrice, itemPriceFormatted);
+
+                addItemToOrder(
+                    selectedProductForVariant,
+                    variant,
+                    itemPrice,
+                    itemPriceFormatted,
+                );
             } else {
                 // Base product selected
                 addItemToOrder(selectedProductForVariant, null);
@@ -153,22 +175,38 @@ export default function PosRetail({
         setSelectedProductForVariant(null);
     };
 
-    const addItemToOrder = (product: Product, variant: Variant | null, overridePrice?: number, overridePriceFormatted?: string) => {
+    const addItemToOrder = (
+        product: Product,
+        variant: Variant | null,
+        overridePrice?: number,
+        overridePriceFormatted?: string,
+    ) => {
         const itemPrice = overridePrice ?? product.price;
-        const itemPriceFormatted = overridePriceFormatted ?? product.price_formatted;
+        const itemPriceFormatted =
+            overridePriceFormatted ?? product.price_formatted;
         const itemQuantity = variant ? variant.quantity : product.quantity;
-        
+
         if (itemQuantity > 0) {
-            const existingItem = orderItems.find(
-                (item) => (variant ? item.variant_id === variant.id && item.product_id === product.id : item.id === product.id && !item.variant_id),
+            const existingItem = orderItems.find((item) =>
+                variant
+                    ? item.variant_id === variant.id &&
+                      item.product_id === product.id
+                    : item.id === product.id && !item.variant_id,
             );
-            
+
             if (existingItem) {
-                const maxQuantity = variant ? variant.quantity : product.quantity;
+                const maxQuantity = variant
+                    ? variant.quantity
+                    : product.quantity;
                 if (existingItem.quantity < maxQuantity) {
                     setOrderItems(
                         orderItems.map((item) =>
-                            (variant ? item.variant_id === variant.id && item.product_id === product.id : item.id === product.id && !item.variant_id)
+                            (
+                                variant
+                                    ? item.variant_id === variant.id &&
+                                      item.product_id === product.id
+                                    : item.id === product.id && !item.variant_id
+                            )
                                 ? { ...item, quantity: item.quantity + 1 }
                                 : item,
                         ),
@@ -197,15 +235,19 @@ export default function PosRetail({
                     price_formatted: itemPriceFormatted,
                     product_id: product.id,
                 };
-                
+
                 if (variant) {
                     newItem.variant_id = variant.id;
                     newItem.variant_attributes = variant.attributes;
-                    newItem.name = `${product.name} (${Object.entries(variant.attributes).map(([k, v]) => `${k}: ${v}`).join(', ')})`;
+                    newItem.name = `${product.name} (${Object.entries(
+                        variant.attributes,
+                    )
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ')})`;
                 }
-                
+
                 setOrderItems([...orderItems, newItem]);
-                
+
                 // Update stock
                 if (!variant) {
                     setProducts(
@@ -223,8 +265,10 @@ export default function PosRetail({
     };
 
     const removeItemFromOrder = (id: number) => {
-        const itemToRemove = orderItems.find((item) => 
-            item.variant_id ? (item.variant_id === id || item.product_id === id) : item.id === id
+        const itemToRemove = orderItems.find((item) =>
+            item.variant_id
+                ? item.variant_id === id || item.product_id === id
+                : item.id === id,
         );
         if (itemToRemove) {
             // Only update stock if it's a base product (not a variant)
@@ -232,22 +276,31 @@ export default function PosRetail({
                 setProducts(
                     products.map((p) =>
                         p.id === (itemToRemove.product_id || itemToRemove.id)
-                            ? { ...p, quantity: p.quantity + itemToRemove.quantity }
+                            ? {
+                                  ...p,
+                                  quantity: p.quantity + itemToRemove.quantity,
+                              }
                             : p,
                     ),
                 );
             }
         }
-        setOrderItems(orderItems.filter((item) => 
-            item.variant_id ? (item.variant_id !== id && item.product_id !== id) : item.id !== id
-        ));
+        setOrderItems(
+            orderItems.filter((item) =>
+                item.variant_id
+                    ? item.variant_id !== id && item.product_id !== id
+                    : item.id !== id,
+            ),
+        );
     };
 
     const updateItemQuantity = (id: number, newQuantity: number) => {
-        const existingItem = orderItems.find((item) => 
-            item.variant_id ? (item.variant_id === id || item.product_id === id) : item.id === id
+        const existingItem = orderItems.find((item) =>
+            item.variant_id
+                ? item.variant_id === id || item.product_id === id
+                : item.id === id,
         );
-        
+
         if (!existingItem) {
             toast.error('Item not found.');
             return;
@@ -255,20 +308,31 @@ export default function PosRetail({
 
         if (existingItem.variant_id) {
             // Handle variant quantity update
-            const product = products.find((p) => p.id === existingItem.product_id);
+            const product = products.find(
+                (p) => p.id === existingItem.product_id,
+            );
             if (product && product.variants) {
-                const variant = product.variants.find((v) => v.id === existingItem.variant_id);
+                const variant = product.variants.find(
+                    (v) => v.id === existingItem.variant_id,
+                );
                 if (variant) {
-                    if (newQuantity <= variant.quantity + existingItem.quantity && newQuantity >= 0) {
+                    if (
+                        newQuantity <=
+                            variant.quantity + existingItem.quantity &&
+                        newQuantity >= 0
+                    ) {
                         setOrderItems(
                             orderItems.map((item) =>
-                                (item.variant_id === existingItem.variant_id && item.product_id === existingItem.product_id)
+                                item.variant_id === existingItem.variant_id &&
+                                item.product_id === existingItem.product_id
                                     ? { ...item, quantity: newQuantity }
                                     : item,
                             ),
                         );
                     } else {
-                        toast.error('Cannot add more items than available in inventory.');
+                        toast.error(
+                            'Cannot add more items than available in inventory.',
+                        );
                     }
                 }
             }
@@ -335,20 +399,40 @@ export default function PosRetail({
         for (const item of orderItems) {
             for (const discount of activeDiscounts) {
                 // Check if discount applies to this item
-                const isItemApplicable = !discount.applicable_items || discount.applicable_items.includes(item.product_id || item.id);
-                const isCategoryApplicable = !discount.applicable_categories || (item.product_id && discount.applicable_categories.includes(item.product_id));
-                
-                if (!isItemApplicable && !isCategoryApplicable && (discount.applicable_items || discount.applicable_categories)) {
+                const isItemApplicable =
+                    !discount.applicable_items ||
+                    discount.applicable_items.includes(
+                        item.product_id || item.id,
+                    );
+                const isCategoryApplicable =
+                    !discount.applicable_categories ||
+                    (item.product_id &&
+                        discount.applicable_categories.includes(
+                            item.product_id,
+                        ));
+
+                if (
+                    !isItemApplicable &&
+                    !isCategoryApplicable &&
+                    (discount.applicable_items ||
+                        discount.applicable_categories)
+                ) {
                     continue;
                 }
 
                 // Check minimum quantity
-                if (discount.min_quantity && item.quantity < discount.min_quantity) {
+                if (
+                    discount.min_quantity &&
+                    item.quantity < discount.min_quantity
+                ) {
                     continue;
                 }
 
                 // Check minimum purchase amount
-                if (discount.min_purchase_amount && subtotal < discount.min_purchase_amount) {
+                if (
+                    discount.min_purchase_amount &&
+                    subtotal < discount.min_purchase_amount
+                ) {
                     continue;
                 }
 
@@ -356,14 +440,23 @@ export default function PosRetail({
                 let itemDiscountAmount = 0;
                 switch (discount.type) {
                     case 'percentage':
-                        itemDiscountAmount = (item.price * item.quantity) * (discount.value / 100);
+                        itemDiscountAmount =
+                            item.price * item.quantity * (discount.value / 100);
                         break;
                     case 'fixed':
-                        itemDiscountAmount = Math.min(discount.value, item.price * item.quantity);
+                        itemDiscountAmount = Math.min(
+                            discount.value,
+                            item.price * item.quantity,
+                        );
                         break;
                     case 'buy_x_get_y':
                         if (discount.buy_quantity && discount.get_quantity) {
-                            const freeItems = Math.floor(item.quantity / (discount.buy_quantity + discount.get_quantity)) * discount.get_quantity;
+                            const freeItems =
+                                Math.floor(
+                                    item.quantity /
+                                        (discount.buy_quantity +
+                                            discount.get_quantity),
+                                ) * discount.get_quantity;
                             itemDiscountAmount = freeItems * item.price;
                         }
                         break;
@@ -413,14 +506,19 @@ export default function PosRetail({
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success('Sale completed successfully!');
-                    
+
                     // Store receipt data before clearing order (use ref to get current items)
-                    const receiptItems = currentOrderItemsRef.current.map((item) => ({
-                        id: item.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
-                    }));
+                    const receiptItems = currentOrderItemsRef.current.map(
+                        (item) => ({
+                            id: item.id,
+                            name: item.name,
+                            quantity: item.quantity,
+                            price:
+                                typeof item.price === 'string'
+                                    ? parseFloat(item.price)
+                                    : item.price,
+                        }),
+                    );
 
                     // Create receipt data from current order
                     setReceiptData({
@@ -431,11 +529,11 @@ export default function PosRetail({
                         change: paymentData.change,
                         date: new Date().toISOString(),
                     });
-                    
+
                     setOrderItems([]);
                     setIsCompleteSaleDialogOpen(false);
                     setIsReceiptDialogOpen(true);
-                    
+
                     // Refresh products to get updated quantities
                     router.reload({ only: ['products'] });
                 },
@@ -463,7 +561,9 @@ export default function PosRetail({
         for (const product of products) {
             if (product.variants) {
                 const variant = product.variants.find(
-                    (v) => v.barcode && v.barcode.toLowerCase() === barcode.toLowerCase()
+                    (v) =>
+                        v.barcode &&
+                        v.barcode.toLowerCase() === barcode.toLowerCase(),
                 );
                 if (variant) {
                     foundProduct = product;
@@ -475,13 +575,20 @@ export default function PosRetail({
 
         if (foundProduct && foundVariant) {
             handleVariantSelected(foundVariant);
-            toast.success(`Added ${foundProduct.name} (${Object.entries(foundVariant.attributes).map(([k, v]) => `${k}: ${v}`).join(', ')}) to cart`);
+            toast.success(
+                `Added ${foundProduct.name} (${Object.entries(
+                    foundVariant.attributes,
+                )
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ')}) to cart`,
+            );
             return;
         }
 
         // Find product by barcode
         const product = products.find(
-            (p) => p.barcode && p.barcode.toLowerCase() === barcode.toLowerCase()
+            (p) =>
+                p.barcode && p.barcode.toLowerCase() === barcode.toLowerCase(),
         );
 
         if (product) {
@@ -490,7 +597,7 @@ export default function PosRetail({
         } else {
             // Try to find by SKU as fallback
             const productBySku = products.find(
-                (p) => p.sku && p.sku.toLowerCase() === barcode.toLowerCase()
+                (p) => p.sku && p.sku.toLowerCase() === barcode.toLowerCase(),
             );
 
             if (productBySku) {
@@ -556,7 +663,10 @@ export default function PosRetail({
                               ...receiptData,
                               appCurrency: appCurrency,
                               storeName: auth.project?.name || undefined,
-                              userName: auth.selectedTeamMember?.full_name || auth.user.name || undefined,
+                              userName:
+                                  auth.selectedTeamMember?.full_name ||
+                                  auth.user.name ||
+                                  undefined,
                           }
                         : null
                 }
@@ -569,7 +679,9 @@ export default function PosRetail({
                     onOpenChange={setIsVariantDialogOpen}
                     productName={selectedProductForVariant.name}
                     basePrice={selectedProductForVariant.price}
-                    basePriceFormatted={selectedProductForVariant.price_formatted}
+                    basePriceFormatted={
+                        selectedProductForVariant.price_formatted
+                    }
                     variants={selectedProductForVariant.variants || []}
                     appCurrency={appCurrency}
                     onSelectVariant={handleVariantSelected}
@@ -596,7 +708,7 @@ export default function PosRetail({
                                 placeholder="Search products..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 border-gray-300 dark:border-gray-600"
+                                className="border-gray-300 pl-10 dark:border-gray-600"
                             />
                         </div>
                         {categories.length > 0 && (
@@ -604,11 +716,13 @@ export default function PosRetail({
                                 value={selectedCategory}
                                 onValueChange={setSelectedCategory}
                             >
-                                <SelectTrigger className="w-full sm:w-48 border-gray-300 dark:border-gray-600">
+                                <SelectTrigger className="w-full border-gray-300 dark:border-gray-600 sm:w-48">
                                     <SelectValue placeholder="All Categories" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="all">
+                                        All Categories
+                                    </SelectItem>
                                     {categories.map((category) => (
                                         <SelectItem
                                             key={category.id}
@@ -628,18 +742,30 @@ export default function PosRetail({
                             {filteredProducts.map((product) => {
                                 // Check for base product or any variant in cart
                                 const orderItem = orderItems.find(
-                                    (item) => item.id === product.id && !item.variant_id,
+                                    (item) =>
+                                        item.id === product.id &&
+                                        !item.variant_id,
                                 );
                                 const variantItems = orderItems.filter(
-                                    (item) => item.product_id === product.id && item.variant_id,
+                                    (item) =>
+                                        item.product_id === product.id &&
+                                        item.variant_id,
                                 );
-                                const inCart = orderItem !== undefined || variantItems.length > 0;
-                                const cartQuantity = orderItem?.quantity || variantItems.reduce((sum, item) => sum + item.quantity, 0) || 0;
+                                const inCart =
+                                    orderItem !== undefined ||
+                                    variantItems.length > 0;
+                                const cartQuantity =
+                                    orderItem?.quantity ||
+                                    variantItems.reduce(
+                                        (sum, item) => sum + item.quantity,
+                                        0,
+                                    ) ||
+                                    0;
 
                                 return (
                                     <Card
                                         key={product.id}
-                                        className={`group cursor-pointer transition-all hover:shadow-md border-gray-200 dark:border-gray-600 ${
+                                        className={`group cursor-pointer border-gray-200 transition-all hover:shadow-md dark:border-gray-600 ${
                                             product.quantity === 0
                                                 ? 'opacity-50'
                                                 : ''
@@ -652,7 +778,8 @@ export default function PosRetail({
                                                 onClick={() => {
                                                     if (
                                                         product.images &&
-                                                        product.images.length > 0
+                                                        product.images.length >
+                                                            0
                                                     ) {
                                                         setSelectedImageUrl(
                                                             product.images[0],
@@ -733,23 +860,53 @@ export default function PosRetail({
                                                                     <Minus className="h-3 w-3" />
                                                                 </Button>
                                                                 <span className="flex-1 text-center text-xs font-semibold">
-                                                                    {cartQuantity}
+                                                                    {
+                                                                        cartQuantity
+                                                                    }
                                                                 </span>
                                                                 <Button
                                                                     size="sm"
                                                                     variant="outline"
                                                                     className="h-7 flex-1 p-0"
-                                                                onClick={() => {
-                                                                    if (orderItem) {
-                                                                        updateItemQuantity(product.id, cartQuantity + 1);
-                                                                    } else if (variantItems.length > 0) {
-                                                                        // Update the first variant item
-                                                                        const variant = product.variants?.find(v => v.id === variantItems[0].variant_id);
-                                                                        if (variant && variantItems[0].quantity < variant.quantity) {
-                                                                            updateItemQuantity(variantItems[0].variant_id!, variantItems[0].quantity + 1);
+                                                                    onClick={() => {
+                                                                        if (
+                                                                            orderItem
+                                                                        ) {
+                                                                            updateItemQuantity(
+                                                                                product.id,
+                                                                                cartQuantity +
+                                                                                    1,
+                                                                            );
+                                                                        } else if (
+                                                                            variantItems.length >
+                                                                            0
+                                                                        ) {
+                                                                            // Update the first variant item
+                                                                            const variant =
+                                                                                product.variants?.find(
+                                                                                    (
+                                                                                        v,
+                                                                                    ) =>
+                                                                                        v.id ===
+                                                                                        variantItems[0]
+                                                                                            .variant_id,
+                                                                                );
+                                                                            if (
+                                                                                variant &&
+                                                                                variantItems[0]
+                                                                                    .quantity <
+                                                                                    variant.quantity
+                                                                            ) {
+                                                                                updateItemQuantity(
+                                                                                    variantItems[0]
+                                                                                        .variant_id!,
+                                                                                    variantItems[0]
+                                                                                        .quantity +
+                                                                                        1,
+                                                                                );
+                                                                            }
                                                                         }
-                                                                    }
-                                                                }}
+                                                                    }}
                                                                     disabled={
                                                                         cartQuantity >=
                                                                         product.quantity
@@ -771,7 +928,7 @@ export default function PosRetail({
                         {filteredProducts.length === 0 && (
                             <div className="flex h-64 items-center justify-center text-gray-500 dark:text-gray-400">
                                 <div className="text-center">
-                                    <Search className="mx-auto h-12 w-12 mb-4 text-gray-400 dark:text-gray-500 opacity-50" />
+                                    <Search className="mx-auto mb-4 h-12 w-12 text-gray-400 opacity-50 dark:text-gray-500" />
                                     <p>No products found</p>
                                 </div>
                             </div>

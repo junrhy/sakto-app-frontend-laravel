@@ -82,10 +82,20 @@ export default function ContactSelector({
                     response.data.message || 'Failed to fetch contacts',
                 );
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error fetching contacts:', error);
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
+            if (
+                error &&
+                typeof error === 'object' &&
+                'response' in error &&
+                error.response &&
+                typeof error.response === 'object' &&
+                'data' in error.response &&
+                error.response.data &&
+                typeof error.response.data === 'object' &&
+                'message' in error.response.data
+            ) {
+                toast.error(String(error.response.data.message));
             } else {
                 toast.error('Failed to fetch contacts');
             }

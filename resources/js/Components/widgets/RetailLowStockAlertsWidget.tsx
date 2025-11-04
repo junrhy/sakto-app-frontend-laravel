@@ -1,9 +1,9 @@
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { CardContent } from '@/Components/ui/card';
-import { AlertCircle, AlertTriangle, Package, ArrowRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
+import { AlertCircle, AlertTriangle, ArrowRight, Package } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface LowStockItem {
     id: number;
@@ -27,20 +27,24 @@ export function RetailLowStockAlertsWidget() {
     const fetchLowStockItems = async () => {
         try {
             setLoading(true);
-            const clientIdentifier = document
-                .querySelector('meta[name="client-identifier"]')
-                ?.getAttribute('content') || '';
-            
+            const clientIdentifier =
+                document
+                    .querySelector('meta[name="client-identifier"]')
+                    ?.getAttribute('content') || '';
+
             const response = await fetch(
                 `/inventory/low-stock-alerts?client_identifier=${clientIdentifier}`,
                 {
                     headers: {
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        'X-CSRF-TOKEN':
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '',
                     },
                     credentials: 'same-origin',
-                }
+                },
             );
 
             if (!response.ok) {
@@ -65,7 +69,9 @@ export function RetailLowStockAlertsWidget() {
         }
     };
 
-    const getUrgency = (item: LowStockItem): 'low' | 'medium' | 'high' | 'critical' => {
+    const getUrgency = (
+        item: LowStockItem,
+    ): 'low' | 'medium' | 'high' | 'critical' => {
         if (item.status === 'out_of_stock') return 'critical';
         const percentage = (item.quantity / item.low_stock_threshold) * 100;
         if (percentage <= 20) return 'critical';
@@ -146,7 +152,9 @@ export function RetailLowStockAlertsWidget() {
                 <div className="text-center text-gray-500 dark:text-gray-400">
                     <Package className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                     <p className="text-sm">No low stock alerts</p>
-                    <p className="mt-1 text-xs">All products are well stocked</p>
+                    <p className="mt-1 text-xs">
+                        All products are well stocked
+                    </p>
                 </div>
             </CardContent>
         );
@@ -269,4 +277,3 @@ export function RetailLowStockAlertsWidget() {
         </CardContent>
     );
 }
-

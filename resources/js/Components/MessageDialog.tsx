@@ -62,6 +62,7 @@ export default function MessageDialog({ message, onClose }: Props) {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const getTypeBadge = (type: Message['type']) => {
         switch (type) {
             case 'marketing':

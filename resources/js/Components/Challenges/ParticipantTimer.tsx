@@ -117,6 +117,7 @@ export default function ParticipantTimer({
         }, 1000);
 
         intervalRef.current = interval;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Stop display timer
@@ -136,12 +137,9 @@ export default function ParticipantTimer({
     const startTimer = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `/challenges/${challengeId}/timer/start`,
-                {
-                    participant_id: participantId,
-                },
-            );
+            await axios.post(`/challenges/${challengeId}/timer/start`, {
+                participant_id: participantId,
+            });
 
             // Get the updated timer status after starting
             const statusResponse = await axios.get(
@@ -167,12 +165,9 @@ export default function ParticipantTimer({
     const stopTimer = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `/challenges/${challengeId}/timer/stop`,
-                {
-                    participant_id: participantId,
-                },
-            );
+            await axios.post(`/challenges/${challengeId}/timer/stop`, {
+                participant_id: participantId,
+            });
 
             // Get the updated timer status after stopping
             const statusResponse = await axios.get(
@@ -207,12 +202,9 @@ export default function ParticipantTimer({
     const pauseTimer = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `/challenges/${challengeId}/timer/pause`,
-                {
-                    participant_id: participantId,
-                },
-            );
+            await axios.post(`/challenges/${challengeId}/timer/pause`, {
+                participant_id: participantId,
+            });
 
             // Get the updated timer status after pausing
             const statusResponse = await axios.get(
@@ -247,12 +239,9 @@ export default function ParticipantTimer({
     const resumeTimer = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `/challenges/${challengeId}/timer/resume`,
-                {
-                    participant_id: participantId,
-                },
-            );
+            await axios.post(`/challenges/${challengeId}/timer/resume`, {
+                participant_id: participantId,
+            });
 
             // Get the updated timer status after resuming
             const statusResponse = await axios.get(
@@ -278,12 +267,9 @@ export default function ParticipantTimer({
     const resetTimer = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post(
-                `/challenges/${challengeId}/timer/reset`,
-                {
-                    participant_id: participantId,
-                },
-            );
+            await axios.post(`/challenges/${challengeId}/timer/reset`, {
+                participant_id: participantId,
+            });
 
             // Get the updated timer status after resetting
             const statusResponse = await axios.get(

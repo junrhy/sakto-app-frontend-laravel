@@ -15,7 +15,6 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { OrderItem } from '../types';
-import { calculateTotal } from '../utils';
 
 interface CartProps {
     orderItems: OrderItem[];
@@ -44,7 +43,6 @@ export default function Cart({
     appliedDiscount,
     totalAmount,
 }: CartProps) {
-
     return (
         <Card className="flex h-full w-full flex-col border-gray-200 dark:border-gray-600">
             <CardHeader className="flex-shrink-0 pb-3">
@@ -84,11 +82,17 @@ export default function Cart({
                             ) : (
                                 orderItems.map((item, index) => (
                                     <TableRow
-                                        key={item.variant_id ? `variant-${item.variant_id}-${item.product_id}-${index}` : `product-${item.id}-${index}`}
+                                        key={
+                                            item.variant_id
+                                                ? `variant-${item.variant_id}-${item.product_id}-${index}`
+                                                : `product-${item.id}-${index}`
+                                        }
                                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
                                         <TableCell className="px-2 py-1.5 text-xs text-gray-900 dark:text-white">
-                                            <div className="line-clamp-2">{item.name}</div>
+                                            <div className="line-clamp-2">
+                                                {item.name}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="px-2 py-1.5 text-gray-900 dark:text-white">
                                             {canEdit ? (
@@ -99,7 +103,8 @@ export default function Cart({
                                                         className="h-6 w-6 p-0"
                                                         onClick={() =>
                                                             onUpdateQuantity(
-                                                                item.variant_id || item.id,
+                                                                item.variant_id ||
+                                                                    item.id,
                                                                 item.quantity -
                                                                     1,
                                                             )
@@ -116,7 +121,8 @@ export default function Cart({
                                                         className="h-6 w-6 p-0"
                                                         onClick={() =>
                                                             onUpdateQuantity(
-                                                                item.variant_id || item.id,
+                                                                item.variant_id ||
+                                                                    item.id,
                                                                 item.quantity +
                                                                     1,
                                                             )
@@ -126,7 +132,9 @@ export default function Cart({
                                                     </Button>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs">{item.quantity}</span>
+                                                <span className="text-xs">
+                                                    {item.quantity}
+                                                </span>
                                             )}
                                         </TableCell>
                                         <TableCell className="px-2 py-1.5 text-xs font-semibold text-gray-900 dark:text-white">
@@ -142,7 +150,10 @@ export default function Cart({
                                                     size="sm"
                                                     className="h-6 px-2 text-xs"
                                                     onClick={() =>
-                                                        onRemoveItem(item.variant_id || item.id)
+                                                        onRemoveItem(
+                                                            item.variant_id ||
+                                                                item.id,
+                                                        )
                                                     }
                                                 >
                                                     ×
@@ -156,8 +167,8 @@ export default function Cart({
                     </Table>
                 </div>
             </CardContent>
-            <CardFooter className="flex-shrink-0 flex-col gap-2 border-t border-gray-200 dark:border-gray-600 pt-3">
-                <div className="space-y-1 w-full">
+            <CardFooter className="flex-shrink-0 flex-col gap-2 border-t border-gray-200 pt-3 dark:border-gray-600">
+                <div className="w-full space-y-1">
                     <div className="flex w-full items-center justify-between text-xs">
                         <span className="text-gray-600 dark:text-gray-400">
                             Subtotal:
@@ -170,10 +181,13 @@ export default function Cart({
                     {discountAmount > 0 && appliedDiscount && (
                         <div className="flex w-full items-center justify-between text-xs text-green-600 dark:text-green-400">
                             <span>Discount ({appliedDiscount.name}):</span>
-                            <span>-{appCurrency.symbol}{discountAmount.toFixed(2)}</span>
+                            <span>
+                                -{appCurrency.symbol}
+                                {discountAmount.toFixed(2)}
+                            </span>
                         </div>
                     )}
-                    <div className="flex w-full items-center justify-between pt-1 border-t border-gray-200 dark:border-gray-600">
+                    <div className="flex w-full items-center justify-between border-t border-gray-200 pt-1 dark:border-gray-600">
                         <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                             Total:
                         </span>
@@ -187,7 +201,7 @@ export default function Cart({
                     <Button
                         onClick={onCompleteSale}
                         disabled={orderItems.length === 0}
-                        className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold shadow-md transition-all duration-200"
+                        className="w-full bg-green-600 font-semibold text-white shadow-md transition-all duration-200 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                     >
                         Complete Sale
                     </Button>

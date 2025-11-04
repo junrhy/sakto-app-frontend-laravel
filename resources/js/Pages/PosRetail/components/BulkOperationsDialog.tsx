@@ -6,8 +6,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
-import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import {
     Select,
     SelectContent,
@@ -15,7 +16,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import { Settings } from 'lucide-react';
 import { useState } from 'react';
 
@@ -48,11 +48,17 @@ export default function BulkOperationsDialog({
     categories = [],
     onBulkOperation,
 }: BulkOperationsDialogProps) {
-    const [operationType, setOperationType] = useState<'price' | 'category' | 'stock' | 'delete'>('price');
-    const [priceType, setPriceType] = useState<'percentage' | 'fixed'>('percentage');
+    const [operationType, setOperationType] = useState<
+        'price' | 'category' | 'stock' | 'delete'
+    >('price');
+    const [priceType, setPriceType] = useState<'percentage' | 'fixed'>(
+        'percentage',
+    );
     const [priceValue, setPriceValue] = useState<string>('');
     const [categoryId, setCategoryId] = useState<string>('');
-    const [stockAction, setStockAction] = useState<'add' | 'remove' | 'set'>('add');
+    const [stockAction, setStockAction] = useState<'add' | 'remove' | 'set'>(
+        'add',
+    );
     const [stockValue, setStockValue] = useState<string>('');
 
     const handleSubmit = () => {
@@ -101,9 +107,9 @@ export default function BulkOperationsDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh]">
+            <DialogContent className="max-h-[90vh] max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                         <Settings className="h-5 w-5" />
                         Bulk Operations ({selectedCount} selected)
                     </DialogTitle>
@@ -116,18 +122,30 @@ export default function BulkOperationsDialog({
                         </Label>
                         <Select
                             value={operationType}
-                            onValueChange={(value: 'price' | 'category' | 'stock' | 'delete') =>
-                                setOperationType(value)
-                            }
+                            onValueChange={(
+                                value:
+                                    | 'price'
+                                    | 'category'
+                                    | 'stock'
+                                    | 'delete',
+                            ) => setOperationType(value)}
                         >
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="price">Update Prices</SelectItem>
-                                <SelectItem value="category">Change Category</SelectItem>
-                                <SelectItem value="stock">Adjust Stock</SelectItem>
-                                <SelectItem value="delete">Delete Products</SelectItem>
+                                <SelectItem value="price">
+                                    Update Prices
+                                </SelectItem>
+                                <SelectItem value="category">
+                                    Change Category
+                                </SelectItem>
+                                <SelectItem value="stock">
+                                    Adjust Stock
+                                </SelectItem>
+                                <SelectItem value="delete">
+                                    Delete Products
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -140,15 +158,18 @@ export default function BulkOperationsDialog({
                             </Label>
                             <RadioGroup
                                 value={priceType}
-                                onValueChange={(value: 'percentage' | 'fixed') =>
-                                    setPriceType(value)
-                                }
+                                onValueChange={(
+                                    value: 'percentage' | 'fixed',
+                                ) => setPriceType(value)}
                             >
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="percentage" id="percentage" />
+                                    <RadioGroupItem
+                                        value="percentage"
+                                        id="percentage"
+                                    />
                                     <Label
                                         htmlFor="percentage"
-                                        className="text-gray-900 dark:text-white cursor-pointer"
+                                        className="cursor-pointer text-gray-900 dark:text-white"
                                     >
                                         Percentage Change
                                     </Label>
@@ -157,7 +178,7 @@ export default function BulkOperationsDialog({
                                     <RadioGroupItem value="fixed" id="fixed" />
                                     <Label
                                         htmlFor="fixed"
-                                        className="text-gray-900 dark:text-white cursor-pointer"
+                                        className="cursor-pointer text-gray-900 dark:text-white"
                                     >
                                         Fixed Amount Change
                                     </Label>
@@ -172,22 +193,30 @@ export default function BulkOperationsDialog({
                                 <Input
                                     type="number"
                                     value={priceValue}
-                                    onChange={(e) => setPriceValue(e.target.value)}
+                                    onChange={(e) =>
+                                        setPriceValue(e.target.value)
+                                    }
                                     placeholder={
                                         priceType === 'percentage'
                                             ? 'Enter percentage (e.g., 10 for 10% increase)'
                                             : 'Enter amount to add/subtract'
                                     }
-                                    step={priceType === 'percentage' ? '0.01' : '0.01'}
+                                    step={
+                                        priceType === 'percentage'
+                                            ? '0.01'
+                                            : '0.01'
+                                    }
                                 />
                                 {priceType === 'percentage' && (
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Positive number increases prices, negative decreases
+                                        Positive number increases prices,
+                                        negative decreases
                                     </p>
                                 )}
                                 {priceType === 'fixed' && (
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Positive number adds to price, negative subtracts
+                                        Positive number adds to price, negative
+                                        subtracts
                                     </p>
                                 )}
                             </div>
@@ -208,7 +237,9 @@ export default function BulkOperationsDialog({
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="0">Uncategorized</SelectItem>
+                                    <SelectItem value="0">
+                                        Uncategorized
+                                    </SelectItem>
                                     {categories.map((category) => (
                                         <SelectItem
                                             key={category.id}
@@ -220,7 +251,8 @@ export default function BulkOperationsDialog({
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                All selected products will be moved to this category
+                                All selected products will be moved to this
+                                category
                             </p>
                         </div>
                     )}
@@ -233,24 +265,27 @@ export default function BulkOperationsDialog({
                             </Label>
                             <RadioGroup
                                 value={stockAction}
-                                onValueChange={(value: 'add' | 'remove' | 'set') =>
-                                    setStockAction(value)
-                                }
+                                onValueChange={(
+                                    value: 'add' | 'remove' | 'set',
+                                ) => setStockAction(value)}
                             >
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="add" id="add" />
                                     <Label
                                         htmlFor="add"
-                                        className="text-gray-900 dark:text-white cursor-pointer"
+                                        className="cursor-pointer text-gray-900 dark:text-white"
                                     >
                                         Add Stock
                                     </Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="remove" id="remove" />
+                                    <RadioGroupItem
+                                        value="remove"
+                                        id="remove"
+                                    />
                                     <Label
                                         htmlFor="remove"
-                                        className="text-gray-900 dark:text-white cursor-pointer"
+                                        className="cursor-pointer text-gray-900 dark:text-white"
                                     >
                                         Remove Stock
                                     </Label>
@@ -259,7 +294,7 @@ export default function BulkOperationsDialog({
                                     <RadioGroupItem value="set" id="set" />
                                     <Label
                                         htmlFor="set"
-                                        className="text-gray-900 dark:text-white cursor-pointer"
+                                        className="cursor-pointer text-gray-900 dark:text-white"
                                     >
                                         Set Stock Quantity
                                     </Label>
@@ -272,7 +307,9 @@ export default function BulkOperationsDialog({
                                 <Input
                                     type="number"
                                     value={stockValue}
-                                    onChange={(e) => setStockValue(e.target.value)}
+                                    onChange={(e) =>
+                                        setStockValue(e.target.value)
+                                    }
                                     placeholder="Enter quantity"
                                     min="0"
                                     step="1"
@@ -297,8 +334,9 @@ export default function BulkOperationsDialog({
                             </p>
                             <p className="mt-2 text-sm text-red-700 dark:text-red-400">
                                 You are about to delete {selectedCount} product
-                                {selectedCount !== 1 ? 's' : ''}. This will permanently remove
-                                all selected products from your inventory.
+                                {selectedCount !== 1 ? 's' : ''}. This will
+                                permanently remove all selected products from
+                                your inventory.
                             </p>
                         </div>
                     )}
@@ -332,4 +370,3 @@ export default function BulkOperationsDialog({
         </Dialog>
     );
 }
-

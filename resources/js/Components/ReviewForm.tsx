@@ -34,7 +34,6 @@ interface ReviewFormProps {
 }
 
 const ReviewForm: React.FC<ReviewFormProps> = ({
-    productId,
     productName,
     onSubmit,
     onCancel,

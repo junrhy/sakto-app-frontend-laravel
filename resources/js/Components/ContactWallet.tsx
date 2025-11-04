@@ -66,13 +66,26 @@ interface ContactWalletProps {
     };
 }
 
+interface Contact {
+    id: number;
+    first_name: string;
+    last_name: string;
+    sms_number?: string;
+}
+
+interface PageProps {
+    auth: {
+        selectedTeamMember?: {
+            roles?: string[];
+        };
+    };
+}
+
 export default function ContactWallet({
     contactId,
-    contactName,
     appCurrency,
 }: ContactWalletProps) {
     const [walletData, setWalletData] = useState<WalletData | null>(null);
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [addFundsOpen, setAddFundsOpen] = useState(false);
     const [deductFundsOpen, setDeductFundsOpen] = useState(false);
@@ -83,7 +96,7 @@ export default function ContactWallet({
     const [toContactId, setToContactId] = useState('');
     const [toContactNumber, setToContactNumber] = useState('');
     const [toContactName, setToContactName] = useState('');
-    const [availableContacts, setAvailableContacts] = useState<any[]>([]);
+    const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
     // Add a new state for field-level contact search error
     const [contactSearchError, setContactSearchError] = useState('');
     const [historyDate, setHistoryDate] = useState<Date>(new Date());
@@ -96,7 +109,7 @@ export default function ContactWallet({
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
 
-    const pageProps = usePage<any>().props;
+    const pageProps = (usePage().props as PageProps);
     const selectedTeamMember = pageProps?.auth?.selectedTeamMember;
     const canManageFunds =
         selectedTeamMember &&
@@ -107,6 +120,7 @@ export default function ContactWallet({
     useEffect(() => {
         fetchWalletData();
         fetchAvailableContacts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [contactId]);
 
     // Fetch transaction history for today when component mounts
@@ -114,6 +128,7 @@ export default function ContactWallet({
         if (contactId) {
             fetchTransactionHistory(historyDate);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [contactId]); // Only run when contactId changes, not when historyDate changes
 
     const fetchWalletData = async () => {
@@ -145,7 +160,6 @@ export default function ContactWallet({
             const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
-                setTransactions(data.data || []);
                 setHistoryTransactions(data.data || []);
             } else {
                 setHistoryTransactions([]);
@@ -164,6 +178,7 @@ export default function ContactWallet({
                 setHistoryLoading(false),
             );
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [historyDate, contactId]);
 
     // Pagination logic
@@ -185,7 +200,7 @@ export default function ContactWallet({
             if (data.success) {
                 setAvailableContacts(
                     data.data.filter(
-                        (contact: any) => contact.id !== contactId,
+                        (contact: Contact) => contact.id !== contactId,
                     ),
                 );
             }
@@ -196,7 +211,7 @@ export default function ContactWallet({
 
     const searchContactByNumber = (smsNumber: string) => {
         const contact = availableContacts.find(
-            (c: any) => c.sms_number === smsNumber,
+            (c: Contact) => c.sms_number === smsNumber,
         );
         if (contact) {
             setToContactId(contact.id.toString());
@@ -403,16 +418,6 @@ export default function ContactWallet({
         const parts = number.toFixed(decimals).split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousands_sep);
         return parts.join(dec_point);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
     };
 
     if (loading) {

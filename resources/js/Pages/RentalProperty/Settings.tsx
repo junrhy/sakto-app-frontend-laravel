@@ -125,10 +125,30 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
 
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings}
+                                    settings={settings as unknown as Record<string, unknown>}
                                     onSubmit={handleSubmit}
                                 >
-                                    {({ data, setData }) => (
+                                    {({ data, setData }) => {
+                                        const typedData = data as {
+                                            default_lease_period?: number;
+                                            lease_period_unit?: string;
+                                            enable_late_fees?: boolean;
+                                            late_fee_rate?: number;
+                                            late_fee_grace_period?: number;
+                                            require_deposit?: boolean;
+                                            deposit_months?: number;
+                                            enable_utilities_tracking?: boolean;
+                                            utilities?: Utilities;
+                                            enable_maintenance_requests?: boolean;
+                                            maintenance_priority_levels?: string[];
+                                            enable_inspections?: boolean;
+                                            inspection_frequency?: number;
+                                            inspection_frequency_unit?: string;
+                                            enable_auto_renewal?: boolean;
+                                            renewal_notice_period?: number;
+                                            renewal_notice_unit?: string;
+                                        };
+                                        return (
                                         <div className="space-y-6">
                                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                                 <div className="space-y-2">
@@ -141,7 +161,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             type="number"
                                                             min="1"
                                                             value={
-                                                                data.default_lease_period
+                                                                typedData.default_lease_period ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -156,7 +176,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                         />
                                                         <Select
                                                             value={
-                                                                data.lease_period_unit
+                                                                String(typedData.lease_period_unit ?? '')
                                                             }
                                                             onValueChange={(
                                                                 value,
@@ -206,7 +226,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_late_fees"
                                                                 checked={
-                                                                    data.enable_late_fees
+                                                                    typedData.enable_late_fees ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -219,7 +239,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.enable_late_fees && (
+                                                        {typedData.enable_late_fees && (
                                                             <>
                                                                 <div className="space-y-2">
                                                                     <Label htmlFor="late_fee_rate">
@@ -232,7 +252,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                         min="0"
                                                                         step="0.01"
                                                                         value={
-                                                                            data.late_fee_rate
+                                                                            typedData.late_fee_rate ?? 0
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -260,7 +280,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                         type="number"
                                                                         min="0"
                                                                         value={
-                                                                            data.late_fee_grace_period
+                                                                            typedData.late_fee_grace_period ?? 0
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -289,7 +309,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="require_deposit"
                                                                 checked={
-                                                                    data.require_deposit
+                                                                    typedData.require_deposit ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -302,7 +322,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.require_deposit && (
+                                                        {typedData.require_deposit && (
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="deposit_months">
                                                                     Security
@@ -315,7 +335,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                     type="number"
                                                                     min="1"
                                                                     value={
-                                                                        data.deposit_months
+                                                                        typedData.deposit_months ?? 0
                                                                     }
                                                                     onChange={(
                                                                         e,
@@ -349,7 +369,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                         <Switch
                                                             id="enable_utilities_tracking"
                                                             checked={
-                                                                data.enable_utilities_tracking
+                                                                typedData.enable_utilities_tracking ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked: boolean,
@@ -362,10 +382,10 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                         />
                                                     </div>
 
-                                                    {data.enable_utilities_tracking && (
+                                                    {typedData.enable_utilities_tracking && (
                                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                             {Object.entries(
-                                                                data.utilities as Utilities,
+                                                                (typedData.utilities as Utilities) || {},
                                                             ).map(
                                                                 ([
                                                                     utility,
@@ -422,7 +442,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_maintenance_requests"
                                                                 checked={
-                                                                    data.enable_maintenance_requests
+                                                                    typedData.enable_maintenance_requests ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -445,7 +465,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             <Switch
                                                                 id="enable_inspections"
                                                                 checked={
-                                                                    data.enable_inspections
+                                                                    typedData.enable_inspections ?? false
                                                                 }
                                                                 onCheckedChange={(
                                                                     checked: boolean,
@@ -458,7 +478,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                             />
                                                         </div>
 
-                                                        {data.enable_inspections && (
+                                                        {typedData.enable_inspections && (
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="inspection_frequency">
                                                                     Inspection
@@ -470,7 +490,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                         type="number"
                                                                         min="1"
                                                                         value={
-                                                                            data.inspection_frequency
+                                                                            typedData.inspection_frequency ?? 0
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -488,7 +508,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                     />
                                                                     <Select
                                                                         value={
-                                                                            data.inspection_frequency_unit
+                                                                            String(typedData.inspection_frequency_unit ?? '')
                                                                         }
                                                                         onValueChange={(
                                                                             value,
@@ -542,7 +562,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                         <Switch
                                                             id="enable_auto_renewal"
                                                             checked={
-                                                                data.enable_auto_renewal
+                                                                typedData.enable_auto_renewal ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked: boolean,
@@ -555,7 +575,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                         />
                                                     </div>
 
-                                                    {data.enable_auto_renewal && (
+                                                    {typedData.enable_auto_renewal && (
                                                         <div className="space-y-2">
                                                             <Label htmlFor="renewal_notice_period">
                                                                 Renewal Notice
@@ -567,7 +587,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                     type="number"
                                                                     min="1"
                                                                     value={
-                                                                        data.renewal_notice_period
+                                                                        typedData.renewal_notice_period ?? 0
                                                                     }
                                                                     onChange={(
                                                                         e,
@@ -585,7 +605,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                                 />
                                                                 <Select
                                                                     value={
-                                                                        data.renewal_notice_unit
+                                                                        String(typedData.renewal_notice_unit ?? '')
                                                                     }
                                                                     onValueChange={(
                                                                         value,
@@ -626,7 +646,8 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                        );
+                                    }}
                                 </SettingsForm>
                             ) : (
                                 <div className="py-12 text-center">

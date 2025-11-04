@@ -119,10 +119,20 @@ export default function Settings({ settings, auth }: Props) {
                         <CardContent>
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings}
+                                    settings={settings as unknown as Record<string, unknown>}
                                     onSubmit={handleSubmit}
                                 >
-                                    {({ data, setData }) => (
+                                    {({ data, setData }) => {
+                                        const twilio = (data.twilio as { account_sid?: string; auth_token?: string; phone_number?: string; default_country_code?: string }) || {};
+                                        const notifications = (data.notifications as { enable_reminders?: boolean; reminder_time?: string; enable_delivery_reports?: boolean; enable_auto_reply?: boolean; auto_reply_message?: string }) || {};
+                                        interface MessageTemplate {
+                                            name: string;
+                                            content: string;
+                                            variables: string[];
+                                        }
+                                        const templates = (data.templates as { enabled?: boolean; message_templates?: MessageTemplate[] }) || {};
+                                        const limits = (data.limits as { max_messages_per_day?: number; max_recipients_per_message?: number; blocked_keywords?: string[] }) || {};
+                                        return (
                                         <Tabs
                                             defaultValue="twilio"
                                             className="space-y-4"
@@ -150,8 +160,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Input
                                                             value={
-                                                                data.twilio
-                                                                    .account_sid
+                                                                twilio.account_sid ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -171,8 +180,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="password"
                                                             value={
-                                                                data.twilio
-                                                                    .auth_token
+                                                                twilio.auth_token ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -191,8 +199,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Input
                                                             value={
-                                                                data.twilio
-                                                                    .phone_number
+                                                                twilio.phone_number ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -211,8 +218,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </Label>
                                                         <Input
                                                             value={
-                                                                data.twilio
-                                                                    .default_country_code
+                                                                twilio.default_country_code ?? ''
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -242,9 +248,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .enable_reminders
+                                                                notifications.enable_reminders ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -257,17 +261,14 @@ export default function Settings({ settings, auth }: Props) {
                                                         />
                                                     </div>
 
-                                                    {data.notifications
-                                                        .enable_reminders && (
+                                                    {notifications.enable_reminders && (
                                                         <div className="space-y-2">
                                                             <Label>
                                                                 Reminder Time
                                                             </Label>
                                                             <Select
                                                                 value={
-                                                                    data
-                                                                        .notifications
-                                                                        .reminder_time
+                                                                    notifications.reminder_time ?? ''
                                                                 }
                                                                 onValueChange={(
                                                                     value,
@@ -311,9 +312,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .enable_delivery_reports
+                                                                notifications.enable_delivery_reports ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -338,9 +337,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data
-                                                                    .notifications
-                                                                    .enable_auto_reply
+                                                                notifications.enable_auto_reply ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -353,8 +350,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         />
                                                     </div>
 
-                                                    {data.notifications
-                                                        .enable_auto_reply && (
+                                                    {notifications.enable_auto_reply && (
                                                         <div className="space-y-2">
                                                             <Label>
                                                                 Auto Reply
@@ -362,9 +358,7 @@ export default function Settings({ settings, auth }: Props) {
                                                             </Label>
                                                             <Textarea
                                                                 value={
-                                                                    data
-                                                                        .notifications
-                                                                        .auto_reply_message
+                                                                    notifications.auto_reply_message ?? ''
                                                                 }
                                                                 onChange={(e) =>
                                                                     setData(
@@ -396,8 +390,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         </div>
                                                         <Switch
                                                             checked={
-                                                                data.templates
-                                                                    .enabled
+                                                                templates.enabled ?? false
                                                             }
                                                             onCheckedChange={(
                                                                 checked,
@@ -410,15 +403,11 @@ export default function Settings({ settings, auth }: Props) {
                                                         />
                                                     </div>
 
-                                                    {data.templates.enabled && (
+                                                    {templates.enabled && (
                                                         <div className="space-y-4">
-                                                            {data.templates.message_templates.map(
+                                                            {((templates.message_templates || []) as MessageTemplate[]).map(
                                                                 (
-                                                                    template: {
-                                                                        name: string;
-                                                                        content: string;
-                                                                        variables: string[];
-                                                                    },
+                                                                    template,
                                                                     index: number,
                                                                 ) => (
                                                                     <div
@@ -441,13 +430,11 @@ export default function Settings({ settings, auth }: Props) {
                                                                                 ) => {
                                                                                     const newTemplates =
                                                                                         [
-                                                                                            ...data
-                                                                                                .templates
-                                                                                                .message_templates,
+                                                                                            ...((templates.message_templates || []) as MessageTemplate[]),
                                                                                         ];
-                                                                                    newTemplates[
+                                                                                    (newTemplates[
                                                                                         index
-                                                                                    ].name =
+                                                                                    ] as MessageTemplate).name =
                                                                                         e.target.value;
                                                                                     setData(
                                                                                         'templates.message_templates',
@@ -471,13 +458,11 @@ export default function Settings({ settings, auth }: Props) {
                                                                                 ) => {
                                                                                     const newTemplates =
                                                                                         [
-                                                                                            ...data
-                                                                                                .templates
-                                                                                                .message_templates,
+                                                                                            ...((templates.message_templates || []) as MessageTemplate[]),
                                                                                         ];
-                                                                                    newTemplates[
+                                                                                    (newTemplates[
                                                                                         index
-                                                                                    ].content =
+                                                                                    ] as MessageTemplate).content =
                                                                                         e.target.value;
                                                                                     setData(
                                                                                         'templates.message_templates',
@@ -503,13 +488,11 @@ export default function Settings({ settings, auth }: Props) {
                                                                                 ) => {
                                                                                     const newTemplates =
                                                                                         [
-                                                                                            ...data
-                                                                                                .templates
-                                                                                                .message_templates,
+                                                                                            ...((templates.message_templates || []) as MessageTemplate[]),
                                                                                         ];
-                                                                                    newTemplates[
+                                                                                    (newTemplates[
                                                                                         index
-                                                                                    ].variables =
+                                                                                    ] as MessageTemplate).variables =
                                                                                         e.target.value.split(
                                                                                             '\n',
                                                                                         );
@@ -542,8 +525,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="number"
                                                             value={
-                                                                data.limits
-                                                                    .max_messages_per_day
+                                                                limits.max_messages_per_day ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -566,8 +548,7 @@ export default function Settings({ settings, auth }: Props) {
                                                         <Input
                                                             type="number"
                                                             value={
-                                                                data.limits
-                                                                    .max_recipients_per_message
+                                                                limits.max_recipients_per_message ?? 0
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
@@ -587,7 +568,7 @@ export default function Settings({ settings, auth }: Props) {
                                                             Blocked Keywords
                                                         </Label>
                                                         <Textarea
-                                                            value={data.limits.blocked_keywords.join(
+                                                            value={(limits.blocked_keywords || []).join(
                                                                 '\n',
                                                             )}
                                                             onChange={(e) =>
@@ -609,7 +590,8 @@ export default function Settings({ settings, auth }: Props) {
                                                 </div>
                                             </TabsContent>
                                         </Tabs>
-                                    )}
+                                        );
+                                    }}
                                 </SettingsForm>
                             ) : (
                                 <div className="py-12 text-center">
