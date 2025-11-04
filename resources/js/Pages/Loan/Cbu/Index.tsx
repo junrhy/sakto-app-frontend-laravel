@@ -691,33 +691,35 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
             <div className="rounded-lg border border-gray-200 p-4 shadow-sm dark:border-gray-700">
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <CardTitle>CBU Funds</CardTitle>
                                 <CardDescription>
                                     Manage your Capital Build Up funds
                                 </CardDescription>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button
                                     variant="outline"
                                     onClick={() => setIsReportDialogOpen(true)}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-2 w-full sm:w-auto"
                                 >
                                     <FileText className="h-4 w-4" />
-                                    Generate Report
+                                    <span className="hidden sm:inline">Generate Report</span>
+                                    <span className="sm:hidden">Report</span>
                                 </Button>
                                 {selectedFunds.length > 0 && (
                                     <Button
                                         variant="outline"
                                         onClick={exportToCSV}
-                                        className="flex items-center"
+                                        className="flex items-center w-full sm:w-auto"
                                     >
-                                        <FileDown className="mr-2 h-4 w-4" />
-                                        Export Selected
+                                        <FileDown className="h-4 w-4 sm:mr-2" />
+                                        <span className="hidden sm:inline">Export Selected</span>
+                                        <span className="sm:hidden">Export</span>
                                     </Button>
                                 )}
-                                <Button onClick={handleAddFund}>
+                                <Button onClick={handleAddFund} className="w-full sm:w-auto">
                                     Add CBU Fund
                                 </Button>
                             </div>
@@ -1068,9 +1070,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 );
                             })}
                         </div>
-                        <div className="mt-4 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">
+                        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
                                     Items per page:
                                 </span>
                                 <Select
@@ -1087,13 +1089,13 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                         <SelectItem value="50">50</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
                                     Showing {startIndex + 1}-
                                     {Math.min(endIndex, filteredFunds.length)}{' '}
                                     of {filteredFunds.length} items
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -1101,10 +1103,11 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                         handlePageChange(currentPage - 1)
                                     }
                                     disabled={currentPage === 1}
+                                    className="w-full sm:w-auto"
                                 >
                                     Previous
                                 </Button>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 overflow-x-auto">
                                     {Array.from(
                                         { length: totalPages },
                                         (_, i) => i + 1,
@@ -1120,7 +1123,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                             onClick={() =>
                                                 handlePageChange(page)
                                             }
-                                            className="h-8 w-8 p-0"
+                                            className="h-8 w-8 p-0 flex-shrink-0"
                                         >
                                             {page}
                                         </Button>
@@ -1133,6 +1136,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                         handlePageChange(currentPage + 1)
                                     }
                                     disabled={currentPage === totalPages}
+                                    className="w-full sm:w-auto"
                                 >
                                     Next
                                 </Button>

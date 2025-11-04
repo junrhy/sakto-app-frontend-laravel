@@ -40,117 +40,133 @@ export function AddFundDialog({
                     className="flex min-h-0 flex-1 flex-col"
                 >
                     <div className="min-h-0 flex-1 overflow-y-auto">
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    value={newFund.name}
-                                    onChange={(e) =>
-                                        onNewFundChange({
-                                            name: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
+                        <div className="grid gap-3 py-4">
+                            {/* Row 1: Name, Description */}
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="name">Name</Label>
+                                    <Input
+                                        id="name"
+                                        value={newFund.name}
+                                        onChange={(e) =>
+                                            onNewFundChange({
+                                                name: e.target.value,
+                                            })
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1 md:col-span-1 lg:col-span-2">
+                                    <Label htmlFor="description">
+                                        Description
+                                    </Label>
+                                    <Input
+                                        id="description"
+                                        value={newFund.description}
+                                        onChange={(e) =>
+                                            onNewFundChange({
+                                                description: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Input
-                                    id="description"
-                                    value={newFund.description}
-                                    onChange={(e) =>
-                                        onNewFundChange({
-                                            description: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="target_amount">
-                                    Target Amount
-                                </Label>
-                                <Input
-                                    id="target_amount"
-                                    type="number"
-                                    value={newFund.target_amount}
-                                    onChange={(e) =>
-                                        onNewFundChange({
-                                            target_amount: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="value_per_share">
-                                    Value Per Share
-                                </Label>
-                                <Input
-                                    id="value_per_share"
-                                    type="number"
-                                    min="0"
-                                    value={newFund.value_per_share}
-                                    onChange={(e) =>
-                                        onNewFundChange({
-                                            value_per_share: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="number_of_shares">
-                                    Number of Shares (Calculated)
-                                </Label>
-                                <Input
-                                    id="number_of_shares"
-                                    type="number"
-                                    min="0"
-                                    value={
-                                        newFund.total_amount &&
-                                        newFund.value_per_share
-                                            ? Math.ceil(
-                                                  parseFloat(
-                                                      newFund.total_amount,
-                                                  ) /
+
+                            {/* Row 2: Target Amount, Value Per Share, Number of Shares */}
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="target_amount">
+                                        Target Amount
+                                    </Label>
+                                    <Input
+                                        id="target_amount"
+                                        type="number"
+                                        value={newFund.target_amount}
+                                        onChange={(e) =>
+                                            onNewFundChange({
+                                                target_amount: e.target.value,
+                                            })
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="value_per_share">
+                                        Value Per Share
+                                    </Label>
+                                    <Input
+                                        id="value_per_share"
+                                        type="number"
+                                        min="0"
+                                        value={newFund.value_per_share}
+                                        onChange={(e) =>
+                                            onNewFundChange({
+                                                value_per_share:
+                                                    e.target.value,
+                                            })
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="number_of_shares">
+                                        Number of Shares (Calculated)
+                                    </Label>
+                                    <Input
+                                        id="number_of_shares"
+                                        type="number"
+                                        min="0"
+                                        value={
+                                            newFund.total_amount &&
+                                            newFund.value_per_share
+                                                ? Math.ceil(
                                                       parseFloat(
-                                                          newFund.value_per_share,
-                                                      ),
-                                              )
-                                            : 0
-                                    }
-                                    disabled
-                                />
+                                                          newFund.total_amount,
+                                                      ) /
+                                                          parseFloat(
+                                                              newFund.value_per_share,
+                                                          ),
+                                                  )
+                                                : 0
+                                        }
+                                        disabled
+                                    />
+                                </div>
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="start_date">Start Date</Label>
-                                <Input
-                                    id="start_date"
-                                    type="date"
-                                    value={newFund.start_date}
-                                    onChange={(e) =>
-                                        onNewFundChange({
-                                            start_date: e.target.value,
-                                        })
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="end_date">
-                                    End Date (Optional)
-                                </Label>
-                                <Input
-                                    id="end_date"
-                                    type="date"
-                                    value={newFund.end_date}
-                                    onChange={(e) =>
-                                        onNewFundChange({
-                                            end_date: e.target.value,
-                                        })
-                                    }
-                                />
+
+                            {/* Row 3: Start Date, End Date */}
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-1">
+                                    <Label htmlFor="start_date">
+                                        Start Date
+                                    </Label>
+                                    <Input
+                                        id="start_date"
+                                        type="date"
+                                        value={newFund.start_date}
+                                        onChange={(e) =>
+                                            onNewFundChange({
+                                                start_date: e.target.value,
+                                            })
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="end_date">
+                                        End Date (Optional)
+                                    </Label>
+                                    <Input
+                                        id="end_date"
+                                        type="date"
+                                        value={newFund.end_date}
+                                        onChange={(e) =>
+                                            onNewFundChange({
+                                                end_date: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
