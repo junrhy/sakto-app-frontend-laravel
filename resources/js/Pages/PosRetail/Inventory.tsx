@@ -30,7 +30,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
     BarChart2,
     Download,
@@ -40,9 +40,13 @@ import {
     Trash2,
     Upload,
     Upload as UploadIcon,
+    Package,
+    History,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import StockAdjustmentDialog from './components/StockAdjustmentDialog';
+import StockHistoryDialog from './components/StockHistoryDialog';
 
 interface Category {
     id: number;
@@ -71,6 +75,7 @@ export default function Inventory(props: {
     categories: Category[];
     appCurrency: any;
 }) {
+    const { auth } = usePage().props as any;
     const [products, setProducts] = useState<Product[]>(props.inventory);
     const [categories, setCategories] = useState<Category[]>(props.categories);
 
@@ -95,6 +100,12 @@ export default function Inventory(props: {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isStockAdjustmentDialogOpen, setIsStockAdjustmentDialogOpen] =
+        useState<boolean>(false);
+    const [isStockHistoryDialogOpen, setIsStockHistoryDialogOpen] =
+        useState<boolean>(false);
+    const [selectedProductForStock, setSelectedProductForStock] =
+        useState<Product | null>(null);
     const [filters, setFilters] = useState({
         category: 'all',
         minPrice: '',
@@ -207,7 +218,11 @@ export default function Inventory(props: {
             // Add all product fields to formData
             formData.append('name', newProduct.name);
             formData.append('sku', newProduct.sku);
-            formData.append('quantity', newProduct.quantity.toString());
+            // Only include quantity when creating new product, not when editing
+            // When editing, quantity should be managed through stock management feature
+            if (!isEditing) {
+                formData.append('quantity', newProduct.quantity.toString());
+            }
             formData.append('price', newProduct.price.toString());
             formData.append('category_id', newProduct.category_id.toString());
             formData.append('description', newProduct.description || '');
@@ -723,28 +738,36 @@ export default function Inventory(props: {
                                                 }}
                                             />
                                         </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label
-                                                htmlFor="quantity"
-                                                className="text-right"
-                                            >
-                                                Quantity
-                                            </Label>
-                                            <Input
-                                                id="quantity"
-                                                className="col-span-3"
-                                                type="number"
-                                                value={newProduct.quantity}
-                                                onChange={(e) =>
-                                                    setNewProduct({
-                                                        ...newProduct,
-                                                        quantity: Number(
-                                                            e.target.value,
-                                                        ),
-                                                    })
-                                                }
-                                            />
-                                        </div>
+                                        {/* Only show quantity field when creating new product, not when editing */}
+                                        {!isEditing && (
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                                <Label
+                                                    htmlFor="quantity"
+                                                    className="text-right"
+                                                >
+                                                    Initial Quantity
+                                                </Label>
+                                                <Input
+                                                    id="quantity"
+                                                    className="col-span-3"
+                                                    type="number"
+                                                    min="0"
+                                                    value={newProduct.quantity}
+                                                    onChange={(e) =>
+                                                        setNewProduct({
+                                                            ...newProduct,
+                                                            quantity: Number(
+                                                                e.target.value,
+                                                            ),
+                                                        })
+                                                    }
+                                                    placeholder="Set initial stock quantity"
+                                                />
+                                                <div className="col-span-4 text-xs text-gray-500 dark:text-gray-400">
+                                                    Note: After creation, use the stock management feature to adjust quantities.
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className="grid grid-cols-4 items-center gap-4">
                                             <Label
                                                 htmlFor="price"
@@ -1002,23 +1025,46 @@ export default function Inventory(props: {
                                         {product.price_formatted}
                                     </TableCell>
                                     <TableCell>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="mr-2"
-                                            onClick={() => editProduct(product)}
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() =>
-                                                deleteProduct(product.id)
-                                            }
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedProductForStock(product);
+                                                    setIsStockAdjustmentDialogOpen(true);
+                                                }}
+                                                title="Manage Stock"
+                                            >
+                                                <Package className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedProductForStock(product);
+                                                    setIsStockHistoryDialogOpen(true);
+                                                }}
+                                                title="View Stock History"
+                                            >
+                                                <History className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => editProduct(product)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() =>
+                                                    deleteProduct(product.id)
+                                                }
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -1072,6 +1118,28 @@ export default function Inventory(props: {
                 </CardContent>
             </Card>
             <ImagePreviewModal />
+
+            {/* Stock Adjustment Dialog */}
+            <StockAdjustmentDialog
+                open={isStockAdjustmentDialogOpen}
+                onOpenChange={setIsStockAdjustmentDialogOpen}
+                product={selectedProductForStock}
+                appCurrency={props.appCurrency}
+                performedBy={
+                    auth?.selectedTeamMember?.full_name || auth?.user?.name || ''
+                }
+                onSuccess={() => {
+                    // Refresh products after stock adjustment
+                    router.reload({ only: ['inventory'] });
+                }}
+            />
+
+            {/* Stock History Dialog */}
+            <StockHistoryDialog
+                open={isStockHistoryDialogOpen}
+                onOpenChange={setIsStockHistoryDialogOpen}
+                product={selectedProductForStock}
+            />
 
             {/* Category Management Dialog */}
             <Dialog

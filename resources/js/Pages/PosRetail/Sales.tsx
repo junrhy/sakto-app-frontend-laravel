@@ -41,11 +41,13 @@ import {
     startOfWeek,
     subMonths,
 } from 'date-fns';
-import { Calendar as CalendarIcon, Search, Trash2, Printer } from 'lucide-react';
+import { Calendar as CalendarIcon, Search, Trash2, Printer, BarChart2, List } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DateRange as CalendarDateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import ReceiptDialog from './components/ReceiptDialog';
+import SalesAnalytics from './components/SalesAnalytics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 type DateRange = {
     from: Date | undefined;
@@ -124,6 +126,7 @@ export default function Sales({
     const [data, setData] = useState<Sale[]>(sales);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
+    const [activeTab, setActiveTab] = useState('list');
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -326,6 +329,65 @@ export default function Sales({
             <Head title="Sales" />
 
             <Card className="p-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    {/* Mobile Dropdown */}
+                    <div className="mb-6 md:hidden">
+                        <Select value={activeTab} onValueChange={setActiveTab}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue>
+                                    {activeTab === 'list' && (
+                                        <div className="flex items-center">
+                                            <List className="mr-2 h-4 w-4" />
+                                            Sales List
+                                        </div>
+                                    )}
+                                    {activeTab === 'analytics' && (
+                                        <div className="flex items-center">
+                                            <BarChart2 className="mr-2 h-4 w-4" />
+                                            Reports & Analytics
+                                        </div>
+                                    )}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="list">
+                                    <div className="flex items-center">
+                                        <List className="mr-2 h-4 w-4" />
+                                        Sales List
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="analytics">
+                                    <div className="flex items-center">
+                                        <BarChart2 className="mr-2 h-4 w-4" />
+                                        Reports & Analytics
+                                    </div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Desktop Tabs */}
+                    <div className="mb-6 hidden md:block">
+                        <TabsList className="inline-flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 p-1 text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
+                            <TabsTrigger
+                                value="list"
+                                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border data-[state=active]:border-gray-200 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-md dark:data-[state=active]:border-gray-700 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                            >
+                                <List className="mr-2 h-4 w-4" />
+                                Sales List
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="analytics"
+                                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border data-[state=active]:border-gray-200 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-md dark:data-[state=active]:border-gray-700 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
+                            >
+                                <BarChart2 className="mr-2 h-4 w-4" />
+                                Reports & Analytics
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+
+                    {/* Sales List Tab */}
+                    <TabsContent value="list" className="mt-0">
                 <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
                     <div className="lg:col-span-2">
                         <div className="relative">
@@ -668,6 +730,16 @@ export default function Sales({
                         </Button>
                     </div>
                 </div>
+                    </TabsContent>
+
+                    {/* Reports & Analytics Tab */}
+                    <TabsContent value="analytics" className="mt-0">
+                        <SalesAnalytics
+                            sales={filteredData}
+                            appCurrency={appCurrency}
+                        />
+                    </TabsContent>
+                </Tabs>
             </Card>
 
             <ReceiptDialog

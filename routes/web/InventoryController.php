@@ -32,4 +32,10 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->gro
     Route::post('/inventory/categories', [InventoryController::class, 'storeCategory']);
     Route::put('/inventory/categories/{id}', [InventoryController::class, 'updateCategory']);
     Route::delete('/inventory/categories/{id}', [InventoryController::class, 'destroyCategory']);
+    
+    // Stock Management
+    Route::post('/inventory/{id}/stock/add', [InventoryController::class, 'addStock']);
+    Route::post('/inventory/{id}/stock/remove', [InventoryController::class, 'removeStock']);
+    Route::post('/inventory/{id}/stock/adjust', [InventoryController::class, 'adjustStock']);
+    Route::get('/inventory/{id}/stock/history', [InventoryController::class, 'getStockHistory']);
 });

@@ -242,6 +242,100 @@ class InventoryController extends Controller
         }
     }
 
+    public function addStock(Request $request, $id)
+    {
+        try {
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/inventory/{$id}/stock/add", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            
+            return redirect()->back()->with('success', 'Stock added successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to add stock', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function removeStock(Request $request, $id)
+    {
+        try {
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/inventory/{$id}/stock/remove", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            
+            return redirect()->back()->with('success', 'Stock removed successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to remove stock', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function adjustStock(Request $request, $id)
+    {
+        try {
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/inventory/{$id}/stock/adjust", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            
+            return redirect()->back()->with('success', 'Stock adjusted successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to adjust stock', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function getStockHistory($id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/inventory/{$id}/stock/history", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            
+            $data = $response->json()['data'];
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get stock history', [
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function generateBarcode(string $sku)
     {
         try {
