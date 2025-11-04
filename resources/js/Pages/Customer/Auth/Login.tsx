@@ -1,11 +1,34 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Lock, Mail, UserCircle } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
+
+const PROJECT_IMAGES = {
+    community:
+        'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    medical:
+        'https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    logistics:
+        'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    delivery:
+        'https://images.unsplash.com/photo-1526367790999-0150786686a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    jobs: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    shop: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    travel: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    fnb: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    education:
+        'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    finance:
+        'https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    agriculture:
+        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    construction:
+        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+} as const;
 
 interface Props {
     projectParam?: string;
@@ -42,6 +65,14 @@ export default function Login({ projectParam }: Props) {
 
     const portalName = getPortalName(projectParam);
 
+    // Get image URL based on project parameter, fallback to default
+    const imageUrl =
+        projectParam && projectParam in PROJECT_IMAGES
+            ? PROJECT_IMAGES[
+                  projectParam as keyof typeof PROJECT_IMAGES
+              ]
+            : PROJECT_IMAGES.community;
+
     useEffect(() => {
         // Get the hostname from the current URL
         if (typeof window !== 'undefined') {
@@ -69,146 +100,150 @@ export default function Login({ projectParam }: Props) {
         : route('customer.register');
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950 sm:px-6 lg:px-8">
+        <GuestLayout>
             <Head title="Customer Login" />
 
-            {/* Logo and Header Section */}
-            <div className="mb-8 text-center">
-                <Link href="/" className="inline-block">
-                    <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
-                        <div className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-3 shadow-lg">
-                            <ApplicationLogo className="h-12 w-12 fill-current text-white sm:h-14 sm:w-14" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
-                                {hostname}
-                            </h1>
-                            <div className="flex items-center justify-center space-x-1.5">
-                                <UserCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                                    {portalName}
-                                </span>
+            <div className="flex min-h-screen w-full bg-white dark:bg-gray-900">
+                {/* Left side - Login Form */}
+                <div className="flex w-full flex-col md:w-1/2">
+                    {/* Logo Section */}
+                    <div className="p-4 sm:p-6 md:p-8">
+                        <img
+                            src="/images/neulify-logo-big.png"
+                            className="block h-8 w-auto rounded-lg border-2 border-gray-800 p-2 dark:hidden sm:h-10 md:h-12"
+                            alt="Logo"
+                        />
+                        <img
+                            src="/images/neulify-logo-big-white.png"
+                            className="hidden h-8 w-auto rounded-lg border-2 p-2 dark:block dark:border-white sm:h-10 md:h-12"
+                            alt="Logo"
+                        />
+                    </div>
+
+                    {/* Form Section */}
+                    <div className="flex flex-grow items-center justify-center px-6 sm:px-8 md:px-12 lg:px-16">
+                        <div className="w-full max-w-[440px]">
+                            <div className="mb-6 sm:mb-8">
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 sm:text-3xl">
+                                    Welcome Back
+                                </h2>
+                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:mt-2 sm:text-base">
+                                    {portalName} - Please sign in to your account
+                                </p>
                             </div>
+
+                            <form
+                                onSubmit={submit}
+                                className="space-y-4 sm:space-y-6"
+                            >
+                                <div>
+                                    <InputLabel
+                                        htmlFor="email"
+                                        value="Email"
+                                        className="text-sm text-gray-700 dark:text-gray-300 sm:text-base"
+                                    />
+                                    <TextInput
+                                        id="email"
+                                        type="email"
+                                        name="email"
+                                        value={data.email}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
+                                        autoComplete="username"
+                                        isFocused={true}
+                                        onChange={(e) =>
+                                            setData('email', e.target.value)
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors.email}
+                                        className="mt-1 sm:mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel
+                                        htmlFor="password"
+                                        value="Password"
+                                        className="text-sm text-gray-700 dark:text-gray-300 sm:text-base"
+                                    />
+                                    <TextInput
+                                        id="password"
+                                        type="password"
+                                        name="password"
+                                        value={data.password}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
+                                        autoComplete="current-password"
+                                        onChange={(e) =>
+                                            setData('password', e.target.value)
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors.password}
+                                        className="mt-1 sm:mt-2"
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <label className="flex items-center">
+                                        <Checkbox
+                                            name="remember"
+                                            checked={data.remember}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'remember',
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                        />
+                                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
+                                            Remember me
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <PrimaryButton
+                                        className="w-full justify-center rounded-lg px-4 py-2.5 text-sm font-medium sm:py-3 sm:text-base"
+                                        disabled={processing}
+                                    >
+                                        {processing
+                                            ? 'Signing in...'
+                                            : 'Sign in'}
+                                    </PrimaryButton>
+                                </div>
+
+                                <div className="text-center">
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        Don't have an account?{' '}
+                                        <Link
+                                            href={registerUrl}
+                                            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                        >
+                                            Sign up
+                                        </Link>
+                                    </span>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </Link>
-                <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                    Sign in to access your account
-                </p>
-            </div>
+                </div>
 
-            {/* Login Card */}
-            <div className="w-full max-w-md">
-                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900 sm:p-8">
-                    <form onSubmit={submit} className="space-y-6">
-                        {/* Email Field */}
-                        <div>
-                            <InputLabel
-                                htmlFor="email"
-                                value="Email Address"
-                                className="text-gray-900 dark:text-white"
-                            />
-                            <div className="relative mt-2">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                                </div>
-                                <TextInput
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    value={data.email}
-                                    className="block w-full pl-10"
-                                    autoComplete="username"
-                                    isFocused={true}
-                                    placeholder="you@example.com"
-                                    onChange={(e) =>
-                                        setData('email', e.target.value)
-                                    }
-                                />
-                            </div>
-                            <InputError
-                                message={errors.email}
-                                className="mt-2"
-                            />
-                        </div>
-
-                        {/* Password Field */}
-                        <div>
-                            <InputLabel
-                                htmlFor="password"
-                                value="Password"
-                                className="text-gray-900 dark:text-white"
-                            />
-                            <div className="relative mt-2">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                                </div>
-                                <TextInput
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    className="block w-full pl-10"
-                                    autoComplete="current-password"
-                                    placeholder="••••••••"
-                                    onChange={(e) =>
-                                        setData('password', e.target.value)
-                                    }
-                                />
-                            </div>
-                            <InputError
-                                message={errors.password}
-                                className="mt-2"
-                            />
-                        </div>
-
-                        {/* Remember Me */}
-                        <div className="flex items-center">
-                            <input
-                                id="remember"
-                                type="checkbox"
-                                checked={data.remember}
-                                onChange={(e) =>
-                                    setData('remember', e.target.checked)
-                                }
-                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:ring-offset-gray-900"
-                            />
-                            <label
-                                htmlFor="remember"
-                                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                            >
-                                Remember me
-                            </label>
-                        </div>
-
-                        {/* Submit Button */}
-                        <PrimaryButton
-                            className="w-full justify-center py-3 text-base font-semibold"
-                            disabled={processing}
-                        >
-                            {processing ? 'Signing in...' : 'Sign in'}
-                        </PrimaryButton>
-                    </form>
-
-                    {/* Register Link */}
-                    <div className="mt-6 border-t border-gray-200 pt-6 text-center dark:border-gray-800">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Don't have an account?{' '}
-                            <Link
-                                href={registerUrl}
-                                className="font-semibold text-indigo-600 transition-colors duration-200 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                            >
-                                Create an account
-                            </Link>
-                        </p>
+                {/* Right side - Image */}
+                <div className="hidden md:block md:w-1/2">
+                    <div className="h-screen w-full">
+                        <img
+                            src={imageUrl}
+                            alt={
+                                projectParam
+                                    ? `${projectParam.charAt(0).toUpperCase() + projectParam.slice(1)} workspace`
+                                    : 'Customer Portal'
+                            }
+                            className="h-full w-full object-cover"
+                        />
                     </div>
                 </div>
             </div>
-
-            {/* Footer */}
-            <p className="mt-8 text-center text-xs text-gray-500 dark:text-gray-500">
-                © {new Date().getFullYear()} {hostname}. All rights reserved.
-            </p>
-        </div>
+        </GuestLayout>
     );
 }
