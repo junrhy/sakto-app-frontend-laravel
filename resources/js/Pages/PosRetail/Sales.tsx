@@ -28,9 +28,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { cn } from '@/lib/utils';
 import { PageProps } from '@/types';
-import { Project, User } from '@/types/index';
 import { Head, router } from '@inertiajs/react';
 import {
     endOfMonth,
@@ -41,11 +41,11 @@ import {
     startOfWeek,
     subMonths,
 } from 'date-fns';
-import { Calendar as CalendarIcon, Search, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Search, Trash2, Printer } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DateRange as CalendarDateRange } from 'react-day-picker';
 import { toast } from 'sonner';
-import AuthenticatedLayout from '../Layouts/AuthenticatedLayout';
+import ReceiptDialog from './components/ReceiptDialog';
 
 type DateRange = {
     from: Date | undefined;
@@ -55,8 +55,9 @@ type DateRange = {
 const itemsPerPage = 5;
 
 interface SaleItem {
-    id: string;
-    price: string;
+    id: number;
+    name: string;
+    price: number;
     quantity: number;
 }
 
@@ -65,31 +66,48 @@ interface Sale {
     created_at: string;
     items: SaleItem[];
     total_amount: number;
-    cash_received: number;
-    change: number;
+    total_amount_formatted?: string;
+    cash_received: number | null;
+    cash_received_formatted?: string | null;
+    change: number | null;
+    change_formatted?: string | null;
     payment_method: string;
 }
 
 interface Props extends PageProps {
     sales: Sale[];
-    auth: {
-        user: User;
-        project?: Project;
-        modules?: string[];
-        selectedTeamMember?: {
-            identifier: string;
-            first_name: string;
-            last_name: string;
-            full_name: string;
-            email: string;
-            roles: string[];
-            allowed_apps: string[];
-            profile_picture?: string;
-        };
+    appCurrency: {
+        symbol: string;
+        decimal_separator?: string;
+        thousands_separator?: string;
     };
 }
 
-export default function PosRetailSale({ sales, auth }: Props) {
+interface AuthWithTeamMember {
+    user: PageProps['auth']['user'];
+    selectedTeamMember?: {
+        identifier: string;
+        first_name: string;
+        last_name: string;
+        full_name: string;
+        email: string;
+        roles: string[];
+        allowed_apps: string[];
+        profile_picture?: string;
+    };
+    project?: {
+        id: number;
+        name: string;
+        identifier: string;
+    };
+    modules?: string[];
+}
+
+export default function Sales({
+    sales,
+    appCurrency,
+    auth,
+}: Props & { auth: AuthWithTeamMember }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -104,6 +122,8 @@ export default function PosRetailSale({ sales, auth }: Props) {
     });
 
     const [data, setData] = useState<Sale[]>(sales);
+    const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
+    const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -145,8 +165,8 @@ export default function PosRetailSale({ sales, auth }: Props) {
         const matchesSearch =
             normalizedSearchTerm === '' ||
             sale.items.some((item: SaleItem) => {
-                const itemId = item.id.toLowerCase();
-                return itemId.includes(normalizedSearchTerm);
+                const itemName = typeof item.name === 'string' ? item.name.toLowerCase() : String(item.name).toLowerCase();
+                return itemName.includes(normalizedSearchTerm);
             });
 
         // Payment method filter
@@ -255,13 +275,14 @@ export default function PosRetailSale({ sales, auth }: Props) {
                     to: endOfMonth(today),
                 };
                 break;
-            case 'last-month':
+            case 'last-month': {
                 const lastMonth = subMonths(today, 1);
                 newRange = {
                     from: startOfMonth(lastMonth),
                     to: endOfMonth(lastMonth),
                 };
                 break;
+            }
             default:
                 return;
         }
@@ -309,7 +330,7 @@ export default function PosRetailSale({ sales, auth }: Props) {
                     <div className="lg:col-span-2">
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search className="h-4 w-4 text-gray-500" />
+                                <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                             </span>
                             <Input
                                 type="text"
@@ -549,39 +570,51 @@ export default function PosRetailSale({ sales, auth }: Props) {
                                         </TableCell>
                                         <TableCell>
                                             {sale.items.map(
-                                                (
-                                                    item: SaleItem,
-                                                    idx: number,
-                                                ) => (
+                                                (item: SaleItem) => (
                                                     <div key={item.id}>
-                                                        {item.id} (${item.price}{' '}
+                                                        {item.name} ({appCurrency.symbol}{typeof item.price === 'number' ? item.price.toFixed(2) : item.price}{' '}
                                                         x {item.quantity})
                                                     </div>
                                                 ),
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {sale.total_amount}
+                                            {sale.total_amount_formatted || `${appCurrency.symbol}${typeof sale.total_amount === 'number' ? sale.total_amount.toFixed(2) : sale.total_amount}`}
                                         </TableCell>
                                         <TableCell>
-                                            {sale.cash_received}
+                                            {sale.cash_received_formatted || (sale.cash_received ? `${appCurrency.symbol}${typeof sale.cash_received === 'number' ? sale.cash_received.toFixed(2) : sale.cash_received}` : 'N/A')}
                                         </TableCell>
-                                        <TableCell>{sale.change}</TableCell>
                                         <TableCell>
+                                            {sale.change_formatted || (sale.change ? `${appCurrency.symbol}${typeof sale.change === 'number' ? sale.change.toFixed(2) : sale.change}` : 'N/A')}
+                                        </TableCell>
+                                        <TableCell className="capitalize">
                                             {sale.payment_method}
                                         </TableCell>
                                         <TableCell>
-                                            {canDelete && (
+                                            <div className="flex items-center gap-2">
                                                 <Button
-                                                    variant="destructive"
+                                                    variant="outline"
                                                     size="sm"
-                                                    onClick={() =>
-                                                        handleDelete(sale.id)
-                                                    }
+                                                    onClick={() => {
+                                                        setSelectedSaleForReceipt(sale);
+                                                        setIsReceiptDialogOpen(true);
+                                                    }}
+                                                    title="Print Receipt"
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Printer className="h-4 w-4" />
                                                 </Button>
-                                            )}
+                                                {canDelete && (
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDelete(sale.id)
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -591,7 +624,7 @@ export default function PosRetailSale({ sales, auth }: Props) {
                 </div>
 
                 <div className="mt-4 flex flex-col items-center justify-between gap-4 md:flex-row">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                         Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
                         {Math.min(
                             currentPage * itemsPerPage,
@@ -636,6 +669,32 @@ export default function PosRetailSale({ sales, auth }: Props) {
                     </div>
                 </div>
             </Card>
+
+            <ReceiptDialog
+                open={isReceiptDialogOpen}
+                onOpenChange={setIsReceiptDialogOpen}
+                receiptData={
+                    selectedSaleForReceipt
+                        ? {
+                              saleId: selectedSaleForReceipt.id,
+                              items: selectedSaleForReceipt.items.map((item) => ({
+                                  id: item.id,
+                                  name: item.name,
+                                  quantity: item.quantity,
+                                  price: item.price,
+                              })),
+                              totalAmount: selectedSaleForReceipt.total_amount,
+                              paymentMethod: selectedSaleForReceipt.payment_method as 'cash' | 'card',
+                              cashReceived: selectedSaleForReceipt.cash_received ?? undefined,
+                              change: selectedSaleForReceipt.change ?? undefined,
+                              date: selectedSaleForReceipt.created_at,
+                              appCurrency: appCurrency,
+                              storeName: auth.project?.name || undefined,
+                              userName: auth.selectedTeamMember?.full_name || auth.user.name || undefined,
+                          }
+                        : null
+                }
+            />
         </AuthenticatedLayout>
     );
 }

@@ -136,7 +136,7 @@ export default function Welcome({ auth }: PageProps) {
             href: '/shop',
             color: 'text-purple-600',
             bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
         {
             name: 'Delivery',

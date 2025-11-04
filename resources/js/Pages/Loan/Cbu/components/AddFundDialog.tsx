@@ -101,8 +101,7 @@ export function AddFundDialog({
                                         value={newFund.value_per_share}
                                         onChange={(e) =>
                                             onNewFundChange({
-                                                value_per_share:
-                                                    e.target.value,
+                                                value_per_share: e.target.value,
                                             })
                                         }
                                         required

@@ -5,6 +5,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -71,6 +72,7 @@ export default function Inventory(props: {
     appCurrency: any;
 }) {
     const [products, setProducts] = useState<Product[]>(props.inventory);
+    const [categories, setCategories] = useState<Category[]>(props.categories);
 
     const [filteredProducts, setFilteredProducts] =
         useState<Product[]>(products);
@@ -108,6 +110,19 @@ export default function Inventory(props: {
         null,
     );
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+    const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(
+        null,
+    );
+    const [newCategory, setNewCategory] = useState({
+        name: '',
+        description: '',
+    });
+
+    // Sync categories when props change
+    useEffect(() => {
+        setCategories(props.categories);
+    }, [props.categories]);
 
     useEffect(() => {
         const lowercasedFilter = searchTerm.toLowerCase();
@@ -167,6 +182,24 @@ export default function Inventory(props: {
     };
 
     const addOrUpdateProduct = async () => {
+        // Validate required fields
+        if (!newProduct.name.trim()) {
+            toast.error('Product name is required');
+            return;
+        }
+        if (!newProduct.sku.trim()) {
+            toast.error('SKU is required');
+            return;
+        }
+        if (!newProduct.category_id || newProduct.category_id === 0) {
+            toast.error('Category is required');
+            return;
+        }
+        if (newProduct.price <= 0) {
+            toast.error('Price must be greater than 0');
+            return;
+        }
+
         try {
             setIsLoading(true);
             const formData = new FormData();
@@ -439,7 +472,8 @@ export default function Inventory(props: {
             price: 0,
             price_formatted: '',
             images: [],
-            category_id: props.categories[0]?.id || 0,
+            category_id:
+                categories && categories.length > 0 ? categories[0].id : 0,
             description: '',
             status: 'in_stock',
             barcode: '',
@@ -480,6 +514,12 @@ export default function Inventory(props: {
                     <div className="flex items-center justify-between">
                         <CardTitle>Products</CardTitle>
                         <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsCategoryDialogOpen(true)}
+                            >
+                                Manage Categories
+                            </Button>
                             <Button variant="outline" onClick={handleExport}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Export
@@ -517,7 +557,7 @@ export default function Inventory(props: {
                                 <SelectItem value="all">
                                     All Categories
                                 </SelectItem>
-                                {props.categories.map((category) => (
+                                {categories.map((category) => (
                                     <SelectItem
                                         key={category.id}
                                         value={category.id.toString()}
@@ -580,7 +620,7 @@ export default function Inventory(props: {
                     {/* Existing search and table content */}
                     <div className="mb-4 flex flex-col items-center justify-between md:flex-row">
                         <div className="mb-2 flex w-full items-center md:mb-0 md:w-1/3">
-                            <Search className="mr-2 h-4 w-4 text-gray-500" />
+                            <Search className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                             <Input
                                 placeholder="Search products..."
                                 value={searchTerm}
@@ -732,10 +772,18 @@ export default function Inventory(props: {
                                                 htmlFor="category"
                                                 className="text-right"
                                             >
-                                                Category
+                                                Category{' '}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Select
-                                                value={newProduct.category_id.toString()}
+                                                value={
+                                                    newProduct.category_id &&
+                                                    newProduct.category_id !== 0
+                                                        ? newProduct.category_id.toString()
+                                                        : undefined
+                                                }
                                                 onValueChange={(value) =>
                                                     setNewProduct({
                                                         ...newProduct,
@@ -743,22 +791,36 @@ export default function Inventory(props: {
                                                             Number(value),
                                                     })
                                                 }
+                                                required
                                             >
                                                 <SelectTrigger className="col-span-3">
-                                                    <SelectValue placeholder="Select a category" />
+                                                    <SelectValue placeholder="Select a category (required)" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {props.categories.map(
-                                                        (category) => (
-                                                            <SelectItem
-                                                                key={
-                                                                    category.id
-                                                                }
-                                                                value={category.id.toString()}
-                                                            >
-                                                                {category.name}
-                                                            </SelectItem>
-                                                        ),
+                                                    {categories &&
+                                                    categories.length > 0 ? (
+                                                        categories.map(
+                                                            (category) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        category.id
+                                                                    }
+                                                                    value={category.id.toString()}
+                                                                >
+                                                                    {
+                                                                        category.name
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )
+                                                    ) : (
+                                                        <SelectItem
+                                                            value="no-categories"
+                                                            disabled
+                                                        >
+                                                            No categories
+                                                            available
+                                                        </SelectItem>
                                                     )}
                                                 </SelectContent>
                                             </Select>
@@ -1010,6 +1072,310 @@ export default function Inventory(props: {
                 </CardContent>
             </Card>
             <ImagePreviewModal />
+
+            {/* Category Management Dialog */}
+            <Dialog
+                open={isCategoryDialogOpen}
+                onOpenChange={setIsCategoryDialogOpen}
+            >
+                <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
+                    <DialogHeader className="flex-shrink-0">
+                        <DialogTitle>Manage Categories</DialogTitle>
+                    </DialogHeader>
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
+                        {/* Add/Edit Category Form */}
+                        <div className="space-y-3 rounded-lg border p-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                {editingCategory
+                                    ? 'Edit Category'
+                                    : 'Add New Category'}
+                            </div>
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <div className="space-y-1">
+                                    <Label htmlFor="categoryName">
+                                        Name{' '}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="categoryName"
+                                        value={newCategory.name}
+                                        onChange={(e) =>
+                                            setNewCategory({
+                                                ...newCategory,
+                                                name: e.target.value,
+                                            })
+                                        }
+                                        placeholder="Category name"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="categoryDescription">
+                                        Description
+                                    </Label>
+                                    <Input
+                                        id="categoryDescription"
+                                        value={newCategory.description}
+                                        onChange={(e) =>
+                                            setNewCategory({
+                                                ...newCategory,
+                                                description: e.target.value,
+                                            })
+                                        }
+                                        placeholder="Optional description"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    onClick={async () => {
+                                        if (!newCategory.name.trim()) {
+                                            toast.error(
+                                                'Category name is required',
+                                            );
+                                            return;
+                                        }
+
+                                        try {
+                                            if (editingCategory) {
+                                                await router.put(
+                                                    `/inventory/categories/${editingCategory.id}`,
+                                                    newCategory,
+                                                    {
+                                                        preserveState: true,
+                                                        onSuccess: () => {
+                                                            setCategories(
+                                                                categories.map(
+                                                                    (cat) =>
+                                                                        cat.id ===
+                                                                        editingCategory.id
+                                                                            ? {
+                                                                                  ...cat,
+                                                                                  name: newCategory.name,
+                                                                                  description:
+                                                                                      newCategory.description,
+                                                                              }
+                                                                            : cat,
+                                                                ),
+                                                            );
+                                                            setNewCategory({
+                                                                name: '',
+                                                                description: '',
+                                                            });
+                                                            setEditingCategory(
+                                                                null,
+                                                            );
+                                                            toast.success(
+                                                                'Category updated successfully',
+                                                            );
+                                                        },
+                                                        onError: () =>
+                                                            toast.error(
+                                                                'Failed to update category',
+                                                            ),
+                                                    },
+                                                );
+                                            } else {
+                                                await router.post(
+                                                    '/inventory/categories',
+                                                    newCategory,
+                                                    {
+                                                        preserveState: true,
+                                                        onSuccess: (
+                                                            page: any,
+                                                        ) => {
+                                                            const newCat =
+                                                                page.props.categories?.slice(
+                                                                    -1,
+                                                                )[0];
+                                                            if (newCat) {
+                                                                setCategories([
+                                                                    ...categories,
+                                                                    newCat,
+                                                                ]);
+                                                            } else {
+                                                                router.reload({
+                                                                    only: [
+                                                                        'categories',
+                                                                    ],
+                                                                });
+                                                            }
+                                                            setNewCategory({
+                                                                name: '',
+                                                                description: '',
+                                                            });
+                                                            toast.success(
+                                                                'Category added successfully',
+                                                            );
+                                                        },
+                                                        onError: () =>
+                                                            toast.error(
+                                                                'Failed to add category',
+                                                            ),
+                                                    },
+                                                );
+                                            }
+                                        } catch (error) {
+                                            console.error(
+                                                'Error saving category:',
+                                                error,
+                                            );
+                                        }
+                                    }}
+                                >
+                                    {editingCategory ? 'Update' : 'Add'}
+                                </Button>
+                                {editingCategory && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEditingCategory(null);
+                                            setNewCategory({
+                                                name: '',
+                                                description: '',
+                                            });
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Categories List */}
+                        <div>
+                            <div className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Existing Categories ({categories.length})
+                            </div>
+                            <div className="space-y-2">
+                                {categories.length === 0 ? (
+                                    <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                        No categories yet. Create one above.
+                                    </div>
+                                ) : (
+                                    categories.map((category) => {
+                                        const productCount = products.filter(
+                                            (p) =>
+                                                p.category_id === category.id,
+                                        ).length;
+
+                                        return (
+                                            <div
+                                                key={category.id}
+                                                className="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="font-medium text-gray-900 dark:text-white">
+                                                        {category.name}
+                                                    </div>
+                                                    {category.description && (
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {
+                                                                category.description
+                                                            }
+                                                        </div>
+                                                    )}
+                                                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                                                        {productCount} product
+                                                        {productCount !== 1
+                                                            ? 's'
+                                                            : ''}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setEditingCategory(
+                                                                category,
+                                                            );
+                                                            setNewCategory({
+                                                                name: category.name,
+                                                                description:
+                                                                    category.description ||
+                                                                    '',
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={async () => {
+                                                            if (
+                                                                productCount > 0
+                                                            ) {
+                                                                toast.error(
+                                                                    'Cannot delete category with existing products',
+                                                                );
+                                                                return;
+                                                            }
+
+                                                            if (
+                                                                confirm(
+                                                                    `Are you sure you want to delete "${category.name}"?`,
+                                                                )
+                                                            ) {
+                                                                try {
+                                                                    await router.delete(
+                                                                        `/inventory/categories/${category.id}`,
+                                                                        {
+                                                                            preserveState:
+                                                                                true,
+                                                                            onSuccess:
+                                                                                () => {
+                                                                                    router.reload(
+                                                                                        {
+                                                                                            only: [
+                                                                                                'categories',
+                                                                                            ],
+                                                                                        },
+                                                                                    );
+                                                                                    toast.success(
+                                                                                        'Category deleted successfully',
+                                                                                    );
+                                                                                },
+                                                                            onError:
+                                                                                () =>
+                                                                                    toast.error(
+                                                                                        'Failed to delete category',
+                                                                                    ),
+                                                                        },
+                                                                    );
+                                                                } catch (error) {
+                                                                    console.error(
+                                                                        'Error deleting category:',
+                                                                        error,
+                                                                    );
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter className="flex-shrink-0 border-t pt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setIsCategoryDialogOpen(false);
+                                setEditingCategory(null);
+                                setNewCategory({ name: '', description: '' });
+                            }}
+                        >
+                            Close
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AuthenticatedLayout>
     );
 }

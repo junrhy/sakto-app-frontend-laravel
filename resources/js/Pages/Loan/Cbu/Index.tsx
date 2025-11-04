@@ -702,24 +702,33 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Button
                                     variant="outline"
                                     onClick={() => setIsReportDialogOpen(true)}
-                                    className="flex items-center gap-2 w-full sm:w-auto"
+                                    className="flex w-full items-center gap-2 sm:w-auto"
                                 >
                                     <FileText className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Generate Report</span>
+                                    <span className="hidden sm:inline">
+                                        Generate Report
+                                    </span>
                                     <span className="sm:hidden">Report</span>
                                 </Button>
                                 {selectedFunds.length > 0 && (
                                     <Button
                                         variant="outline"
                                         onClick={exportToCSV}
-                                        className="flex items-center w-full sm:w-auto"
+                                        className="flex w-full items-center sm:w-auto"
                                     >
                                         <FileDown className="h-4 w-4 sm:mr-2" />
-                                        <span className="hidden sm:inline">Export Selected</span>
-                                        <span className="sm:hidden">Export</span>
+                                        <span className="hidden sm:inline">
+                                            Export Selected
+                                        </span>
+                                        <span className="sm:hidden">
+                                            Export
+                                        </span>
                                     </Button>
                                 )}
-                                <Button onClick={handleAddFund} className="w-full sm:w-auto">
+                                <Button
+                                    onClick={handleAddFund}
+                                    className="w-full sm:w-auto"
+                                >
                                     Add CBU Fund
                                 </Button>
                             </div>
@@ -1123,7 +1132,7 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                             onClick={() =>
                                                 handlePageChange(page)
                                             }
-                                            className="h-8 w-8 p-0 flex-shrink-0"
+                                            className="h-8 w-8 flex-shrink-0 p-0"
                                         >
                                             {page}
                                         </Button>

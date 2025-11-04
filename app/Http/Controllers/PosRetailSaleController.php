@@ -40,15 +40,21 @@ class PosRetailSaleController extends Controller
                 'id' => $sale['id'],
                 'created_at' => $sale['created_at'],
                 'items' => $this->mapSaleItems($sale['items']),
-                'total_amount' => $app_currency->symbol . number_format($sale['total_amount'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
-                'cash_received' => $app_currency->symbol . number_format($sale['cash_received'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
-                'change' => $app_currency->symbol . number_format($sale['change'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
-                'payment_method' => ucfirst($sale['payment_method']),
+                'total_amount' => (float) $sale['total_amount'],
+                'total_amount_formatted' => $app_currency->symbol . number_format($sale['total_amount'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
+                'cash_received' => $sale['cash_received'] ? (float) $sale['cash_received'] : null,
+                'cash_received_formatted' => $sale['cash_received'] ? $app_currency->symbol . number_format($sale['cash_received'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator) : null,
+                'change' => $sale['change'] ? (float) $sale['change'] : null,
+                'change_formatted' => $sale['change'] ? $app_currency->symbol . number_format($sale['change'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator) : null,
+                'payment_method' => strtolower($sale['payment_method']),
             ];
         });
 
-        return Inertia::render('PosRetailSale', [
-            'sales' => $sales
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+        
+        return Inertia::render('PosRetail/Sales', [
+            'sales' => $sales,
+            'appCurrency' => $jsonAppCurrency
         ]);
     }
 
@@ -70,7 +76,12 @@ class PosRetailSaleController extends Controller
 
         return collect($items)->map(function ($item) use ($inventoryProducts) {
             $product = collect($inventoryProducts)->firstWhere('id', $item['id']);
-            return ['id' => $product['name'], 'price' => $product['price'], 'quantity' => $item['quantity']];
+            return [
+                'id' => $item['id'],
+                'name' => $product ? $product['name'] : 'Unknown Product',
+                'price' => $product ? $product['price'] : 0,
+                'quantity' => $item['quantity']
+            ];
         });
     }
 

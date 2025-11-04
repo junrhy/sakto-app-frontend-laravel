@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PosRetailController extends Controller
 {
@@ -44,7 +45,7 @@ class PosRetailController extends Controller
                 return $product;
             }, $inventoryProducts);
             
-            return Inertia::render('PosRetail', [
+            return Inertia::render('PosRetail/Index', [
                 'products' => $inventoryProducts,
                 'categories' => $inventoryCategories,
                 'appCurrency' => $jsonAppCurrency
@@ -70,9 +71,17 @@ class PosRetailController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return redirect()->back();
+            $saleData = $response->json()['data'] ?? null;
+
+            return redirect()->back()
+                ->with('success', 'Sale completed successfully')
+                ->with('saleData', $saleData);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Failed to complete sale', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 

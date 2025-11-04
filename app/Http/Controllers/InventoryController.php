@@ -47,9 +47,9 @@ class InventoryController extends Controller
                 return $product;
             }, $inventoryData);
             
-            return Inertia::render('Inventory', [
+            return Inertia::render('PosRetail/Inventory', [
                 'inventory' => $inventoryData,
-                'categories' => $inventoryCategories,
+                'categories' => $inventoryCategories ?? [],
                 'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
@@ -255,12 +255,6 @@ class InventoryController extends Controller
                     'barcode' => 'data:image/png;base64,' . $barcode
                 ]
             ]);
-            return Inertia::render('Inventory', [
-                'status' => 'success',
-                'data' => [
-                    'barcode' => 'data:image/png;base64,' . $barcode
-                ]
-            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to generate barcode'], 500);
         }
@@ -352,7 +346,106 @@ class InventoryController extends Controller
                 'categories' => $categories
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function storeCategory(Request $request)
+    {
+        try {
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+
+            $response = Http::withToken($this->apiToken)
+                ->timeout(30)
+                ->post("{$this->apiUrl}/inventory/categories", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            // Fetch updated categories
+            $clientIdentifier = auth()->user()->identifier;
+            $categoriesResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/inventory?client_identifier={$clientIdentifier}");
+
+            if ($categoriesResponse->successful()) {
+                $inventoryCategories = $categoriesResponse->json()['data']['categories'];
+                return redirect()->back()->with('categories', $inventoryCategories);
+            }
+
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Log::error('Failed to create category', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function updateCategory(Request $request, string $id)
+    {
+        try {
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+
+            $response = Http::withToken($this->apiToken)
+                ->timeout(30)
+                ->put("{$this->apiUrl}/inventory/categories/{$id}", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            // Fetch updated categories
+            $clientIdentifier = auth()->user()->identifier;
+            $categoriesResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/inventory?client_identifier={$clientIdentifier}");
+
+            if ($categoriesResponse->successful()) {
+                $inventoryCategories = $categoriesResponse->json()['data']['categories'];
+                return redirect()->back()->with('categories', $inventoryCategories);
+            }
+
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Log::error('Failed to update category', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function destroyCategory(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->timeout(30)
+                ->delete("{$this->apiUrl}/inventory/categories/{$id}", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            // Fetch updated categories
+            $categoriesResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/inventory?client_identifier={$clientIdentifier}");
+
+            if ($categoriesResponse->successful()) {
+                $inventoryCategories = $categoriesResponse->json()['data']['categories'];
+                return redirect()->back()->with('categories', $inventoryCategories);
+            }
+
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Log::error('Failed to delete category', [
+                'error' => $e->getMessage(),
+            ]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 }

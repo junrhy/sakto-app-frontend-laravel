@@ -68,9 +68,7 @@ export default function Login({ projectParam }: Props) {
     // Get image URL based on project parameter, fallback to default
     const imageUrl =
         projectParam && projectParam in PROJECT_IMAGES
-            ? PROJECT_IMAGES[
-                  projectParam as keyof typeof PROJECT_IMAGES
-              ]
+            ? PROJECT_IMAGES[projectParam as keyof typeof PROJECT_IMAGES]
             : PROJECT_IMAGES.community;
 
     useEffect(() => {
@@ -128,7 +126,8 @@ export default function Login({ projectParam }: Props) {
                                     Welcome Back
                                 </h2>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:mt-2 sm:text-base">
-                                    {portalName} - Please sign in to your account
+                                    {portalName} - Please sign in to your
+                                    account
                                 </p>
                             </div>
 

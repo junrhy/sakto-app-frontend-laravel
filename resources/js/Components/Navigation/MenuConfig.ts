@@ -19,7 +19,23 @@ export const menuCategories: MenuCategory[] = [
         id: 'business',
         title: 'Business',
         items: [
-            { id: 'retail', title: 'Retail', href: '/retail?app=retail' },
+            { id: 'retail', title: 'Retail POS', href: '/pos-retail?app=retail' },
+            {
+                id: 'retail-inventory',
+                title: 'Inventory',
+                href: '/inventory?app=retail',
+                urlCheck: 'inventory',
+                moduleCheck: 'retail',
+                appParamCheck: ['retail'],
+            },
+            {
+                id: 'retail-sales',
+                title: 'Sales',
+                href: '/retail-sale?app=retail',
+                urlCheck: 'retail-sale',
+                moduleCheck: 'retail',
+                appParamCheck: ['retail'],
+            },
             {
                 id: 'fnb',
                 title: 'F&B',

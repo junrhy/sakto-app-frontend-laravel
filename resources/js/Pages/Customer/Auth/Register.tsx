@@ -237,7 +237,8 @@ export default function Register({ projectParam, projectExists }: Props) {
                                     Create {userTypeName} Account
                                 </h2>
                                 <p className="mt-2 text-base text-gray-600 dark:text-gray-400">
-                                    Join us as a {userTypeName.toLowerCase()} and get started
+                                    Join us as a {userTypeName.toLowerCase()}{' '}
+                                    and get started
                                 </p>
                             </div>
 
@@ -245,9 +246,12 @@ export default function Register({ projectParam, projectExists }: Props) {
                             <div className="mb-8">
                                 <div className="flex items-center justify-between">
                                     {steps.map((step, index) => {
-                                        const isActive = step.id === currentStep;
-                                        const isCompleted = step.id < currentStep;
-                                        const isLast = index === steps.length - 1;
+                                        const isActive =
+                                            step.id === currentStep;
+                                        const isCompleted =
+                                            step.id < currentStep;
+                                        const isLast =
+                                            index === steps.length - 1;
 
                                         return (
                                             <div
@@ -307,87 +311,94 @@ export default function Register({ projectParam, projectExists }: Props) {
                                     <div className="space-y-4">
                                         {/* Name and Email Row */}
                                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                    <div>
-                                        <InputLabel
-                                            htmlFor="name"
-                                            value="Name"
-                                            className="text-base text-gray-700 dark:text-gray-300"
-                                        />
-                                        <TextInput
-                                            id="name"
-                                            name="name"
-                                            value={data.name}
-                                            className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            autoComplete="name"
-                                            isFocused={true}
-                                            onChange={(e) =>
-                                                setData('name', e.target.value)
-                                            }
-                                            required
-                                        />
-                                        <InputError
-                                            message={errors.name}
-                                            className="mt-2"
-                                        />
-                                    </div>
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="name"
+                                                    value="Name"
+                                                    className="text-base text-gray-700 dark:text-gray-300"
+                                                />
+                                                <TextInput
+                                                    id="name"
+                                                    name="name"
+                                                    value={data.name}
+                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    autoComplete="name"
+                                                    isFocused={true}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'name',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                />
+                                                <InputError
+                                                    message={errors.name}
+                                                    className="mt-2"
+                                                />
+                                            </div>
 
-                                    <div>
-                                        <InputLabel
-                                            htmlFor="email"
-                                            value="Email"
-                                            className="text-base text-gray-700 dark:text-gray-300"
-                                        />
-                                        <TextInput
-                                            id="email"
-                                            type="email"
-                                            name="email"
-                                            value={data.email}
-                                            className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            autoComplete="username"
-                                            onChange={(e) =>
-                                                setData('email', e.target.value)
-                                            }
-                                            required
-                                        />
-                                        <InputError
-                                            message={errors.email}
-                                            className="mt-2"
-                                        />
-                                    </div>
-                                </div>
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="email"
+                                                    value="Email"
+                                                    className="text-base text-gray-700 dark:text-gray-300"
+                                                />
+                                                <TextInput
+                                                    id="email"
+                                                    type="email"
+                                                    name="email"
+                                                    value={data.email}
+                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    autoComplete="username"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'email',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                />
+                                                <InputError
+                                                    message={errors.email}
+                                                    className="mt-2"
+                                                />
+                                            </div>
+                                        </div>
 
-                                {/* Phone Number - Full Width */}
-                                <div>
-                                    <InputLabel
-                                        htmlFor="phone_number"
-                                        value="Phone Number"
-                                        className="text-base text-gray-700 dark:text-gray-300"
-                                    />
-                                    <TextInput
-                                        id="phone_number"
-                                        type="tel"
-                                        name="phone_number"
-                                        value={data.phone_number}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        autoComplete="tel"
-                                        placeholder="+1 (555) 123-4567"
-                                        onChange={(e) =>
-                                            setData(
-                                                'phone_number',
-                                                e.target.value,
-                                            )
-                                        }
-                                        required
-                                    />
-                                    <InputError
-                                        message={errors.phone_number}
-                                        className="mt-2"
-                                    />
-                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Accepts formats: +1 (555) 123-4567,
-                                        +1-555-123-4567, 555-123-4567
-                                    </p>
-                                </div>
+                                        {/* Phone Number - Full Width */}
+                                        <div>
+                                            <InputLabel
+                                                htmlFor="phone_number"
+                                                value="Phone Number"
+                                                className="text-base text-gray-700 dark:text-gray-300"
+                                            />
+                                            <TextInput
+                                                id="phone_number"
+                                                type="tel"
+                                                name="phone_number"
+                                                value={data.phone_number}
+                                                className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                autoComplete="tel"
+                                                placeholder="+1 (555) 123-4567"
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'phone_number',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                required
+                                            />
+                                            <InputError
+                                                message={errors.phone_number}
+                                                className="mt-2"
+                                            />
+                                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                Accepts formats: +1 (555)
+                                                123-4567, +1-555-123-4567,
+                                                555-123-4567
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
 
@@ -396,61 +407,63 @@ export default function Register({ projectParam, projectExists }: Props) {
                                     <div className="space-y-4">
                                         {/* Password Fields Row */}
                                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                    <div>
-                                        <InputLabel
-                                            htmlFor="password"
-                                            value="Password"
-                                            className="text-base text-gray-700 dark:text-gray-300"
-                                        />
-                                        <TextInput
-                                            id="password"
-                                            type="password"
-                                            name="password"
-                                            value={data.password}
-                                            className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            autoComplete="new-password"
-                                            onChange={(e) =>
-                                                setData(
-                                                    'password',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            required
-                                        />
-                                        <InputError
-                                            message={errors.password}
-                                            className="mt-2"
-                                        />
-                                    </div>
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="password"
+                                                    value="Password"
+                                                    className="text-base text-gray-700 dark:text-gray-300"
+                                                />
+                                                <TextInput
+                                                    id="password"
+                                                    type="password"
+                                                    name="password"
+                                                    value={data.password}
+                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    autoComplete="new-password"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'password',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                />
+                                                <InputError
+                                                    message={errors.password}
+                                                    className="mt-2"
+                                                />
+                                            </div>
 
-                                    <div>
-                                        <InputLabel
-                                            htmlFor="password_confirmation"
-                                            value="Confirm Password"
-                                            className="text-base text-gray-700 dark:text-gray-300"
-                                        />
-                                        <TextInput
-                                            id="password_confirmation"
-                                            type="password"
-                                            name="password_confirmation"
-                                            value={data.password_confirmation}
-                                            className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            autoComplete="new-password"
-                                            onChange={(e) =>
-                                                setData(
-                                                    'password_confirmation',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            required
-                                        />
-                                        <InputError
-                                            message={
-                                                errors.password_confirmation
-                                            }
-                                            className="mt-2"
-                                        />
-                                    </div>
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="password_confirmation"
+                                                    value="Confirm Password"
+                                                    className="text-base text-gray-700 dark:text-gray-300"
+                                                />
+                                                <TextInput
+                                                    id="password_confirmation"
+                                                    type="password"
+                                                    name="password_confirmation"
+                                                    value={
+                                                        data.password_confirmation
+                                                    }
+                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    autoComplete="new-password"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'password_confirmation',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.password_confirmation
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -465,175 +478,179 @@ export default function Register({ projectParam, projectExists }: Props) {
                                         </div>
 
                                         <div className="space-y-4">
-                                        {/* Street and Unit Row */}
-                                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                                            <div className="lg:col-span-2">
-                                                <InputLabel
-                                                    htmlFor="street"
-                                                    value="Street Address"
-                                                    className="text-base text-gray-700 dark:text-gray-300"
-                                                />
-                                                <TextInput
-                                                    id="street"
-                                                    name="street"
-                                                    value={data.street}
-                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    autoComplete="street-address"
-                                                    placeholder="123 Main Street"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'street',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    required
-                                                />
-                                                <InputError
-                                                    message={errors.street}
-                                                    className="mt-2"
-                                                />
+                                            {/* Street and Unit Row */}
+                                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                                                <div className="lg:col-span-2">
+                                                    <InputLabel
+                                                        htmlFor="street"
+                                                        value="Street Address"
+                                                        className="text-base text-gray-700 dark:text-gray-300"
+                                                    />
+                                                    <TextInput
+                                                        id="street"
+                                                        name="street"
+                                                        value={data.street}
+                                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                        autoComplete="street-address"
+                                                        placeholder="123 Main Street"
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'street',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <InputError
+                                                        message={errors.street}
+                                                        className="mt-2"
+                                                    />
+                                                </div>
+
+                                                <div className="lg:col-span-1">
+                                                    <InputLabel
+                                                        htmlFor="unit_number"
+                                                        value="Unit/Apt (Optional)"
+                                                        className="text-base text-gray-700 dark:text-gray-300"
+                                                    />
+                                                    <TextInput
+                                                        id="unit_number"
+                                                        name="unit_number"
+                                                        value={data.unit_number}
+                                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                        autoComplete="address-line2"
+                                                        placeholder="Apt 4B"
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'unit_number',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors.unit_number
+                                                        }
+                                                        className="mt-2"
+                                                    />
+                                                </div>
                                             </div>
 
-                                            <div className="lg:col-span-1">
-                                                <InputLabel
-                                                    htmlFor="unit_number"
-                                                    value="Unit/Apt (Optional)"
-                                                    className="text-base text-gray-700 dark:text-gray-300"
-                                                />
-                                                <TextInput
-                                                    id="unit_number"
-                                                    name="unit_number"
-                                                    value={data.unit_number}
-                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    autoComplete="address-line2"
-                                                    placeholder="Apt 4B"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'unit_number',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={errors.unit_number}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-                                        </div>
+                                            {/* City and State Row */}
+                                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                                <div>
+                                                    <InputLabel
+                                                        htmlFor="city"
+                                                        value="City"
+                                                        className="text-base text-gray-700 dark:text-gray-300"
+                                                    />
+                                                    <TextInput
+                                                        id="city"
+                                                        name="city"
+                                                        value={data.city}
+                                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                        autoComplete="address-level2"
+                                                        placeholder="New York"
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'city',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <InputError
+                                                        message={errors.city}
+                                                        className="mt-2"
+                                                    />
+                                                </div>
 
-                                        {/* City and State Row */}
-                                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="city"
-                                                    value="City"
-                                                    className="text-base text-gray-700 dark:text-gray-300"
-                                                />
-                                                <TextInput
-                                                    id="city"
-                                                    name="city"
-                                                    value={data.city}
-                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    autoComplete="address-level2"
-                                                    placeholder="New York"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'city',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    required
-                                                />
-                                                <InputError
-                                                    message={errors.city}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="state"
-                                                    value="State/Province"
-                                                    className="text-base text-gray-700 dark:text-gray-300"
-                                                />
-                                                <TextInput
-                                                    id="state"
-                                                    name="state"
-                                                    value={data.state}
-                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    autoComplete="address-level1"
-                                                    placeholder="NY"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'state',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    required
-                                                />
-                                                <InputError
-                                                    message={errors.state}
-                                                    className="mt-2"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Postal Code and Country Row */}
-                                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="postal_code"
-                                                    value="Postal Code"
-                                                    className="text-base text-gray-700 dark:text-gray-300"
-                                                />
-                                                <TextInput
-                                                    id="postal_code"
-                                                    name="postal_code"
-                                                    value={data.postal_code}
-                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    autoComplete="postal-code"
-                                                    placeholder="10001"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'postal_code',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    required
-                                                />
-                                                <InputError
-                                                    message={errors.postal_code}
-                                                    className="mt-2"
-                                                />
+                                                <div>
+                                                    <InputLabel
+                                                        htmlFor="state"
+                                                        value="State/Province"
+                                                        className="text-base text-gray-700 dark:text-gray-300"
+                                                    />
+                                                    <TextInput
+                                                        id="state"
+                                                        name="state"
+                                                        value={data.state}
+                                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                        autoComplete="address-level1"
+                                                        placeholder="NY"
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'state',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <InputError
+                                                        message={errors.state}
+                                                        className="mt-2"
+                                                    />
+                                                </div>
                                             </div>
 
-                                            <div>
-                                                <InputLabel
-                                                    htmlFor="country"
-                                                    value="Country"
-                                                    className="text-base text-gray-700 dark:text-gray-300"
-                                                />
-                                                <TextInput
-                                                    id="country"
-                                                    name="country"
-                                                    value={data.country}
-                                                    className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    autoComplete="country"
-                                                    placeholder="United States"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'country',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    required
-                                                />
-                                                <InputError
-                                                    message={errors.country}
-                                                    className="mt-2"
-                                                />
+                                            {/* Postal Code and Country Row */}
+                                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                                <div>
+                                                    <InputLabel
+                                                        htmlFor="postal_code"
+                                                        value="Postal Code"
+                                                        className="text-base text-gray-700 dark:text-gray-300"
+                                                    />
+                                                    <TextInput
+                                                        id="postal_code"
+                                                        name="postal_code"
+                                                        value={data.postal_code}
+                                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                        autoComplete="postal-code"
+                                                        placeholder="10001"
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'postal_code',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors.postal_code
+                                                        }
+                                                        className="mt-2"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <InputLabel
+                                                        htmlFor="country"
+                                                        value="Country"
+                                                        className="text-base text-gray-700 dark:text-gray-300"
+                                                    />
+                                                    <TextInput
+                                                        id="country"
+                                                        name="country"
+                                                        value={data.country}
+                                                        className="mt-2 block w-full rounded-lg border-gray-300 text-base shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                        autoComplete="country"
+                                                        placeholder="United States"
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                'country',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <InputError
+                                                        message={errors.country}
+                                                        className="mt-2"
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
                                         </div>
                                     </div>
                                 )}
@@ -658,7 +675,9 @@ export default function Register({ projectParam, projectExists }: Props) {
                                         <button
                                             type="button"
                                             onClick={handleNext}
-                                            disabled={!validateStep(currentStep)}
+                                            disabled={
+                                                !validateStep(currentStep)
+                                            }
                                             className={`ml-auto flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white transition-colors ${
                                                 !validateStep(currentStep)
                                                     ? 'cursor-not-allowed bg-gray-400 dark:bg-gray-600'
@@ -672,7 +691,9 @@ export default function Register({ projectParam, projectExists }: Props) {
                                         <PrimaryButton
                                             type="submit"
                                             className="ml-auto flex items-center gap-2 rounded-lg px-6 py-2 text-sm font-medium"
-                                            disabled={processing || !validProject}
+                                            disabled={
+                                                processing || !validProject
+                                            }
                                         >
                                             {processing
                                                 ? 'Creating account...'
@@ -695,7 +716,8 @@ export default function Register({ projectParam, projectExists }: Props) {
                                         href={loginUrl}
                                         className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                                     >
-                                        Already have a {userTypeName.toLowerCase()} account?{' '}
+                                        Already have a{' '}
+                                        {userTypeName.toLowerCase()} account?{' '}
                                         <span className="font-medium text-indigo-600 dark:text-indigo-400">
                                             Sign in
                                         </span>

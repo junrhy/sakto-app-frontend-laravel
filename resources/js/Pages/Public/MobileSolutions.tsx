@@ -167,7 +167,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             icon: ShoppingBag,
             href: getHref('shop', '/shop'),
             gradient: 'from-purple-500 to-pink-500',
-            comingSoon: true,
+            comingSoon: false,
             projectIdentifier: 'shop',
         },
         {

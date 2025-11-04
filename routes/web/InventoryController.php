@@ -27,4 +27,9 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->gro
     Route::get('/inventory/{id}/history', [InventoryController::class, 'getInventoryHistory']);
     Route::get('/inventory/{sku}/barcode', [InventoryController::class, 'generateBarcode']);
     Route::get('/inventory/products-overview', [InventoryController::class, 'getProductsOverview']);
+    
+    // Category Management
+    Route::post('/inventory/categories', [InventoryController::class, 'storeCategory']);
+    Route::put('/inventory/categories/{id}', [InventoryController::class, 'updateCategory']);
+    Route::delete('/inventory/categories/{id}', [InventoryController::class, 'destroyCategory']);
 });
