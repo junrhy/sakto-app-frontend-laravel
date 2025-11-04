@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Module;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -71,11 +72,18 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function update(Request $request, Project $project)
+    public function update(Request $request, $id)
     {
+        $project = Project::findOrFail($id);
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'identifier' => 'required|string|max:255|unique:projects,identifier,' . $project->id,
+            'identifier' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('projects', 'identifier')->ignore($project->id),
+            ],
             'enabledModules' => 'required|array',
         ]);
 

@@ -110,6 +110,7 @@ require __DIR__.'/web/CommunityKioskTerminalController.php';
 require __DIR__.'/web/MedicalController.php';
 require __DIR__.'/web/ClinicEmbedController.php';
 require __DIR__.'/web/ChatController.php';
+require __DIR__.'/web/FileStorageController.php';
 });
 
 // Include authentication routes

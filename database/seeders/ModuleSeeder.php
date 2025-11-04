@@ -137,6 +137,19 @@ class ModuleSeeder extends Seeder
         if (strpos($lowerTitle, 'real estate') !== false || strpos($lowerTitle, 'property') !== false) {
             return 'RxHome';
         }
+        
+        // Storage & Files
+        if (strpos($lowerTitle, 'storage') !== false || strpos($lowerTitle, 'file storage') !== false || strpos($lowerTitle, 'file-storage') !== false) {
+            return 'RxArchive';
+        }
+        if (strpos($lowerTitle, 'file') !== false && strpos($lowerTitle, 'storage') !== false) {
+            return 'RxArchive';
+        }
+        
+        // Queue & Waiting
+        if (strpos($lowerTitle, 'queue') !== false || strpos($lowerTitle, 'waiting') !== false || strpos($lowerTitle, 'ticket') !== false) {
+            return 'RxBell';
+        }
         if (strpos($lowerTitle, 'rental') !== false || strpos($lowerTitle, 'rent') !== false) {
             return 'RxTokens';
         }
@@ -215,6 +228,7 @@ class ModuleSeeder extends Seeder
             [
                 'title' => 'Retail',
                 'route' => '/dashboard?app=retail',
+                'icon' => 'RxBox',
                 'visible' => false,
                 'description' => 'Complete POS system with inventory tracking, sales analytics, and customer management for retail stores',
                 'price' => 299,
@@ -526,6 +540,7 @@ class ModuleSeeder extends Seeder
             ],
             [
                 'title' => 'Queue System',
+                'icon' => 'RxBell',
                 'route' => '/dashboard?app=queue-system',
                 'visible' => false,
                 'description' => 'Digital queue management system for businesses with customer numbering, status tracking, and display screens.',
@@ -549,6 +564,20 @@ class ModuleSeeder extends Seeder
                 'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
                 'bgColor' => 'bg-blue-100 dark:bg-blue-900/30',
                 'rating' => 4.8
+            ],
+            [
+                'title' => 'File Storage',
+                'route' => '/dashboard?app=file-storage',
+                'visible' => false,
+                'description' => 'Upload, organize, and manage your files with folder support, tagging, and easy file sharing.',
+                'price' => 49,
+                'categories' => ['Storage', 'Business', 'Organization'],
+                'comingSoon' => false,
+                'pricingType' => 'subscription',
+                'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
+                'bgColor' => 'bg-indigo-100 dark:bg-indigo-900/30',
+                'icon' => 'RxArchive',
+                'rating' => 4.5
             ],
         ];
     }

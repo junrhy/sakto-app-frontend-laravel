@@ -213,6 +213,11 @@ export const menuCategories: MenuCategory[] = [
             },
             { id: 'pages', title: 'Pages', href: '/pages?app=pages' },
             { id: 'courses', title: 'Courses', href: '/courses?app=courses' },
+            {
+                id: 'file-storage',
+                title: 'File Storage',
+                href: '/file-storage?app=file-storage',
+            },
         ],
     },
     {
@@ -241,6 +246,7 @@ export const shouldShowMenuItem = (
         'bill-payments',
         'queue-system',
         'health-insurance',
+        'file-storage',
     ];
 
     // Handle submenu items (like clinic-settings) that should be visible when parent module is accessible
