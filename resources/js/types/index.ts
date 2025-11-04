@@ -85,6 +85,7 @@ export type WidgetType =
     | 'retail_sales'
     | 'retail_inventory'
     | 'retail_orders'
+    | 'retail_low_stock_alerts'
     | 'fnb_tables'
     | 'fnb_kitchen'
     | 'fnb_reservations'

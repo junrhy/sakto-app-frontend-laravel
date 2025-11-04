@@ -25,4 +25,5 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->gro
     Route::delete('/retail-sale/{id}', [PosRetailSaleController::class, 'destroy'])->name('sales.destroy');
     Route::delete('/retail-sales/bulk-delete', [PosRetailSaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
     Route::get('/retail-sale-overview', [PosRetailSaleController::class, 'getSalesOverview']);
+    Route::get('/pos-retail-sales/export', [PosRetailSaleController::class, 'exportSales'])->name('sales.export');
 });

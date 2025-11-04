@@ -1,5 +1,16 @@
 import { PageProps } from '@/types';
 
+export interface Variant {
+    id: number;
+    sku?: string;
+    barcode?: string;
+    price?: number;
+    quantity: number;
+    attributes: Record<string, string>;
+    image?: string;
+    is_active: boolean;
+}
+
 export interface Product {
     id: number;
     name: string;
@@ -12,6 +23,7 @@ export interface Product {
     description?: string;
     status?: 'in_stock' | 'low_stock' | 'out_of_stock';
     barcode?: string;
+    variants?: Variant[];
 }
 
 export interface Category {
@@ -26,6 +38,9 @@ export interface OrderItem {
     quantity: number;
     price: number;
     price_formatted: string;
+    variant_id?: number;
+    variant_attributes?: Record<string, string>;
+    product_id?: number; // Original product ID if variant is used
 }
 
 export interface Sale {
@@ -61,10 +76,30 @@ export interface ProductFormData {
     images?: File[];
 }
 
+export interface Discount {
+    id: number;
+    name: string;
+    description?: string;
+    type: 'percentage' | 'fixed' | 'buy_x_get_y';
+    value: number;
+    min_quantity?: number;
+    buy_quantity?: number;
+    get_quantity?: number;
+    min_purchase_amount?: number;
+    start_date?: string;
+    end_date?: string;
+    is_active: boolean;
+    applicable_items?: number[];
+    applicable_categories?: number[];
+    usage_limit?: number;
+    usage_count?: number;
+}
+
 export interface Props extends PageProps {
     products: Product[];
     categories: Category[];
     appCurrency: any;
+    activeDiscounts?: Discount[];
 }
 
 export interface InventoryProps extends PageProps {

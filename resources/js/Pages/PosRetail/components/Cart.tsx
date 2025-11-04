@@ -25,6 +25,10 @@ interface CartProps {
     onUpdateQuantity: (id: number, quantity: number) => void;
     onRemoveItem: (id: number) => void;
     onCompleteSale: () => void;
+    subtotal: number;
+    discountAmount?: number;
+    appliedDiscount?: any;
+    totalAmount: number;
 }
 
 export default function Cart({
@@ -35,11 +39,14 @@ export default function Cart({
     onUpdateQuantity,
     onRemoveItem,
     onCompleteSale,
+    subtotal,
+    discountAmount = 0,
+    appliedDiscount,
+    totalAmount,
 }: CartProps) {
-    const totalAmount = calculateTotal(orderItems);
 
     return (
-        <Card className="flex h-full w-full flex-col">
+        <Card className="flex h-full w-full flex-col border-gray-200 dark:border-gray-600">
             <CardHeader className="flex-shrink-0 pb-3">
                 <CardTitle className="text-lg">Cart</CardTitle>
             </CardHeader>
@@ -75,9 +82,9 @@ export default function Cart({
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                orderItems.map((item) => (
+                                orderItems.map((item, index) => (
                                     <TableRow
-                                        key={item.id}
+                                        key={item.variant_id ? `variant-${item.variant_id}-${item.product_id}-${index}` : `product-${item.id}-${index}`}
                                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
                                         <TableCell className="px-2 py-1.5 text-xs text-gray-900 dark:text-white">
@@ -92,7 +99,7 @@ export default function Cart({
                                                         className="h-6 w-6 p-0"
                                                         onClick={() =>
                                                             onUpdateQuantity(
-                                                                item.id,
+                                                                item.variant_id || item.id,
                                                                 item.quantity -
                                                                     1,
                                                             )
@@ -109,7 +116,7 @@ export default function Cart({
                                                         className="h-6 w-6 p-0"
                                                         onClick={() =>
                                                             onUpdateQuantity(
-                                                                item.id,
+                                                                item.variant_id || item.id,
                                                                 item.quantity +
                                                                     1,
                                                             )
@@ -135,7 +142,7 @@ export default function Cart({
                                                     size="sm"
                                                     className="h-6 px-2 text-xs"
                                                     onClick={() =>
-                                                        onRemoveItem(item.id)
+                                                        onRemoveItem(item.variant_id || item.id)
                                                     }
                                                 >
                                                     ×
@@ -149,21 +156,38 @@ export default function Cart({
                     </Table>
                 </div>
             </CardContent>
-            <CardFooter className="flex-shrink-0 flex-col gap-2 border-t pt-3">
-                <div className="flex w-full items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                        Total:
-                    </span>
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">
-                        {appCurrency.symbol}
-                        {totalAmount.toFixed(2)}
+            <CardFooter className="flex-shrink-0 flex-col gap-2 border-t border-gray-200 dark:border-gray-600 pt-3">
+                <div className="space-y-1 w-full">
+                    <div className="flex w-full items-center justify-between text-xs">
+                        <span className="text-gray-600 dark:text-gray-400">
+                            Subtotal:
+                        </span>
+                        <span className="text-gray-900 dark:text-white">
+                            {appCurrency.symbol}
+                            {subtotal.toFixed(2)}
+                        </span>
+                    </div>
+                    {discountAmount > 0 && appliedDiscount && (
+                        <div className="flex w-full items-center justify-between text-xs text-green-600 dark:text-green-400">
+                            <span>Discount ({appliedDiscount.name}):</span>
+                            <span>-{appCurrency.symbol}{discountAmount.toFixed(2)}</span>
+                        </div>
+                    )}
+                    <div className="flex w-full items-center justify-between pt-1 border-t border-gray-200 dark:border-gray-600">
+                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            Total:
+                        </span>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">
+                            {appCurrency.symbol}
+                            {totalAmount.toFixed(2)}
+                        </div>
                     </div>
                 </div>
                 {canEdit && (
                     <Button
                         onClick={onCompleteSale}
                         disabled={orderItems.length === 0}
-                        className="w-full bg-blue-600 hover:bg-blue-700"
+                        className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold shadow-md transition-all duration-200"
                     >
                         Complete Sale
                     </Button>

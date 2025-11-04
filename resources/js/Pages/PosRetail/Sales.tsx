@@ -41,13 +41,14 @@ import {
     startOfWeek,
     subMonths,
 } from 'date-fns';
-import { Calendar as CalendarIcon, Search, Trash2, Printer, BarChart2, List } from 'lucide-react';
+import { Calendar as CalendarIcon, Search, Trash2, Printer, BarChart2, List, Download } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { DateRange as CalendarDateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import ReceiptDialog from './components/ReceiptDialog';
 import SalesAnalytics from './components/SalesAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import ExportDialog, { ExportOptions } from './components/ExportDialog';
 
 type DateRange = {
     from: Date | undefined;
@@ -127,6 +128,7 @@ export default function Sales({
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
     const [activeTab, setActiveTab] = useState('list');
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -253,6 +255,55 @@ export default function Sales({
                 ? prevSelected.filter((selectedId) => selectedId !== id)
                 : [...prevSelected, id],
         );
+    };
+
+    const handleExport = async (options: ExportOptions) => {
+        try {
+            const params = new URLSearchParams({
+                format: options.format,
+                fields: options.fields.join(','),
+            });
+
+            if (options.dateFrom) {
+                params.append('date_from', format(options.dateFrom, 'yyyy-MM-dd'));
+            }
+            if (options.dateTo) {
+                params.append('date_to', format(options.dateTo, 'yyyy-MM-dd'));
+            }
+
+            const response = await fetch(`/pos-retail-sales/export?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    Accept: options.format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const extension = options.format === 'csv' ? 'csv' : 'xlsx';
+            const dateRange = options.dateFrom && options.dateTo
+                ? `_${format(options.dateFrom, 'yyyy-MM-dd')}_to_${format(options.dateTo, 'yyyy-MM-dd')}`
+                : '';
+            a.download = `sales${dateRange}_${new Date().toISOString().split('T')[0]}.${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            toast.success(`Sales exported successfully as ${options.format.toUpperCase()}`);
+        } catch (error) {
+            console.error('Export error:', error);
+            toast.error('Failed to export sales');
+        }
     };
 
     const handleDateRangeSelect = (range: string) => {
@@ -388,8 +439,9 @@ export default function Sales({
 
                     {/* Sales List Tab */}
                     <TabsContent value="list" className="mt-0">
-                <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
-                    <div className="lg:col-span-2">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:flex-1">
+                        <div className="lg:col-span-2">
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -529,7 +581,15 @@ export default function Sales({
                             </Popover>
                         </div>
                     </div>
-                    <div className="flex justify-end lg:col-span-4">
+                    <div className="flex justify-end gap-2 lg:col-span-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsExportDialogOpen(true)}
+                            className="h-10"
+                        >
+                            <Download className="mr-2 h-4 w-4" />
+                            Export
+                        </Button>
                         {canDelete && (
                             <Button
                                 variant="destructive"
@@ -542,6 +602,7 @@ export default function Sales({
                             </Button>
                         )}
                     </div>
+                </div>
                 </div>
 
                 {/* Add this section before the table */}
@@ -766,6 +827,14 @@ export default function Sales({
                           }
                         : null
                 }
+            />
+
+            {/* Export Dialog */}
+            <ExportDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                type="sales"
+                onExport={handleExport}
             />
         </AuthenticatedLayout>
     );

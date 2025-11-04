@@ -18,6 +18,7 @@ import { LoanStatsWidget } from './LoanStatsWidget';
 import { PayrollStatsWidget } from './PayrollStatsWidget';
 import { RentalItemStatsWidget } from './RentalItemStatsWidget';
 import { RetailInventoryWidget } from './RetailInventoryWidget';
+import { RetailLowStockAlertsWidget } from './RetailLowStockAlertsWidget';
 import { RetailOrdersWidget } from './RetailOrdersWidget';
 import { RetailSalesWidget } from './RetailSalesWidget';
 import { SmsStatsWidget } from './SmsStatsWidget';
@@ -70,6 +71,12 @@ export function WidgetComponent({
                         <>
                             <span className="h-2 w-2 rounded-full bg-purple-500"></span>
                             Retail Recent Orders
+                        </>
+                    )}
+                    {(widget.type as string) === 'retail_low_stock_alerts' && (
+                        <>
+                            <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
+                            Retail Low Stock Alerts
                         </>
                     )}
                     {(widget.type as string) === 'fnb_tables' && (
@@ -192,6 +199,9 @@ export function WidgetComponent({
                 )}
                 {(widget.type as string) === 'retail_orders' && (
                     <RetailOrdersWidget />
+                )}
+                {(widget.type as string) === 'retail_low_stock_alerts' && (
+                    <RetailLowStockAlertsWidget />
                 )}
                 {(widget.type as string) === 'fnb_tables' && (
                     <FnbTablesWidget />

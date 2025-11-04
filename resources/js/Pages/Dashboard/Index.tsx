@@ -138,6 +138,7 @@ export default function Dashboard({
                 'retail_sales',
                 'retail_inventory',
                 'retail_orders',
+                'retail_low_stock_alerts',
             ] as WidgetTypeImport[];
         }
         if (type === 'fnb') {
@@ -637,6 +638,9 @@ export default function Dashboard({
                                                               'retail_orders'
                                                             ? 'Retail Orders'
                                                             : type ===
+                                                                'retail_low_stock_alerts'
+                                                              ? 'Low Stock Alerts'
+                                                            : type ===
                                                                 'fnb_tables'
                                                               ? 'F&B Tables'
                                                               : type ===
@@ -1011,6 +1015,7 @@ export default function Dashboard({
                                                                 'retail_sales',
                                                                 'retail_inventory',
                                                                 'retail_orders',
+                                                                'retail_low_stock_alerts',
                                                             ].includes(
                                                                 widget.type,
                                                             );

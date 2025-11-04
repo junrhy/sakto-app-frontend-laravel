@@ -42,11 +42,16 @@ import {
     Upload as UploadIcon,
     Package,
     History,
+    Settings,
+    Layers,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import StockAdjustmentDialog from './components/StockAdjustmentDialog';
 import StockHistoryDialog from './components/StockHistoryDialog';
+import ExportDialog, { ExportOptions } from './components/ExportDialog';
+import BulkOperationsDialog, { BulkOperation } from './components/BulkOperationsDialog';
+import VariantDialog from './components/VariantDialog';
 
 interface Category {
     id: number;
@@ -66,6 +71,7 @@ interface Product {
     category_id: number;
     description?: string;
     status: 'in_stock' | 'low_stock' | 'out_of_stock';
+    low_stock_threshold?: number;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -94,6 +100,7 @@ export default function Inventory(props: {
         description: '',
         status: 'in_stock',
         barcode: '',
+        low_stock_threshold: 10,
     });
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
@@ -106,6 +113,12 @@ export default function Inventory(props: {
         useState<boolean>(false);
     const [selectedProductForStock, setSelectedProductForStock] =
         useState<Product | null>(null);
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState<boolean>(false);
+    const [isBulkOperationsDialogOpen, setIsBulkOperationsDialogOpen] = useState<boolean>(false);
+    const [isVariantDialogOpen, setIsVariantDialogOpen] = useState<boolean>(false);
+    const [selectedProductForVariant, setSelectedProductForVariant] = useState<Product | null>(null);
+    const [selectedVariant, setSelectedVariant] = useState<any>(null);
+    const [variants, setVariants] = useState<any[]>([]);
     const [filters, setFilters] = useState({
         category: 'all',
         minPrice: '',
@@ -228,6 +241,13 @@ export default function Inventory(props: {
             formData.append('description', newProduct.description || '');
             formData.append('status', newProduct.status);
             formData.append('barcode', newProduct.barcode || '');
+            formData.append('low_stock_threshold', (newProduct.low_stock_threshold ?? 10).toString());
+
+            // When editing, preserve existing images
+            if (isEditing && newProduct.images && Array.isArray(newProduct.images)) {
+                // Add existing images as JSON array
+                formData.append('existing_images', JSON.stringify(newProduct.images));
+            }
 
             // Get file input element and append all selected files
             const fileInput = document.getElementById(
@@ -236,10 +256,12 @@ export default function Inventory(props: {
             if (fileInput && fileInput.files) {
                 for (let i = 0; i < fileInput.files.length; i++) {
                     formData.append('images[]', fileInput.files[i]);
-                }
+                }  
             }
 
             if (isEditing) {
+                // Use _method override for PUT with file uploads
+                formData.append('_method', 'PUT');
                 router.post(`/inventory/${newProduct.id}`, formData, {
                     forceFormData: true,
                     preserveState: true,
@@ -263,6 +285,7 @@ export default function Inventory(props: {
                             description: '',
                             status: 'in_stock',
                             barcode: '',
+                            low_stock_threshold: 10,
                         });
                         setIsEditing(false);
                         setIsDialogOpen(false);
@@ -289,6 +312,7 @@ export default function Inventory(props: {
                             description: '',
                             status: 'in_stock',
                             barcode: '',
+                            low_stock_threshold: 10,
                         });
                         setIsDialogOpen(false);
                         toast.success('Product added successfully');
@@ -304,7 +328,11 @@ export default function Inventory(props: {
     };
 
     const editProduct = (product: Product) => {
-        setNewProduct(product);
+        setNewProduct({
+            ...product,
+            images: product.images || [],
+            low_stock_threshold: product.low_stock_threshold ?? 10,
+        });
         setIsEditing(true);
         setIsDialogOpen(true);
     };
@@ -373,6 +401,87 @@ export default function Inventory(props: {
         }
     };
 
+    const handleBulkOperation = async (operation: BulkOperation) => {
+        if (selectedProducts.length === 0) {
+            toast.error('Please select at least one product');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+
+            if (operation.type === 'delete') {
+                await deleteSelectedProducts();
+                return;
+            }
+
+            const payload: any = {
+                ids: selectedProducts,
+                operation: operation.type,
+            };
+
+            if (operation.type === 'price') {
+                payload.price_type = operation.priceType;
+                payload.price_value = operation.priceValue;
+            } else if (operation.type === 'category') {
+                payload.category_id = operation.categoryId;
+            } else if (operation.type === 'stock') {
+                payload.stock_action = operation.stockAction;
+                payload.stock_value = operation.stockValue;
+            }
+
+            router.post('/inventory/bulk-operation', payload, {
+                preserveState: true,
+                onSuccess: () => {
+                    toast.success(`Bulk ${operation.type} operation completed successfully`);
+                    setSelectedProducts([]);
+                    router.reload({ only: ['inventory'] });
+                },
+                onError: (errors) => {
+                    toast.error(
+                        `Failed to perform bulk ${operation.type} operation: ${
+                            errors.message || 'Unknown error'
+                        }`
+                    );
+                },
+                onFinish: () => setIsLoading(false),
+            });
+        } catch (error) {
+            console.error('Error performing bulk operation:', error);
+            toast.error('Failed to perform bulk operation');
+            setIsLoading(false);
+        }
+    };
+
+    const fetchVariants = async (productId: number) => {
+        try {
+            const response = await fetch(`/inventory/${productId}/variants`, {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch variants');
+            }
+
+            const data = await response.json();
+            if (data.status === 'success' && data.data) {
+                setVariants(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch variants:', error);
+        }
+    };
+
+    const handleManageVariants = async (product: Product) => {
+        setSelectedProductForVariant(product);
+        setSelectedVariant(null);
+        await fetchVariants(product.id);
+        setIsVariantDialogOpen(true);
+    };
+
     const removeImage = (index: number) => {
         setNewProduct({
             ...newProduct,
@@ -407,19 +516,40 @@ export default function Inventory(props: {
         return pageNumbers;
     };
 
-    const handleExport = async () => {
+    const handleExport = async (options: ExportOptions) => {
         try {
-            const response = await fetch('/inventory/export');
+            const params = new URLSearchParams({
+                format: options.format,
+                fields: options.fields.join(','),
+            });
+
+            const response = await fetch(`/inventory/export?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    Accept: options.format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'inventory.csv';
+            const extension = options.format === 'csv' ? 'csv' : 'xlsx';
+            a.download = `inventory_${new Date().toISOString().split('T')[0]}.${extension}`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            toast.success(`Inventory exported successfully as ${options.format.toUpperCase()}`);
         } catch (error) {
-            toast.error('Failed to export products');
+            console.error('Export error:', error);
+            toast.error('Failed to export inventory');
         }
     };
 
@@ -535,7 +665,10 @@ export default function Inventory(props: {
                             >
                                 Manage Categories
                             </Button>
-                            <Button variant="outline" onClick={handleExport}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsExportDialogOpen(true)}
+                            >
                                 <Download className="mr-2 h-4 w-4" />
                                 Export
                             </Button>
@@ -770,6 +903,34 @@ export default function Inventory(props: {
                                         )}
                                         <div className="grid grid-cols-4 items-center gap-4">
                                             <Label
+                                                htmlFor="low_stock_threshold"
+                                                className="text-right"
+                                            >
+                                                Low Stock Threshold
+                                            </Label>
+                                            <div className="col-span-3 space-y-1">
+                                                <Input
+                                                    id="low_stock_threshold"
+                                                    type="number"
+                                                    min="0"
+                                                    value={newProduct.low_stock_threshold ?? 10}
+                                                    onChange={(e) =>
+                                                        setNewProduct({
+                                                            ...newProduct,
+                                                            low_stock_threshold: Number(
+                                                                e.target.value,
+                                                            ) || 10,
+                                                        })
+                                                    }
+                                                    placeholder="Alert when stock is at or below this number (default: 10)"
+                                                />
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Product will show "Low Stock" badge when quantity is at or below this number
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label
                                                 htmlFor="price"
                                                 className="text-right"
                                             >
@@ -915,15 +1076,28 @@ export default function Inventory(props: {
                                     </Button>
                                 </DialogContent>
                             </Dialog>
-                            <Button
-                                variant="destructive"
-                                onClick={deleteSelectedProducts}
-                                disabled={selectedProducts.length === 0}
-                                className="w-full md:w-auto"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                Selected ({selectedProducts.length})
-                            </Button>
+                            {selectedProducts.length > 0 && (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setIsBulkOperationsDialogOpen(true)}
+                                        disabled={selectedProducts.length === 0}
+                                        className="w-full md:w-auto"
+                                    >
+                                        <Settings className="mr-2 h-4 w-4" /> Bulk Operations
+                                        ({selectedProducts.length})
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={deleteSelectedProducts}
+                                        disabled={selectedProducts.length === 0}
+                                        className="w-full md:w-auto"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                        Selected ({selectedProducts.length})
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                     <Table>
@@ -1018,9 +1192,32 @@ export default function Inventory(props: {
                                                 )}
                                         </div>
                                     </TableCell>
-                                    <TableCell>{product.name}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span>{product.name}</span>
+                                            {product.status === 'low_stock' && (
+                                                <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                                    Low Stock
+                                                </span>
+                                            )}
+                                            {product.status === 'out_of_stock' && (
+                                                <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                    Out of Stock
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>{product.sku}</TableCell>
-                                    <TableCell>{product.quantity}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span>{product.quantity}</span>
+                                            {product.status === 'low_stock' && (
+                                                <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                                                    (threshold: {product.low_stock_threshold ?? 10})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>
                                         {product.price_formatted}
                                     </TableCell>
@@ -1047,6 +1244,14 @@ export default function Inventory(props: {
                                                 title="View Stock History"
                                             >
                                                 <History className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleManageVariants(product)}
+                                                title="Manage Variants"
+                                            >
+                                                <Layers className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="outline"
@@ -1139,6 +1344,37 @@ export default function Inventory(props: {
                 open={isStockHistoryDialogOpen}
                 onOpenChange={setIsStockHistoryDialogOpen}
                 product={selectedProductForStock}
+            />
+
+            {/* Export Dialog */}
+            <ExportDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                type="inventory"
+                onExport={handleExport}
+            />
+
+            {/* Bulk Operations Dialog */}
+            <BulkOperationsDialog
+                open={isBulkOperationsDialogOpen}
+                onOpenChange={setIsBulkOperationsDialogOpen}
+                selectedCount={selectedProducts.length}
+                categories={categories}
+                onBulkOperation={handleBulkOperation}
+            />
+
+            {/* Variant Dialog */}
+            <VariantDialog
+                open={isVariantDialogOpen}
+                onOpenChange={setIsVariantDialogOpen}
+                productId={selectedProductForVariant?.id || 0}
+                variant={selectedVariant}
+                onSuccess={() => {
+                    if (selectedProductForVariant) {
+                        fetchVariants(selectedProductForVariant.id);
+                    }
+                    router.reload({ only: ['inventory'] });
+                }}
             />
 
             {/* Category Management Dialog */}

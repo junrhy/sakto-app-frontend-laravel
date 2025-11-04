@@ -18,7 +18,9 @@ import Cart from './components/Cart';
 import ImagePreview from './components/ImagePreview';
 import PaymentDialog from './components/PaymentDialog';
 import ReceiptDialog from './components/ReceiptDialog';
-import type { Category, OrderItem, Product, Props } from './types';
+import BarcodeScanner from './components/BarcodeScanner';
+import VariantSelectorDialog from './components/VariantSelectorDialog';
+import type { Category, OrderItem, Product, Props, Variant, Discount } from './types';
 import { calculateTotal, searchProducts } from './utils';
 
 interface AuthWithTeamMember {
@@ -46,6 +48,7 @@ export default function PosRetail({
     categories = [],
     appCurrency,
     auth,
+    activeDiscounts: initialActiveDiscounts = [],
 }: Props & { auth: AuthWithTeamMember; categories?: Category[] }) {
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [searchTerm, setSearchTerm] = useState<string>('');
@@ -58,6 +61,11 @@ export default function PosRetail({
     );
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
+    const [isVariantDialogOpen, setIsVariantDialogOpen] = useState(false);
+    const [selectedProductForVariant, setSelectedProductForVariant] = useState<Product | null>(null);
+    const [activeDiscounts] = useState<Discount[]>(initialActiveDiscounts);
+    const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+    const [discountAmount, setDiscountAmount] = useState(0);
     const [receiptData, setReceiptData] = useState<{
         saleId?: number;
         items: Array<{ id: number; name: string; quantity: number; price: number }>;
@@ -108,24 +116,186 @@ export default function PosRetail({
         return filtered;
     }, [products, searchTerm, selectedCategory]);
 
-    const addItemToOrder = (product: Product) => {
-        if (product.quantity > 0) {
+    const handleAddProductWithVariant = (product: Product) => {
+        // Check if product has variants
+        if (product.variants && product.variants.length > 0) {
+            // Show variant selector dialog
+            setSelectedProductForVariant(product);
+            setIsVariantDialogOpen(true);
+        } else {
+            // No variants, add directly
+            addItemToOrder(product, null);
+        }
+    };
+
+    const handleVariantSelected = (variant: Variant | null) => {
+        if (selectedProductForVariant) {
+            if (variant) {
+                // Check variant stock
+                if (variant.quantity <= 0) {
+                    toast.error('This variant is out of stock.');
+                    return;
+                }
+                
+                // Use variant price if available, otherwise use base price
+                const itemPrice = variant.price ?? selectedProductForVariant.price;
+                const itemPriceFormatted = variant.price 
+                    ? appCurrency.symbol + variant.price.toFixed(2)
+                    : selectedProductForVariant.price_formatted;
+                
+                addItemToOrder(selectedProductForVariant, variant, itemPrice, itemPriceFormatted);
+            } else {
+                // Base product selected
+                addItemToOrder(selectedProductForVariant, null);
+            }
+        }
+        setIsVariantDialogOpen(false);
+        setSelectedProductForVariant(null);
+    };
+
+    const addItemToOrder = (product: Product, variant: Variant | null, overridePrice?: number, overridePriceFormatted?: string) => {
+        const itemPrice = overridePrice ?? product.price;
+        const itemPriceFormatted = overridePriceFormatted ?? product.price_formatted;
+        const itemQuantity = variant ? variant.quantity : product.quantity;
+        
+        if (itemQuantity > 0) {
             const existingItem = orderItems.find(
-                (item) => item.id === product.id,
+                (item) => (variant ? item.variant_id === variant.id && item.product_id === product.id : item.id === product.id && !item.variant_id),
             );
+            
             if (existingItem) {
-                if (existingItem.quantity < product.quantity) {
+                const maxQuantity = variant ? variant.quantity : product.quantity;
+                if (existingItem.quantity < maxQuantity) {
                     setOrderItems(
                         orderItems.map((item) =>
-                            item.id === product.id
+                            (variant ? item.variant_id === variant.id && item.product_id === product.id : item.id === product.id && !item.variant_id)
                                 ? { ...item, quantity: item.quantity + 1 }
+                                : item,
+                        ),
+                    );
+                    // Update stock
+                    if (!variant) {
+                        setProducts(
+                            products.map((p) =>
+                                p.id === product.id
+                                    ? { ...p, quantity: p.quantity - 1 }
+                                    : p,
+                            ),
+                        );
+                    }
+                } else {
+                    toast.error(
+                        'Cannot add more items than available in inventory.',
+                    );
+                }
+            } else {
+                const newItem: OrderItem = {
+                    id: product.id,
+                    name: product.name,
+                    quantity: 1,
+                    price: itemPrice,
+                    price_formatted: itemPriceFormatted,
+                    product_id: product.id,
+                };
+                
+                if (variant) {
+                    newItem.variant_id = variant.id;
+                    newItem.variant_attributes = variant.attributes;
+                    newItem.name = `${product.name} (${Object.entries(variant.attributes).map(([k, v]) => `${k}: ${v}`).join(', ')})`;
+                }
+                
+                setOrderItems([...orderItems, newItem]);
+                
+                // Update stock
+                if (!variant) {
+                    setProducts(
+                        products.map((p) =>
+                            p.id === product.id
+                                ? { ...p, quantity: p.quantity - 1 }
+                                : p,
+                        ),
+                    );
+                }
+            }
+        } else {
+            toast.error('This product is out of stock.');
+        }
+    };
+
+    const removeItemFromOrder = (id: number) => {
+        const itemToRemove = orderItems.find((item) => 
+            item.variant_id ? (item.variant_id === id || item.product_id === id) : item.id === id
+        );
+        if (itemToRemove) {
+            // Only update stock if it's a base product (not a variant)
+            if (!itemToRemove.variant_id) {
+                setProducts(
+                    products.map((p) =>
+                        p.id === (itemToRemove.product_id || itemToRemove.id)
+                            ? { ...p, quantity: p.quantity + itemToRemove.quantity }
+                            : p,
+                    ),
+                );
+            }
+        }
+        setOrderItems(orderItems.filter((item) => 
+            item.variant_id ? (item.variant_id !== id && item.product_id !== id) : item.id !== id
+        ));
+    };
+
+    const updateItemQuantity = (id: number, newQuantity: number) => {
+        const existingItem = orderItems.find((item) => 
+            item.variant_id ? (item.variant_id === id || item.product_id === id) : item.id === id
+        );
+        
+        if (!existingItem) {
+            toast.error('Item not found.');
+            return;
+        }
+
+        if (existingItem.variant_id) {
+            // Handle variant quantity update
+            const product = products.find((p) => p.id === existingItem.product_id);
+            if (product && product.variants) {
+                const variant = product.variants.find((v) => v.id === existingItem.variant_id);
+                if (variant) {
+                    if (newQuantity <= variant.quantity + existingItem.quantity && newQuantity >= 0) {
+                        setOrderItems(
+                            orderItems.map((item) =>
+                                (item.variant_id === existingItem.variant_id && item.product_id === existingItem.product_id)
+                                    ? { ...item, quantity: newQuantity }
+                                    : item,
+                            ),
+                        );
+                    } else {
+                        toast.error('Cannot add more items than available in inventory.');
+                    }
+                }
+            }
+        } else {
+            // Handle base product quantity update
+            const product = products.find((p) => p.id === id);
+            if (product) {
+                const quantityDifference = newQuantity - existingItem.quantity;
+
+                if (
+                    newQuantity <= product.quantity + existingItem.quantity &&
+                    newQuantity >= 0
+                ) {
+                    setOrderItems(
+                        orderItems.map((item) =>
+                            item.id === id && !item.variant_id
+                                ? { ...item, quantity: newQuantity }
                                 : item,
                         ),
                     );
                     setProducts(
                         products.map((p) =>
-                            p.id === product.id
-                                ? { ...p, quantity: p.quantity - 1 }
+                            p.id === id
+                                ? {
+                                      ...p,
+                                      quantity: p.quantity - quantityDifference,
+                                  }
                                 : p,
                         ),
                     );
@@ -135,77 +305,79 @@ export default function PosRetail({
                     );
                 }
             } else {
-                setOrderItems([
-                    ...orderItems,
-                    {
-                        ...product,
-                        quantity: 1,
-                        price_formatted: product.price_formatted,
-                    },
-                ]);
-                setProducts(
-                    products.map((p) =>
-                        p.id === product.id
-                            ? { ...p, quantity: p.quantity - 1 }
-                            : p,
-                    ),
-                );
+                toast.error('Product not found.');
             }
-        } else {
-            toast.error('This product is out of stock.');
         }
     };
 
-    const removeItemFromOrder = (id: number) => {
-        const itemToRemove = orderItems.find((item) => item.id === id);
-        if (itemToRemove) {
-            setProducts(
-                products.map((p) =>
-                    p.id === id
-                        ? { ...p, quantity: p.quantity + itemToRemove.quantity }
-                        : p,
-                ),
-            );
-        }
-        setOrderItems(orderItems.filter((item) => item.id !== id));
-    };
-
-    const updateItemQuantity = (id: number, newQuantity: number) => {
-        const product = products.find((p) => p.id === id);
-        const existingItem = orderItems.find((item) => item.id === id);
-
-        if (product && existingItem) {
-            const quantityDifference = newQuantity - existingItem.quantity;
-
-            if (
-                newQuantity <= product.quantity + existingItem.quantity &&
-                newQuantity >= 0
-            ) {
-                setOrderItems(
-                    orderItems.map((item) =>
-                        item.id === id
-                            ? { ...item, quantity: newQuantity }
-                            : item,
-                    ),
-                );
-                setProducts(
-                    products.map((p) =>
-                        p.id === id
-                            ? {
-                                  ...p,
-                                  quantity: p.quantity - quantityDifference,
-                              }
-                            : p,
-                    ),
-                );
-            } else {
-                toast.error(
-                    'Cannot add more items than available in inventory.',
-                );
-            }
+    // Calculate discount when cart changes
+    useEffect(() => {
+        if (orderItems.length > 0 && activeDiscounts.length > 0) {
+            calculateDiscount();
         } else {
-            toast.error('Product not found.');
+            setAppliedDiscount(null);
+            setDiscountAmount(0);
         }
+    }, [orderItems, activeDiscounts]);
+
+    const calculateDiscount = () => {
+        if (orderItems.length === 0 || activeDiscounts.length === 0) {
+            setAppliedDiscount(null);
+            setDiscountAmount(0);
+            return;
+        }
+
+        const subtotal = calculateTotal(orderItems);
+        let bestDiscount: Discount | null = null;
+        let maxDiscountAmount = 0;
+
+        // Calculate discount for each item
+        for (const item of orderItems) {
+            for (const discount of activeDiscounts) {
+                // Check if discount applies to this item
+                const isItemApplicable = !discount.applicable_items || discount.applicable_items.includes(item.product_id || item.id);
+                const isCategoryApplicable = !discount.applicable_categories || (item.product_id && discount.applicable_categories.includes(item.product_id));
+                
+                if (!isItemApplicable && !isCategoryApplicable && (discount.applicable_items || discount.applicable_categories)) {
+                    continue;
+                }
+
+                // Check minimum quantity
+                if (discount.min_quantity && item.quantity < discount.min_quantity) {
+                    continue;
+                }
+
+                // Check minimum purchase amount
+                if (discount.min_purchase_amount && subtotal < discount.min_purchase_amount) {
+                    continue;
+                }
+
+                // Calculate discount amount
+                let itemDiscountAmount = 0;
+                switch (discount.type) {
+                    case 'percentage':
+                        itemDiscountAmount = (item.price * item.quantity) * (discount.value / 100);
+                        break;
+                    case 'fixed':
+                        itemDiscountAmount = Math.min(discount.value, item.price * item.quantity);
+                        break;
+                    case 'buy_x_get_y':
+                        if (discount.buy_quantity && discount.get_quantity) {
+                            const freeItems = Math.floor(item.quantity / (discount.buy_quantity + discount.get_quantity)) * discount.get_quantity;
+                            itemDiscountAmount = freeItems * item.price;
+                        }
+                        break;
+                }
+
+                if (itemDiscountAmount > maxDiscountAmount) {
+                    maxDiscountAmount = itemDiscountAmount;
+                    bestDiscount = discount;
+                }
+            }
+        }
+
+        setAppliedDiscount(bestDiscount);
+        setDiscountAmount(maxDiscountAmount);
     };
 
     const handleCompleteSale = () => {
@@ -217,15 +389,19 @@ export default function PosRetail({
         cash_received?: number;
         change?: number;
     }) => {
-        const totalAmount = calculateTotal(orderItems);
+        const subtotal = calculateTotal(orderItems);
+        const finalAmount = subtotal - discountAmount;
 
         const saleData = {
             items: orderItems.map((item) => ({
-                id: item.id,
+                id: item.product_id || item.id,
+                variant_id: item.variant_id || null,
                 quantity: item.quantity,
                 price: item.price,
             })),
-            total_amount: totalAmount,
+            total_amount: finalAmount,
+            discount_id: appliedDiscount?.id || null,
+            discount_amount: discountAmount,
             cash_received: paymentData.cash_received || null,
             change: paymentData.change || null,
             payment_method: paymentData.payment_method,
@@ -249,7 +425,7 @@ export default function PosRetail({
                     // Create receipt data from current order
                     setReceiptData({
                         items: receiptItems,
-                        totalAmount: totalAmount,
+                        totalAmount: finalAmount,
                         paymentMethod: paymentData.payment_method,
                         cashReceived: paymentData.cash_received,
                         change: paymentData.change,
@@ -279,7 +455,54 @@ export default function PosRetail({
         }
     };
 
-    const totalAmount = calculateTotal(orderItems);
+    const handleBarcodeScan = (barcode: string) => {
+        // First try to find by variant barcode
+        let foundProduct: Product | null = null;
+        let foundVariant: Variant | null = null;
+
+        for (const product of products) {
+            if (product.variants) {
+                const variant = product.variants.find(
+                    (v) => v.barcode && v.barcode.toLowerCase() === barcode.toLowerCase()
+                );
+                if (variant) {
+                    foundProduct = product;
+                    foundVariant = variant;
+                    break;
+                }
+            }
+        }
+
+        if (foundProduct && foundVariant) {
+            handleVariantSelected(foundVariant);
+            toast.success(`Added ${foundProduct.name} (${Object.entries(foundVariant.attributes).map(([k, v]) => `${k}: ${v}`).join(', ')}) to cart`);
+            return;
+        }
+
+        // Find product by barcode
+        const product = products.find(
+            (p) => p.barcode && p.barcode.toLowerCase() === barcode.toLowerCase()
+        );
+
+        if (product) {
+            // If product found, check for variants
+            handleAddProductWithVariant(product);
+        } else {
+            // Try to find by SKU as fallback
+            const productBySku = products.find(
+                (p) => p.sku && p.sku.toLowerCase() === barcode.toLowerCase()
+            );
+
+            if (productBySku) {
+                handleAddProductWithVariant(productBySku);
+            } else {
+                toast.error(`Product with barcode "${barcode}" not found`);
+            }
+        }
+    };
+
+    const subtotal = calculateTotal(orderItems);
+    const totalAmount = subtotal - discountAmount;
 
     return (
         <AuthenticatedLayout
@@ -318,6 +541,9 @@ export default function PosRetail({
                 onOpenChange={setIsCompleteSaleDialogOpen}
                 totalAmount={totalAmount}
                 appCurrency={appCurrency}
+                subtotal={subtotal}
+                discountAmount={discountAmount}
+                appliedDiscount={appliedDiscount}
                 onConfirm={confirmCompleteSale}
             />
 
@@ -336,9 +562,32 @@ export default function PosRetail({
                 }
             />
 
+            {/* Variant Selector Dialog */}
+            {selectedProductForVariant && (
+                <VariantSelectorDialog
+                    open={isVariantDialogOpen}
+                    onOpenChange={setIsVariantDialogOpen}
+                    productName={selectedProductForVariant.name}
+                    basePrice={selectedProductForVariant.price}
+                    basePriceFormatted={selectedProductForVariant.price_formatted}
+                    variants={selectedProductForVariant.variants || []}
+                    appCurrency={appCurrency}
+                    onSelectVariant={handleVariantSelected}
+                />
+            )}
+
             <div className="flex h-[calc(100vh-12rem)] flex-col gap-4 overflow-hidden lg:flex-row">
                 {/* Products Section - Takes most of the space */}
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:min-h-full">
+                    {/* Barcode Scanner */}
+                    <div className="mb-4">
+                        <BarcodeScanner
+                            onScan={handleBarcodeScan}
+                            placeholder="Scan or enter barcode..."
+                            autoFocus={true}
+                        />
+                    </div>
+
                     {/* Search and Filter Bar */}
                     <div className="mb-4 flex flex-col gap-2 sm:flex-row">
                         <div className="relative flex-1">
@@ -347,7 +596,7 @@ export default function PosRetail({
                                 placeholder="Search products..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
+                                className="pl-10 border-gray-300 dark:border-gray-600"
                             />
                         </div>
                         {categories.length > 0 && (
@@ -355,7 +604,7 @@ export default function PosRetail({
                                 value={selectedCategory}
                                 onValueChange={setSelectedCategory}
                             >
-                                <SelectTrigger className="w-full sm:w-48">
+                                <SelectTrigger className="w-full sm:w-48 border-gray-300 dark:border-gray-600">
                                     <SelectValue placeholder="All Categories" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -377,16 +626,20 @@ export default function PosRetail({
                     <div className="flex-1 overflow-y-auto">
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
                             {filteredProducts.map((product) => {
+                                // Check for base product or any variant in cart
                                 const orderItem = orderItems.find(
-                                    (item) => item.id === product.id,
+                                    (item) => item.id === product.id && !item.variant_id,
                                 );
-                                const inCart = orderItem !== undefined;
-                                const cartQuantity = orderItem?.quantity || 0;
+                                const variantItems = orderItems.filter(
+                                    (item) => item.product_id === product.id && item.variant_id,
+                                );
+                                const inCart = orderItem !== undefined || variantItems.length > 0;
+                                const cartQuantity = orderItem?.quantity || variantItems.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
                                 return (
                                     <Card
                                         key={product.id}
-                                        className={`group cursor-pointer transition-all hover:shadow-md ${
+                                        className={`group cursor-pointer transition-all hover:shadow-md border-gray-200 dark:border-gray-600 ${
                                             product.quantity === 0
                                                 ? 'opacity-50'
                                                 : ''
@@ -451,7 +704,7 @@ export default function PosRetail({
                                                                 size="sm"
                                                                 className="h-7 w-full text-xs"
                                                                 onClick={() =>
-                                                                    addItemToOrder(
+                                                                    handleAddProductWithVariant(
                                                                         product,
                                                                     )
                                                                 }
@@ -486,13 +739,17 @@ export default function PosRetail({
                                                                     size="sm"
                                                                     variant="outline"
                                                                     className="h-7 flex-1 p-0"
-                                                                    onClick={() =>
-                                                                        updateItemQuantity(
-                                                                            product.id,
-                                                                            cartQuantity +
-                                                                                1,
-                                                                        )
+                                                                onClick={() => {
+                                                                    if (orderItem) {
+                                                                        updateItemQuantity(product.id, cartQuantity + 1);
+                                                                    } else if (variantItems.length > 0) {
+                                                                        // Update the first variant item
+                                                                        const variant = product.variants?.find(v => v.id === variantItems[0].variant_id);
+                                                                        if (variant && variantItems[0].quantity < variant.quantity) {
+                                                                            updateItemQuantity(variantItems[0].variant_id!, variantItems[0].quantity + 1);
+                                                                        }
                                                                     }
+                                                                }}
                                                                     disabled={
                                                                         cartQuantity >=
                                                                         product.quantity
@@ -532,6 +789,10 @@ export default function PosRetail({
                         onUpdateQuantity={updateItemQuantity}
                         onRemoveItem={removeItemFromOrder}
                         onCompleteSale={handleCompleteSale}
+                        subtotal={subtotal}
+                        discountAmount={discountAmount}
+                        appliedDiscount={appliedDiscount}
+                        totalAmount={totalAmount}
                     />
                 </div>
             </div>

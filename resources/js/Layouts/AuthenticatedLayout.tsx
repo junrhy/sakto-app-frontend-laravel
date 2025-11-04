@@ -1271,7 +1271,7 @@ export default function Authenticated({
                     }`}
                 >
                     {header && (
-                        <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
+                        <header className="bg-white/80 shadow-sm backdrop-blur-lg border-b border-gray-200 dark:bg-gray-800/80 dark:border-gray-600">
                             <div className="px-4 py-6 sm:px-6 lg:px-8">
                                 {header}
                             </div>

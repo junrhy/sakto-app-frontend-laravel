@@ -39,6 +39,28 @@ class PosRetailController extends Controller
             $inventoryProducts = $response->json()['data']['products'];
             $inventoryCategories = $response->json()['data']['categories'];
             
+            // Fetch variants for each product
+            foreach ($inventoryProducts as &$product) {
+                $variantsResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/inventory/{$product['id']}/variants", [
+                        'client_identifier' => $clientIdentifier
+                    ]);
+                
+                $product['variants'] = $variantsResponse->successful() 
+                    ? ($variantsResponse->json()['data'] ?? [])
+                    : [];
+            }
+            
+            // Fetch active discounts
+            $discountsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/inventory/discounts/active", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            $activeDiscounts = $discountsResponse->successful() 
+                ? ($discountsResponse->json()['data'] ?? [])
+                : [];
+            
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
             $inventoryProducts = array_map(function($product) use ($jsonAppCurrency) {
                 $product['price_formatted'] = $jsonAppCurrency->symbol . number_format($product['price'], 2, $jsonAppCurrency->decimal_separator, $jsonAppCurrency->thousands_separator);
@@ -48,7 +70,8 @@ class PosRetailController extends Controller
             return Inertia::render('PosRetail/Index', [
                 'products' => $inventoryProducts,
                 'categories' => $inventoryCategories,
-                'appCurrency' => $jsonAppCurrency
+                'appCurrency' => $jsonAppCurrency,
+                'activeDiscounts' => $activeDiscounts,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

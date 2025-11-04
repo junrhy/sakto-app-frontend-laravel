@@ -37,6 +37,14 @@ export const menuCategories: MenuCategory[] = [
                 appParamCheck: ['retail'],
             },
             {
+                id: 'retail-discounts',
+                title: 'Discounts',
+                href: '/inventory/discounts?app=retail',
+                urlCheck: 'inventory/discounts',
+                moduleCheck: 'retail',
+                appParamCheck: ['retail'],
+            },
+            {
                 id: 'fnb',
                 title: 'F&B',
                 href: '/pos-restaurant?app=fnb&tab=reservations',

@@ -23,6 +23,9 @@ interface PaymentDialogProps {
     onOpenChange: (open: boolean) => void;
     totalAmount: number;
     appCurrency: any;
+    subtotal?: number;
+    discountAmount?: number;
+    appliedDiscount?: any;
     onConfirm: (data: {
         payment_method: 'cash' | 'card';
         cash_received?: number;
@@ -35,6 +38,9 @@ export default function PaymentDialog({
     onOpenChange,
     totalAmount,
     appCurrency,
+    subtotal,
+    discountAmount = 0,
+    appliedDiscount,
     onConfirm,
 }: PaymentDialogProps) {
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
@@ -96,13 +102,29 @@ export default function PaymentDialog({
                     </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                            Total Amount
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                            {appCurrency.symbol}
-                            {totalAmount.toFixed(2)}
+                    <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800 space-y-2">
+                        {subtotal !== undefined && subtotal !== totalAmount && (
+                            <>
+                                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                    <span>Subtotal:</span>
+                                    <span>{appCurrency.symbol}{subtotal.toFixed(2)}</span>
+                                </div>
+                                {discountAmount > 0 && appliedDiscount && (
+                                    <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+                                        <span>Discount ({appliedDiscount.name}):</span>
+                                        <span>-{appCurrency.symbol}{discountAmount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Total Amount
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                                {appCurrency.symbol}
+                                {totalAmount.toFixed(2)}
+                            </div>
                         </div>
                     </div>
 
@@ -176,7 +198,7 @@ export default function PaymentDialog({
                             isProcessing ||
                             (paymentMethod === 'cash' && !cashReceived)
                         }
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold shadow-md transition-all duration-200"
                     >
                         {isProcessing ? 'Processing...' : 'Confirm Sale'}
                     </Button>
