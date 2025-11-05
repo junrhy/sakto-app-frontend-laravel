@@ -334,7 +334,6 @@ export default function Application({ auth, application }: Props) {
                             </Card>
                         </div>
                     </div>
-                </div>
             </div>
         </AuthenticatedLayout>
     );

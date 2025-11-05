@@ -114,25 +114,33 @@ export default function JobBoard({ auth, jobBoard, jobs }: Props) {
     };
 
     const handlePublish = (id: number) => {
-        router.post(route('jobs.publishJob', id), {
-            onSuccess: () => {
-                toast.success('Job published successfully');
-            },
-            onError: () => {
-                toast.error('Failed to publish job');
-            },
-        });
+        router.post(
+            route('jobs.publishJob', id),
+            {},
+            {
+                onSuccess: () => {
+                    toast.success('Job published successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to publish job');
+                },
+            }
+        );
     };
 
     const handleClose = (id: number) => {
-        router.post(route('jobs.closeJob', id), {
-            onSuccess: () => {
-                toast.success('Job closed successfully');
-            },
-            onError: () => {
-                toast.error('Failed to close job');
-            },
-        });
+        router.post(
+            route('jobs.closeJob', id),
+            {},
+            {
+                onSuccess: () => {
+                    toast.success('Job closed successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to close job');
+                },
+            }
+        );
     };
 
     return (

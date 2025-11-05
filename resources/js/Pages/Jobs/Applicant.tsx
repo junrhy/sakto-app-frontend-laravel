@@ -278,7 +278,6 @@ export default function Applicant({ auth, applicant }: Props) {
                             </Card>
                         </div>
                     </div>
-                </div>
             </div>
         </AuthenticatedLayout>
     );
