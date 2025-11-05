@@ -151,12 +151,12 @@ export default function Welcome({ auth }: PageProps) {
         {
             name: 'Jobs',
             description:
-                'Corporate recruitment platform for businesses to manage hiring, employee onboarding, and workforce planning',
+                'Manage your own job board business',
             icon: Briefcase,
             href: '/jobs',
             color: 'text-indigo-600',
             bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
         {
             name: 'Travel',

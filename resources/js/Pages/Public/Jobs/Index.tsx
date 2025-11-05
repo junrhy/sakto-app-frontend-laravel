@@ -38,7 +38,7 @@ export default function JobsIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Jobs - Find Your Dream Career" />
+            <Head title="Jobs - Create Your Own Job Board Platform" />
             <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
                 {/* Header */}
                 <div className="border-b border-slate-700 bg-gradient-to-r from-purple-800 to-blue-900 shadow-lg">
@@ -312,51 +312,42 @@ export default function JobsIndex({ auth }: PageProps) {
                                         icon={faUsers}
                                         className="mr-2 h-4 w-4 text-purple-600"
                                     />
-                                    Trusted by 10,000+ Job Seekers
+                                    Trusted by 10,000+ Businesses
                                 </div>
                             </div>
                             <h2 className="mb-6 text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
-                                Find Your Dream
+                                Create Your Own
                                 <span className="block text-purple-600">
-                                    Career
+                                    Job Board Platform
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Connect with top employers and discover
-                                opportunities that match your skills and
-                                aspirations. Build your career with our
-                                comprehensive job platform.
+                                Launch and manage your own job board business with our
+                                comprehensive platform. Connect employers with job seekers
+                                and build your recruitment marketplace.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-                                <Link
-                                    href={route('jobs.show', {
-                                        identifier: 'browse',
-                                    })}
-                                    className="inline-flex items-center rounded-lg border border-transparent bg-purple-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-purple-700"
-                                >
-                                    Browse Jobs
-                                    <svg
-                                        className="ml-2 h-5 w-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M13 7l5 5m0 0l-5 5m5-5H6"
-                                        />
-                                    </svg>
-                                </Link>
                                 {!auth.user && (
                                     <Link
                                         href={route('register', {
                                             project: 'jobs',
                                         })}
-                                        className="inline-flex items-center rounded-lg border border-purple-600 bg-white px-8 py-3 text-base font-medium text-purple-600 shadow-sm transition-colors duration-200 hover:bg-purple-50"
+                                        className="inline-flex items-center rounded-lg border border-transparent bg-purple-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-purple-700"
                                     >
                                         Get Started Free
+                                        <svg
+                                            className="ml-2 h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                            />
+                                        </svg>
                                     </Link>
                                 )}
                             </div>
@@ -366,12 +357,12 @@ export default function JobsIndex({ auth }: PageProps) {
                         <div className="mt-20 lg:mt-24">
                             <div className="mb-12">
                                 <h3 className="mb-4 text-3xl font-bold text-slate-900 lg:text-4xl">
-                                    Everything You Need for Your Career
+                                    Everything You Need to Run Your Job Board
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
                                     Our platform provides comprehensive tools
-                                    and resources to help you find the perfect
-                                    job and advance your career.
+                                    and resources to help you manage job postings,
+                                    track applications, and grow your recruitment business.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -385,13 +376,12 @@ export default function JobsIndex({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
-                                        Job Matching
+                                        Job Board Management
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Our smart algorithm matches you with
-                                        relevant job opportunities based on your
-                                        skills, experience, and career
-                                        preferences.
+                                        Create and manage multiple job boards,
+                                        post job listings, and organize opportunities
+                                        by category or industry to attract the right candidates.
                                     </p>
                                 </div>
 
@@ -405,12 +395,12 @@ export default function JobsIndex({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
-                                        Career Analytics
+                                        Application Tracking
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Track your job search progress, analyze
-                                        market trends, and get insights to
-                                        improve your career prospects.
+                                        Track applications, manage applicant profiles,
+                                        and streamline your hiring process with
+                                        comprehensive applicant management tools.
                                     </p>
                                 </div>
 
@@ -424,12 +414,12 @@ export default function JobsIndex({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
-                                        Professional Network
+                                        Applicant Profiles
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Connect with industry professionals,
-                                        mentors, and potential employers to
-                                        expand your professional network.
+                                        Build comprehensive applicant databases with
+                                        resume information, skills, and experience
+                                        to help you find the perfect candidates.
                                     </p>
                                 </div>
                             </div>
@@ -438,7 +428,7 @@ export default function JobsIndex({ auth }: PageProps) {
                         {/* Trust Indicators */}
                         <div className="mt-20 rounded-2xl border border-slate-200 bg-gradient-to-r from-purple-50 to-blue-50 p-8 shadow-lg lg:mt-24 lg:p-12">
                             <h3 className="mb-8 text-center text-2xl font-bold text-slate-900 lg:text-3xl">
-                                Trusted by Job Seekers & Employers
+                                Trusted by Job Board Owners Worldwide
                             </h3>
                             <div className="grid grid-cols-2 items-center gap-8 md:grid-cols-4">
                                 <div className="text-center">
@@ -446,7 +436,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                         10K+
                                     </div>
                                     <div className="text-slate-600">
-                                        Job Seekers
+                                        Active Job Boards
                                     </div>
                                 </div>
                                 <div className="text-center">
@@ -454,7 +444,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                         5K+
                                     </div>
                                     <div className="text-slate-600">
-                                        Companies
+                                        Businesses
                                     </div>
                                 </div>
                                 <div className="text-center">
@@ -462,7 +452,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                         15K+
                                     </div>
                                     <div className="text-slate-600">
-                                        Jobs Posted
+                                        Jobs Managed
                                     </div>
                                 </div>
                                 <div className="text-center">
@@ -470,7 +460,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                         85%
                                     </div>
                                     <div className="text-slate-600">
-                                        Success Rate
+                                        Satisfaction Rate
                                     </div>
                                 </div>
                             </div>
@@ -499,11 +489,11 @@ export default function JobsIndex({ auth }: PageProps) {
                                         14-Day Free Trial
                                     </div>
                                     <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
-                                        Try Our Jobs Platform Risk-Free
+                                        Start Your Job Board Business Risk-Free
                                     </h2>
                                     <p className="mb-6 text-lg text-gray-600">
                                         {starterPlan?.description ||
-                                            'Test drive all features with zero commitment and zero cost'}
+                                            'Test drive all features to create and manage your job board with zero commitment and zero cost'}
                                     </p>
                                     {starterPlan?.tagline && (
                                         <p className="mb-8 text-base italic text-gray-500">
@@ -595,9 +585,9 @@ export default function JobsIndex({ auth }: PageProps) {
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
                             After your free trial, select the perfect plan for
-                            your job search needs. All plans include our core
-                            job search features with different levels of
-                            support.
+                            your job board business. All plans include our core
+                            job board management features with different levels of
+                            support and capacity.
                         </p>
                     </div>
 
@@ -608,11 +598,11 @@ export default function JobsIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        {basicPlan?.name || 'Job Seeker'}
+                                        {basicPlan?.name || 'Starter'}
                                     </h3>
                                     <p className="mb-3 text-sm text-slate-600">
                                         {basicPlan?.description ||
-                                            'Perfect for finding your next opportunity'}
+                                            'Perfect for starting your job board business'}
                                     </p>
                                     {basicPlan?.tagline && (
                                         <p className="mb-4 text-xs italic text-slate-500">
@@ -672,7 +662,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                             </svg>
                                             <span className="text-slate-600">
                                                 {basicPlan?.features?.[0] ||
-                                                    'Job search & applications'}
+                                                    'Job board management'}
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -690,7 +680,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                             </svg>
                                             <span className="text-slate-600">
                                                 {basicPlan?.features?.[1] ||
-                                                    'Basic profile'}
+                                                    'Application tracking'}
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -731,7 +721,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                     </h3>
                                     <p className="mb-3 text-sm text-slate-600">
                                         {proPlan?.description ||
-                                            'Ideal for serious job seekers'}
+                                            'Ideal for growing job board businesses'}
                                     </p>
                                     {proPlan?.tagline && (
                                         <p className="mb-4 text-xs italic text-blue-600">
@@ -787,7 +777,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Everything in Job Seeker
+                                                Everything in Starter
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -804,7 +794,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Advanced profile features
+                                                Advanced applicant management
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -821,7 +811,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Priority applications
+                                                Multiple job boards
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -838,7 +828,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                AI career insights
+                                                Analytics & reporting
                                             </span>
                                         </li>
                                     </ul>
@@ -852,11 +842,11 @@ export default function JobsIndex({ auth }: PageProps) {
                             <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg">
                                 <div>
                                     <h3 className="mb-2 text-xl font-bold text-slate-900">
-                                        {businessPlan?.name || 'Executive'}
+                                        {businessPlan?.name || 'Enterprise'}
                                     </h3>
                                     <p className="mb-3 text-sm text-slate-600">
                                         {businessPlan?.description ||
-                                            'Perfect for senior professionals'}
+                                            'Perfect for established job board businesses'}
                                     </p>
                                     {businessPlan?.tagline && (
                                         <p className="mb-4 text-xs italic text-indigo-600">
@@ -929,7 +919,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Executive search
+                                                Unlimited job boards
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -946,7 +936,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Advanced job matching AI
+                                                Priority support & custom features
                                             </span>
                                         </li>
                                     </ul>
@@ -965,22 +955,21 @@ export default function JobsIndex({ auth }: PageProps) {
                                 <dl className="space-y-6">
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-slate-900">
-                                            How do I apply for jobs?
+                                            How do I create a job board?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Simply browse our job listings, find
-                                            positions that match your skills,
-                                            and click "Apply Now". You can track
-                                            your applications in your dashboard.
+                                            Simply sign up for an account, create your first job board,
+                                            and start posting job listings. You can manage multiple
+                                            job boards and track all applications from your dashboard.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-slate-900">
-                                            Is my personal information secure?
+                                            Is my business data secure?
                                         </dt>
                                         <dd className="text-slate-600">
                                             Yes, we take data security
-                                            seriously. Your personal information
+                                            seriously. Your business and applicant data
                                             is encrypted and protected. We never
                                             share your data without your
                                             consent.
@@ -1014,10 +1003,9 @@ export default function JobsIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Connect with top employers and discover
-                                    opportunities that match your skills and
-                                    aspirations. Build your career with our
-                                    comprehensive job platform.
+                                    Launch and manage your own job board business with our
+                                    comprehensive platform. Connect employers with job seekers
+                                    and build your recruitment marketplace.
                                 </p>
                             </div>
 

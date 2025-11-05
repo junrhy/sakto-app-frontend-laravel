@@ -63,6 +63,7 @@ import {
     RxUpload,
     RxVideo,
 } from 'react-icons/rx';
+import { FaUsers } from 'react-icons/fa';
 
 // Icon Library - Direct mapping of icon names to components
 export const ICON_LIBRARY = {
@@ -79,6 +80,7 @@ export const ICON_LIBRARY = {
     // People & Communication
     RxPerson: RxPerson,
     RxGroup: RxGroup,
+    FaUsers: FaUsers,
     RxChatBubble: RxChatBubble,
     RxEnvelopeClosed: RxEnvelopeClosed,
     RxIdCard: RxIdCard,
@@ -211,7 +213,10 @@ export const getIconByName = (name: string): React.ComponentType<any> => {
 
         // People & Communication
         person: 'RxPerson',
-        group: 'RxGroup',
+        people: 'FaUsers',
+        group: 'FaUsers',
+        users: 'FaUsers',
+        team: 'FaUsers',
         chat: 'RxChatBubble',
         email: 'RxEnvelopeClosed',
         contacts: 'RxIdCard',
@@ -573,6 +578,16 @@ export const getSmartIconSuggestion = (title: string): IconName => {
     }
     if (lowerTitle.includes('contact') || lowerTitle.includes('customer')) {
         return 'RxIdCard';
+    }
+
+    // Jobs & Recruitment
+    if (
+        lowerTitle.includes('job') ||
+        lowerTitle.includes('recruitment') ||
+        lowerTitle.includes('hr') ||
+        lowerTitle.includes('applicant')
+    ) {
+        return 'FaUsers';
     }
 
     // Default fallback

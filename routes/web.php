@@ -39,7 +39,6 @@ Route::group(['middleware' => ['web']], function () {
     require __DIR__.'/web/CommunityController.php';
     require __DIR__.'/web/LogisticsController.php';
     require __DIR__.'/web/DeliveryController.php';
-    require __DIR__.'/web/JobsController.php';
     require __DIR__.'/web/ShopController.php';
 });
 
@@ -111,6 +110,7 @@ require __DIR__.'/web/MedicalController.php';
 require __DIR__.'/web/ClinicEmbedController.php';
 require __DIR__.'/web/ChatController.php';
 require __DIR__.'/web/FileStorageController.php';
+require __DIR__.'/web/JobsController.php';
 });
 
 // Include authentication routes

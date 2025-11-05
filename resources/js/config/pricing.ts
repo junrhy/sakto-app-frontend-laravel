@@ -480,9 +480,9 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'starter',
                 name: 'Starter',
-                description: 'Try our jobs platform risk-free for 14 days',
+                description: 'Start your job board business risk-free for 14 days',
                 tagline:
-                    'Test drive all features with zero commitment and zero cost',
+                    'Test drive all features to create and manage your job board with zero commitment and zero cost',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -496,10 +496,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             },
             {
                 id: 'basic',
-                name: 'Basic',
-                description: 'Perfect for small job boards',
+                name: 'Starter',
+                description: 'Perfect for starting your job board business',
                 tagline:
-                    'Connect talent with opportunities using essential recruitment tools',
+                    'Launch your job board with essential management tools and application tracking',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -508,8 +508,9 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 },
                 period: '/month',
                 features: [
-                    'Up to 50 job postings',
-                    'Basic applicant management',
+                    'Single job board',
+                    'Job board management',
+                    'Application tracking',
                     'Email & SMS Integrations',
                     'Email support',
                 ],
@@ -518,10 +519,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             },
             {
                 id: 'pro',
-                name: 'Pro',
-                description: 'Ideal for growing job platforms',
+                name: 'Professional',
+                description: 'Ideal for growing job board businesses',
                 tagline:
-                    'Streamline hiring with advanced applicant tracking and automation',
+                    'Scale your recruitment business with multiple job boards and advanced management',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -530,8 +531,9 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 },
                 period: '/month',
                 features: [
-                    'Up to 200 job postings',
+                    'Multiple job boards',
                     'Advanced applicant management',
+                    'Analytics & reporting',
                     'Email & SMS Integrations',
                     'Priority support',
                     'API access',
@@ -542,10 +544,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             },
             {
                 id: 'business',
-                name: 'Business',
-                description: 'For large job platforms',
+                name: 'Enterprise',
+                description: 'Perfect for established job board businesses',
                 tagline:
-                    'Enterprise recruitment platform with unlimited postings and full integrations',
+                    'Enterprise job board platform with unlimited boards and full integrations',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -554,11 +556,12 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 },
                 period: '/month',
                 features: [
-                    'Unlimited job postings',
+                    'Unlimited job boards',
                     'Custom integrations',
                     'Email & SMS Integrations',
                     '24/7 automated support',
                     'Advanced API access',
+                    'Priority support & custom features',
                 ],
                 buttonText: 'Get Started',
                 buttonLink: 'register',

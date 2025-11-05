@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Dashboard;
 use App\Models\User;
+use App\Models\Module;
 use Illuminate\Support\Facades\DB;
 
 class DashboardSeeder extends Seeder
@@ -16,44 +17,20 @@ class DashboardSeeder extends Seeder
     public function run(): void
     {
         $users = User::all();
+        $modules = Module::where('is_active', true)->get();
 
         foreach ($users as $user) {
-            $dashboards = [
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'retail'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'fnb'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'lending'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'warehousing'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'transportation'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'rental-item'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'real-estate'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'clinic'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'loan'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'payroll'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'travel'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'sms'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'email'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'contacts'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'genealogy'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'events'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'challenges'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'content-creator'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'products'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'pages'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'healthcare'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'mortuary'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'bill-payments'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'billers'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'courses'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'queue-system'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'chat'],
-                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'file-storage'],
-            ];
-
-            foreach ($dashboards as $dashboard) {
-                if (!Dashboard::where('user_id', $dashboard['user_id'])
-                    ->where('app', $dashboard['app'])
+            // Create dashboards dynamically based on modules from database
+            foreach ($modules as $module) {
+                if (!Dashboard::where('user_id', $user->id)
+                    ->where('app', $module->identifier)
                     ->exists()) {
-                    Dashboard::create($dashboard);
+                    Dashboard::create([
+                        'name' => 'Your Dashboard',
+                        'user_id' => $user->id,
+                        'is_default' => true,
+                        'app' => $module->identifier,
+                    ]);
                 }
             }
         }

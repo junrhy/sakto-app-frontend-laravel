@@ -182,11 +182,11 @@ export default function MobileSolutions({ auth }: PageProps) {
         },
         {
             name: 'Jobs',
-            description: 'Manage hiring, onboarding, and workforce planning',
+            description: 'Manage your own job board business',
             icon: Briefcase,
             href: getHref('jobs', '/jobs'),
             gradient: 'from-indigo-500 to-purple-600',
-            comingSoon: true,
+            comingSoon: false,
             projectIdentifier: 'jobs',
         },
         {

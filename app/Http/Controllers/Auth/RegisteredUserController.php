@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Dashboard;
 use App\Models\Project;
 use App\Models\Setting;
+use App\Models\Module;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -87,24 +88,17 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // Create a default dashboard for the user
-        $dashboards = [
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'retail'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'fnb'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'lending'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'warehousing'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'transportation'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'rental-item'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'real-estate'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'clinic'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'loan'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'payroll'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'travel'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'sms'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'email'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'contacts'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'genealogy'],
-        ];
+        // Create dashboards dynamically based on modules from database
+        $modules = Module::where('is_active', true)->get();
+        
+        $dashboards = $modules->map(function ($module) use ($user) {
+            return [
+                'name' => 'Your Dashboard',
+                'user_id' => $user->id,
+                'is_default' => true,
+                'app' => $module->identifier,
+            ];
+        })->toArray();
 
         foreach ($dashboards as $dashboard) {
             if (!Dashboard::where('user_id', $user->id)
@@ -119,7 +113,7 @@ class RegisteredUserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'client_identifier' => $user->identifier,
-                'referrer' => 'https://sakto.app',
+                'referrer' => $request->header('referer') ?? $request->getSchemeAndHttpHost(),
             ]);
 
         if (!$response->successful()) {
