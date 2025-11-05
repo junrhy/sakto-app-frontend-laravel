@@ -68,7 +68,7 @@ class PublicController extends Controller
             ]);
         }
 
-        if (str_contains($request->getHost(), 'jobs') || str_contains($request->getPathInfo(), 'jobs')) {
+        if (str_contains($request->getHost(), 'jobs') || str_contains($request->getHost(), 'hr') || str_contains($request->getPathInfo(), 'jobs') || str_contains($request->getPathInfo(), 'hr')) {
             // Redirect authenticated users to home
             if (auth()->check()) {
                 return redirect()->route('home');

@@ -257,7 +257,7 @@ class JobsController extends Controller
     public function storeJob(Request $request)
     {
         $validated = $request->validate([
-            'job_board_id' => 'required|exists:job_boards,id',
+            'job_board_id' => 'required',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'requirements' => 'nullable|string',
@@ -332,7 +332,7 @@ class JobsController extends Controller
     public function updateJob(Request $request, $id)
     {
         $validated = $request->validate([
-            'job_board_id' => 'sometimes|required|exists:job_boards,id',
+            'job_board_id' => 'sometimes|required',
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
             'requirements' => 'nullable|string',
@@ -470,20 +470,28 @@ class JobsController extends Controller
                 ]);
             
             if (!$response->successful()) {
-                return back()->withErrors(['error' => 'Failed to fetch applicants']);
+                Log::error('API request failed in applicants', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                
+                $applicants = [];
+            } else {
+                $applicants = $response->json('data', []);
             }
-
-            $applicants = $response->json('data', []);
 
             return Inertia::render('Jobs/Applicants', [
                 'applicants' => $applicants
             ]);
         } catch (\Exception $e) {
             Log::error('Exception in applicants', [
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
-            return back()->withErrors(['error' => 'An error occurred while fetching applicants']);
+            return Inertia::render('Jobs/Applicants', [
+                'applicants' => []
+            ]);
         }
     }
 

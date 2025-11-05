@@ -149,11 +149,11 @@ export default function Welcome({ auth }: PageProps) {
             comingSoon: true,
         },
         {
-            name: 'Jobs',
+            name: 'Human Resources',
             description:
-                'Manage your own job board business',
-            icon: Briefcase,
-            href: '/jobs',
+                'Manage your own human resources business',
+            icon: Users,
+            href: '/hr',
             color: 'text-indigo-600',
             bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
             comingSoon: false,

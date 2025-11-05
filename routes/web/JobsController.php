@@ -24,6 +24,16 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::put('/boards/{id}', [JobsController::class, 'updateJobBoard'])->name('jobs.updateBoard');
         Route::delete('/boards/{id}', [JobsController::class, 'destroyJobBoard'])->name('jobs.destroyBoard');
         
+        // Applicants Routes (must be before /{id} routes to avoid conflicts)
+        Route::get('/applicants', [JobsController::class, 'applicants'])->name('jobs.applicants');
+        Route::get('/applicants/{id}', [JobsController::class, 'applicant'])->name('jobs.applicant');
+        
+        // Applications Routes (must be before /{id} routes to avoid conflicts)
+        Route::get('/applications', [JobsController::class, 'applications'])->name('jobs.applications');
+        Route::get('/applications/{id}', [JobsController::class, 'application'])->name('jobs.application');
+        Route::put('/applications/{id}', [JobsController::class, 'updateApplication'])->name('jobs.updateApplication');
+        Route::post('/applications/{id}/update-status', [JobsController::class, 'updateApplicationStatus'])->name('jobs.updateApplicationStatus');
+        
         // Jobs Routes
         Route::get('/boards/{jobBoardId}/create-job', [JobsController::class, 'createJob'])->name('jobs.createJob');
         Route::post('/', [JobsController::class, 'storeJob'])->name('jobs.storeJob');
@@ -32,15 +42,5 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::delete('/{id}', [JobsController::class, 'destroyJob'])->name('jobs.destroyJob');
         Route::post('/{id}/publish', [JobsController::class, 'publishJob'])->name('jobs.publishJob');
         Route::post('/{id}/close', [JobsController::class, 'closeJob'])->name('jobs.closeJob');
-        
-        // Applicants Routes
-        Route::get('/applicants', [JobsController::class, 'applicants'])->name('jobs.applicants');
-        Route::get('/applicants/{id}', [JobsController::class, 'applicant'])->name('jobs.applicant');
-        
-        // Applications Routes
-        Route::get('/applications', [JobsController::class, 'applications'])->name('jobs.applications');
-        Route::get('/applications/{id}', [JobsController::class, 'application'])->name('jobs.application');
-        Route::put('/applications/{id}', [JobsController::class, 'updateApplication'])->name('jobs.updateApplication');
-        Route::post('/applications/{id}/update-status', [JobsController::class, 'updateApplicationStatus'])->name('jobs.updateApplicationStatus');
     });
 });

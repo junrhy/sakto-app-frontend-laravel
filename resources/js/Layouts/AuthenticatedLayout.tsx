@@ -198,6 +198,7 @@ const getAppIdentifierFromUrl = (url: string): string | null => {
         'billers',
         'bill-payments',
         'courses',
+        'jobs',
     ];
 
     // Extract pathname from URL, properly handling hostname exclusion

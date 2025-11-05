@@ -17,6 +17,7 @@ interface JobBoard {
     is_active: boolean;
     jobs_count: number;
     published_jobs_count: number;
+    client_identifier?: string;
     created_at: string;
     updated_at: string;
 }
@@ -153,8 +154,7 @@ export default function Index({ auth, jobBoards }: Props) {
         >
             <Head title="Job Boards" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="space-y-6">
                     {/* Search Bar */}
                     <Card className="shadow-sm">
                         <CardContent className="p-6">
@@ -205,7 +205,6 @@ export default function Index({ auth, jobBoards }: Props) {
                             ))}
                         </div>
                     )}
-                </div>
             </div>
         </AuthenticatedLayout>
     );

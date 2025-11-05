@@ -10,20 +10,8 @@ import { FormEventHandler } from 'react';
 interface Props {
     projectParam?: string;
     projectExists?: boolean;
+    projects?: Array<{ identifier: string; name: string }>;
 }
-
-const ALLOWED_PROJECTS = [
-    'trial',
-    'community',
-    'logistics',
-    'medical',
-    'travel',
-    'delivery',
-    'jobs',
-    'shop',
-    'enterprise',
-    'fnb',
-] as const;
 
 const PROJECT_IMAGES = {
     trial: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
@@ -36,6 +24,7 @@ const PROJECT_IMAGES = {
     travel: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     delivery:
         'https://images.unsplash.com/photo-1526367790999-0150786686a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    hr: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     jobs: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     shop: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     enterprise:
@@ -43,14 +32,21 @@ const PROJECT_IMAGES = {
     fnb: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
 } as const;
 
-export default function Register({ projectParam, projectExists }: Props) {
+export default function Register({ projectParam, projectExists, projects = [] }: Props) {
     const urlProject = new URLSearchParams(window.location.search).get(
         'project',
     );
-    const validProject: (typeof ALLOWED_PROJECTS)[number] =
-        ALLOWED_PROJECTS.includes(urlProject as any)
-            ? (urlProject as (typeof ALLOWED_PROJECTS)[number])
-            : 'trial';
+
+    // Get allowed project identifiers from database
+    const allowedProjectIdentifiers = projects.map((p) => p.identifier);
+    // Also include "trial" as a default option
+    if (!allowedProjectIdentifiers.includes('trial')) {
+        allowedProjectIdentifiers.push('trial');
+    }
+
+    const validProject = allowedProjectIdentifiers.includes(urlProject || '')
+        ? (urlProject || 'trial')
+        : 'trial';
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -258,7 +254,9 @@ export default function Register({ projectParam, projectExists }: Props) {
 
                                 <div className="text-center">
                                     <Link
-                                        href={route('login')}
+                                        href={route('login', {
+                                            project: validProject,
+                                        })}
                                         className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                                     >
                                         Already have an account?{' '}
@@ -276,8 +274,8 @@ export default function Register({ projectParam, projectExists }: Props) {
                 <div className="hidden md:block md:w-1/2">
                     <div className="h-screen w-full">
                         <img
-                            src={PROJECT_IMAGES[validProject]}
-                            alt={`${validProject.charAt(0).toUpperCase() + validProject.slice(1)} workspace`}
+                            src={PROJECT_IMAGES[validProject as keyof typeof PROJECT_IMAGES] || PROJECT_IMAGES.trial}
+                            alt={`${validProject?.charAt(0).toUpperCase() + validProject?.slice(1) || 'Default'} workspace`}
                             className="h-full w-full object-cover"
                         />
                     </div>

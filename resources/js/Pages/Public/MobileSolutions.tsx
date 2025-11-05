@@ -181,13 +181,13 @@ export default function MobileSolutions({ auth }: PageProps) {
             projectIdentifier: 'delivery',
         },
         {
-            name: 'Jobs',
-            description: 'Manage your own job board business',
+            name: 'Human Resources',
+            description: 'Manage your own human resources business',
             icon: Briefcase,
-            href: getHref('jobs', '/jobs'),
+            href: getHref('hr', '/hr'),
             gradient: 'from-indigo-500 to-purple-600',
             comingSoon: false,
-            projectIdentifier: 'jobs',
+            projectIdentifier: 'hr',
         },
         {
             name: 'Travel',

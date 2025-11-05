@@ -8,19 +8,6 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-const ALLOWED_PROJECTS = [
-    'trial',
-    'community',
-    'medical',
-    'logistics',
-    'delivery',
-    'jobs',
-    'shop',
-    'enterprise',
-    'travel',
-    'fnb',
-] as const;
-
 const PROJECT_IMAGES = {
     trial: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     community:
@@ -31,6 +18,7 @@ const PROJECT_IMAGES = {
         'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     delivery:
         'https://images.unsplash.com/photo-1526367790999-0150786686a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    hr: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     jobs: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     shop: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
     enterprise:
@@ -39,19 +27,30 @@ const PROJECT_IMAGES = {
     fnb: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
 } as const;
 
+interface Props {
+    status?: string;
+    canResetPassword: boolean;
+    projects?: Array<{ identifier: string; name: string }>;
+}
+
 export default function Login({
     status,
     canResetPassword,
-}: {
-    status?: string;
-    canResetPassword: boolean;
-}) {
+    projects = [],
+}: Props) {
     const urlProject = new URLSearchParams(window.location.search).get(
         'project',
     );
 
+    // Get allowed project identifiers from database
+    const allowedProjectIdentifiers = projects.map((p) => p.identifier);
+    // Also include "trial" as a default option
+    if (!allowedProjectIdentifiers.includes('trial')) {
+        allowedProjectIdentifiers.push('trial');
+    }
+
     // Check if project parameter exists and is valid
-    if (!urlProject || !ALLOWED_PROJECTS.includes(urlProject as any)) {
+    if (!urlProject || !allowedProjectIdentifiers.includes(urlProject)) {
         return (
             <GuestLayout>
                 <Head title="404 - Project Not Found" />
@@ -82,8 +81,7 @@ export default function Login({
         );
     }
 
-    const validProject: (typeof ALLOWED_PROJECTS)[number] =
-        urlProject as (typeof ALLOWED_PROJECTS)[number];
+    const validProject = urlProject;
 
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
@@ -277,8 +275,8 @@ export default function Login({
                 <div className="hidden md:block md:w-1/2">
                     <div className="h-screen w-full">
                         <img
-                            src={PROJECT_IMAGES[validProject]}
-                            alt={`${validProject.charAt(0).toUpperCase() + validProject.slice(1)} workspace`}
+                            src={PROJECT_IMAGES[validProject as keyof typeof PROJECT_IMAGES] || PROJECT_IMAGES.trial}
+                            alt={`${validProject?.charAt(0).toUpperCase() + validProject?.slice(1) || 'Default'} workspace`}
                             className="h-full w-full object-cover"
                         />
                     </div>

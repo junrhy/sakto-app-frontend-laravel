@@ -68,6 +68,27 @@ export const menuCategories: MenuCategory[] = [
                 title: 'Settings',
                 href: '/transportation/settings?app=transportation',
             },
+            {
+                id: 'jobs',
+                title: 'Jobs',
+                href: '/jobs?app=jobs',
+            },
+            {
+                id: 'jobs-applicants',
+                title: 'Applicants',
+                href: '/jobs/applicants?app=jobs',
+                urlCheck: 'jobs/applicants',
+                moduleCheck: 'jobs',
+                appParamCheck: ['jobs'],
+            },
+            {
+                id: 'jobs-applications',
+                title: 'Applications',
+                href: '/jobs/applications?app=jobs',
+                urlCheck: 'jobs/applications',
+                moduleCheck: 'jobs',
+                appParamCheck: ['jobs'],
+            },
         ],
     },
     {

@@ -107,8 +107,7 @@ export default function Application({ auth, application }: Props) {
         >
             <Head title="Application Details" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="space-y-6">
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         {/* Left Column - Applicant Info */}
                         <div className="lg:col-span-1 space-y-6">

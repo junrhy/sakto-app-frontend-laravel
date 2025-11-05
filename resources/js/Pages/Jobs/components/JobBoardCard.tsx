@@ -8,7 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Link } from '@inertiajs/react';
-import { Edit, MoreHorizontal, Trash2, Briefcase } from 'lucide-react';
+import { Edit, MoreHorizontal, Trash2, Briefcase, ExternalLink } from 'lucide-react';
 
 interface JobBoard {
     id: number;
@@ -18,6 +18,7 @@ interface JobBoard {
     is_active: boolean;
     jobs_count: number;
     published_jobs_count: number;
+    client_identifier?: string;
     created_at: string;
     updated_at: string;
 }
@@ -55,6 +56,21 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
                                     View Jobs
                                 </Link>
                             </DropdownMenuItem>
+                            {board.slug && (
+                                <DropdownMenuItem asChild>
+                                    <Link
+                                        href={board.client_identifier 
+                                            ? `${route('jobs.public.board', board.slug)}?client=${encodeURIComponent(board.client_identifier)}`
+                                            : route('jobs.public.board', board.slug)
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <ExternalLink className="mr-2 h-4 w-4" />
+                                        View Public Page
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem asChild>
                                 <Link href={route('jobs.editBoard', board.id)}>
                                     <Edit className="mr-2 h-4 w-4" />
@@ -89,11 +105,28 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
                             </Badge>
                         </div>
                     </div>
-                    <Link href={route('jobs.jobBoard', board.id)}>
-                        <Button size="sm" variant="outline">
-                            View
-                        </Button>
-                    </Link>
+                    <div className="flex space-x-2">
+                        <Link href={route('jobs.jobBoard', board.id)}>
+                            <Button size="sm" variant="outline">
+                                View
+                            </Button>
+                        </Link>
+                        {board.slug && (
+                            <Link
+                                href={board.client_identifier 
+                                    ? `${route('jobs.public.board', board.slug)}?client=${encodeURIComponent(board.client_identifier)}`
+                                    : route('jobs.public.board', board.slug)
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Button size="sm" variant="outline">
+                                    <ExternalLink className="mr-1 h-3 w-3" />
+                                    Public
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </CardContent>
         </Card>

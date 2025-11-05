@@ -87,16 +87,15 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
         >
             <Head title="Post New Job" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
+            <div>
                     <Card>
                         <CardHeader>
                             <CardTitle>Job Information</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="space-y-2 md:col-span-2">
+                        <CardContent className="p-4">
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    <div className="space-y-2 md:col-span-2 lg:col-span-3">
                                         <Label htmlFor="title">
                                             Job Title <span className="text-red-500">*</span>
                                         </Label>
@@ -114,7 +113,7 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
                                         )}
                                     </div>
 
-                                    <div className="space-y-2 md:col-span-2">
+                                    <div className="space-y-2 md:col-span-2 lg:col-span-3">
                                         <Label htmlFor="description">
                                             Description <span className="text-red-500">*</span>
                                         </Label>
@@ -123,7 +122,7 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
                                             value={data.description}
                                             onChange={(e) => setData('description', e.target.value)}
                                             placeholder="Describe the job position..."
-                                            rows={6}
+                                            rows={4}
                                             className="text-gray-900 dark:text-white"
                                         />
                                         {errors.description && (
@@ -133,14 +132,14 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
                                         )}
                                     </div>
 
-                                    <div className="space-y-2 md:col-span-2">
+                                    <div className="space-y-2 md:col-span-2 lg:col-span-3">
                                         <Label htmlFor="requirements">Requirements</Label>
                                         <Textarea
                                             id="requirements"
                                             value={data.requirements}
                                             onChange={(e) => setData('requirements', e.target.value)}
                                             placeholder="List the job requirements..."
-                                            rows={4}
+                                            rows={3}
                                             className="text-gray-900 dark:text-white"
                                         />
                                         {errors.requirements && (
@@ -319,7 +318,7 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
                                         )}
                                     </div>
 
-                                    <div className="space-y-2 md:col-span-2">
+                                    <div className="space-y-2 lg:col-span-3">
                                         <Label htmlFor="application_url">Application URL</Label>
                                         <Input
                                             id="application_url"
@@ -336,7 +335,7 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
                                         )}
                                     </div>
 
-                                    <div className="flex items-center space-x-2 md:col-span-2">
+                                    <div className="flex items-center space-x-2 lg:col-span-3">
                                         <Switch
                                             id="is_featured"
                                             checked={data.is_featured}
@@ -361,7 +360,6 @@ export default function CreateJob({ auth, jobBoard, jobBoardId }: Props) {
                             </form>
                         </CardContent>
                     </Card>
-                </div>
             </div>
         </AuthenticatedLayout>
     );

@@ -191,8 +191,7 @@ export default function Applications({ auth, applications }: Props) {
         >
             <Head title="Applications" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="space-y-6">
                     {/* Search and Filters */}
                     <Card className="shadow-sm">
                         <CardContent className="p-6">
@@ -286,7 +285,6 @@ export default function Applications({ auth, applications }: Props) {
                             </CardContent>
                         </Card>
                     )}
-                </div>
             </div>
         </AuthenticatedLayout>
     );

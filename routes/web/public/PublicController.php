@@ -19,7 +19,7 @@ Route::get('/solutions', [PublicController::class, 'mobileSolutions'])->name('so
 Route::get('/neulify', [PublicController::class, 'neulify'])->name('neulify');
 Route::get('/shop', [PublicController::class, 'shop'])->name('shop');
 Route::get('/delivery', [PublicController::class, 'delivery'])->name('delivery');
-Route::get('/jobs', [PublicController::class, 'jobs'])->name('jobs');
+Route::get('/hr', [PublicController::class, 'jobs'])->name('jobs.public');
 Route::get('/medical', [PublicController::class, 'medical'])->name('medical');
 Route::get('/travel', [PublicController::class, 'travel'])->name('travel');
 Route::get('/fnb', [PublicController::class, 'fnb'])->name('fnb');
@@ -34,8 +34,8 @@ Route::get('/', function (Request $request) {
         return redirect()->route('shop');   
     } elseif (stripos($host, 'delivery') !== false || stripos($path, 'delivery') !== false) {
         return redirect()->route('delivery');
-    } elseif (stripos($host, 'jobs') !== false || stripos($path, 'jobs') !== false) {
-        return redirect()->route('jobs');
+    } elseif (stripos($host, 'jobs') !== false || stripos($host, 'hr') !== false || stripos($path, 'jobs') !== false || stripos($path, 'hr') !== false) {
+        return redirect()->route('jobs.public');
     } elseif (stripos($host, 'fnb') !== false || stripos($path, 'fnb') !== false) {
         return redirect()->route('fnb');
     } elseif (stripos($host, 'community') !== false || stripos($path, 'community') !== false) {

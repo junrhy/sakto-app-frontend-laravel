@@ -151,7 +151,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                     <>
                                         <Link
                                             href={route('login', {
-                                                project: 'jobs',
+                                                project: 'hr',
                                             })}
                                             className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
                                         >
@@ -159,7 +159,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                         </Link>
                                         <Link
                                             href={route('register', {
-                                                project: 'jobs',
+                                                project: 'hr',
                                             })}
                                             className="inline-flex items-center rounded-lg border border-transparent bg-purple-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-purple-800"
                                         >
@@ -273,7 +273,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                         <>
                                             <Link
                                                 href={route('login', {
-                                                    project: 'jobs',
+                                                    project: 'hr',
                                                 })}
                                                 className="block w-full rounded-lg border border-white/20 px-4 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-purple-700 hover:text-purple-100"
                                                 onClick={() =>
@@ -284,7 +284,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                             </Link>
                                             <Link
                                                 href={route('register', {
-                                                    project: 'jobs',
+                                                    project: 'hr',
                                                 })}
                                                 className="block w-full rounded-lg bg-white px-4 py-3 text-center text-base font-medium text-purple-800 transition-colors duration-200 hover:bg-slate-50"
                                                 onClick={() =>
@@ -330,7 +330,7 @@ export default function JobsIndex({ auth }: PageProps) {
                                 {!auth.user && (
                                     <Link
                                         href={route('register', {
-                                            project: 'jobs',
+                                            project: 'hr',
                                         })}
                                         className="inline-flex items-center rounded-lg border border-transparent bg-purple-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-purple-700"
                                     >

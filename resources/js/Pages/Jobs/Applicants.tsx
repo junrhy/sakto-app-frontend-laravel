@@ -76,8 +76,7 @@ export default function Applicants({ auth, applicants }: Props) {
         >
             <Head title="Applicants" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="space-y-6">
                     {/* Search Bar */}
                     <Card className="shadow-sm">
                         <CardContent className="p-6">
@@ -156,7 +155,6 @@ export default function Applicants({ auth, applicants }: Props) {
                             </CardContent>
                         </Card>
                     )}
-                </div>
             </div>
         </AuthenticatedLayout>
     );

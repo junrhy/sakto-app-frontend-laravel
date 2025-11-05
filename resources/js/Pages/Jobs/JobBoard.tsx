@@ -228,8 +228,7 @@ export default function JobBoard({ auth, jobBoard, jobs }: Props) {
         >
             <Head title={jobBoard.name} />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="space-y-6">
                     {/* Search and Filters */}
                     <Card className="shadow-sm">
                         <CardContent className="p-6">
@@ -295,7 +294,6 @@ export default function JobBoard({ auth, jobBoard, jobs }: Props) {
                             ))}
                         </div>
                     )}
-                </div>
             </div>
         </AuthenticatedLayout>
     );
