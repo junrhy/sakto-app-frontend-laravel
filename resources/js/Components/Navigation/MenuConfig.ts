@@ -69,6 +69,27 @@ export const menuCategories: MenuCategory[] = [
                 href: '/transportation/settings?app=transportation',
             },
             {
+                id: 'parcel-delivery',
+                title: 'Parcel Delivery',
+                href: '/parcel-delivery?app=parcel-delivery',
+            },
+            {
+                id: 'parcel-delivery-couriers',
+                title: 'Couriers',
+                href: '/parcel-delivery/couriers?app=parcel-delivery',
+                urlCheck: 'parcel-delivery/couriers',
+                moduleCheck: 'parcel-delivery',
+                appParamCheck: ['parcel-delivery'],
+            },
+            {
+                id: 'parcel-delivery-track',
+                title: 'Track Delivery',
+                href: '/parcel-delivery/track?app=parcel-delivery',
+                urlCheck: 'parcel-delivery/track',
+                moduleCheck: 'parcel-delivery',
+                appParamCheck: ['parcel-delivery'],
+            },
+            {
                 id: 'jobs',
                 title: 'Jobs',
                 href: '/jobs?app=jobs',
@@ -272,12 +293,22 @@ export const shouldShowMenuItem = (
         'queue-system',
         'health-insurance',
         'file-storage',
+        'parcel-delivery',
     ];
 
     // Handle submenu items (like clinic-settings) that should be visible when parent module is accessible
     // Skip this logic for standalone modules that happen to have dashes in their names
-    if (item.id.includes('-') && !standaloneModules.includes(item.id)) {
-        const parentModule = item.id.split('-')[0];
+    // Also skip if item has appParamCheck (let that logic handle it)
+    if (item.id.includes('-') && !standaloneModules.includes(item.id) && !item.appParamCheck) {
+        // Try to find parent module - check if item.id starts with any standalone module
+        let parentModule = item.id.split('-')[0];
+        // Check if there's a longer parent module name (e.g., "parcel-delivery" for "parcel-delivery-couriers")
+        for (const standalone of standaloneModules) {
+            if (item.id.startsWith(standalone + '-')) {
+                parentModule = standalone;
+                break;
+            }
+        }
         const hasParentAccess = hasModuleAccess(parentModule);
         // Check if we're in the parent module context - either via appParam or URL contains the module
         const isCurrentApp =
@@ -304,8 +335,15 @@ export const shouldShowMenuItem = (
         return matchesAppParam || matchesUrl;
     }
 
-    // Default logic: show if appParam matches item.id or URL includes checkUrl
-    return appParam === item.id || url.includes(checkUrl);
+    // Default logic: show if user has access (don't restrict by appParam for main menu items)
+    // Only check URL for items that have a specific urlCheck pattern
+    if (item.urlCheck && item.urlCheck !== item.id) {
+        // If there's a custom urlCheck, show when URL matches
+        return url.includes(item.urlCheck);
+    }
+    
+    // For main menu items, show if user has access (regardless of current appParam)
+    return true;
 };
 
 export const getVisibleItems = (

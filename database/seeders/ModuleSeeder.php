@@ -181,6 +181,19 @@ class ModuleSeeder extends Seeder
                 'rating' => 4.2
             ],
             [
+                'title' => 'Parcel Delivery',
+                'route' => '/dashboard?app=parcel-delivery',
+                'icon' => 'RxBox',
+                'visible' => false,
+                'description' => 'Complete parcel delivery management system with multiple delivery types, dynamic pricing, courier management, and tracking',
+                'price' => 199,
+                'categories' => ['Logistics', 'Delivery', 'Business'],
+                'comingSoon' => false,
+                'pricingType' => 'subscription',
+                'bgColor' => 'bg-indigo-100 dark:bg-indigo-900/30',
+                'rating' => 4.5
+            ],
+            [
                 'title' => 'Warehousing',
                 'route' => '/dashboard?app=warehousing',
                 'icon' => 'RxBox',

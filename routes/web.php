@@ -41,6 +41,7 @@ Route::group(['middleware' => ['web']], function () {
     require __DIR__.'/web/LogisticsController.php';
     require __DIR__.'/web/DeliveryController.php';
     require __DIR__.'/web/ShopController.php';
+    require __DIR__.'/web/public/ParcelDeliveryController.php';
 });
 
 // Admin routes
@@ -81,6 +82,7 @@ require __DIR__.'/web/InventoryController.php';
 require __DIR__.'/web/LoanController.php';
 require __DIR__.'/web/WarehousingController.php';
 require __DIR__.'/web/TransportationController.php';
+require __DIR__.'/web/ParcelDeliveryController.php';
 require __DIR__.'/web/RentalItemController.php';
 require __DIR__.'/web/RentalPropertyController.php';
 require __DIR__.'/web/PayrollController.php';
