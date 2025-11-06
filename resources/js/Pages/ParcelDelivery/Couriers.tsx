@@ -50,7 +50,7 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
         setLoading(true);
         try {
             const params: any = {
-                client_identifier: auth.user?.identifier,
+                client_identifier: (auth.user as any)?.identifier,
             };
             if (search) {
                 params.search = search;
@@ -115,7 +115,7 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
 
             const response = await axios[method](url, {
                 ...formData,
-                client_identifier: auth.user?.identifier,
+                client_identifier: (auth.user as any)?.identifier,
             });
 
             if (response.data.success) {
@@ -141,7 +141,7 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
         try {
             const response = await axios.delete(`/parcel-delivery/couriers/${id}`, {
                 params: {
-                    client_identifier: auth.user?.identifier,
+                    client_identifier: (auth.user as any)?.identifier,
                 },
             });
 
