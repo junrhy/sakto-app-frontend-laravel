@@ -41,7 +41,7 @@ export default function RestaurantCard({ restaurant, formatCurrency }: Restauran
                     <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
                         {restaurant.name}
                     </h3>
-                    {restaurant.rating && (
+                    {restaurant.rating && typeof restaurant.rating === 'number' && (
                         <div className="flex items-center space-x-1">
                             <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                             <span className="text-sm font-medium text-gray-900 dark:text-white">

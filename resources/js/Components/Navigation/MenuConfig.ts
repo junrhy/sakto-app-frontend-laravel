@@ -108,6 +108,7 @@ export const menuCategories: MenuCategory[] = [
                 title: 'Food Delivery',
                 href: '/food-delivery?app=food-delivery',
             },
+            // Customer submenu items (UI files in Customer/FoodDelivery/)
             {
                 id: 'food-delivery-orders',
                 title: 'My Orders',
@@ -128,6 +129,7 @@ export const menuCategories: MenuCategory[] = [
                 parentId: 'food-delivery',
                 isSubmenu: true,
             },
+            // Restaurant owner submenu items (UI files in FoodDelivery/Restaurant/)
             {
                 id: 'food-delivery-restaurant-dashboard',
                 title: 'Restaurant Dashboard',
@@ -138,6 +140,7 @@ export const menuCategories: MenuCategory[] = [
                 parentId: 'food-delivery',
                 isSubmenu: true,
             },
+            // Admin submenu items (UI files in FoodDelivery/Admin/)
             {
                 id: 'food-delivery-admin-restaurants',
                 title: 'Admin: Restaurants',
@@ -188,6 +191,7 @@ export const menuCategories: MenuCategory[] = [
                 parentId: 'food-delivery',
                 isSubmenu: true,
             },
+            // Driver submenu items (UI files in FoodDelivery/Driver/)
             {
                 id: 'food-delivery-driver-dashboard',
                 title: 'Driver Dashboard',

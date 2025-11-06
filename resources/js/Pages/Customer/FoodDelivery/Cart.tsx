@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ShoppingCartIcon, PlusIcon, MinusIcon, TrashIcon, ArrowLeftIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -19,9 +19,11 @@ interface Props extends PageProps {
 
 export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }: Props) {
     const [restaurant, setRestaurant] = useState<FoodDeliveryRestaurant | null>(initialRestaurant || null);
+    const [restaurants, setRestaurants] = useState<Map<number, FoodDeliveryRestaurant>>(new Map());
     const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const fetchingRestaurants = useRef<Set<number>>(new Set());
     const [formData, setFormData] = useState<OrderFormData>({
         customer_name: auth.user?.name || '',
         customer_phone: (auth.user as any)?.contact_number || '',
@@ -39,7 +41,45 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
         const savedCart = localStorage.getItem('food_delivery_cart');
         if (savedCart) {
             const cartData = JSON.parse(savedCart);
-            setCart(cartData.cart || []);
+            const loadedCart = cartData.cart || [];
+            
+            // Recalculate subtotals to ensure they're valid numbers
+            const validatedCart = loadedCart.map((item: CartItem) => {
+                // Get price - prioritize effective_price, then discount_price, then price
+                let effectivePrice = 0;
+                if (item.menu_item.effective_price !== undefined && item.menu_item.effective_price !== null) {
+                    effectivePrice = parseFloat(String(item.menu_item.effective_price)) || 0;
+                } else if (item.menu_item.discount_price !== undefined && item.menu_item.discount_price !== null) {
+                    effectivePrice = parseFloat(String(item.menu_item.discount_price)) || 0;
+                } else if (item.menu_item.price !== undefined && item.menu_item.price !== null) {
+                    effectivePrice = parseFloat(String(item.menu_item.price)) || 0;
+                }
+                
+                const quantity = parseInt(String(item.quantity)) || 1;
+                const subtotal = effectivePrice * quantity;
+                
+                return {
+                    ...item,
+                    quantity,
+                    subtotal: isNaN(subtotal) ? 0 : subtotal,
+                    menu_item: {
+                        ...item.menu_item,
+                        price: parseFloat(String(item.menu_item.price)) || 0,
+                        discount_price: item.menu_item.discount_price ? parseFloat(String(item.menu_item.discount_price)) : undefined,
+                        effective_price: item.menu_item.effective_price ? parseFloat(String(item.menu_item.effective_price)) : undefined,
+                    }
+                };
+            });
+            
+            setCart(validatedCart);
+            
+            // Fetch restaurants for all unique restaurant_ids in cart
+            const uniqueRestaurantIds = [...new Set(validatedCart.map((item: CartItem) => item.menu_item.restaurant_id))];
+            uniqueRestaurantIds.forEach((restaurantId: number) => {
+                fetchRestaurant(restaurantId);
+            });
+            
+            // Also set the primary restaurant if it exists (for backward compatibility)
             if (cartData.restaurantId) {
                 fetchRestaurant(cartData.restaurantId);
             }
@@ -47,20 +87,49 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
     }, []);
 
     const fetchRestaurant = async (restaurantId: number) => {
+        // Check if we're already fetching this restaurant
+        if (fetchingRestaurants.current.has(restaurantId)) {
+            return;
+        }
+        
+        // Check if we already have this restaurant
+        if (restaurants.has(restaurantId)) {
+            return;
+        }
+        
+        fetchingRestaurants.current.add(restaurantId);
         setLoading(true);
         try {
-            const response = await axios.get(`/food-delivery/restaurant/${restaurantId}/show`, {
+            const response = await axios.get(`/food-delivery/restaurants/${restaurantId}`, {
                 params: {
                     client_identifier: (auth.user as any)?.identifier,
                 },
             });
             if (response.data.success) {
-                setRestaurant(response.data.data);
-                setFormData((prev) => ({ ...prev, restaurant_id: restaurantId.toString() }));
+                const restaurantData = response.data.data;
+                setRestaurants((prev) => {
+                    // Double-check before adding
+                    if (prev.has(restaurantId)) {
+                        return prev;
+                    }
+                    const newMap = new Map(prev);
+                    newMap.set(restaurantId, restaurantData);
+                    return newMap;
+                });
+                
+                // Set as primary restaurant if not already set (for backward compatibility)
+                setRestaurant((prev) => {
+                    if (!prev) {
+                        setFormData((formPrev) => ({ ...formPrev, restaurant_id: restaurantId.toString() }));
+                        return restaurantData;
+                    }
+                    return prev;
+                });
             }
         } catch (error: any) {
-            toast.error('Failed to load restaurant');
+            console.error('Failed to load restaurant:', error);
         } finally {
+            fetchingRestaurants.current.delete(restaurantId);
             setLoading(false);
         }
     };
@@ -72,10 +141,22 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
         }
         setCart(
             cart.map((ci) => {
-                const effectivePrice = ci.menu_item.effective_price || ci.menu_item.discount_price || ci.menu_item.price;
-                return ci.menu_item.id === itemId
-                    ? { ...ci, quantity, subtotal: quantity * effectivePrice }
-                    : ci;
+                if (ci.menu_item.id === itemId) {
+                    // Get price - prioritize effective_price, then discount_price, then price
+                    let effectivePrice = 0;
+                    if (ci.menu_item.effective_price !== undefined && ci.menu_item.effective_price !== null) {
+                        effectivePrice = parseFloat(String(ci.menu_item.effective_price)) || 0;
+                    } else if (ci.menu_item.discount_price !== undefined && ci.menu_item.discount_price !== null) {
+                        effectivePrice = parseFloat(String(ci.menu_item.discount_price)) || 0;
+                    } else if (ci.menu_item.price !== undefined && ci.menu_item.price !== null) {
+                        effectivePrice = parseFloat(String(ci.menu_item.price)) || 0;
+                    }
+                    
+                    const newQuantity = parseInt(String(quantity)) || 1;
+                    const subtotal = effectivePrice * newQuantity;
+                    return { ...ci, quantity: newQuantity, subtotal: isNaN(subtotal) ? 0 : subtotal };
+                }
+                return ci;
             })
         );
     };
@@ -101,15 +182,47 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
     };
 
     const getSubtotal = () => {
-        return cart.reduce((sum, item) => sum + item.subtotal, 0);
+        const subtotal = cart.reduce((sum, item) => {
+            // Recalculate subtotal from price and quantity to ensure accuracy
+            let effectivePrice = 0;
+            if (item.menu_item.effective_price !== undefined && item.menu_item.effective_price !== null) {
+                effectivePrice = parseFloat(String(item.menu_item.effective_price)) || 0;
+            } else if (item.menu_item.discount_price !== undefined && item.menu_item.discount_price !== null) {
+                effectivePrice = parseFloat(String(item.menu_item.discount_price)) || 0;
+            } else if (item.menu_item.price !== undefined && item.menu_item.price !== null) {
+                effectivePrice = parseFloat(String(item.menu_item.price)) || 0;
+            }
+            
+            const quantity = parseInt(String(item.quantity)) || 1;
+            const calculatedSubtotal = effectivePrice * quantity;
+            
+            if (isNaN(calculatedSubtotal) || calculatedSubtotal < 0) {
+                console.warn('Invalid subtotal calculation for item:', {
+                    item: item.menu_item.name,
+                    price: item.menu_item.price,
+                    discount_price: item.menu_item.discount_price,
+                    effective_price: item.menu_item.effective_price,
+                    quantity: item.quantity,
+                    calculatedSubtotal
+                });
+                return sum;
+            }
+            
+            return sum + calculatedSubtotal;
+        }, 0);
+        return isNaN(subtotal) ? 0 : subtotal;
     };
 
     const getDeliveryFee = () => {
-        return restaurant?.delivery_fee || 0;
+        const fee = parseFloat(String(restaurant?.delivery_fee)) || 0;
+        return isNaN(fee) ? 0 : fee;
     };
 
     const getTotal = () => {
-        return getSubtotal() + getDeliveryFee();
+        const subtotal = getSubtotal();
+        const deliveryFee = getDeliveryFee();
+        const total = subtotal + deliveryFee;
+        return isNaN(total) ? 0 : total;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -134,6 +247,7 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
         try {
             const orderData = {
                 ...formData,
+                customer_id: auth.user?.id, // Add customer_id
                 restaurant_id: restaurant?.id,
                 items: cart.map((item) => ({
                     menu_item_id: item.menu_item.id,
@@ -226,16 +340,47 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
                                 {cart.length === 0 ? (
                                     <p className="text-gray-500 text-center py-8">Your cart is empty</p>
                                 ) : (
-                                    <div className="space-y-4">
-                                        {cart.map((item) => (
-                                            <CartItemComponent
-                                                key={item.menu_item.id}
-                                                item={item}
-                                                formatCurrency={formatCurrency}
-                                                onUpdateQuantity={updateQuantity}
-                                                onRemove={removeFromCart}
-                                            />
-                                        ))}
+                                    <div className="space-y-6">
+                                        {(() => {
+                                            // Group items by restaurant_id
+                                            const groupedItems = cart.reduce((acc, item) => {
+                                                const restaurantId = item.menu_item.restaurant_id;
+                                                if (!acc[restaurantId]) {
+                                                    acc[restaurantId] = [];
+                                                }
+                                                acc[restaurantId].push(item);
+                                                return acc;
+                                            }, {} as Record<number, CartItem[]>);
+
+                                            return Object.entries(groupedItems).map(([restaurantId, items]) => {
+                                                const restaurantData = restaurants.get(Number(restaurantId));
+                                                return (
+                                                    <div key={restaurantId} className="space-y-3">
+                                                        {restaurantData && (
+                                                            <div className="flex items-center gap-2 pb-2 border-b">
+                                                                <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                                    {restaurantData.name}
+                                                                </h4>
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                    ({items.length} item{items.length !== 1 ? 's' : ''})
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <div className="space-y-4 pl-4">
+                                                            {items.map((item) => (
+                                                                <CartItemComponent
+                                                                    key={item.menu_item.id}
+                                                                    item={item}
+                                                                    formatCurrency={formatCurrency}
+                                                                    onUpdateQuantity={updateQuantity}
+                                                                    onRemove={removeFromCart}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            });
+                                        })()}
                                     </div>
                                 )}
                             </CardContent>

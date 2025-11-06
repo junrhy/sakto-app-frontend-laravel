@@ -6,23 +6,79 @@ import { UtensilsIcon, PlusIcon, EditIcon, TrashIcon, SearchIcon } from 'lucide-
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { FoodDeliveryRestaurant } from '../types';
+import { FoodDeliveryRestaurant, RestaurantFormData } from '../types';
 import axios from 'axios';
 import { toast } from 'sonner';
 
 interface Props extends PageProps {
     restaurants?: FoodDeliveryRestaurant[];
+    restaurant?: FoodDeliveryRestaurant;
+    mode?: 'create' | 'edit';
 }
 
-export default function AdminRestaurants({ auth, restaurants: initialRestaurants }: Props) {
+export default function AdminRestaurants({ auth, restaurants: initialRestaurants, restaurant: initialRestaurant, mode: initialMode }: Props) {
     const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(initialRestaurants || []);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(!!initialMode);
+    const [editingRestaurant, setEditingRestaurant] = useState<FoodDeliveryRestaurant | null>(initialRestaurant || null);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState<RestaurantFormData>({
+        name: '',
+        description: '',
+        logo: '',
+        cover_image: '',
+        address: '',
+        coordinates: '',
+        phone: '',
+        email: '',
+        status: 'active',
+        delivery_fee: '0',
+        minimum_order_amount: '0',
+        estimated_prep_time: '30',
+    });
 
     useEffect(() => {
         fetchRestaurants();
     }, [search]);
+
+    useEffect(() => {
+        if (editingRestaurant) {
+            setFormData({
+                name: editingRestaurant.name,
+                description: editingRestaurant.description || '',
+                logo: editingRestaurant.logo || '',
+                cover_image: editingRestaurant.cover_image || '',
+                address: editingRestaurant.address,
+                coordinates: editingRestaurant.coordinates || '',
+                phone: editingRestaurant.phone,
+                email: editingRestaurant.email || '',
+                status: editingRestaurant.status,
+                delivery_fee: editingRestaurant.delivery_fee.toString(),
+                minimum_order_amount: editingRestaurant.minimum_order_amount.toString(),
+                estimated_prep_time: editingRestaurant.estimated_prep_time.toString(),
+            });
+        } else {
+            setFormData({
+                name: '',
+                description: '',
+                logo: '',
+                cover_image: '',
+                address: '',
+                coordinates: '',
+                phone: '',
+                email: '',
+                status: 'active',
+                delivery_fee: '0',
+                minimum_order_amount: '0',
+                estimated_prep_time: '30',
+            });
+        }
+    }, [editingRestaurant]);
 
     const fetchRestaurants = async () => {
         setLoading(true);
@@ -45,6 +101,41 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
         }
     };
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+
+        try {
+            const payload = {
+                ...formData,
+                delivery_fee: parseFloat(formData.delivery_fee) || 0,
+                minimum_order_amount: parseFloat(formData.minimum_order_amount) || 0,
+                estimated_prep_time: parseInt(formData.estimated_prep_time) || 30,
+                client_identifier: (auth.user as any)?.identifier,
+            };
+
+            let response;
+            if (editingRestaurant) {
+                response = await axios.put(`/food-delivery/restaurants/${editingRestaurant.id}`, payload);
+            } else {
+                response = await axios.post('/food-delivery/restaurants', payload);
+            }
+
+            if (response.data.success) {
+                toast.success(editingRestaurant ? 'Restaurant updated successfully' : 'Restaurant created successfully');
+                setDialogOpen(false);
+                setEditingRestaurant(null);
+                fetchRestaurants();
+                // Clear the URL mode parameter
+                router.visit('/food-delivery/admin/restaurants', { replace: true });
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || (editingRestaurant ? 'Failed to update restaurant' : 'Failed to create restaurant'));
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleDelete = async (restaurantId: number) => {
         if (!confirm('Are you sure you want to delete this restaurant?')) return;
 
@@ -61,6 +152,16 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
         } catch (error: any) {
             toast.error('Failed to delete restaurant');
         }
+    };
+
+    const handleEdit = (restaurant: FoodDeliveryRestaurant) => {
+        setEditingRestaurant(restaurant);
+        setDialogOpen(true);
+    };
+
+    const handleCreate = () => {
+        setEditingRestaurant(null);
+        setDialogOpen(true);
     };
 
     const formatCurrency = (amount: number) => {
@@ -95,7 +196,7 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                             </p>
                         </div>
                     </div>
-                    <Button onClick={() => router.visit('/food-delivery/admin/restaurants/create')}>
+                    <Button onClick={handleCreate}>
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Restaurant
                     </Button>
@@ -172,7 +273,7 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => router.visit(`/food-delivery/admin/restaurants/${restaurant.id}/edit`)}
+                                                        onClick={() => handleEdit(restaurant)}
                                                     >
                                                         <EditIcon className="h-4 w-4" />
                                                     </Button>
@@ -192,6 +293,142 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Create/Edit Dialog */}
+                <Dialog open={dialogOpen} onOpenChange={(open) => {
+                    setDialogOpen(open);
+                    if (!open) {
+                        setEditingRestaurant(null);
+                        router.visit('/food-delivery/admin/restaurants', { replace: true });
+                    }
+                }}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>{editingRestaurant ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="name">Restaurant Name *</Label>
+                                    <Input
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="phone">Phone *</Label>
+                                    <Input
+                                        id="phone"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="status">Status *</Label>
+                                    <Select
+                                        value={formData.status}
+                                        onValueChange={(value: 'active' | 'inactive' | 'closed') => setFormData({ ...formData, status: value })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="inactive">Inactive</SelectItem>
+                                            <SelectItem value="closed">Closed</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="description">Description</Label>
+                                    <Input
+                                        id="description"
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="address">Address *</Label>
+                                    <Input
+                                        id="address"
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="coordinates">Coordinates (lat,lng)</Label>
+                                    <Input
+                                        id="coordinates"
+                                        value={formData.coordinates}
+                                        onChange={(e) => setFormData({ ...formData, coordinates: e.target.value })}
+                                        placeholder="14.5995,120.9842"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="delivery_fee">Delivery Fee *</Label>
+                                    <Input
+                                        id="delivery_fee"
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.delivery_fee}
+                                        onChange={(e) => setFormData({ ...formData, delivery_fee: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="minimum_order_amount">Minimum Order Amount *</Label>
+                                    <Input
+                                        id="minimum_order_amount"
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.minimum_order_amount}
+                                        onChange={(e) => setFormData({ ...formData, minimum_order_amount: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="estimated_prep_time">Estimated Prep Time (minutes) *</Label>
+                                    <Input
+                                        id="estimated_prep_time"
+                                        type="number"
+                                        value={formData.estimated_prep_time}
+                                        onChange={(e) => setFormData({ ...formData, estimated_prep_time: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setDialogOpen(false);
+                                        setEditingRestaurant(null);
+                                        router.visit('/food-delivery/admin/restaurants', { replace: true });
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={saving}>
+                                    {saving ? 'Saving...' : editingRestaurant ? 'Update Restaurant' : 'Create Restaurant'}
+                                </Button>
+                            </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );

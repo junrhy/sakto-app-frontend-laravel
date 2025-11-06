@@ -6,6 +6,9 @@ import { TruckIcon, PlusIcon, EditIcon, TrashIcon, SearchIcon } from 'lucide-rea
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { FoodDeliveryDriver } from '../types';
 import axios from 'axios';
@@ -13,16 +16,68 @@ import { toast } from 'sonner';
 
 interface Props extends PageProps {
     drivers?: FoodDeliveryDriver[];
+    driver?: FoodDeliveryDriver;
+    mode?: 'create' | 'edit';
 }
 
-export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
+interface DriverFormData {
+    name: string;
+    phone: string;
+    email: string;
+    vehicle_type: string;
+    license_number: string;
+    status: 'available' | 'busy' | 'offline';
+    current_location: string;
+    current_coordinates: string;
+}
+
+export default function AdminDrivers({ auth, drivers: initialDrivers, driver: initialDriver, mode: initialMode }: Props) {
     const [drivers, setDrivers] = useState<FoodDeliveryDriver[]>(initialDrivers || []);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(!!initialMode);
+    const [editingDriver, setEditingDriver] = useState<FoodDeliveryDriver | null>(initialDriver || null);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState<DriverFormData>({
+        name: '',
+        phone: '',
+        email: '',
+        vehicle_type: '',
+        license_number: '',
+        status: 'available',
+        current_location: '',
+        current_coordinates: '',
+    });
 
     useEffect(() => {
         fetchDrivers();
     }, [search]);
+
+    useEffect(() => {
+        if (editingDriver) {
+            setFormData({
+                name: editingDriver.name,
+                phone: editingDriver.phone,
+                email: editingDriver.email || '',
+                vehicle_type: editingDriver.vehicle_type || '',
+                license_number: editingDriver.license_number || '',
+                status: editingDriver.status,
+                current_location: editingDriver.current_location || '',
+                current_coordinates: editingDriver.current_coordinates || '',
+            });
+        } else {
+            setFormData({
+                name: '',
+                phone: '',
+                email: '',
+                vehicle_type: '',
+                license_number: '',
+                status: 'available',
+                current_location: '',
+                current_coordinates: '',
+            });
+        }
+    }, [editingDriver]);
 
     const fetchDrivers = async () => {
         setLoading(true);
@@ -45,6 +100,37 @@ export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
         }
     };
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+
+        try {
+            const payload = {
+                ...formData,
+                client_identifier: (auth.user as any)?.identifier,
+            };
+
+            let response;
+            if (editingDriver) {
+                response = await axios.put(`/food-delivery/drivers/${editingDriver.id}`, payload);
+            } else {
+                response = await axios.post('/food-delivery/drivers', payload);
+            }
+
+            if (response.data.success) {
+                toast.success(editingDriver ? 'Driver updated successfully' : 'Driver created successfully');
+                setDialogOpen(false);
+                setEditingDriver(null);
+                fetchDrivers();
+                router.visit('/food-delivery/admin/drivers', { replace: true });
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || (editingDriver ? 'Failed to update driver' : 'Failed to create driver'));
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleDelete = async (driverId: number) => {
         if (!confirm('Are you sure you want to delete this driver?')) return;
 
@@ -61,6 +147,16 @@ export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
         } catch (error: any) {
             toast.error('Failed to delete driver');
         }
+    };
+
+    const handleEdit = (driver: FoodDeliveryDriver) => {
+        setEditingDriver(driver);
+        setDialogOpen(true);
+    };
+
+    const handleCreate = () => {
+        setEditingDriver(null);
+        setDialogOpen(true);
     };
 
     const getStatusColor = (status: string) => {
@@ -89,7 +185,7 @@ export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
                             </p>
                         </div>
                     </div>
-                    <Button onClick={() => router.visit('/food-delivery/admin/drivers/create')}>
+                    <Button onClick={handleCreate}>
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Driver
                     </Button>
@@ -144,7 +240,7 @@ export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {driver.rating ? driver.rating.toFixed(1) : 'N/A'}
+                                                {driver.rating && typeof driver.rating === 'number' ? driver.rating.toFixed(1) : 'N/A'}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">{driver.total_deliveries}</TableCell>
                                             <TableCell className="text-right text-gray-900 dark:text-white">
@@ -152,7 +248,7 @@ export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => router.visit(`/food-delivery/admin/drivers/${driver.id}/edit`)}
+                                                        onClick={() => handleEdit(driver)}
                                                     >
                                                         <EditIcon className="h-4 w-4" />
                                                     </Button>
@@ -172,6 +268,119 @@ export default function AdminDrivers({ auth, drivers: initialDrivers }: Props) {
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Create/Edit Dialog */}
+                <Dialog open={dialogOpen} onOpenChange={(open) => {
+                    setDialogOpen(open);
+                    if (!open) {
+                        setEditingDriver(null);
+                        router.visit('/food-delivery/admin/drivers', { replace: true });
+                    }
+                }}>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>{editingDriver ? 'Edit Driver' : 'Add Driver'}</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="name">Name *</Label>
+                                    <Input
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="phone">Phone *</Label>
+                                    <Input
+                                        id="phone"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="status">Status *</Label>
+                                    <Select
+                                        value={formData.status}
+                                        onValueChange={(value: 'available' | 'busy' | 'offline') => setFormData({ ...formData, status: value })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">Available</SelectItem>
+                                            <SelectItem value="busy">Busy</SelectItem>
+                                            <SelectItem value="offline">Offline</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="vehicle_type">Vehicle Type</Label>
+                                    <Input
+                                        id="vehicle_type"
+                                        value={formData.vehicle_type}
+                                        onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                                        placeholder="e.g., Motorcycle, Car, Bicycle"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="license_number">License Number</Label>
+                                    <Input
+                                        id="license_number"
+                                        value={formData.license_number}
+                                        onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="current_location">Current Location</Label>
+                                    <Input
+                                        id="current_location"
+                                        value={formData.current_location}
+                                        onChange={(e) => setFormData({ ...formData, current_location: e.target.value })}
+                                        placeholder="e.g., Manila, Philippines"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="current_coordinates">Coordinates (lat,lng)</Label>
+                                    <Input
+                                        id="current_coordinates"
+                                        value={formData.current_coordinates}
+                                        onChange={(e) => setFormData({ ...formData, current_coordinates: e.target.value })}
+                                        placeholder="14.5995,120.9842"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setDialogOpen(false);
+                                        setEditingDriver(null);
+                                        router.visit('/food-delivery/admin/drivers', { replace: true });
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={saving}>
+                                    {saving ? 'Saving...' : editingDriver ? 'Update Driver' : 'Create Driver'}
+                                </Button>
+                            </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );

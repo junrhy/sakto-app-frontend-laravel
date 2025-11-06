@@ -10,10 +10,12 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 interface Props extends PageProps {
-    restaurantId?: number;
+    restaurantId?: number | null;
+    error?: string;
 }
 
-export default function RestaurantDashboard({ auth, restaurantId }: Props) {
+export default function RestaurantDashboard({ auth, restaurantId: initialRestaurantId, error }: Props) {
+    const [restaurantId, setRestaurantId] = useState<number | null>(initialRestaurantId || null);
     const [stats, setStats] = useState<RestaurantStats>({
         total_orders: 0,
         pending_orders: 0,
@@ -24,11 +26,55 @@ export default function RestaurantDashboard({ auth, restaurantId }: Props) {
     });
     const [recentOrders, setRecentOrders] = useState<FoodDeliveryOrder[]>([]);
     const [loading, setLoading] = useState(false);
+    const [fetchingRestaurant, setFetchingRestaurant] = useState(false);
+
+    // Fetch restaurant if not provided by controller
+    useEffect(() => {
+        if (!restaurantId && !error && !fetchingRestaurant) {
+            fetchRestaurant();
+        }
+    }, []);
 
     useEffect(() => {
-        fetchStats();
-        fetchRecentOrders();
+        if (restaurantId) {
+            fetchStats();
+            fetchRecentOrders();
+        }
     }, [restaurantId]);
+
+    const fetchRestaurant = async () => {
+        setFetchingRestaurant(true);
+        try {
+            // Try to get active restaurants first
+            const response = await axios.get('/food-delivery/restaurants/list', {
+                params: {
+                    client_identifier: (auth.user as any)?.identifier,
+                    status: 'active',
+                },
+            });
+            
+            if (response.data.success && response.data.data && response.data.data.length > 0) {
+                setRestaurantId(response.data.data[0].id);
+                return;
+            }
+
+            // If no active restaurants, try with status=all
+            const response2 = await axios.get('/food-delivery/restaurants/list', {
+                params: {
+                    client_identifier: (auth.user as any)?.identifier,
+                    status: 'all',
+                },
+            });
+            
+            if (response2.data.success && response2.data.data && response2.data.data.length > 0) {
+                setRestaurantId(response2.data.data[0].id);
+            }
+        } catch (error: any) {
+            console.error('Failed to fetch restaurant:', error);
+        } finally {
+            setFetchingRestaurant(false);
+        }
+    };
 
     const fetchStats = async () => {
         setLoading(true);
@@ -140,7 +186,48 @@ export default function RestaurantDashboard({ auth, restaurantId }: Props) {
             <Head title="Restaurant Dashboard" />
 
             <div className="space-y-6 p-6">
-                {/* Stats Cards */}
+                {error || !restaurantId ? (
+                    <Card>
+                        <CardContent className="p-6">
+                            <div className="text-center py-8">
+                                <UtensilsIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                    No Restaurant Found
+                                </h3>
+                                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                    {error || 'This dashboard is for restaurant owners to view their restaurant statistics and manage orders. Please create a restaurant first to access the dashboard.'}
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <Button onClick={() => router.visit('/food-delivery/admin/restaurants')}>
+                                        Create Restaurant
+                                    </Button>
+                                    <Button variant="outline" onClick={() => router.visit('/food-delivery')}>
+                                        Browse Restaurants
+                                    </Button>
+                                </div>
+                                <div className="mt-8 text-left max-w-2xl mx-auto">
+                                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">What is the Restaurant Dashboard?</h4>
+                                    <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span><strong>Statistics Overview:</strong> View total orders, pending orders, in-progress orders, and total revenue</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span><strong>Recent Orders:</strong> See the last 5 orders placed at your restaurant</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span><strong>Quick Actions:</strong> Access order management and menu management directly from the dashboard</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <>
+                        {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <Card>
                         <CardContent className="p-6">
@@ -248,6 +335,8 @@ export default function RestaurantDashboard({ auth, restaurantId }: Props) {
                         )}
                     </CardContent>
                 </Card>
+                    </>
+                )}
             </div>
         </AuthenticatedLayout>
     );

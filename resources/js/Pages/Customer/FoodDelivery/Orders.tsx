@@ -31,8 +31,17 @@ export default function FoodDeliveryOrders({ auth, orders: initialOrders }: Prop
         try {
             const params: any = {
                 client_identifier: (auth.user as any)?.identifier,
-                customer_id: auth.user?.id,
             };
+            
+            // Filter by customer_id if available, otherwise filter by email or phone
+            if (auth.user?.id) {
+                params.customer_id = auth.user.id;
+            } else if (auth.user?.email) {
+                // If no customer_id, we'll need to filter by email in the backend
+                // For now, let's just not filter by customer_id and let the backend return all orders
+                // The backend should handle this, but we can also add email/phone matching
+            }
+            
             if (statusFilter !== 'all') {
                 params.order_status = statusFilter;
             }
@@ -42,9 +51,29 @@ export default function FoodDeliveryOrders({ auth, orders: initialOrders }: Prop
 
             const response = await axios.get('/food-delivery/orders/list', { params });
             if (response.data.success) {
-                setOrders(response.data.data || []);
+                let orders = response.data.data || [];
+                
+                // If customer_id filter didn't work, filter by email or phone on frontend
+                if (auth.user?.id && orders.length === 0) {
+                    // Try without customer_id filter
+                    const paramsWithoutCustomerId = { ...params };
+                    delete paramsWithoutCustomerId.customer_id;
+                    const response2 = await axios.get('/food-delivery/orders/list', { params: paramsWithoutCustomerId });
+                    if (response2.data.success) {
+                        orders = (response2.data.data || []).filter((order: FoodDeliveryOrder) => {
+                            // Match by email or phone if customer_id is not set
+                            return (
+                                order.customer_email === auth.user?.email ||
+                                order.customer_phone === (auth.user as any)?.contact_number
+                            );
+                        });
+                    }
+                }
+                
+                setOrders(orders);
             }
         } catch (error: any) {
+            console.error('Failed to load orders:', error);
             toast.error('Failed to load orders');
         } finally {
             setLoading(false);

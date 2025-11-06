@@ -126,7 +126,7 @@ export default function DriverDashboard({ auth, driverId }: Props) {
                                 <div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400">Rating</p>
                                     <p className="font-medium text-gray-900 dark:text-white">
-                                        {driver.rating ? driver.rating.toFixed(1) : 'N/A'}
+                                        {driver.rating && typeof driver.rating === 'number' ? driver.rating.toFixed(1) : 'N/A'}
                                     </p>
                                 </div>
                             </div>

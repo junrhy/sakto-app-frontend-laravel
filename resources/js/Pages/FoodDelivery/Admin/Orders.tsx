@@ -9,8 +9,8 @@ import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { FoodDeliveryOrder } from '../types';
-import OrderStatusDialog from '../components/OrderStatusDialog';
-import DriverAssignmentDialog from '../components/DriverAssignmentDialog';
+import OrderStatusDialog from '../../Customer/FoodDelivery/components/OrderStatusDialog';
+import DriverAssignmentDialog from '../../Customer/FoodDelivery/components/DriverAssignmentDialog';
 import axios from 'axios';
 import { toast } from 'sonner';
 

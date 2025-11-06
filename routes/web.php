@@ -85,6 +85,7 @@ require __DIR__.'/web/WarehousingController.php';
 require __DIR__.'/web/TransportationController.php';
 require __DIR__.'/web/ParcelDeliveryController.php';
 require __DIR__.'/web/FoodDeliveryController.php';
+require __DIR__.'/web/Customer/FoodDeliveryController.php';
 require __DIR__.'/web/RentalItemController.php';
 require __DIR__.'/web/RentalPropertyController.php';
 require __DIR__.'/web/PayrollController.php';
