@@ -1,0 +1,174 @@
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, router } from '@inertiajs/react';
+import { PageProps } from '@/types';
+import { useState, useEffect } from 'react';
+import { PackageIcon, SearchIcon, FilterIcon, ClockIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { FoodDeliveryOrder } from './types';
+import OrderCard from './components/OrderCard';
+import axios from 'axios';
+import { toast } from 'sonner';
+
+interface Props extends PageProps {
+    orders?: FoodDeliveryOrder[];
+}
+
+export default function FoodDeliveryOrders({ auth, orders: initialOrders }: Props) {
+    const [orders, setOrders] = useState<FoodDeliveryOrder[]>(initialOrders || []);
+    const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+
+    useEffect(() => {
+        fetchOrders();
+    }, [statusFilter, search]);
+
+    const fetchOrders = async () => {
+        setLoading(true);
+        try {
+            const params: any = {
+                client_identifier: (auth.user as any)?.identifier,
+                customer_id: auth.user?.id,
+            };
+            if (statusFilter !== 'all') {
+                params.order_status = statusFilter;
+            }
+            if (search) {
+                params.search = search;
+            }
+
+            const response = await axios.get('/food-delivery/orders/list', { params });
+            if (response.data.success) {
+                setOrders(response.data.data || []);
+            }
+        } catch (error: any) {
+            toast.error('Failed to load orders');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatCurrency = (amount: number) => {
+        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        const appCurrency = (auth.user as any)?.app_currency;
+        if (appCurrency) {
+            if (typeof appCurrency === 'string') {
+                currency = JSON.parse(appCurrency);
+            } else {
+                currency = appCurrency;
+            }
+        } else {
+            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+        }
+        return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+            case 'accepted': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+            case 'preparing': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+            case 'ready': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400';
+            case 'assigned': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
+            case 'out_for_delivery': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+            case 'delivered': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+            case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+        }
+    };
+
+    const formatStatus = (status: string) => {
+        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    return (
+        <AuthenticatedLayout
+            header={
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="rounded-lg bg-orange-100 p-2 dark:bg-orange-900/30">
+                            <PackageIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+                                My Orders
+                            </h2>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                View your food delivery order history
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        >
+            <Head title="My Orders" />
+
+            <div className="space-y-6 p-6">
+                {/* Search and Filters */}
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                                <div className="relative">
+                                    <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                    <Input
+                                        placeholder="Search orders..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-full md:w-[180px]">
+                                    <SelectValue placeholder="Filter by status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="accepted">Accepted</SelectItem>
+                                    <SelectItem value="preparing">Preparing</SelectItem>
+                                    <SelectItem value="ready">Ready</SelectItem>
+                                    <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                                    <SelectItem value="delivered">Delivered</SelectItem>
+                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Orders List */}
+                {loading ? (
+                    <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+                        <p className="mt-2 text-gray-500">Loading orders...</p>
+                    </div>
+                ) : orders.length === 0 ? (
+                    <Card>
+                        <CardContent className="p-12 text-center">
+                            <PackageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-500">No orders found</p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="space-y-4">
+                        {orders.map((order) => (
+                            <OrderCard
+                                key={order.id}
+                                order={order}
+                                formatCurrency={formatCurrency}
+                                getStatusColor={getStatusColor}
+                                formatStatus={formatStatus}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </AuthenticatedLayout>
+    );
+}
+
