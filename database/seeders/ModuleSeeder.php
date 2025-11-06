@@ -187,11 +187,24 @@ class ModuleSeeder extends Seeder
                 'visible' => false,
                 'description' => 'Complete parcel delivery management system with multiple delivery types, dynamic pricing, courier management, and tracking',
                 'price' => 199,
-                'categories' => ['Logistics', 'Delivery', 'Business'],
+                'categories' => ['Business', 'Logistics', 'Delivery'],
                 'comingSoon' => false,
                 'pricingType' => 'subscription',
-                'bgColor' => 'bg-indigo-100 dark:bg-indigo-900/30',
+                'bgColor' => 'bg-blue-100 dark:bg-blue-900/30',
                 'rating' => 4.5
+            ],
+            [
+                'title' => 'Food Delivery',
+                'route' => '/dashboard?app=food-delivery',
+                'icon' => 'RxFace',
+                'visible' => false,
+                'description' => 'Complete food delivery platform with restaurant management, menu management, order tracking, driver assignment, and payment processing',
+                'price' => 249,
+                'categories' => ['Food', 'Delivery', 'Business'],
+                'comingSoon' => false,
+                'pricingType' => 'subscription',
+                'bgColor' => 'bg-orange-100 dark:bg-orange-900/30',
+                'rating' => 4.7
             ],
             [
                 'title' => 'Warehousing',

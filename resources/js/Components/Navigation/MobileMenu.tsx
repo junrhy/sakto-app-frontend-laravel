@@ -1,5 +1,5 @@
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { getVisibleItems, menuCategories } from './MenuConfig';
+import { getVisibleItems, groupMenuItems, menuCategories, GroupedMenuItem } from './MenuConfig';
 
 interface MobileMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;
@@ -23,6 +23,8 @@ export default function MobileMenu({
                 );
                 if (visibleItems.length === 0) return null;
 
+                const { mainItems } = groupMenuItems(visibleItems);
+
                 return (
                     <div
                         key={category.id}
@@ -35,14 +37,28 @@ export default function MobileMenu({
 
                         {/* Menu Items */}
                         <div className="space-y-2 px-4 py-3">
-                            {visibleItems.map((item) => (
-                                <ResponsiveNavLink
-                                    key={item.id}
-                                    href={item.href}
-                                    className="flex justify-center rounded-xl bg-white/60 py-3 font-medium text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:shadow-md dark:bg-white/5 dark:text-white/90 dark:hover:from-blue-600 dark:hover:to-purple-700"
-                                >
-                                    {item.title}
-                                </ResponsiveNavLink>
+                            {mainItems.map((item: GroupedMenuItem) => (
+                                <div key={item.id} className="space-y-1">
+                                    <ResponsiveNavLink
+                                        href={item.href}
+                                        className="flex justify-center rounded-xl bg-white/60 py-3 font-medium text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white hover:shadow-md dark:bg-white/5 dark:text-white/90 dark:hover:from-blue-600 dark:hover:to-purple-700"
+                                    >
+                                        {item.title}
+                                    </ResponsiveNavLink>
+                                    {item.submenuItems && item.submenuItems.length > 0 && (
+                                        <div className="ml-4 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
+                                            {item.submenuItems.map((submenu) => (
+                                                <ResponsiveNavLink
+                                                    key={submenu.id}
+                                                    href={submenu.href}
+                                                    className="flex justify-center rounded-lg bg-white/40 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:text-white hover:shadow-md dark:bg-white/3 dark:text-white/70 dark:hover:from-blue-500 dark:hover:to-purple-600"
+                                                >
+                                                    {submenu.title}
+                                                </ResponsiveNavLink>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>

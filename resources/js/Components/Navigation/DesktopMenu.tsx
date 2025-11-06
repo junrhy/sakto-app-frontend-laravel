@@ -1,5 +1,5 @@
 import Dropdown from '@/Components/Dropdown';
-import { getVisibleItems, menuCategories } from './MenuConfig';
+import { getVisibleItems, groupMenuItems, menuCategories, GroupedMenuItem } from './MenuConfig';
 
 interface DesktopMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;
@@ -22,6 +22,8 @@ export default function DesktopMenu({
                     url,
                 );
                 if (visibleItems.length === 0) return null;
+
+                const { mainItems } = groupMenuItems(visibleItems);
 
                 return (
                     <div key={category.id} className="inline-flex items-center">
@@ -52,13 +54,25 @@ export default function DesktopMenu({
                             </Dropdown.Trigger>
 
                             <Dropdown.Content>
-                                {visibleItems.map((item) => (
-                                    <Dropdown.Link
-                                        key={item.id}
-                                        href={item.href}
-                                    >
-                                        {item.title}
-                                    </Dropdown.Link>
+                                {mainItems.map((item: GroupedMenuItem) => (
+                                    <div key={item.id} className="border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                                        <Dropdown.Link href={item.href} className="font-medium">
+                                            {item.title}
+                                        </Dropdown.Link>
+                                        {item.submenuItems && item.submenuItems.length > 0 && (
+                                            <div className="bg-gray-50 dark:bg-gray-800/50">
+                                                {item.submenuItems.map((submenu) => (
+                                                    <Dropdown.Link
+                                                        key={submenu.id}
+                                                        href={submenu.href}
+                                                        className="pl-6 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    >
+                                                        {submenu.title}
+                                                    </Dropdown.Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
                             </Dropdown.Content>
                         </Dropdown>

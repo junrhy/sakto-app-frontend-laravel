@@ -6,6 +6,8 @@ export interface MenuItem {
     urlCheck?: string; // Custom URL check pattern if different from id
     moduleCheck?: string; // Custom module to check for access (instead of using id)
     appParamCheck?: string | string[]; // Custom appParam values that should show this item (for submenu items)
+    parentId?: string; // ID of parent menu item (for submenu items)
+    isSubmenu?: boolean; // Explicitly mark as submenu item
 }
 
 export interface MenuCategory {
@@ -31,6 +33,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'inventory',
                 moduleCheck: 'retail',
                 appParamCheck: ['retail'],
+                parentId: 'retail',
+                isSubmenu: true,
             },
             {
                 id: 'retail-sales',
@@ -39,6 +43,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'retail-sale',
                 moduleCheck: 'retail',
                 appParamCheck: ['retail'],
+                parentId: 'retail',
+                isSubmenu: true,
             },
             {
                 id: 'retail-discounts',
@@ -47,6 +53,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'inventory/discounts',
                 moduleCheck: 'retail',
                 appParamCheck: ['retail'],
+                parentId: 'retail',
+                isSubmenu: true,
             },
             {
                 id: 'fnb',
@@ -67,6 +75,8 @@ export const menuCategories: MenuCategory[] = [
                 id: 'transportation-settings',
                 title: 'Settings',
                 href: '/transportation/settings?app=transportation',
+                parentId: 'transportation',
+                isSubmenu: true,
             },
             {
                 id: 'parcel-delivery',
@@ -80,6 +90,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'parcel-delivery/couriers',
                 moduleCheck: 'parcel-delivery',
                 appParamCheck: ['parcel-delivery'],
+                parentId: 'parcel-delivery',
+                isSubmenu: true,
             },
             {
                 id: 'parcel-delivery-track',
@@ -88,6 +100,103 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'parcel-delivery/track',
                 moduleCheck: 'parcel-delivery',
                 appParamCheck: ['parcel-delivery'],
+                parentId: 'parcel-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery',
+                title: 'Food Delivery',
+                href: '/food-delivery?app=food-delivery',
+            },
+            {
+                id: 'food-delivery-orders',
+                title: 'My Orders',
+                href: '/food-delivery/orders?app=food-delivery',
+                urlCheck: 'food-delivery/orders',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-track',
+                title: 'Track Order',
+                href: '/food-delivery/track?app=food-delivery',
+                urlCheck: 'food-delivery/track',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-restaurant-dashboard',
+                title: 'Restaurant Dashboard',
+                href: '/food-delivery/restaurant/dashboard?app=food-delivery',
+                urlCheck: 'food-delivery/restaurant',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-admin-restaurants',
+                title: 'Admin: Restaurants',
+                href: '/food-delivery/admin/restaurants?app=food-delivery',
+                urlCheck: 'food-delivery/admin',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-admin-orders',
+                title: 'Admin: Orders',
+                href: '/food-delivery/admin/orders?app=food-delivery',
+                urlCheck: 'food-delivery/admin',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-admin-drivers',
+                title: 'Admin: Drivers',
+                href: '/food-delivery/admin/drivers?app=food-delivery',
+                urlCheck: 'food-delivery/admin',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-admin-menu',
+                title: 'Admin: Menu',
+                href: '/food-delivery/admin/menu?app=food-delivery',
+                urlCheck: 'food-delivery/admin',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-admin-analytics',
+                title: 'Admin: Analytics',
+                href: '/food-delivery/admin/analytics?app=food-delivery',
+                urlCheck: 'food-delivery/admin',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
+            },
+            {
+                id: 'food-delivery-driver-dashboard',
+                title: 'Driver Dashboard',
+                href: '/food-delivery/driver/dashboard?app=food-delivery',
+                urlCheck: 'food-delivery/driver',
+                moduleCheck: 'food-delivery',
+                appParamCheck: ['food-delivery'],
+                parentId: 'food-delivery',
+                isSubmenu: true,
             },
             {
                 id: 'jobs',
@@ -101,6 +210,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'jobs/applicants',
                 moduleCheck: 'jobs',
                 appParamCheck: ['jobs'],
+                parentId: 'jobs',
+                isSubmenu: true,
             },
             {
                 id: 'jobs-applications',
@@ -109,6 +220,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'jobs/applications',
                 moduleCheck: 'jobs',
                 appParamCheck: ['jobs'],
+                parentId: 'jobs',
+                isSubmenu: true,
             },
         ],
     },
@@ -137,6 +250,8 @@ export const menuCategories: MenuCategory[] = [
                 id: 'clinic-settings',
                 title: 'Settings',
                 href: '/clinic/settings?app=clinic',
+                parentId: 'clinic',
+                isSubmenu: true,
             },
             {
                 id: 'queue-system',
@@ -175,6 +290,8 @@ export const menuCategories: MenuCategory[] = [
                 urlCheck: 'cbu',
                 moduleCheck: 'lending',
                 appParamCheck: ['loan', 'lending'],
+                parentId: 'lending',
+                isSubmenu: true,
             },
             { id: 'payroll', title: 'Payroll', href: '/payroll?app=payroll' },
             { id: 'billers', title: 'Billers', href: '/billers?app=billers' },
@@ -294,6 +411,7 @@ export const shouldShowMenuItem = (
         'health-insurance',
         'file-storage',
         'parcel-delivery',
+        'food-delivery',
     ];
 
     // Handle submenu items (like clinic-settings) that should be visible when parent module is accessible
@@ -355,6 +473,38 @@ export const getVisibleItems = (
     return category.items.filter((item) =>
         shouldShowMenuItem(item, hasModuleAccess, appParam, url),
     );
+};
+
+// Group menu items into main items and submenu items
+export interface GroupedMenuItem extends MenuItem {
+    submenuItems?: MenuItem[];
+}
+
+export const groupMenuItems = (
+    items: MenuItem[],
+): { mainItems: GroupedMenuItem[]; submenuItems: MenuItem[] } => {
+    const mainItems: GroupedMenuItem[] = [];
+    const submenuItems: MenuItem[] = [];
+
+    items.forEach((item) => {
+        if (item.isSubmenu || item.parentId) {
+            submenuItems.push(item);
+        } else {
+            mainItems.push(item);
+        }
+    });
+
+    // Group submenu items under their parent items
+    mainItems.forEach((mainItem) => {
+        const relatedSubmenus = submenuItems.filter(
+            (submenu) => submenu.parentId === mainItem.id,
+        );
+        if (relatedSubmenus.length > 0) {
+            mainItem.submenuItems = relatedSubmenus;
+        }
+    });
+
+    return { mainItems, submenuItems };
 };
 
 export const shouldShowCategory = (
