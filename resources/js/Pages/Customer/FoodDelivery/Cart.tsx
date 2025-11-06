@@ -74,7 +74,7 @@ export default function FoodDeliveryCart({ auth, restaurant: initialRestaurant }
             setCart(validatedCart);
             
             // Fetch restaurants for all unique restaurant_ids in cart
-            const uniqueRestaurantIds = [...new Set(validatedCart.map((item: CartItem) => item.menu_item.restaurant_id))];
+            const uniqueRestaurantIds = Array.from(new Set(validatedCart.map((item: CartItem) => item.menu_item.restaurant_id))) as number[];
             uniqueRestaurantIds.forEach((restaurantId: number) => {
                 fetchRestaurant(restaurantId);
             });
