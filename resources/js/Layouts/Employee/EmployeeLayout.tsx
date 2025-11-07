@@ -1,20 +1,29 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { User } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode } from 'react';
 import { Toaster } from 'sonner';
 
 interface EmployeeLayoutProps {
-    auth?: {
-        user?: User;
-    };
-    title?: string;
     header?: ReactNode;
+    title?: string;
 }
 
-export default function EmployeeLayout({ auth, title = 'Employee Dashboard', header, children }: PropsWithChildren<EmployeeLayoutProps>) {
+const navigation = [
+    {
+        label: 'Driver Dashboard',
+        route: 'employee.food-delivery.driver.dashboard',
+        description: 'View assigned deliveries and performance metrics',
+    },
+    {
+        label: 'Driver Orders',
+        route: 'employee.food-delivery.driver.orders',
+        description: 'Review delivery history and current assignments',
+    },
+];
+
+export default function EmployeeLayout({ header, title = 'Employee Dashboard', children }: PropsWithChildren<EmployeeLayoutProps>) {
     const page = usePage();
-    const user = auth?.user ?? page.props.auth?.user;
+    const user = page.props.auth?.user;
 
     const logout = () => {
         router.post(route('employee.logout'));
@@ -48,6 +57,24 @@ export default function EmployeeLayout({ auth, title = 'Employee Dashboard', hea
 
             <main className="mx-auto w-full max-w-5xl px-6 py-8">
                 {header && <div className="mb-6">{header}</div>}
+
+                <nav className="mb-6 grid gap-4 md:grid-cols-2">
+                    {navigation.map((item) => (
+                        <Link
+                            key={item.route}
+                            href={route(item.route)}
+                            className={`rounded-lg border px-4 py-3 text-left transition ${
+                                route().current(item.route)
+                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
+                                    : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-900/20'
+                            }`}
+                        >
+                            <p className="font-semibold">{item.label}</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
+                        </Link>
+                    ))}
+                </nav>
+
                 {children}
             </main>
         </div>

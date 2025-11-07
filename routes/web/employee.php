@@ -24,3 +24,5 @@ Route::post('/employee/register', [App\Http\Controllers\Employee\RegisteredEmplo
 Route::middleware(['auth', 'employee'])->group(function () {
     Route::get('/employee/dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('employee.dashboard');
 });
+
+require __DIR__.'/Employee/FoodDeliveryController.php';

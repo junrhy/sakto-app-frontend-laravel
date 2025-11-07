@@ -178,6 +178,58 @@ export default function CustomerLayout({
                 />
             ),
         },
+        {
+            projectIdentifier: 'food-delivery',
+            route: 'food-delivery.index',
+            label: 'Browse Restaurants',
+            icon: (
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 7h18M3 12h18M3 17h18"
+                />
+            ),
+        },
+        {
+            projectIdentifier: 'food-delivery',
+            route: 'food-delivery.orders',
+            label: 'My Orders',
+            icon: (
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m4 0V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10m16 0H5m4 0h6"
+                />
+            ),
+        },
+        {
+            projectIdentifier: 'food-delivery',
+            route: 'food-delivery.cart',
+            label: 'Cart',
+            icon: (
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 3h2l.4 2M7 13h10l3-7H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9m-5-4a2 2 0 11-4 0"
+                />
+            ),
+        },
+        {
+            projectIdentifier: 'food-delivery',
+            route: 'food-delivery.track',
+            label: 'Track Order',
+            icon: (
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+            ),
+        },
     ];
 
     return (

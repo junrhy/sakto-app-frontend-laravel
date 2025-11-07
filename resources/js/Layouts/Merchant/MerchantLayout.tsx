@@ -15,11 +15,42 @@ interface MerchantLayoutProps {
     title?: string;
 }
 
-const navigation = [
+interface NavigationItem {
+    label: string;
+    route: string;
+    description: string;
+    requiredModule?: string;
+}
+
+const navigation: NavigationItem[] = [
     {
         label: 'Dashboard',
         route: 'merchant.dashboard',
         description: 'Overview of your performance',
+    },
+    {
+        label: 'Restaurant Dashboard',
+        route: 'merchant.food-delivery.restaurant.dashboard',
+        description: 'Monitor your food delivery performance',
+        requiredModule: 'food-delivery',
+    },
+    {
+        label: 'Orders',
+        route: 'merchant.food-delivery.restaurant.orders',
+        description: 'Track and manage incoming orders',
+        requiredModule: 'food-delivery',
+    },
+    {
+        label: 'Menu Management',
+        route: 'merchant.food-delivery.restaurant.menu',
+        description: 'Update items, pricing, and availability',
+        requiredModule: 'food-delivery',
+    },
+    {
+        label: 'Restaurant Settings',
+        route: 'merchant.food-delivery.restaurant.settings',
+        description: 'Configure hours, fees, and fulfillment',
+        requiredModule: 'food-delivery',
     },
 ];
 
@@ -32,6 +63,10 @@ export default function MerchantLayout({
     const page = usePage<any>();
     const user = auth?.user ?? page.props.auth?.user;
     const project = auth?.project ?? page.props.auth?.project;
+    const modules: string[] = auth?.modules ?? page.props.auth?.modules ?? [];
+    const availableNavigation = navigation.filter(
+        (item) => !item.requiredModule || modules.includes(item.requiredModule),
+    );
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const logout = () => {
@@ -74,7 +109,7 @@ export default function MerchantLayout({
                     </div>
 
                     <nav className="space-y-1 px-4 py-6">
-                        {navigation.map((item) => (
+                        {availableNavigation.map((item) => (
                             <NavLink
                                 key={item.route}
                                 href={route(item.route)}

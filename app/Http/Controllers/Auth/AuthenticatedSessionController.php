@@ -59,10 +59,15 @@ class AuthenticatedSessionController extends Controller
         }
         
         // Preserve mobile parameter if present
+        $routeParameters = [];
         if ($request->input('mobile') === '1') {
-            return redirect()->route($project, ['mobile' => '1']);
+            $routeParameters['mobile'] = '1';
         }
-        
-        return redirect()->route($project);
+
+        if (!Route::has($project)) {
+            $project = 'public';
+        }
+
+        return redirect()->route($project, $routeParameters);
     }
 }

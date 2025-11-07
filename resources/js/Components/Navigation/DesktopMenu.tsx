@@ -53,27 +53,66 @@ export default function DesktopMenu({
                                 </span>
                             </Dropdown.Trigger>
 
-                            <Dropdown.Content>
-                                {mainItems.map((item: GroupedMenuItem) => (
-                                    <div key={item.id} className="border-b border-gray-100 dark:border-gray-600 last:border-b-0">
-                                        <Dropdown.Link href={item.href} className="font-medium">
-                                            {item.title}
-                                        </Dropdown.Link>
-                                        {item.submenuItems && item.submenuItems.length > 0 && (
-                                            <div className="bg-gray-50 dark:bg-gray-800/50">
-                                                {item.submenuItems.map((submenu) => (
-                                                    <Dropdown.Link
-                                                        key={submenu.id}
-                                                        href={submenu.href}
-                                                        className="pl-6 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            <Dropdown.Content contentClasses="bg-white dark:bg-gray-900">
+                                <div className="min-w-[240px] rounded-md border border-gray-100 bg-white py-1 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+                                    {mainItems.map((item: GroupedMenuItem) => {
+                                        const hasSubmenu =
+                                            item.submenuItems &&
+                                            item.submenuItems.length > 0;
+
+                                        return (
+                                            <div
+                                                key={item.id}
+                                                className="group relative"
+                                            >
+                                                <Dropdown.Link
+                                                    href={item.href}
+                                                    className={`flex items-center justify-between gap-3 font-medium ${
+                                                        hasSubmenu
+                                                            ? 'pr-8'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    <span>{item.title}</span>
+                                                    {hasSubmenu && (
+                                                        <svg
+                                                            className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth="1.5"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                                            />
+                                                        </svg>
+                                                    )}
+                                                </Dropdown.Link>
+
+                                                {hasSubmenu && (
+                                                    <div
+                                                        className="pointer-events-none absolute top-0 left-full hidden min-w-[220px] translate-x-2 rounded-md border border-gray-100 bg-white py-2 shadow-lg transition-all duration-150 ease-out group-hover:block group-focus-within:block dark:border-gray-700 dark:bg-gray-900"
                                                     >
-                                                        {submenu.title}
-                                                    </Dropdown.Link>
-                                                ))}
+                                                        <div className="pointer-events-auto">
+                                                            {item.submenuItems?.map((submenu) => (
+                                                                <Dropdown.Link
+                                                                    key={submenu.id}
+                                                                    href={submenu.href}
+                                                                    className="pl-4 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                                                                >
+                                                                    {submenu.title}
+                                                                </Dropdown.Link>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+                                        );
+                                    })}
+                                </div>
                             </Dropdown.Content>
                         </Dropdown>
                     </div>

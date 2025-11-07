@@ -108,42 +108,9 @@ export const menuCategories: MenuCategory[] = [
                 title: 'Food Delivery',
                 href: '/food-delivery?app=food-delivery',
             },
-            // Customer submenu items (UI files in Customer/FoodDelivery/)
-            {
-                id: 'food-delivery-orders',
-                title: 'My Orders',
-                href: '/food-delivery/orders?app=food-delivery',
-                urlCheck: 'food-delivery/orders',
-                moduleCheck: 'food-delivery',
-                appParamCheck: ['food-delivery'],
-                parentId: 'food-delivery',
-                isSubmenu: true,
-            },
-            {
-                id: 'food-delivery-track',
-                title: 'Track Order',
-                href: '/food-delivery/track?app=food-delivery',
-                urlCheck: 'food-delivery/track',
-                moduleCheck: 'food-delivery',
-                appParamCheck: ['food-delivery'],
-                parentId: 'food-delivery',
-                isSubmenu: true,
-            },
-            // Restaurant owner submenu items (UI files in FoodDelivery/Restaurant/)
-            {
-                id: 'food-delivery-restaurant-dashboard',
-                title: 'Restaurant Dashboard',
-                href: '/food-delivery/restaurant/dashboard?app=food-delivery',
-                urlCheck: 'food-delivery/restaurant',
-                moduleCheck: 'food-delivery',
-                appParamCheck: ['food-delivery'],
-                parentId: 'food-delivery',
-                isSubmenu: true,
-            },
-            // Admin submenu items (UI files in FoodDelivery/Admin/)
             {
                 id: 'food-delivery-admin-restaurants',
-                title: 'Admin: Restaurants',
+                title: 'Restaurants',
                 href: '/food-delivery/admin/restaurants?app=food-delivery',
                 urlCheck: 'food-delivery/admin',
                 moduleCheck: 'food-delivery',
@@ -153,7 +120,7 @@ export const menuCategories: MenuCategory[] = [
             },
             {
                 id: 'food-delivery-admin-orders',
-                title: 'Admin: Orders',
+                title: 'Orders',
                 href: '/food-delivery/admin/orders?app=food-delivery',
                 urlCheck: 'food-delivery/admin',
                 moduleCheck: 'food-delivery',
@@ -163,7 +130,7 @@ export const menuCategories: MenuCategory[] = [
             },
             {
                 id: 'food-delivery-admin-drivers',
-                title: 'Admin: Drivers',
+                title: 'Drivers',
                 href: '/food-delivery/admin/drivers?app=food-delivery',
                 urlCheck: 'food-delivery/admin',
                 moduleCheck: 'food-delivery',
@@ -173,7 +140,7 @@ export const menuCategories: MenuCategory[] = [
             },
             {
                 id: 'food-delivery-admin-menu',
-                title: 'Admin: Menu',
+                title: 'Menu',
                 href: '/food-delivery/admin/menu?app=food-delivery',
                 urlCheck: 'food-delivery/admin',
                 moduleCheck: 'food-delivery',
@@ -183,20 +150,9 @@ export const menuCategories: MenuCategory[] = [
             },
             {
                 id: 'food-delivery-admin-analytics',
-                title: 'Admin: Analytics',
+                title: 'Analytics',
                 href: '/food-delivery/admin/analytics?app=food-delivery',
                 urlCheck: 'food-delivery/admin',
-                moduleCheck: 'food-delivery',
-                appParamCheck: ['food-delivery'],
-                parentId: 'food-delivery',
-                isSubmenu: true,
-            },
-            // Driver submenu items (UI files in FoodDelivery/Driver/)
-            {
-                id: 'food-delivery-driver-dashboard',
-                title: 'Driver Dashboard',
-                href: '/food-delivery/driver/dashboard?app=food-delivery',
-                urlCheck: 'food-delivery/driver',
                 moduleCheck: 'food-delivery',
                 appParamCheck: ['food-delivery'],
                 parentId: 'food-delivery',
