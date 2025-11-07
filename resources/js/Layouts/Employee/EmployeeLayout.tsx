@@ -1,11 +1,15 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode } from 'react';
+import { User } from '@/types';
 import { Toaster } from 'sonner';
 
 interface EmployeeLayoutProps {
     header?: ReactNode;
     title?: string;
+    auth?: {
+        user?: User;
+    };
 }
 
 const navigation = [
@@ -21,9 +25,14 @@ const navigation = [
     },
 ];
 
-export default function EmployeeLayout({ header, title = 'Employee Dashboard', children }: PropsWithChildren<EmployeeLayoutProps>) {
-    const page = usePage();
-    const user = page.props.auth?.user;
+export default function EmployeeLayout({
+    header,
+    title = 'Employee Dashboard',
+    children,
+    auth,
+}: PropsWithChildren<EmployeeLayoutProps>) {
+    const page = usePage<any>();
+    const user = auth?.user ?? page.props.auth?.user;
 
     const logout = () => {
         router.post(route('employee.logout'));
