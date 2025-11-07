@@ -13,7 +13,7 @@ interface EmployeeLayoutProps {
 }
 
 export default function EmployeeLayout({ auth, title = 'Employee Dashboard', header, children }: PropsWithChildren<EmployeeLayoutProps>) {
-    const page = usePage<{ auth: { user?: User } }>();
+    const page = usePage();
     const user = auth?.user ?? page.props.auth?.user;
 
     const logout = () => {
