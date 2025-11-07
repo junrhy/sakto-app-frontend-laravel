@@ -54,6 +54,9 @@ require __DIR__.'/web/customer.php';
 // Merchant routes
 require __DIR__.'/web/merchant.php';
 
+// Employee routes
+require __DIR__.'/web/employee.php';
+
 // Authenticated simple routes
 Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     Route::get('/home', function () {

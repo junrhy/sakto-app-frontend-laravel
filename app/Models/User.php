@@ -309,6 +309,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if the user is an employee.
+     */
+    public function isEmployee(): bool
+    {
+        return $this->user_type === 'employee';
+    }
+
+    /**
      * Send the email verification notification.
      *
      * @return void
