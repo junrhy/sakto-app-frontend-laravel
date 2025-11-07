@@ -301,6 +301,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if the user is a merchant.
+     */
+    public function isMerchant(): bool
+    {
+        return $this->user_type === 'merchant';
+    }
+
+    /**
      * Send the email verification notification.
      *
      * @return void
@@ -374,6 +382,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getShortUrlAttribute(): string
     {
         return route('member.short', ['identifier' => $this->slug ?? $this->id]);
+    }
+
+    /**
+     * Get the merchant profile associated with the user.
+     */
+    public function merchantProfile(): HasOne
+    {
+        return $this->hasOne(MerchantProfile::class);
     }
 
     /**
