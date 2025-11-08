@@ -39,7 +39,6 @@ Route::group(['middleware' => ['web']], function () {
     require __DIR__.'/web/ChatAuthController.php';
     require __DIR__.'/web/CommunityController.php';
     require __DIR__.'/web/LogisticsController.php';
-    require __DIR__.'/web/DeliveryController.php';
     require __DIR__.'/web/ShopController.php';
     require __DIR__.'/web/public/ParcelDeliveryController.php';
     require __DIR__.'/web/public/FoodDeliveryController.php';

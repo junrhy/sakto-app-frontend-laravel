@@ -177,7 +177,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             icon: Package,
             href: getHref('delivery', '/delivery'),
             gradient: 'from-red-500 to-rose-600',
-            comingSoon: true,
+            comingSoon: false,
             projectIdentifier: 'delivery',
         },
         {

@@ -390,9 +390,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'starter',
                 name: 'Starter',
-                description: 'Try our delivery platform risk-free for 14 days',
+                description:
+                    'Launch your delivery platform risk-free for 14 days',
                 tagline:
-                    'Test drive all features with zero commitment and zero cost',
+                    'Evaluate the full delivery stack—merchant, rider, and customer experiences—without upfront costs.',
                 prices: {
                     usd: 0,
                     php: 0,
@@ -400,16 +401,20 @@ export const pricingConfig: Record<string, ServicePricing> = {
                     gbp: 0,
                 },
                 period: '/month',
-                features: ['Explore all core features before committing'],
+                features: [
+                    'Explore all core features before committing',
+                    'Guided onboarding support',
+                ],
                 buttonText: 'Start Free Trial',
                 buttonLink: 'register',
             },
             {
                 id: 'basic',
                 name: 'Basic',
-                description: 'Perfect for small delivery services',
+                description:
+                    'Purpose-built for emerging parcel and food delivery teams',
                 tagline:
-                    'Start delivering with real-time tracking and essential management tools',
+                    'Launch mixed-service dispatching with turnkey workflows and real-time visibility.',
                 prices: {
                     usd: 12,
                     php: 700,
@@ -419,7 +424,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 period: '/month',
                 features: [
                     'Up to 50 deliveries',
-                    'Basic tracking',
+                    'Core parcel & food workflows',
+                    'Real-time tracking dashboard',
                     'Email & SMS Integrations',
                     'Email support',
                 ],
@@ -429,9 +435,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'pro',
                 name: 'Pro',
-                description: 'Ideal for growing delivery businesses',
+                description:
+                    'Ideal for scaling delivery operators with larger fleets',
                 tagline:
-                    'Scale your delivery operations with advanced tracking and automation',
+                    'Automate dispatching and deliver branded tracking experiences for every customer.',
                 prices: {
                     usd: 20,
                     php: 1100,
@@ -441,7 +448,9 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 period: '/month',
                 features: [
                     'Up to 200 deliveries',
-                    'Advanced tracking',
+                    'Everything in Essentials',
+                    'Priority dispatch routing',
+                    'Branded customer tracking',
                     'Email & SMS Integrations',
                     'Priority support',
                     'API access',
@@ -453,9 +462,10 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'business',
                 name: 'Business',
-                description: 'For large delivery companies',
+                description:
+                    'Built for high-volume national and regional delivery networks',
                 tagline:
-                    'Enterprise delivery platform with unlimited capacity and full integrations',
+                    'Unlock enterprise-grade controls, predictive insights, and bespoke integrations.',
                 prices: {
                     usd: 35,
                     php: 2000,
@@ -465,6 +475,9 @@ export const pricingConfig: Record<string, ServicePricing> = {
                 period: '/month',
                 features: [
                     'Unlimited deliveries',
+                    'Everything in Premium',
+                    'Advanced merchant portals',
+                    'Predictive demand analytics',
                     'Custom integrations',
                     'Email & SMS Integrations',
                     '24/7 automated support',

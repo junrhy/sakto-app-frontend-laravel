@@ -38,7 +38,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Delivery - Fast & Reliable Food Delivery" />
+            <Head title="Delivery Platform - Parcel & Food Delivery Operations" />
             <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
                 {/* Header */}
                 <div className="border-b border-slate-700 bg-gradient-to-r from-orange-800 to-red-900 shadow-lg">
@@ -312,52 +312,32 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         icon={faClock}
                                         className="mr-2 h-4 w-4 text-orange-600"
                                     />
-                                    Fastest Delivery in 30 Minutes
+                                    Launch Your Delivery Platform in Days
                                 </div>
                             </div>
                             <h2 className="mb-6 text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
-                                Fast & Reliable
+                                Scalable Parcel &
                                 <span className="block text-orange-600">
-                                    Food Delivery
+                                    Food Delivery Platform
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Order from your favorite restaurants and get
-                                your food delivered fast, fresh, and hot. Track
-                                your order in real-time and enjoy the
-                                convenience of doorstep delivery.
+                                Provide merchants and riders with the tools to
+                                manage bookings, dispatch orders, and track
+                                parcel or food deliveries in real time. Build a
+                                branded experience for your customers without
+                                maintaining your own infrastructure.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-                                <Link
-                                    href={route('delivery.show', {
-                                        identifier: 'order',
-                                    })}
-                                    className="inline-flex items-center rounded-lg border border-transparent bg-orange-600 px-8 py-3 text-base font-medium text-white shadow-sm transition-colors duration-200 hover:bg-orange-700"
-                                >
-                                    Order Now
-                                    <svg
-                                        className="ml-2 h-5 w-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M13 7l5 5m0 0l-5 5m5-5H6"
-                                        />
-                                    </svg>
-                                </Link>
                                 {!auth.user && (
-                                    <Link
-                                        href={route('register', {
-                                            project: 'delivery',
-                                        })}
-                                        className="inline-flex items-center rounded-lg border border-orange-600 bg-white px-8 py-3 text-base font-medium text-orange-600 shadow-sm transition-colors duration-200 hover:bg-orange-50"
-                                    >
-                                        Get Started Free
-                                    </Link>
+                                        <Link
+                                            href={route('register', {
+                                                project: 'delivery',
+                                            })}
+                                            className="inline-flex items-center rounded-lg border border-orange-600 bg-white px-8 py-3 text-base font-medium text-orange-600 shadow-sm transition-colors duration-200 hover:bg-orange-50"
+                                        >
+                                            Start Free Trial
+                                        </Link>
                                 )}
                             </div>
                         </div>
@@ -366,12 +346,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                         <div className="mt-20 lg:mt-24">
                             <div className="mb-12">
                                 <h3 className="mb-4 text-3xl font-bold text-slate-900 lg:text-4xl">
-                                    Why Choose Our Delivery Service
+                                    Why Delivery Teams Choose Our Platform
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
-                                    We provide the best food delivery experience
-                                    with fast service, reliable tracking, and
-                                    quality assurance.
+                                    Run mixed parcel and food fulfillment with a
+                                    unified command center, smart dispatching,
+                                    and transparent tracking for every
+                                    stakeholder.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -385,12 +366,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
-                                        Lightning Fast Delivery
+                                        Automated Dispatch Intelligence
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Get your food delivered in 30 minutes or
-                                        less. Our optimized delivery routes
-                                        ensure your order arrives hot and fresh.
+                                        Balance routes, rider capacity, and SLA
+                                        priorities for both parcel and food
+                                        orders with AI-assisted assignments that
+                                        keep your fleet efficient.
                                     </p>
                                 </div>
 
@@ -404,12 +386,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
-                                        Real-time Tracking
+                                        End-to-End Visibility
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Track your order from kitchen to
-                                        doorstep with live GPS tracking. Know
-                                        exactly when your food will arrive.
+                                        Share live GPS and status updates with
+                                        merchants, riders, and customers so
+                                        everyone knows where every package or
+                                        meal is in the journey.
                                     </p>
                                 </div>
 
@@ -423,12 +406,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         </div>
                                     </div>
                                     <h4 className="mb-3 text-xl font-bold text-slate-900">
-                                        Quality Guarantee
+                                        Enterprise-Grade Reliability
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        We ensure food safety and quality. If
-                                        you're not satisfied, we'll make it
-                                        right with our satisfaction guarantee.
+                                        Scale confidently with uptime
+                                        monitoring, compliance controls, and
+                                        configurable workflows tailored for
+                                        delivery businesses.
                                     </p>
                                 </div>
                             </div>
@@ -437,7 +421,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                         {/* Trust Indicators */}
                         <div className="mt-20 rounded-2xl border border-slate-200 bg-gradient-to-r from-orange-50 to-red-50 p-8 shadow-lg lg:mt-24 lg:p-12">
                             <h3 className="mb-8 text-center text-2xl font-bold text-slate-900 lg:text-3xl">
-                                Trusted by Food Lovers
+                                Trusted by Delivery Providers
                             </h3>
                             <div className="grid grid-cols-2 items-center gap-8 md:grid-cols-4">
                                 <div className="text-center">
@@ -445,7 +429,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         50K+
                                     </div>
                                     <div className="text-slate-600">
-                                        Happy Customers
+                                        Orders Managed Daily
                                     </div>
                                 </div>
                                 <div className="text-center">
@@ -453,21 +437,23 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                         500+
                                     </div>
                                     <div className="text-slate-600">
-                                        Partner Restaurants
+                                        Merchant Partners
                                     </div>
                                 </div>
                                 <div className="text-center">
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
                                         4.8★
                                     </div>
-                                    <div className="text-slate-600">Rating</div>
+                                    <div className="text-slate-600">
+                                        Platform Satisfaction
+                                    </div>
                                 </div>
                                 <div className="text-center">
                                     <div className="mb-2 text-3xl font-bold text-slate-800">
                                         30min
                                     </div>
                                     <div className="text-slate-600">
-                                        Avg Delivery
+                                        Avg Dispatch Time
                                     </div>
                                 </div>
                             </div>
@@ -500,7 +486,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </h2>
                                     <p className="mb-6 text-lg text-gray-600">
                                         {starterPlan?.description ||
-                                            'Test drive all features with zero commitment and zero cost'}
+                                            'Evaluate the full delivery stack—merchant tools, rider workflows, and customer tracking—without upfront costs.'}
                                     </p>
                                     {starterPlan?.tagline && (
                                         <p className="mb-8 text-base italic text-gray-500">
@@ -588,12 +574,13 @@ export default function DeliveryIndex({ auth }: PageProps) {
                 <div id="pricing" className="mb-16 mt-16 px-4 sm:px-6 lg:px-8">
                     <div className="mb-12 text-center">
                         <h2 className="mb-4 text-3xl font-bold text-slate-900">
-                            Choose Your Paid Plan
+                            Choose the Right Growth Plan
                         </h2>
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                            After your free trial, select the perfect plan for
-                            your delivery needs. All plans include our core
-                            delivery features with different levels of benefits.
+                            Once you are ready to scale beyond the trial,
+                            activate the plan that matches your parcel and food
+                            delivery operation. Every tier unlocks the same core
+                            platform with advanced automation layered on top.
                         </p>
                     </div>
 
@@ -667,7 +654,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Standard delivery
+                                                Core parcel & food workflows
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -684,7 +671,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Order tracking
+                                                Real-time tracking dashboard
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -701,7 +688,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Basic support
+                                                Email support
                                             </span>
                                         </li>
                                     </ul>
@@ -795,7 +782,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Priority delivery
+                                                Priority dispatch routing
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -812,7 +799,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Free delivery fees
+                                                Branded customer tracking
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -918,7 +905,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Exclusive restaurants
+                                                Advanced merchant portals
                                             </span>
                                         </li>
                                         <li className="flex items-center text-sm">
@@ -935,7 +922,7 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Smart order recommendations
+                                                Predictive demand analytics
                                             </span>
                                         </li>
                                     </ul>
@@ -954,25 +941,28 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                 <dl className="space-y-6">
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-slate-900">
-                                            How fast is your delivery?
+                                            How fast can we deploy the platform?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            We aim to deliver your food within
-                                            30 minutes. Our optimized routes and
-                                            experienced delivery partners ensure
-                                            fast and reliable service.
+                                            Most teams launch within days by
+                                            connecting their merchants, riders,
+                                            and service areas. Our onboarding
+                                            experts guide your configuration so
+                                            you can start dispatching parcel and
+                                            food orders quickly.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-slate-900">
-                                            Can I track my order?
+                                            Does the platform support mixed deliveries?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Yes! You can track your order in
-                                            real-time from preparation to
-                                            delivery. Get live updates on your
-                                            order status and estimated arrival
-                                            time.
+                                            Yes. You can operate parcel-only,
+                                            food-only, or mixed fleets within
+                                            the same dashboard. Configure custom
+                                            workflows, pricing, and notifications
+                                            for each service type while sharing
+                                            riders and analytics.
                                         </dd>
                                     </div>
                                 </dl>
@@ -1003,10 +993,10 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Fast, reliable food delivery service
-                                    bringing your favorite meals to your
-                                    doorstep. Order from top restaurants and
-                                    enjoy quality food delivered fresh.
+                                    SaaS platform powering parcel couriers and
+                                    food delivery operators with unified
+                                    dispatch, live tracking, and merchant
+                                    management.
                                 </p>
                             </div>
 

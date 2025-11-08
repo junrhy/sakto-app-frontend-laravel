@@ -434,11 +434,6 @@ const Ziggy = {
             methods: ['GET', 'HEAD'],
             parameters: ['identifier'],
         },
-        'delivery.show': {
-            uri: 'delivery\/{identifier}',
-            methods: ['GET', 'HEAD'],
-            parameters: ['identifier'],
-        },
         'jobs.show': {
             uri: 'jobs\/{identifier}',
             methods: ['GET', 'HEAD'],

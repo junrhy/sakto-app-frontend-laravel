@@ -146,7 +146,7 @@ export default function Welcome({ auth }: PageProps) {
             href: '/delivery',
             color: 'text-red-600',
             bgColor: 'bg-red-50 dark:bg-red-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
         {
             name: 'Human Resources',
