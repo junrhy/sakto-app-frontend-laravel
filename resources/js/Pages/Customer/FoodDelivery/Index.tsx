@@ -1,23 +1,33 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { UtensilsIcon, SearchIcon, FilterIcon, StarIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { FoodDeliveryRestaurant } from './types';
-import RestaurantCard from './components/RestaurantCard';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import { SearchIcon, UtensilsIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import RestaurantCard from './components/RestaurantCard';
+import { FoodDeliveryRestaurant } from './types';
 
 interface Props extends PageProps {
     restaurants?: FoodDeliveryRestaurant[];
 }
 
-export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurants }: Props) {
-    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(initialRestaurants || []);
+export default function FoodDeliveryIndex({
+    auth,
+    restaurants: initialRestaurants,
+}: Props) {
+    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(
+        initialRestaurants || [],
+    );
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('rating');
@@ -50,7 +60,10 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
             params.sort_by = sortBy;
             params.sort_order = 'desc';
 
-            const response = await axios.get('/food-delivery/restaurants/list', { params });
+            const response = await axios.get(
+                '/food-delivery/restaurants/list',
+                { params },
+            );
             if (response.data.success) {
                 setRestaurants(response.data.data || []);
             }
@@ -62,7 +75,11 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
     };
 
     const formatCurrency = (amount: number) => {
-        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        let currency: {
+            symbol: string;
+            thousands_separator?: string;
+            decimal_separator?: string;
+        };
         const appCurrency = (auth.user as any)?.app_currency;
         if (appCurrency) {
             if (typeof appCurrency === 'string') {
@@ -71,7 +88,11 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
                 currency = appCurrency;
             }
         } else {
-            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+            currency = {
+                symbol: '₱',
+                thousands_separator: ',',
+                decimal_separator: '.',
+            };
         }
         return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
@@ -102,14 +123,16 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
                 {/* Search and Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex flex-col gap-4 md:flex-row">
                             <div className="flex-1">
                                 <div className="relative">
                                     <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                     <Input
                                         placeholder="Search restaurants..."
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                         className="pl-10"
                                     />
                                 </div>
@@ -119,18 +142,29 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
                                     <SelectValue placeholder="Sort by" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="rating">Rating</SelectItem>
-                                    <SelectItem value="delivery_fee">Delivery Fee</SelectItem>
-                                    <SelectItem value="estimated_prep_time">Prep Time</SelectItem>
+                                    <SelectItem value="rating">
+                                        Rating
+                                    </SelectItem>
+                                    <SelectItem value="delivery_fee">
+                                        Delivery Fee
+                                    </SelectItem>
+                                    <SelectItem value="estimated_prep_time">
+                                        Prep Time
+                                    </SelectItem>
                                     <SelectItem value="name">Name</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Select value={minRating} onValueChange={setMinRating}>
+                            <Select
+                                value={minRating}
+                                onValueChange={setMinRating}
+                            >
                                 <SelectTrigger className="w-full md:w-[150px]">
                                     <SelectValue placeholder="Min Rating" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Ratings</SelectItem>
+                                    <SelectItem value="all">
+                                        All Ratings
+                                    </SelectItem>
                                     <SelectItem value="4">4+ Stars</SelectItem>
                                     <SelectItem value="3">3+ Stars</SelectItem>
                                     <SelectItem value="2">2+ Stars</SelectItem>
@@ -142,19 +176,23 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
 
                 {/* Restaurants Grid */}
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-                        <p className="mt-2 text-gray-500">Loading restaurants...</p>
+                    <div className="py-12 text-center">
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white"></div>
+                        <p className="mt-2 text-gray-500">
+                            Loading restaurants...
+                        </p>
                     </div>
                 ) : restaurants.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
-                            <UtensilsIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-500">No restaurants found</p>
+                            <UtensilsIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                            <p className="text-gray-500">
+                                No restaurants found
+                            </p>
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {restaurants.map((restaurant) => (
                             <RestaurantCard
                                 key={restaurant.id}
@@ -168,4 +206,3 @@ export default function FoodDeliveryIndex({ auth, restaurants: initialRestaurant
         </AuthenticatedLayout>
     );
 }
-

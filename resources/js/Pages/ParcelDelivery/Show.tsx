@@ -1,27 +1,40 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { ParcelDelivery } from './types';
-import { ArrowLeftIcon, PackageIcon, EditIcon, TrashIcon, UserPlusIcon, RefreshCwIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { useState } from 'react';
-import StatusUpdateDialog from './components/StatusUpdateDialog';
-import CourierAssignmentDialog from './components/CourierAssignmentDialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import {
+    ArrowLeftIcon,
+    PackageIcon,
+    RefreshCwIcon,
+    TrashIcon,
+    UserPlusIcon,
+} from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import CourierAssignmentDialog from './components/CourierAssignmentDialog';
+import StatusUpdateDialog from './components/StatusUpdateDialog';
+import { ParcelDelivery } from './types';
 
 interface Props extends PageProps {
     delivery: ParcelDelivery;
 }
 
-export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: Props) {
+export default function ParcelDeliveryShow({
+    auth,
+    delivery: initialDelivery,
+}: Props) {
     const [delivery, setDelivery] = useState<ParcelDelivery>(initialDelivery);
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
     const [courierDialogOpen, setCourierDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const formatCurrency = (amount: number) => {
-        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        let currency: {
+            symbol: string;
+            thousands_separator?: string;
+            decimal_separator?: string;
+        };
         const appCurrency = (auth.user as any)?.app_currency;
         if (appCurrency) {
             if (typeof appCurrency === 'string') {
@@ -30,7 +43,11 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                 currency = appCurrency;
             }
         } else {
-            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+            currency = {
+                symbol: '₱',
+                thousands_separator: ',',
+                decimal_separator: '.',
+            };
         }
         return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
@@ -55,18 +72,26 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
     };
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this delivery? This action cannot be undone.')) {
+        if (
+            !confirm(
+                'Are you sure you want to delete this delivery? This action cannot be undone.',
+            )
+        ) {
             return;
         }
 
         setLoading(true);
         try {
-            const response = await axios.delete(`/parcel-delivery/${delivery.id}`);
+            const response = await axios.delete(
+                `/parcel-delivery/${delivery.id}`,
+            );
             if (response.data.success) {
                 toast.success('Delivery deleted successfully');
                 router.visit('/parcel-delivery');
             } else {
-                toast.error(response.data.message || 'Failed to delete delivery');
+                toast.error(
+                    response.data.message || 'Failed to delete delivery',
+                );
             }
         } catch (error: any) {
             toast.error('Failed to delete delivery');
@@ -116,8 +141,12 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
         <AuthenticatedLayout
             header={
                 <div className="flex items-center space-x-3">
-                    <Button variant="ghost" size="sm" onClick={() => router.visit('/parcel-delivery')}>
-                        <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.visit('/parcel-delivery')}
+                    >
+                        <ArrowLeftIcon className="mr-2 h-4 w-4" />
                         Back
                     </Button>
                     <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
@@ -138,29 +167,38 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                             onClick={refreshDelivery}
                             disabled={loading}
                         >
-                            <RefreshCwIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                            <RefreshCwIcon
+                                className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                            />
                             Refresh
                         </Button>
-                        {delivery.status !== 'delivered' && delivery.status !== 'cancelled' && (
-                            <>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setStatusDialogOpen(true)}
-                                >
-                                    <RefreshCwIcon className="h-4 w-4 mr-2" />
-                                    Update Status
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCourierDialogOpen(true)}
-                                >
-                                    <UserPlusIcon className="h-4 w-4 mr-2" />
-                                    {delivery.courier_id ? 'Change Courier' : 'Assign Courier'}
-                                </Button>
-                            </>
-                        )}
+                        {delivery.status !== 'delivered' &&
+                            delivery.status !== 'cancelled' && (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            setStatusDialogOpen(true)
+                                        }
+                                    >
+                                        <RefreshCwIcon className="mr-2 h-4 w-4" />
+                                        Update Status
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            setCourierDialogOpen(true)
+                                        }
+                                    >
+                                        <UserPlusIcon className="mr-2 h-4 w-4" />
+                                        {delivery.courier_id
+                                            ? 'Change Courier'
+                                            : 'Assign Courier'}
+                                    </Button>
+                                </>
+                            )}
                         {delivery.status === 'pending' && (
                             <Button
                                 variant="destructive"
@@ -168,7 +206,7 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                                 onClick={handleDelete}
                                 disabled={loading}
                             >
-                                <TrashIcon className="h-4 w-4 mr-2" />
+                                <TrashIcon className="mr-2 h-4 w-4" />
                                 Delete
                             </Button>
                         )}
@@ -186,18 +224,22 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div>
-                                <span className="font-medium">Name:</span> {delivery.sender_name}
+                                <span className="font-medium">Name:</span>{' '}
+                                {delivery.sender_name}
                             </div>
                             <div>
-                                <span className="font-medium">Phone:</span> {delivery.sender_phone}
+                                <span className="font-medium">Phone:</span>{' '}
+                                {delivery.sender_phone}
                             </div>
                             {delivery.sender_email && (
                                 <div>
-                                    <span className="font-medium">Email:</span> {delivery.sender_email}
+                                    <span className="font-medium">Email:</span>{' '}
+                                    {delivery.sender_email}
                                 </div>
                             )}
                             <div>
-                                <span className="font-medium">Address:</span> {delivery.sender_address}
+                                <span className="font-medium">Address:</span>{' '}
+                                {delivery.sender_address}
                             </div>
                         </CardContent>
                     </Card>
@@ -208,18 +250,22 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div>
-                                <span className="font-medium">Name:</span> {delivery.recipient_name}
+                                <span className="font-medium">Name:</span>{' '}
+                                {delivery.recipient_name}
                             </div>
                             <div>
-                                <span className="font-medium">Phone:</span> {delivery.recipient_phone}
+                                <span className="font-medium">Phone:</span>{' '}
+                                {delivery.recipient_phone}
                             </div>
                             {delivery.recipient_email && (
                                 <div>
-                                    <span className="font-medium">Email:</span> {delivery.recipient_email}
+                                    <span className="font-medium">Email:</span>{' '}
+                                    {delivery.recipient_email}
                                 </div>
                             )}
                             <div>
-                                <span className="font-medium">Address:</span> {delivery.recipient_address}
+                                <span className="font-medium">Address:</span>{' '}
+                                {delivery.recipient_address}
                             </div>
                         </CardContent>
                     </Card>
@@ -230,20 +276,33 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div>
-                                <span className="font-medium">Description:</span> {delivery.package_description}
+                                <span className="font-medium">
+                                    Description:
+                                </span>{' '}
+                                {delivery.package_description}
                             </div>
                             <div>
-                                <span className="font-medium">Weight:</span> {delivery.package_weight} kg
+                                <span className="font-medium">Weight:</span>{' '}
+                                {delivery.package_weight} kg
                             </div>
-                            {(delivery.package_length || delivery.package_width || delivery.package_height) && (
+                            {(delivery.package_length ||
+                                delivery.package_width ||
+                                delivery.package_height) && (
                                 <div>
-                                    <span className="font-medium">Dimensions:</span>{' '}
-                                    {delivery.package_length} x {delivery.package_width} x {delivery.package_height} cm
+                                    <span className="font-medium">
+                                        Dimensions:
+                                    </span>{' '}
+                                    {delivery.package_length} x{' '}
+                                    {delivery.package_width} x{' '}
+                                    {delivery.package_height} cm
                                 </div>
                             )}
                             {delivery.package_value && (
                                 <div>
-                                    <span className="font-medium">Declared Value:</span> {formatCurrency(delivery.package_value)}
+                                    <span className="font-medium">
+                                        Declared Value:
+                                    </span>{' '}
+                                    {formatCurrency(delivery.package_value)}
                                 </div>
                             )}
                         </CardContent>
@@ -255,25 +314,40 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <div>
-                                <span className="font-medium">Type:</span> {delivery.delivery_type}
+                                <span className="font-medium">Type:</span>{' '}
+                                {delivery.delivery_type}
                             </div>
                             <div>
                                 <span className="font-medium">Status:</span>{' '}
-                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(delivery.status)}`}>
-                                    {delivery.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                <span
+                                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(delivery.status)}`}
+                                >
+                                    {delivery.status
+                                        .replace(/_/g, ' ')
+                                        .replace(/\b\w/g, (l) =>
+                                            l.toUpperCase(),
+                                        )}
                                 </span>
                             </div>
                             <div>
-                                <span className="font-medium">Pickup:</span> {delivery.pickup_date} at {delivery.pickup_time}
+                                <span className="font-medium">Pickup:</span>{' '}
+                                {delivery.pickup_date} at {delivery.pickup_time}
                             </div>
                             {delivery.courier_name && (
                                 <div>
-                                    <span className="font-medium">Courier:</span> {delivery.courier_name} ({delivery.courier_phone})
+                                    <span className="font-medium">
+                                        Courier:
+                                    </span>{' '}
+                                    {delivery.courier_name} (
+                                    {delivery.courier_phone})
                                 </div>
                             )}
                             {delivery.estimated_cost && (
                                 <div>
-                                    <span className="font-medium">Estimated Cost:</span> {formatCurrency(delivery.estimated_cost)}
+                                    <span className="font-medium">
+                                        Estimated Cost:
+                                    </span>{' '}
+                                    {formatCurrency(delivery.estimated_cost)}
                                 </div>
                             )}
                         </CardContent>
@@ -288,17 +362,33 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
                         <CardContent>
                             <div className="space-y-4">
                                 {delivery.trackings.map((tracking) => (
-                                    <div key={tracking.id} className="flex items-start space-x-4 border-l-2 pl-4">
+                                    <div
+                                        key={tracking.id}
+                                        className="flex items-start space-x-4 border-l-2 pl-4"
+                                    >
                                         <div className="flex-1">
-                                            <div className="font-medium">{tracking.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                                            <div className="font-medium">
+                                                {tracking.status
+                                                    .replace(/_/g, ' ')
+                                                    .replace(/\b\w/g, (l) =>
+                                                        l.toUpperCase(),
+                                                    )}
+                                            </div>
                                             {tracking.location && (
-                                                <div className="text-sm text-gray-500">Location: {tracking.location}</div>
+                                                <div className="text-sm text-gray-500">
+                                                    Location:{' '}
+                                                    {tracking.location}
+                                                </div>
                                             )}
                                             {tracking.notes && (
-                                                <div className="text-sm text-gray-500">{tracking.notes}</div>
+                                                <div className="text-sm text-gray-500">
+                                                    {tracking.notes}
+                                                </div>
                                             )}
-                                            <div className="text-xs text-gray-400 mt-1">
-                                                {new Date(tracking.timestamp).toLocaleString()}
+                                            <div className="mt-1 text-xs text-gray-400">
+                                                {new Date(
+                                                    tracking.timestamp,
+                                                ).toLocaleString()}
                                             </div>
                                         </div>
                                     </div>
@@ -328,4 +418,3 @@ export default function ParcelDeliveryShow({ auth, delivery: initialDelivery }: 
         </AuthenticatedLayout>
     );
 }
-

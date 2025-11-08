@@ -1,31 +1,52 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { PackageIcon, PlusIcon, SearchIcon, FilterIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { ParcelDelivery, DeliveryStats } from './types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import { PackageIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { DeliveryStats, ParcelDelivery } from './types';
 
 interface Props extends PageProps {
     deliveries?: ParcelDelivery[];
     stats?: DeliveryStats;
 }
 
-export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliveries, stats: initialStats }: Props) {
-    const [deliveries, setDeliveries] = useState<ParcelDelivery[]>(initialDeliveries || []);
-    const [stats, setStats] = useState<DeliveryStats>(initialStats || {
-        total_deliveries: 0,
-        pending_deliveries: 0,
-        in_transit_deliveries: 0,
-        delivered_deliveries: 0,
-        total_revenue: 0,
-    });
+export default function ParcelDeliveryIndex({
+    auth,
+    deliveries: initialDeliveries,
+    stats: initialStats,
+}: Props) {
+    const [deliveries, setDeliveries] = useState<ParcelDelivery[]>(
+        initialDeliveries || [],
+    );
+    const [stats, setStats] = useState<DeliveryStats>(
+        initialStats || {
+            total_deliveries: 0,
+            pending_deliveries: 0,
+            in_transit_deliveries: 0,
+            delivered_deliveries: 0,
+            total_revenue: 0,
+        },
+    );
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -43,7 +64,9 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
             if (typeFilter !== 'all') params.delivery_type = typeFilter;
             if (search) params.search = search;
 
-            const response = await axios.get('/parcel-delivery/list', { params });
+            const response = await axios.get('/parcel-delivery/list', {
+                params,
+            });
             if (response.data.success) {
                 setDeliveries(response.data.data);
             }
@@ -105,7 +128,11 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
     };
 
     const formatCurrency = (amount: number) => {
-        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        let currency: {
+            symbol: string;
+            thousands_separator?: string;
+            decimal_separator?: string;
+        };
         const appCurrency = (auth.user as any)?.app_currency;
         if (appCurrency) {
             if (typeof appCurrency === 'string') {
@@ -114,7 +141,11 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
                 currency = appCurrency;
             }
         } else {
-            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+            currency = {
+                symbol: '₱',
+                thousands_separator: ',',
+                decimal_separator: '.',
+            };
         }
         return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
@@ -132,14 +163,17 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
                                 Parcel Delivery
                             </h2>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Manage your parcel deliveries and track shipments
+                                Manage your parcel deliveries and track
+                                shipments
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
                             variant="outline"
-                            onClick={() => router.visit('/parcel-delivery/track')}
+                            onClick={() =>
+                                router.visit('/parcel-delivery/track')
+                            }
                             className="flex items-center space-x-2"
                         >
                             <SearchIcon className="h-4 w-4" />
@@ -147,14 +181,18 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
                         </Button>
                         <Button
                             variant="outline"
-                            onClick={() => router.visit('/parcel-delivery/couriers')}
+                            onClick={() =>
+                                router.visit('/parcel-delivery/couriers')
+                            }
                             className="flex items-center space-x-2"
                         >
                             <PackageIcon className="h-4 w-4" />
                             <span>Couriers</span>
                         </Button>
                         <Button
-                            onClick={() => router.visit('/parcel-delivery/create')}
+                            onClick={() =>
+                                router.visit('/parcel-delivery/create')
+                            }
                             className="flex items-center space-x-2"
                         >
                             <PlusIcon className="h-4 w-4" />
@@ -171,35 +209,51 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Deliveries</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                Total Deliveries
+                            </CardTitle>
                             <PackageIcon className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.total_deliveries}</div>
+                            <div className="text-2xl font-bold">
+                                {stats.total_deliveries}
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                Pending
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending_deliveries}</div>
+                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                {stats.pending_deliveries}
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">In Transit</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                In Transit
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.in_transit_deliveries}</div>
+                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                {stats.in_transit_deliveries}
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                Total Revenue
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{formatCurrency(stats.total_revenue)}</div>
+                            <div className="text-2xl font-bold">
+                                {formatCurrency(stats.total_revenue)}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -220,28 +274,54 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
                                     className="pl-10"
                                 />
                             </div>
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <Select
+                                value={statusFilter}
+                                onValueChange={setStatusFilter}
+                            >
                                 <SelectTrigger className="w-full md:w-[180px]">
                                     <SelectValue placeholder="Status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="picked_up">Picked Up</SelectItem>
-                                    <SelectItem value="in_transit">In Transit</SelectItem>
-                                    <SelectItem value="delivered">Delivered</SelectItem>
-                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                    <SelectItem value="all">
+                                        All Status
+                                    </SelectItem>
+                                    <SelectItem value="pending">
+                                        Pending
+                                    </SelectItem>
+                                    <SelectItem value="picked_up">
+                                        Picked Up
+                                    </SelectItem>
+                                    <SelectItem value="in_transit">
+                                        In Transit
+                                    </SelectItem>
+                                    <SelectItem value="delivered">
+                                        Delivered
+                                    </SelectItem>
+                                    <SelectItem value="cancelled">
+                                        Cancelled
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Select value={typeFilter} onValueChange={setTypeFilter}>
+                            <Select
+                                value={typeFilter}
+                                onValueChange={setTypeFilter}
+                            >
                                 <SelectTrigger className="w-full md:w-[180px]">
                                     <SelectValue placeholder="Type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="express">Express</SelectItem>
-                                    <SelectItem value="standard">Standard</SelectItem>
-                                    <SelectItem value="economy">Economy</SelectItem>
+                                    <SelectItem value="all">
+                                        All Types
+                                    </SelectItem>
+                                    <SelectItem value="express">
+                                        Express
+                                    </SelectItem>
+                                    <SelectItem value="standard">
+                                        Standard
+                                    </SelectItem>
+                                    <SelectItem value="economy">
+                                        Economy
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -252,65 +332,129 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                            <TableHead className="text-gray-900 dark:text-white">Reference</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Sender</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Recipient</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Cost</TableHead>
-                                            <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Reference
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Type
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Sender
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Recipient
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Status
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Cost
+                                            </TableHead>
+                                            <TableHead className="text-right text-gray-900 dark:text-white">
+                                                Actions
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {loading ? (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="text-center">
+                                                <TableCell
+                                                    colSpan={7}
+                                                    className="text-center"
+                                                >
                                                     Loading...
                                                 </TableCell>
                                             </TableRow>
                                         ) : deliveries.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="text-center">
+                                                <TableCell
+                                                    colSpan={7}
+                                                    className="text-center"
+                                                >
                                                     No deliveries found
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             deliveries.map((delivery) => (
-                                                <TableRow key={delivery.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                    <TableCell className="text-gray-900 dark:text-white font-mono text-sm">
-                                                        {delivery.delivery_reference}
+                                                <TableRow
+                                                    key={delivery.id}
+                                                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                >
+                                                    <TableCell className="font-mono text-sm text-gray-900 dark:text-white">
+                                                        {
+                                                            delivery.delivery_reference
+                                                        }
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
-                                                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getTypeColor(delivery.delivery_type)}`}>
-                                                            {delivery.delivery_type}
+                                                        <span
+                                                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getTypeColor(delivery.delivery_type)}`}
+                                                        >
+                                                            {
+                                                                delivery.delivery_type
+                                                            }
                                                         </span>
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
                                                         <div>
-                                                            <div className="font-medium">{delivery.sender_name}</div>
-                                                            <div className="text-sm text-gray-500">{delivery.sender_phone}</div>
+                                                            <div className="font-medium">
+                                                                {
+                                                                    delivery.sender_name
+                                                                }
+                                                            </div>
+                                                            <div className="text-sm text-gray-500">
+                                                                {
+                                                                    delivery.sender_phone
+                                                                }
+                                                            </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
                                                         <div>
-                                                            <div className="font-medium">{delivery.recipient_name}</div>
-                                                            <div className="text-sm text-gray-500">{delivery.recipient_phone}</div>
+                                                            <div className="font-medium">
+                                                                {
+                                                                    delivery.recipient_name
+                                                                }
+                                                            </div>
+                                                            <div className="text-sm text-gray-500">
+                                                                {
+                                                                    delivery.recipient_phone
+                                                                }
+                                                            </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
-                                                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(delivery.status)}`}>
-                                                            {delivery.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                        <span
+                                                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(delivery.status)}`}
+                                                        >
+                                                            {delivery.status
+                                                                .replace(
+                                                                    /_/g,
+                                                                    ' ',
+                                                                )
+                                                                .replace(
+                                                                    /\b\w/g,
+                                                                    (l) =>
+                                                                        l.toUpperCase(),
+                                                                )}
                                                         </span>
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
-                                                        {delivery.estimated_cost ? formatCurrency(delivery.estimated_cost) : '-'}
+                                                        {delivery.estimated_cost
+                                                            ? formatCurrency(
+                                                                  delivery.estimated_cost,
+                                                              )
+                                                            : '-'}
                                                     </TableCell>
                                                     <TableCell className="text-right text-gray-900 dark:text-white">
                                                         <div className="flex items-center justify-end space-x-2">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                onClick={() => router.visit(`/parcel-delivery/${delivery.id}`)}
+                                                                onClick={() =>
+                                                                    router.visit(
+                                                                        `/parcel-delivery/${delivery.id}`,
+                                                                    )
+                                                                }
                                                             >
                                                                 View
                                                             </Button>
@@ -329,4 +473,3 @@ export default function ParcelDeliveryIndex({ auth, deliveries: initialDeliverie
         </AuthenticatedLayout>
     );
 }
-

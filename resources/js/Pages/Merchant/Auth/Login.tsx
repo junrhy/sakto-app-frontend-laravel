@@ -8,8 +8,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
 
 const PROJECT_IMAGES: Record<string, string> = {
-    retail:
-        'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1470&q=80',
+    retail: 'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1470&q=80',
     restaurant:
         'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1470&q=80',
     logistics:
@@ -70,9 +69,10 @@ export default function Login({ projectParam }: Props) {
         post(route('merchant.login.attempt'));
     };
 
-    const imageUrl = projectParam && PROJECT_IMAGES[projectParam]
-        ? PROJECT_IMAGES[projectParam]
-        : PROJECT_IMAGES.retail;
+    const imageUrl =
+        projectParam && PROJECT_IMAGES[projectParam]
+            ? PROJECT_IMAGES[projectParam]
+            : PROJECT_IMAGES.retail;
 
     const portalName = getPortalName(projectParam);
 
@@ -106,13 +106,21 @@ export default function Login({ projectParam }: Props) {
                                     Welcome Back, {hostname}
                                 </h2>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:mt-2 sm:text-base">
-                                    {portalName} - sign in to manage your operations
+                                    {portalName} - sign in to manage your
+                                    operations
                                 </p>
                             </div>
 
-                            <form onSubmit={submit} className="space-y-4 sm:space-y-6">
+                            <form
+                                onSubmit={submit}
+                                className="space-y-4 sm:space-y-6"
+                            >
                                 <div>
-                                    <InputLabel htmlFor="email" value="Business Email" className="text-sm text-gray-700 dark:text-gray-300 sm:text-base" />
+                                    <InputLabel
+                                        htmlFor="email"
+                                        value="Business Email"
+                                        className="text-sm text-gray-700 dark:text-gray-300 sm:text-base"
+                                    />
                                     <TextInput
                                         id="email"
                                         type="email"
@@ -121,13 +129,22 @@ export default function Login({ projectParam }: Props) {
                                         className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
                                         autoComplete="username"
                                         isFocused
-                                        onChange={(e) => setData('email', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('email', e.target.value)
+                                        }
                                     />
-                                    <InputError message={errors.email} className="mt-1 sm:mt-2" />
+                                    <InputError
+                                        message={errors.email}
+                                        className="mt-1 sm:mt-2"
+                                    />
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="password" value="Password" className="text-sm text-gray-700 dark:text-gray-300 sm:text-base" />
+                                    <InputLabel
+                                        htmlFor="password"
+                                        value="Password"
+                                        className="text-sm text-gray-700 dark:text-gray-300 sm:text-base"
+                                    />
                                     <TextInput
                                         id="password"
                                         type="password"
@@ -135,9 +152,14 @@ export default function Login({ projectParam }: Props) {
                                         value={data.password}
                                         className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
                                         autoComplete="current-password"
-                                        onChange={(e) => setData('password', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('password', e.target.value)
+                                        }
                                     />
-                                    <InputError message={errors.password} className="mt-1 sm:mt-2" />
+                                    <InputError
+                                        message={errors.password}
+                                        className="mt-1 sm:mt-2"
+                                    />
                                 </div>
 
                                 <div className="flex items-center justify-between">
@@ -145,7 +167,12 @@ export default function Login({ projectParam }: Props) {
                                         <Checkbox
                                             name="remember"
                                             checked={data.remember}
-                                            onChange={(e) => setData('remember', e.target.checked)}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'remember',
+                                                    e.target.checked,
+                                                )
+                                            }
                                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                         />
                                         <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
@@ -155,8 +182,13 @@ export default function Login({ projectParam }: Props) {
                                 </div>
 
                                 <div>
-                                    <PrimaryButton className="w-full justify-center rounded-lg px-4 py-2.5 text-sm font-medium sm:py-3 sm:text-base" disabled={processing}>
-                                        {processing ? 'Signing in...' : 'Sign in'}
+                                    <PrimaryButton
+                                        className="w-full justify-center rounded-lg px-4 py-2.5 text-sm font-medium sm:py-3 sm:text-base"
+                                        disabled={processing}
+                                    >
+                                        {processing
+                                            ? 'Signing in...'
+                                            : 'Sign in'}
                                     </PrimaryButton>
                                 </div>
 

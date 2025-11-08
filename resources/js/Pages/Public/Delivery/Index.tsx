@@ -330,14 +330,14 @@ export default function DeliveryIndex({ auth }: PageProps) {
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 {!auth.user && (
-                                        <Link
-                                            href={route('register', {
-                                                project: 'delivery',
-                                            })}
-                                            className="inline-flex items-center rounded-lg border border-orange-600 bg-white px-8 py-3 text-base font-medium text-orange-600 shadow-sm transition-colors duration-200 hover:bg-orange-50"
-                                        >
-                                            Start Free Trial
-                                        </Link>
+                                    <Link
+                                        href={route('register', {
+                                            project: 'delivery',
+                                        })}
+                                        className="inline-flex items-center rounded-lg border border-orange-600 bg-white px-8 py-3 text-base font-medium text-orange-600 shadow-sm transition-colors duration-200 hover:bg-orange-50"
+                                    >
+                                        Start Free Trial
+                                    </Link>
                                 )}
                             </div>
                         </div>
@@ -954,15 +954,16 @@ export default function DeliveryIndex({ auth }: PageProps) {
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
                                         <dt className="mb-2 text-lg font-medium text-slate-900">
-                                            Does the platform support mixed deliveries?
+                                            Does the platform support mixed
+                                            deliveries?
                                         </dt>
                                         <dd className="text-slate-600">
                                             Yes. You can operate parcel-only,
                                             food-only, or mixed fleets within
                                             the same dashboard. Configure custom
-                                            workflows, pricing, and notifications
-                                            for each service type while sharing
-                                            riders and analytics.
+                                            workflows, pricing, and
+                                            notifications for each service type
+                                            while sharing riders and analytics.
                                         </dd>
                                     </div>
                                 </dl>

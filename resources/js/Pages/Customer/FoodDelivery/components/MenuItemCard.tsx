@@ -1,6 +1,6 @@
-import { FoodDeliveryMenuItem } from '../types';
-import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+import { FoodDeliveryMenuItem } from '../types';
 
 interface MenuItemCardProps {
     item: FoodDeliveryMenuItem;
@@ -8,24 +8,28 @@ interface MenuItemCardProps {
     onAddToCart?: (item: FoodDeliveryMenuItem) => void;
 }
 
-export default function MenuItemCard({ item, formatCurrency, onAddToCart }: MenuItemCardProps) {
+export default function MenuItemCard({
+    item,
+    formatCurrency,
+    onAddToCart,
+}: MenuItemCardProps) {
     return (
         <Card className="overflow-hidden">
             {item.image && (
-                <div className="h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                <div className="h-48 overflow-hidden bg-gray-200 dark:bg-gray-700">
                     <img
                         src={item.image}
                         alt={item.name}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                     />
                 </div>
             )}
             <CardContent className="p-4">
-                <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2">
+                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
                     {item.name}
                 </h3>
                 {item.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                    <p className="mb-3 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
                         {item.description}
                     </p>
                 )}
@@ -60,4 +64,3 @@ export default function MenuItemCard({ item, formatCurrency, onAddToCart }: Menu
         </Card>
     );
 }
-

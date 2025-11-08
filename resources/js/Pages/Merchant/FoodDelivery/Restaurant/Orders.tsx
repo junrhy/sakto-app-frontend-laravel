@@ -1,10 +1,6 @@
-import MerchantLayout from '@/Layouts/Merchant/MerchantLayout';
-import { PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
 import {
     Select,
     SelectContent,
@@ -20,7 +16,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Input } from '@/Components/ui/input';
+import MerchantLayout from '@/Layouts/Merchant/MerchantLayout';
+import { PageProps } from '@/types';
+import { Head } from '@inertiajs/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 interface Props extends PageProps {}
 
@@ -86,7 +86,11 @@ export default function RestaurantOrders({ auth }: Props) {
         <MerchantLayout
             auth={{ user: auth.user }}
             title="Restaurant Orders"
-            header={<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Orders</h2>}
+            header={
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    Orders
+                </h2>
+            }
         >
             <Head title="Restaurant Orders" />
 
@@ -113,14 +117,22 @@ export default function RestaurantOrders({ auth }: Props) {
                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Status
                                 </label>
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <Select
+                                    value={statusFilter}
+                                    onValueChange={setStatusFilter}
+                                >
                                     <SelectTrigger className="mt-1">
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All statuses</SelectItem>
+                                        <SelectItem value="all">
+                                            All statuses
+                                        </SelectItem>
                                         {statusOptions.map((status) => (
-                                            <SelectItem key={status} value={status}>
+                                            <SelectItem
+                                                key={status}
+                                                value={status}
+                                            >
                                                 {status.replace('_', ' ')}
                                             </SelectItem>
                                         ))}
@@ -129,7 +141,11 @@ export default function RestaurantOrders({ auth }: Props) {
                             </div>
 
                             <div className="self-end">
-                                <Button onClick={fetchOrders} disabled={loading} className="w-full">
+                                <Button
+                                    onClick={fetchOrders}
+                                    disabled={loading}
+                                    className="w-full"
+                                >
                                     {loading ? 'Refreshing...' : 'Refresh'}
                                 </Button>
                             </div>
@@ -145,31 +161,58 @@ export default function RestaurantOrders({ auth }: Props) {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                    <TableHead className="text-gray-900 dark:text-white">Reference</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Customer</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Amount</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Created</TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Reference
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Customer
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Amount
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Created
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredOrders.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <TableCell
+                                            colSpan={5}
+                                            className="py-8 text-center text-gray-500 dark:text-gray-400"
+                                        >
                                             No orders found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredOrders.map((order) => (
-                                        <TableRow key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <TableCell className="text-gray-900 dark:text-white">#{order.order_reference}</TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{order.customer_name}</TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{order.order_status}</TableCell>
+                                        <TableRow
+                                            key={order.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                ₱{Number(order.total_amount).toFixed(2)}
+                                                #{order.order_reference}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {new Date(order.created_at).toLocaleString()}
+                                                {order.customer_name}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {order.order_status}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                ₱
+                                                {Number(
+                                                    order.total_amount,
+                                                ).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {new Date(
+                                                    order.created_at,
+                                                ).toLocaleString()}
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -182,4 +225,3 @@ export default function RestaurantOrders({ auth }: Props) {
         </MerchantLayout>
     );
 }
-

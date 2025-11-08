@@ -2,7 +2,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link } from '@inertiajs/react';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle } from 'lucide-react';
 
 interface Job {
     id: number;
@@ -27,7 +27,7 @@ export default function ApplySuccess({ job, canLogin, canRegister }: Props) {
 
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
                 <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
-                    <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90">
+                    <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm dark:bg-gray-800/90">
                         <CardContent className="p-16 text-center">
                             <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-2xl">
                                 <CheckCircle className="h-12 w-12 text-white" />
@@ -38,18 +38,27 @@ export default function ApplySuccess({ job, canLogin, canRegister }: Props) {
                             </h1>
 
                             <p className="mb-3 text-xl text-gray-700 dark:text-gray-300">
-                                Thank you for applying to <strong className="text-indigo-600 dark:text-indigo-400">{job.title}</strong>
+                                Thank you for applying to{' '}
+                                <strong className="text-indigo-600 dark:text-indigo-400">
+                                    {job.title}
+                                </strong>
                             </p>
 
-                            <p className="mb-10 text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                                We have received your application and will review it shortly. You will be contacted if we
+                            <p className="mb-10 text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+                                We have received your application and will
+                                review it shortly. You will be contacted if we
                                 would like to proceed with your application.
                             </p>
 
                             {job.job_board && (
-                                <div className="flex justify-center mb-8">
-                                    <Link href={route('jobs.public.board', job.job_board.slug)}>
-                                        <Button className="h-12 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold">
+                                <div className="mb-8 flex justify-center">
+                                    <Link
+                                        href={route(
+                                            'jobs.public.board',
+                                            job.job_board.slug,
+                                        )}
+                                    >
+                                        <Button className="h-12 bg-gradient-to-r from-indigo-600 to-purple-600 px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl">
                                             <ArrowRight className="mr-2 h-5 w-5" />
                                             View More Jobs
                                         </Button>

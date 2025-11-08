@@ -1,57 +1,63 @@
-import { FoodDeliveryRestaurant } from '../types';
 import { Card, CardContent } from '@/Components/ui/card';
-import { UtensilsIcon, StarIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import { StarIcon, UtensilsIcon } from 'lucide-react';
+import { FoodDeliveryRestaurant } from '../types';
 
 interface RestaurantCardProps {
     restaurant: FoodDeliveryRestaurant;
     formatCurrency: (amount: number) => string;
 }
 
-export default function RestaurantCard({ restaurant, formatCurrency }: RestaurantCardProps) {
+export default function RestaurantCard({
+    restaurant,
+    formatCurrency,
+}: RestaurantCardProps) {
     return (
         <Card
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => router.visit(`/food-delivery/restaurant/${restaurant.id}`)}
+            className="cursor-pointer transition-shadow hover:shadow-lg"
+            onClick={() =>
+                router.visit(`/food-delivery/restaurant/${restaurant.id}`)
+            }
         >
-            <div className="relative h-48 bg-gray-200 dark:bg-gray-700 rounded-t-lg overflow-hidden">
+            <div className="relative h-48 overflow-hidden rounded-t-lg bg-gray-200 dark:bg-gray-700">
                 {restaurant.cover_image ? (
                     <img
                         src={restaurant.cover_image}
                         alt={restaurant.name}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                    <div className="flex h-full w-full items-center justify-center">
                         <UtensilsIcon className="h-16 w-16 text-gray-400" />
                     </div>
                 )}
                 {restaurant.logo && (
-                    <div className="absolute bottom-0 left-4 transform translate-y-1/2">
+                    <div className="absolute bottom-0 left-4 translate-y-1/2 transform">
                         <img
                             src={restaurant.logo}
                             alt={restaurant.name}
-                            className="w-16 h-16 rounded-full border-4 border-white dark:border-gray-800 object-cover"
+                            className="h-16 w-16 rounded-full border-4 border-white object-cover dark:border-gray-800"
                         />
                     </div>
                 )}
             </div>
-            <CardContent className="pt-8 p-4">
-                <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+            <CardContent className="p-4 pt-8">
+                <div className="mb-2 flex items-start justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {restaurant.name}
                     </h3>
-                    {restaurant.rating && typeof restaurant.rating === 'number' && (
-                        <div className="flex items-center space-x-1">
-                            <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {restaurant.rating.toFixed(1)}
-                            </span>
-                        </div>
-                    )}
+                    {restaurant.rating &&
+                        typeof restaurant.rating === 'number' && (
+                            <div className="flex items-center space-x-1">
+                                <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {restaurant.rating.toFixed(1)}
+                                </span>
+                            </div>
+                        )}
                 </div>
                 {restaurant.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                    <p className="mb-3 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
                         {restaurant.description}
                     </p>
                 )}
@@ -65,11 +71,11 @@ export default function RestaurantCard({ restaurant, formatCurrency }: Restauran
                 </div>
                 {restaurant.minimum_order_amount > 0 && (
                     <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        Min. order: {formatCurrency(restaurant.minimum_order_amount)}
+                        Min. order:{' '}
+                        {formatCurrency(restaurant.minimum_order_amount)}
                     </div>
                 )}
             </CardContent>
         </Card>
     );
 }
-

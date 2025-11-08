@@ -3,7 +3,6 @@ import SolutionsDialog from '@/Components/SolutionsDialog';
 import { getHost } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import {
-    Briefcase,
     GraduationCap,
     HardHat,
     Landmark,
@@ -150,8 +149,7 @@ export default function Welcome({ auth }: PageProps) {
         },
         {
             name: 'Human Resources',
-            description:
-                'Manage your own human resources business',
+            description: 'Manage your own human resources business',
             icon: Users,
             href: '/hr',
             color: 'text-indigo-600',

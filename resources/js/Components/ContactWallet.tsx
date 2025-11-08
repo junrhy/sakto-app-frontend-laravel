@@ -109,7 +109,7 @@ export default function ContactWallet({
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
 
-    const pageProps = (usePage().props as PageProps);
+    const pageProps = usePage().props as PageProps;
     const selectedTeamMember = pageProps?.auth?.selectedTeamMember;
     const canManageFunds =
         selectedTeamMember &&

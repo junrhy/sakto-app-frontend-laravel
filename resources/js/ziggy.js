@@ -1358,8 +1358,6 @@ const Ziggy = {
             uri: 'payroll\/settings',
             methods: ['GET', 'HEAD'],
         },
-        'flight-search': { uri: 'flight-search', methods: ['GET', 'HEAD'] },
-        flights: { uri: 'flights', methods: ['GET', 'HEAD'] },
         'sms.settings': { uri: 'sms\/settings', methods: ['GET', 'HEAD'] },
         'twilio-sms': { uri: 'sms-twilio', methods: ['GET', 'HEAD'] },
         'twilio-sms.send': { uri: 'sms-twilio\/send', methods: ['POST'] },

@@ -32,13 +32,18 @@ export default function Login({ projectParam }: Props) {
 
             <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-10 px-6 py-12">
                 <div>
-                    <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Sign in to your employee account</h1>
+                    <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">
+                        Sign in to your employee account
+                    </h1>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                         Access schedules, company updates, and internal tools.
                     </p>
                 </div>
 
-                <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <form
+                    onSubmit={submit}
+                    className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+                >
                     <div className="space-y-6">
                         <div>
                             <InputLabel htmlFor="email" value="Email" />
@@ -49,9 +54,14 @@ export default function Login({ projectParam }: Props) {
                                 className="mt-1 block w-full"
                                 autoComplete="username"
                                 isFocused
-                                onChange={(e) => setData('email', e.target.value)}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
                             />
-                            <InputError message={errors.email} className="mt-2" />
+                            <InputError
+                                message={errors.email}
+                                className="mt-2"
+                            />
                         </div>
 
                         <div>
@@ -62,9 +72,14 @@ export default function Login({ projectParam }: Props) {
                                 value={data.password}
                                 className="mt-1 block w-full"
                                 autoComplete="current-password"
-                                onChange={(e) => setData('password', e.target.value)}
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
                             />
-                            <InputError message={errors.password} className="mt-2" />
+                            <InputError
+                                message={errors.password}
+                                className="mt-2"
+                            />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -72,20 +87,28 @@ export default function Login({ projectParam }: Props) {
                                 <input
                                     type="checkbox"
                                     checked={data.remember}
-                                    onChange={(e) => setData('remember', e.target.checked)}
+                                    onChange={(e) =>
+                                        setData('remember', e.target.checked)
+                                    }
                                     className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 Remember me
                             </label>
                         </div>
 
-                        <PrimaryButton className="w-full justify-center" disabled={processing}>
+                        <PrimaryButton
+                            className="w-full justify-center"
+                            disabled={processing}
+                        >
                             {processing ? 'Signing in...' : 'Sign in'}
                         </PrimaryButton>
 
                         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
                             Need an account?{' '}
-                            <Link href={registerUrl} className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                            <Link
+                                href={registerUrl}
+                                className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                            >
                                 Register
                             </Link>
                         </p>

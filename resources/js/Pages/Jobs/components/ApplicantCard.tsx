@@ -19,9 +19,13 @@ export default function ApplicantCard({ applicant }: ApplicantCardProps) {
                 <CardTitle className="text-lg">{applicant.name}</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{applicant.email}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {applicant.email}
+                </p>
                 {applicant.phone && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{applicant.phone}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {applicant.phone}
+                    </p>
                 )}
                 <p className="mt-2 text-sm font-medium">
                     {applicant.applications_count} application(s)
@@ -30,4 +34,3 @@ export default function ApplicantCard({ applicant }: ApplicantCardProps) {
         </Card>
     );
 }
-

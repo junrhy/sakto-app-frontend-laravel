@@ -1,3 +1,4 @@
+import { Label } from '@/Components/ui/label';
 import {
     Select,
     SelectContent,
@@ -5,7 +6,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Label } from '@/Components/ui/label';
 
 interface Job {
     id: number;
@@ -37,7 +37,10 @@ export default function ApplicationFilters({
     return (
         <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0">
             <div className="flex items-center space-x-2">
-                <Label htmlFor="status-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                    htmlFor="status-filter"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                     Status:
                 </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -58,7 +61,10 @@ export default function ApplicationFilters({
 
             {jobs.length > 0 && (
                 <div className="flex items-center space-x-2">
-                    <Label htmlFor="job-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <Label
+                        htmlFor="job-filter"
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                         Job:
                     </Label>
                     <Select value={jobFilter} onValueChange={setJobFilter}>
@@ -68,7 +74,10 @@ export default function ApplicationFilters({
                         <SelectContent>
                             <SelectItem value="all">All Jobs</SelectItem>
                             {jobs.map((job) => (
-                                <SelectItem key={job.id} value={job.id.toString()}>
+                                <SelectItem
+                                    key={job.id}
+                                    value={job.id.toString()}
+                                >
                                     {job.title}
                                 </SelectItem>
                             ))}
@@ -88,4 +97,3 @@ export default function ApplicationFilters({
         </div>
     );
 }
-

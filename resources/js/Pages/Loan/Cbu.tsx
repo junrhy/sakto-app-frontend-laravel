@@ -2322,7 +2322,9 @@ export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
                                 <Textarea
                                     id="report_message"
                                     value={reportEmailData.message}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLTextAreaElement>,
+                                    ) =>
                                         setReportEmailData({
                                             ...reportEmailData,
                                             message: e.target.value,

@@ -85,38 +85,48 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                         <CardContent>
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings as unknown as Record<string, unknown>}
+                                    settings={
+                                        settings as unknown as Record<
+                                            string,
+                                            unknown
+                                        >
+                                    }
                                     onSubmit={handleSubmit}
                                 >
                                     {({ data, setData }) => {
-                                        const notifications = (data.notifications as { email_notifications?: boolean }) || {};
+                                        const notifications =
+                                            (data.notifications as {
+                                                email_notifications?: boolean;
+                                            }) || {};
                                         return (
-                                        <div className="space-y-6">
-                                            <div className="flex items-center justify-between">
-                                                <div className="space-y-0.5">
-                                                    <Label>
-                                                        Email Notifications
-                                                    </Label>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                        Receive notifications
-                                                        via email
+                                            <div className="space-y-6">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="space-y-0.5">
+                                                        <Label>
+                                                            Email Notifications
+                                                        </Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            Receive
+                                                            notifications via
+                                                            email
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <Switch
-                                                    checked={
-                                                        notifications.email_notifications ?? false
-                                                    }
-                                                    onCheckedChange={(
-                                                        checked,
-                                                    ) =>
-                                                        setData(
-                                                            'notifications.email_notifications',
+                                                    <Switch
+                                                        checked={
+                                                            notifications.email_notifications ??
+                                                            false
+                                                        }
+                                                        onCheckedChange={(
                                                             checked,
-                                                        )
-                                                    }
-                                                />
+                                                        ) =>
+                                                            setData(
+                                                                'notifications.email_notifications',
+                                                                checked,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
                                         );
                                     }}
                                 </SettingsForm>

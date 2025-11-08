@@ -87,23 +87,37 @@ export default function MerchantLayout({
                     }`}
                 >
                     <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-gray-800">
-                        <Link href="/merchant/dashboard" className="flex items-center gap-3">
+                        <Link
+                            href="/merchant/dashboard"
+                            className="flex items-center gap-3"
+                        >
                             <ApplicationLogo className="block h-10 w-auto" />
                             <div>
                                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                     Merchant Portal
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {project?.name || 'Multi-app Control Center'}
+                                    {project?.name ||
+                                        'Multi-app Control Center'}
                                 </p>
                             </div>
                         </Link>
                         <button
-                            className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
+                            className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
                             onClick={toggleSidebar}
                         >
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg
+                                className="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
                             </svg>
                         </button>
                     </div>
@@ -132,7 +146,8 @@ export default function MerchantLayout({
                                 Merchant Tips
                             </p>
                             <p className="mt-2 text-xs text-indigo-600 dark:text-indigo-200">
-                                Customize your storefront, monitor orders, and manage your team from one dashboard.
+                                Customize your storefront, monitor orders, and
+                                manage your team from one dashboard.
                             </p>
                         </div>
                     </div>
@@ -142,19 +157,32 @@ export default function MerchantLayout({
                     <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
                         <div className="flex items-center gap-3">
                             <button
-                                className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
+                                className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
                                 onClick={toggleSidebar}
                             >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                <svg
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 6h16M4 12h16M4 18h16"
+                                    />
                                 </svg>
                             </button>
                             <div>
                                 {header ?? (
-                                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
+                                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        Dashboard
+                                    </h1>
                                 )}
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Manage orders, inventory, and business insights
+                                    Manage orders, inventory, and business
+                                    insights
                                 </p>
                             </div>
                         </div>
@@ -178,7 +206,9 @@ export default function MerchantLayout({
                     </header>
 
                     <main className="flex-1 p-6 md:p-10">
-                        <div className="mx-auto w-full max-w-6xl">{children}</div>
+                        <div className="mx-auto w-full max-w-6xl">
+                            {children}
+                        </div>
                     </main>
                 </div>
             </div>

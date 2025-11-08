@@ -30,7 +30,10 @@ export default function SettingsForm({
         phone?: string;
         email?: string;
         website?: string;
-        operating_hours?: Record<string, { open: string; close: string; closed: boolean }>;
+        operating_hours?: Record<
+            string,
+            { open: string; close: string; closed: boolean }
+        >;
     };
     const fleet = (settingsTyped.fleet || {}) as {
         max_trucks?: number;
@@ -87,14 +90,8 @@ export default function SettingsForm({
 
     const form = useForm({
         general: {
-            company_name:
-                general.company_name ||
-                general.clinic_name ||
-                '',
-            clinic_name:
-                general.clinic_name ||
-                general.company_name ||
-                '',
+            company_name: general.company_name || general.clinic_name || '',
+            clinic_name: general.clinic_name || general.company_name || '',
             description: general.description || '',
             address: general.address || '',
             phone: general.phone || '',
@@ -134,28 +131,21 @@ export default function SettingsForm({
         },
         // Clinic settings (for backward compatibility)
         appointments: {
-            enable_appointments:
-                appointments.enable_appointments ?? true,
-            appointment_duration:
-                appointments.appointment_duration ?? 30,
+            enable_appointments: appointments.enable_appointments ?? true,
+            appointment_duration: appointments.appointment_duration ?? 30,
             appointment_buffer: appointments.appointment_buffer ?? 15,
             enable_reminders: appointments.enable_reminders ?? true,
             reminder_hours: appointments.reminder_hours ?? 24,
-            enable_online_booking:
-                appointments.enable_online_booking ?? true,
+            enable_online_booking: appointments.enable_online_booking ?? true,
         },
         features: {
             enable_insurance: features.enable_insurance ?? true,
             insurance_providers: features.insurance_providers || [],
-            enable_prescriptions:
-                features.enable_prescriptions ?? true,
+            enable_prescriptions: features.enable_prescriptions ?? true,
             enable_lab_results: features.enable_lab_results ?? true,
-            enable_dental_charts:
-                features.enable_dental_charts ?? true,
-            enable_medical_history:
-                features.enable_medical_history ?? true,
-            enable_patient_portal:
-                features.enable_patient_portal ?? true,
+            enable_dental_charts: features.enable_dental_charts ?? true,
+            enable_medical_history: features.enable_medical_history ?? true,
+            enable_patient_portal: features.enable_patient_portal ?? true,
         },
         billing: {
             enable_billing: billing.enable_billing ?? true,
@@ -164,17 +154,13 @@ export default function SettingsForm({
             payment_methods: billing.payment_methods || [],
             invoice_prefix: billing.invoice_prefix || 'INV-',
             invoice_footer:
-                billing.invoice_footer ||
-                'Thank you for choosing our clinic!',
+                billing.invoice_footer || 'Thank you for choosing our clinic!',
         },
         // Transportation notifications
         notifications: {
-            email_notifications:
-                notifications.email_notifications ?? true,
-            sms_notifications:
-                notifications.sms_notifications ?? false,
-            booking_confirmations:
-                notifications.booking_confirmations ?? true,
+            email_notifications: notifications.email_notifications ?? true,
+            sms_notifications: notifications.sms_notifications ?? false,
+            booking_confirmations: notifications.booking_confirmations ?? true,
             status_updates: notifications.status_updates ?? true,
         },
     });

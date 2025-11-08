@@ -15,8 +15,8 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface StatusUpdateDialogProps {
@@ -51,11 +51,14 @@ export default function StatusUpdateDialog({
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.put(`/parcel-delivery/${deliveryId}/update-status`, {
-                status,
-                location: location || null,
-                notes: notes || null,
-            });
+            const response = await axios.put(
+                `/parcel-delivery/${deliveryId}/update-status`,
+                {
+                    status,
+                    location: location || null,
+                    notes: notes || null,
+                },
+            );
 
             if (response.data.success) {
                 toast.success('Status updated successfully');
@@ -81,14 +84,48 @@ export default function StatusUpdateDialog({
             scheduled: ['out_for_pickup', 'cancelled'],
             out_for_pickup: ['picked_up', 'failed', 'cancelled'],
             picked_up: ['at_warehouse', 'in_transit', 'on_hold', 'cancelled'],
-            at_warehouse: ['in_transit', 'out_for_delivery', 'on_hold', 'cancelled'],
-            in_transit: ['out_for_delivery', 'at_warehouse', 'on_hold', 'cancelled'],
-            out_for_delivery: ['delivered', 'delivery_attempted', 'failed', 'cancelled'],
-            delivery_attempted: ['out_for_delivery', 'returned', 'failed', 'cancelled'],
+            at_warehouse: [
+                'in_transit',
+                'out_for_delivery',
+                'on_hold',
+                'cancelled',
+            ],
+            in_transit: [
+                'out_for_delivery',
+                'at_warehouse',
+                'on_hold',
+                'cancelled',
+            ],
+            out_for_delivery: [
+                'delivered',
+                'delivery_attempted',
+                'failed',
+                'cancelled',
+            ],
+            delivery_attempted: [
+                'out_for_delivery',
+                'returned',
+                'failed',
+                'cancelled',
+            ],
             returned: ['returned_to_sender', 'out_for_delivery'],
             returned_to_sender: [],
-            on_hold: ['out_for_pickup', 'picked_up', 'at_warehouse', 'in_transit', 'out_for_delivery', 'cancelled'],
-            failed: ['out_for_pickup', 'picked_up', 'in_transit', 'out_for_delivery', 'returned', 'cancelled'],
+            on_hold: [
+                'out_for_pickup',
+                'picked_up',
+                'at_warehouse',
+                'in_transit',
+                'out_for_delivery',
+                'cancelled',
+            ],
+            failed: [
+                'out_for_pickup',
+                'picked_up',
+                'in_transit',
+                'out_for_delivery',
+                'returned',
+                'cancelled',
+            ],
             delivered: [],
             cancelled: [],
         };
@@ -108,17 +145,18 @@ export default function StatusUpdateDialog({
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
-                        <Select
-                            value={status}
-                            onValueChange={setStatus}
-                        >
+                        <Select value={status} onValueChange={setStatus}>
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 {availableStatuses.map((s) => (
                                     <SelectItem key={s} value={s}>
-                                        {s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                        {s
+                                            .replace(/_/g, ' ')
+                                            .replace(/\b\w/g, (l) =>
+                                                l.toUpperCase(),
+                                            )}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -164,4 +202,3 @@ export default function StatusUpdateDialog({
         </Dialog>
     );
 }
-

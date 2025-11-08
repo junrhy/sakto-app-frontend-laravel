@@ -1,6 +1,6 @@
-import { CartItem as CartItemType } from '../types';
 import { Button } from '@/Components/ui/button';
-import { PlusIcon, MinusIcon, TrashIcon } from 'lucide-react';
+import { MinusIcon, PlusIcon, TrashIcon } from 'lucide-react';
+import { CartItem as CartItemType } from '../types';
 
 interface CartItemProps {
     item: CartItemType;
@@ -9,14 +9,19 @@ interface CartItemProps {
     onRemove: (itemId: number) => void;
 }
 
-export default function CartItem({ item, formatCurrency, onUpdateQuantity, onRemove }: CartItemProps) {
+export default function CartItem({
+    item,
+    formatCurrency,
+    onUpdateQuantity,
+    onRemove,
+}: CartItemProps) {
     return (
-        <div className="flex gap-4 pb-4 border-b last:border-0">
+        <div className="flex gap-4 border-b pb-4 last:border-0">
             {item.menu_item.image && (
                 <img
                     src={item.menu_item.image}
                     alt={item.menu_item.name}
-                    className="w-20 h-20 object-cover rounded"
+                    className="h-20 w-20 rounded object-cover"
                 />
             )}
             <div className="flex-1">
@@ -24,19 +29,29 @@ export default function CartItem({ item, formatCurrency, onUpdateQuantity, onRem
                     {item.menu_item.name}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatCurrency(item.menu_item.effective_price || item.menu_item.discount_price || item.menu_item.price)} each
+                    {formatCurrency(
+                        item.menu_item.effective_price ||
+                            item.menu_item.discount_price ||
+                            item.menu_item.price,
+                    )}{' '}
+                    each
                 </p>
                 {item.special_instructions && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Note: {item.special_instructions}
                     </p>
                 )}
-                <div className="flex items-center gap-2 mt-2">
+                <div className="mt-2 flex items-center gap-2">
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => onUpdateQuantity(item.menu_item.id, item.quantity - 1)}
+                        onClick={() =>
+                            onUpdateQuantity(
+                                item.menu_item.id,
+                                item.quantity - 1,
+                            )
+                        }
                     >
                         <MinusIcon className="h-4 w-4" />
                     </Button>
@@ -47,7 +62,12 @@ export default function CartItem({ item, formatCurrency, onUpdateQuantity, onRem
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => onUpdateQuantity(item.menu_item.id, item.quantity + 1)}
+                        onClick={() =>
+                            onUpdateQuantity(
+                                item.menu_item.id,
+                                item.quantity + 1,
+                            )
+                        }
                     >
                         <PlusIcon className="h-4 w-4" />
                     </Button>
@@ -70,4 +90,3 @@ export default function CartItem({ item, formatCurrency, onUpdateQuantity, onRem
         </div>
     );
 }
-

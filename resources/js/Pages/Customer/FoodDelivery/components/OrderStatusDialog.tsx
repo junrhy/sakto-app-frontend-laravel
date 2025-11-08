@@ -1,12 +1,23 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import { Label } from '@/Components/ui/label';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { FoodDeliveryOrder, StatusUpdateFormData } from '../types';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import axios from 'axios';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { FoodDeliveryOrder, StatusUpdateFormData } from '../types';
 
 interface OrderStatusDialogProps {
     order: FoodDeliveryOrder;
@@ -49,27 +60,37 @@ export default function OrderStatusDialog({
         setSubmitting(true);
 
         try {
-            const response = await axios.put(`/food-delivery/orders/${order.id}/update-status`, {
-                ...formData,
-                client_identifier: clientIdentifier,
-            });
+            const response = await axios.put(
+                `/food-delivery/orders/${order.id}/update-status`,
+                {
+                    ...formData,
+                    client_identifier: clientIdentifier,
+                },
+            );
 
             if (response.data.success) {
                 toast.success('Order status updated successfully');
                 onSuccess();
                 onOpenChange(false);
             } else {
-                toast.error(response.data.message || 'Failed to update order status');
+                toast.error(
+                    response.data.message || 'Failed to update order status',
+                );
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to update order status');
+            toast.error(
+                error.response?.data?.message ||
+                    'Failed to update order status',
+            );
         } finally {
             setSubmitting(false);
         }
     };
 
     const formatStatus = (status: string) => {
-        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return status
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase());
     };
 
     const nextStatuses = getNextStatuses(order.order_status);
@@ -85,7 +106,12 @@ export default function OrderStatusDialog({
                         <Label htmlFor="order_status">New Status</Label>
                         <Select
                             value={formData.order_status}
-                            onValueChange={(value: any) => setFormData({ ...formData, order_status: value })}
+                            onValueChange={(value: any) =>
+                                setFormData({
+                                    ...formData,
+                                    order_status: value,
+                                })
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue />
@@ -105,7 +131,12 @@ export default function OrderStatusDialog({
                         <Input
                             id="location"
                             value={formData.location}
-                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    location: e.target.value,
+                                })
+                            }
                             placeholder="Current location"
                         />
                     </div>
@@ -115,13 +146,22 @@ export default function OrderStatusDialog({
                         <Input
                             id="notes"
                             value={formData.notes}
-                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    notes: e.target.value,
+                                })
+                            }
                             placeholder="Additional notes"
                         />
                     </div>
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={submitting}>
@@ -133,4 +173,3 @@ export default function OrderStatusDialog({
         </Dialog>
     );
 }
-

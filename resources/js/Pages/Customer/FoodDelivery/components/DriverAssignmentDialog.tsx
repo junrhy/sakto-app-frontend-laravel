@@ -1,11 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { FoodDeliveryOrder, FoodDeliveryDriver } from '../types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { FoodDeliveryDriver, FoodDeliveryOrder } from '../types';
 
 interface DriverAssignmentDialogProps {
     order: FoodDeliveryOrder;
@@ -67,17 +78,22 @@ export default function DriverAssignmentDialog({
 
         setLoading(true);
         try {
-            const response = await axios.get('/food-delivery/drivers/find-nearest', {
-                params: {
-                    client_identifier: clientIdentifier,
-                    latitude: lat,
-                    longitude: lng,
+            const response = await axios.get(
+                '/food-delivery/drivers/find-nearest',
+                {
+                    params: {
+                        client_identifier: clientIdentifier,
+                        latitude: lat,
+                        longitude: lng,
+                    },
                 },
-            });
+            );
 
             if (response.data.success && response.data.data.driver) {
                 setSelectedDriverId(response.data.data.driver.id.toString());
-                toast.success(`Nearest driver found: ${response.data.data.driver.name}`);
+                toast.success(
+                    `Nearest driver found: ${response.data.data.driver.name}`,
+                );
             } else {
                 toast.error('No available drivers found nearby');
             }
@@ -98,10 +114,13 @@ export default function DriverAssignmentDialog({
 
         setSubmitting(true);
         try {
-            const response = await axios.post(`/food-delivery/orders/${order.id}/assign-driver`, {
-                driver_id: parseInt(selectedDriverId),
-                client_identifier: clientIdentifier,
-            });
+            const response = await axios.post(
+                `/food-delivery/orders/${order.id}/assign-driver`,
+                {
+                    driver_id: parseInt(selectedDriverId),
+                    client_identifier: clientIdentifier,
+                },
+            );
 
             if (response.data.success) {
                 toast.success('Driver assigned successfully');
@@ -111,7 +130,9 @@ export default function DriverAssignmentDialog({
                 toast.error(response.data.message || 'Failed to assign driver');
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to assign driver');
+            toast.error(
+                error.response?.data?.message || 'Failed to assign driver',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -125,7 +146,7 @@ export default function DriverAssignmentDialog({
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                             <Label htmlFor="driver">Select Driver</Label>
                             {order.customer_coordinates && (
                                 <Button
@@ -148,22 +169,37 @@ export default function DriverAssignmentDialog({
                             </SelectTrigger>
                             <SelectContent>
                                 {drivers.map((driver) => (
-                                    <SelectItem key={driver.id} value={driver.id.toString()}>
-                                        {driver.name} - {driver.phone} {driver.vehicle_type ? `(${driver.vehicle_type})` : ''}
+                                    <SelectItem
+                                        key={driver.id}
+                                        value={driver.id.toString()}
+                                    >
+                                        {driver.name} - {driver.phone}{' '}
+                                        {driver.vehicle_type
+                                            ? `(${driver.vehicle_type})`
+                                            : ''}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         {drivers.length === 0 && !loading && (
-                            <p className="text-sm text-gray-500 mt-2">No available drivers found</p>
+                            <p className="mt-2 text-sm text-gray-500">
+                                No available drivers found
+                            </p>
                         )}
                     </div>
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={submitting || !selectedDriverId}>
+                        <Button
+                            type="submit"
+                            disabled={submitting || !selectedDriverId}
+                        >
                             {submitting ? 'Assigning...' : 'Assign Driver'}
                         </Button>
                     </div>
@@ -172,4 +208,3 @@ export default function DriverAssignmentDialog({
         </Dialog>
     );
 }
-

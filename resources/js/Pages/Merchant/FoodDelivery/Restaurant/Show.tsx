@@ -11,7 +11,11 @@ export default function RestaurantShow({ auth, restaurantId }: Props) {
         <MerchantLayout
             auth={{ user: auth.user }}
             title="Restaurant Details"
-            header={<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Restaurant #{restaurantId}</h2>}
+            header={
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    Restaurant #{restaurantId}
+                </h2>
+            }
         >
             <Head title="Restaurant Details" />
 

@@ -8,7 +8,13 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Link } from '@inertiajs/react';
-import { Edit, MoreHorizontal, Trash2, Briefcase, ExternalLink } from 'lucide-react';
+import {
+    Briefcase,
+    Edit,
+    ExternalLink,
+    MoreHorizontal,
+    Trash2,
+} from 'lucide-react';
 
 interface JobBoard {
     id: number;
@@ -30,7 +36,7 @@ interface JobBoardCardProps {
 
 export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
     return (
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="transition-shadow hover:shadow-lg">
             <CardHeader>
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -38,7 +44,7 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
                             {board.name}
                         </CardTitle>
                         {board.description && (
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            <p className="mt-1 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
                                 {board.description}
                             </p>
                         )}
@@ -59,9 +65,13 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
                             {board.slug && (
                                 <DropdownMenuItem asChild>
                                     <Link
-                                        href={board.client_identifier 
-                                            ? `${route('jobs.public.board', board.slug)}?client=${encodeURIComponent(board.client_identifier)}`
-                                            : route('jobs.public.board', board.slug)
+                                        href={
+                                            board.client_identifier
+                                                ? `${route('jobs.public.board', board.slug)}?client=${encodeURIComponent(board.client_identifier)}`
+                                                : route(
+                                                      'jobs.public.board',
+                                                      board.slug,
+                                                  )
                                         }
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -93,14 +103,24 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
                     <div className="space-y-2">
                         <div className="flex items-center space-x-4 text-sm">
                             <span className="text-gray-600 dark:text-gray-400">
-                                Total Jobs: <span className="font-semibold text-gray-900 dark:text-white">{board.jobs_count}</span>
+                                Total Jobs:{' '}
+                                <span className="font-semibold text-gray-900 dark:text-white">
+                                    {board.jobs_count}
+                                </span>
                             </span>
                             <span className="text-gray-600 dark:text-gray-400">
-                                Published: <span className="font-semibold text-gray-900 dark:text-white">{board.published_jobs_count}</span>
+                                Published:{' '}
+                                <span className="font-semibold text-gray-900 dark:text-white">
+                                    {board.published_jobs_count}
+                                </span>
                             </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <Badge variant={board.is_active ? 'default' : 'secondary'}>
+                            <Badge
+                                variant={
+                                    board.is_active ? 'default' : 'secondary'
+                                }
+                            >
                                 {board.is_active ? 'Active' : 'Inactive'}
                             </Badge>
                         </div>
@@ -113,9 +133,10 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
                         </Link>
                         {board.slug && (
                             <Link
-                                href={board.client_identifier 
-                                    ? `${route('jobs.public.board', board.slug)}?client=${encodeURIComponent(board.client_identifier)}`
-                                    : route('jobs.public.board', board.slug)
+                                href={
+                                    board.client_identifier
+                                        ? `${route('jobs.public.board', board.slug)}?client=${encodeURIComponent(board.client_identifier)}`
+                                        : route('jobs.public.board', board.slug)
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -132,4 +153,3 @@ export default function JobBoardCard({ board, onDelete }: JobBoardCardProps) {
         </Card>
     );
 }
-

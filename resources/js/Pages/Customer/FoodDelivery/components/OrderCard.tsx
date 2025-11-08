@@ -1,7 +1,7 @@
-import { FoodDeliveryOrder } from '../types';
-import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
 import { router } from '@inertiajs/react';
+import { FoodDeliveryOrder } from '../types';
 
 interface OrderCardProps {
     order: FoodDeliveryOrder;
@@ -10,33 +10,42 @@ interface OrderCardProps {
     formatStatus: (status: string) => string;
 }
 
-export default function OrderCard({ order, formatCurrency, getStatusColor, formatStatus }: OrderCardProps) {
+export default function OrderCard({
+    order,
+    formatCurrency,
+    getStatusColor,
+    formatStatus,
+}: OrderCardProps) {
     return (
         <Card
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="cursor-pointer transition-shadow hover:shadow-lg"
             onClick={() => router.visit(`/food-delivery/order/${order.id}`)}
         >
             <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
+                <div className="mb-4 flex items-start justify-between">
                     <div>
-                        <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+                        <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
                             Order #{order.order_reference}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             {order.restaurant?.name}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
                             {new Date(order.created_at).toLocaleString()}
                         </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.order_status)}`}>
+                    <span
+                        className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(order.order_status)}`}
+                    >
                         {formatStatus(order.order_status)}
                     </span>
                 </div>
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between border-t pt-4">
                     <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
-                        <p className="font-semibold text-lg text-gray-900 dark:text-white">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Total Amount
+                        </p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             {formatCurrency(order.total_amount)}
                         </p>
                     </div>
@@ -44,7 +53,9 @@ export default function OrderCard({ order, formatCurrency, getStatusColor, forma
                         variant="outline"
                         onClick={(e) => {
                             e.stopPropagation();
-                            router.visit(`/food-delivery/track/${order.order_reference}`);
+                            router.visit(
+                                `/food-delivery/track/${order.order_reference}`,
+                            );
                         }}
                     >
                         Track Order
@@ -54,4 +65,3 @@ export default function OrderCard({ order, formatCurrency, getStatusColor, forma
         </Card>
     );
 }
-

@@ -221,403 +221,385 @@ export default function Settings({ settings, auth }: Props) {
                     <CardContent className="p-0">
                         {canEdit ? (
                             <SettingsForm
-                                settings={mergedSettings as unknown as Record<string, unknown>}
+                                settings={
+                                    mergedSettings as unknown as Record<
+                                        string,
+                                        unknown
+                                    >
+                                }
                                 onSubmit={handleSubmit}
                             >
                                 {({ data, setData }) => {
-                                    const general = (data.general as { clinic_name?: string; description?: string; address?: string; phone?: string; email?: string; operating_hours?: Record<string, OperatingHours> }) || {};
-                                    const appointments = (data.appointments as { enable_appointments?: boolean; appointment_duration?: number; appointment_buffer?: number; enable_reminders?: boolean; reminder_hours?: number; enable_online_booking?: boolean }) || {};
-                                    const features = (data.features as { enable_insurance?: boolean; insurance_providers?: string[]; enable_prescriptions?: boolean; enable_lab_results?: boolean; enable_dental_charts?: boolean; enable_medical_history?: boolean; enable_patient_portal?: boolean }) || {};
-                                    const billing = (data.billing as { enable_billing?: boolean; tax_rate?: number; currency?: string; payment_methods?: string[]; invoice_prefix?: string; invoice_footer?: string }) || {};
+                                    const general =
+                                        (data.general as {
+                                            clinic_name?: string;
+                                            description?: string;
+                                            address?: string;
+                                            phone?: string;
+                                            email?: string;
+                                            operating_hours?: Record<
+                                                string,
+                                                OperatingHours
+                                            >;
+                                        }) || {};
+                                    const appointments =
+                                        (data.appointments as {
+                                            enable_appointments?: boolean;
+                                            appointment_duration?: number;
+                                            appointment_buffer?: number;
+                                            enable_reminders?: boolean;
+                                            reminder_hours?: number;
+                                            enable_online_booking?: boolean;
+                                        }) || {};
+                                    const features =
+                                        (data.features as {
+                                            enable_insurance?: boolean;
+                                            insurance_providers?: string[];
+                                            enable_prescriptions?: boolean;
+                                            enable_lab_results?: boolean;
+                                            enable_dental_charts?: boolean;
+                                            enable_medical_history?: boolean;
+                                            enable_patient_portal?: boolean;
+                                        }) || {};
+                                    const billing =
+                                        (data.billing as {
+                                            enable_billing?: boolean;
+                                            tax_rate?: number;
+                                            currency?: string;
+                                            payment_methods?: string[];
+                                            invoice_prefix?: string;
+                                            invoice_footer?: string;
+                                        }) || {};
                                     return (
-                                    <Tabs
-                                        defaultValue="general"
-                                        className="space-y-6"
-                                    >
-                                        <div className="border-b border-gray-200 dark:border-gray-700">
-                                            <TabsList className="grid h-auto w-full grid-cols-4 rounded-none border-0 bg-transparent p-0">
-                                                <TabsTrigger
-                                                    value="general"
-                                                    className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <SettingsIcon className="h-4 w-4" />
-                                                        <span className="hidden sm:inline">
-                                                            General
-                                                        </span>
-                                                    </div>
-                                                </TabsTrigger>
-                                                <TabsTrigger
-                                                    value="appointments"
-                                                    className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <Calendar className="h-4 w-4" />
-                                                        <span className="hidden sm:inline">
-                                                            Appointments
-                                                        </span>
-                                                    </div>
-                                                </TabsTrigger>
-                                                <TabsTrigger
-                                                    value="features"
-                                                    className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <Zap className="h-4 w-4" />
-                                                        <span className="hidden sm:inline">
-                                                            Features
-                                                        </span>
-                                                    </div>
-                                                </TabsTrigger>
-                                                <TabsTrigger
-                                                    value="billing"
-                                                    className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <CreditCard className="h-4 w-4" />
-                                                        <span className="hidden sm:inline">
-                                                            Billing
-                                                        </span>
-                                                    </div>
-                                                </TabsTrigger>
-                                            </TabsList>
-                                        </div>
-
-                                        <TabsContent value="general">
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label className="text-gray-900 dark:text-white">
-                                                        Clinic Name
-                                                    </Label>
-                                                    <Input
-                                                        value={
-                                                            general.clinic_name ?? ''
-                                                        }
-                                                        onChange={(e) =>
-                                                            setData(
-                                                                'general.clinic_name',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Your Clinic Name"
-                                                        className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label className="text-gray-900 dark:text-white">
-                                                        Description
-                                                    </Label>
-                                                    <Textarea
-                                                        value={
-                                                            general.description ?? ''
-                                                        }
-                                                        onChange={(e) =>
-                                                            setData(
-                                                                'general.description',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Brief description of your clinic"
-                                                        rows={3}
-                                                        className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label className="text-gray-900 dark:text-white">
-                                                        Address
-                                                    </Label>
-                                                    <Textarea
-                                                        value={
-                                                            general.address ?? ''
-                                                        }
-                                                        onChange={(e) =>
-                                                            setData(
-                                                                'general.address',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        placeholder="Clinic address"
-                                                        rows={2}
-                                                        className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Phone
-                                                        </Label>
-                                                        <Input
-                                                            value={
-                                                                general.phone ?? ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'general.phone',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="+1234567890"
-                                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Email
-                                                        </Label>
-                                                        <Input
-                                                            type="email"
-                                                            value={
-                                                                general.email ?? ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'general.email',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="clinic@example.com"
-                                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                                        Operating Hours
-                                                    </h3>
-                                                    <div className="space-y-4">
-                                                        {weekDays.map((day) => (
-                                                            <div
-                                                                key={day}
-                                                                className="flex items-center gap-4"
-                                                            >
-                                                                <div className="w-24 font-medium capitalize text-gray-900 dark:text-white">
-                                                                    {day}
-                                                                </div>
-                                                                <div className="flex items-center gap-4">
-                                                                    <Switch
-                                                                        checked={
-                                                                            !((general.operating_hours?.[day] as OperatingHours)?.closed ?? true)
-                                                                        }
-                                                                        onCheckedChange={(
-                                                                            checked,
-                                                                        ) =>
-                                                                            setData(
-                                                                                `general.operating_hours.${day}.closed`,
-                                                                                !checked,
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                    {!((general.operating_hours?.[day] as OperatingHours)?.closed ?? true) && (
-                                                                        <>
-                                                                            <Input
-                                                                                type="time"
-                                                                                value={
-                                                                                    ((general.operating_hours?.[day] as OperatingHours)?.open ?? '09:00')
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) =>
-                                                                                    setData(
-                                                                                        `general.operating_hours.${day}.open`,
-                                                                                        e
-                                                                                            .target
-                                                                                            .value,
-                                                                                    )
-                                                                                }
-                                                                                className="w-32 border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                                            />
-                                                                            <span className="text-gray-700 dark:text-gray-300">
-                                                                                to
-                                                                            </span>
-                                                                            <Input
-                                                                                type="time"
-                                                                                value={
-                                                                                    ((general.operating_hours?.[day] as OperatingHours)?.close ?? '17:00')
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) =>
-                                                                                    setData(
-                                                                                        `general.operating_hours.${day}.close`,
-                                                                                        e
-                                                                                            .target
-                                                                                            .value,
-                                                                                    )
-                                                                                }
-                                                                                className="w-32 border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                                            />
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </TabsContent>
-
-                                        <TabsContent value="appointments">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Enable Appointments
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Allow patients to
-                                                            book appointments
+                                        <Tabs
+                                            defaultValue="general"
+                                            className="space-y-6"
+                                        >
+                                            <div className="border-b border-gray-200 dark:border-gray-700">
+                                                <TabsList className="grid h-auto w-full grid-cols-4 rounded-none border-0 bg-transparent p-0">
+                                                    <TabsTrigger
+                                                        value="general"
+                                                        className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <SettingsIcon className="h-4 w-4" />
+                                                            <span className="hidden sm:inline">
+                                                                General
+                                                            </span>
                                                         </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            appointments.enable_appointments ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'appointments.enable_appointments',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-
-                                                {appointments.enable_appointments && (
-                                                    <>
-                                                        <div className="space-y-2">
-                                                            <Label className="text-gray-900 dark:text-white">
-                                                                Default
-                                                                Appointment
-                                                                Duration
-                                                                (minutes)
-                                                            </Label>
-                                                            <Input
-                                                                type="number"
-                                                                value={
-                                                                    appointments.appointment_duration ?? 0
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        'appointments.appointment_duration',
-                                                                        parseInt(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        ),
-                                                                    )
-                                                                }
-                                                                min={5}
-                                                                step={5}
-                                                                className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                            />
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label className="text-gray-900 dark:text-white">
-                                                                Buffer Between
+                                                    </TabsTrigger>
+                                                    <TabsTrigger
+                                                        value="appointments"
+                                                        className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4" />
+                                                            <span className="hidden sm:inline">
                                                                 Appointments
-                                                                (minutes)
+                                                            </span>
+                                                        </div>
+                                                    </TabsTrigger>
+                                                    <TabsTrigger
+                                                        value="features"
+                                                        className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <Zap className="h-4 w-4" />
+                                                            <span className="hidden sm:inline">
+                                                                Features
+                                                            </span>
+                                                        </div>
+                                                    </TabsTrigger>
+                                                    <TabsTrigger
+                                                        value="billing"
+                                                        className="relative rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:text-gray-900 data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white dark:data-[state=active]:text-blue-400"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <CreditCard className="h-4 w-4" />
+                                                            <span className="hidden sm:inline">
+                                                                Billing
+                                                            </span>
+                                                        </div>
+                                                    </TabsTrigger>
+                                                </TabsList>
+                                            </div>
+
+                                            <TabsContent value="general">
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-gray-900 dark:text-white">
+                                                            Clinic Name
+                                                        </Label>
+                                                        <Input
+                                                            value={
+                                                                general.clinic_name ??
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    'general.clinic_name',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Your Clinic Name"
+                                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label className="text-gray-900 dark:text-white">
+                                                            Description
+                                                        </Label>
+                                                        <Textarea
+                                                            value={
+                                                                general.description ??
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    'general.description',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Brief description of your clinic"
+                                                            rows={3}
+                                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label className="text-gray-900 dark:text-white">
+                                                            Address
+                                                        </Label>
+                                                        <Textarea
+                                                            value={
+                                                                general.address ??
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    'general.address',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Clinic address"
+                                                            rows={2}
+                                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Phone
                                                             </Label>
                                                             <Input
-                                                                type="number"
                                                                 value={
-                                                                    appointments.appointment_buffer ?? 0
+                                                                    general.phone ??
+                                                                    ''
                                                                 }
                                                                 onChange={(e) =>
                                                                     setData(
-                                                                        'appointments.appointment_buffer',
-                                                                        parseInt(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        ),
+                                                                        'general.phone',
+                                                                        e.target
+                                                                            .value,
                                                                     )
                                                                 }
-                                                                min={0}
-                                                                step={5}
+                                                                placeholder="+1234567890"
                                                                 className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                                             />
                                                         </div>
 
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="space-y-0.5">
-                                                                <Label className="text-gray-900 dark:text-white">
-                                                                    Enable
-                                                                    Online
-                                                                    Booking
-                                                                </Label>
-                                                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Allow
-                                                                    patients to
-                                                                    book online
-                                                                </div>
-                                                            </div>
-                                                            <Switch
-                                                                checked={
-                                                                    appointments.enable_online_booking ?? false
+                                                        <div className="space-y-2">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Email
+                                                            </Label>
+                                                            <Input
+                                                                type="email"
+                                                                value={
+                                                                    general.email ??
+                                                                    ''
                                                                 }
-                                                                onCheckedChange={(
-                                                                    checked,
-                                                                ) =>
+                                                                onChange={(e) =>
                                                                     setData(
-                                                                        'appointments.enable_online_booking',
-                                                                        checked,
+                                                                        'general.email',
+                                                                        e.target
+                                                                            .value,
                                                                     )
                                                                 }
+                                                                placeholder="clinic@example.com"
+                                                                className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                                             />
                                                         </div>
+                                                    </div>
 
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="space-y-0.5">
-                                                                <Label className="text-gray-900 dark:text-white">
-                                                                    Enable
-                                                                    Reminders
-                                                                </Label>
-                                                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Send
-                                                                    appointment
-                                                                    reminders
-                                                                </div>
+                                                    <div className="space-y-4">
+                                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                                            Operating Hours
+                                                        </h3>
+                                                        <div className="space-y-4">
+                                                            {weekDays.map(
+                                                                (day) => (
+                                                                    <div
+                                                                        key={
+                                                                            day
+                                                                        }
+                                                                        className="flex items-center gap-4"
+                                                                    >
+                                                                        <div className="w-24 font-medium capitalize text-gray-900 dark:text-white">
+                                                                            {
+                                                                                day
+                                                                            }
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <Switch
+                                                                                checked={
+                                                                                    !(
+                                                                                        (
+                                                                                            general
+                                                                                                .operating_hours?.[
+                                                                                                day
+                                                                                            ] as OperatingHours
+                                                                                        )
+                                                                                            ?.closed ??
+                                                                                        true
+                                                                                    )
+                                                                                }
+                                                                                onCheckedChange={(
+                                                                                    checked,
+                                                                                ) =>
+                                                                                    setData(
+                                                                                        `general.operating_hours.${day}.closed`,
+                                                                                        !checked,
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                            {!(
+                                                                                (
+                                                                                    general
+                                                                                        .operating_hours?.[
+                                                                                        day
+                                                                                    ] as OperatingHours
+                                                                                )
+                                                                                    ?.closed ??
+                                                                                true
+                                                                            ) && (
+                                                                                <>
+                                                                                    <Input
+                                                                                        type="time"
+                                                                                        value={
+                                                                                            (
+                                                                                                general
+                                                                                                    .operating_hours?.[
+                                                                                                    day
+                                                                                                ] as OperatingHours
+                                                                                            )
+                                                                                                ?.open ??
+                                                                                            '09:00'
+                                                                                        }
+                                                                                        onChange={(
+                                                                                            e,
+                                                                                        ) =>
+                                                                                            setData(
+                                                                                                `general.operating_hours.${day}.open`,
+                                                                                                e
+                                                                                                    .target
+                                                                                                    .value,
+                                                                                            )
+                                                                                        }
+                                                                                        className="w-32 border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                                    />
+                                                                                    <span className="text-gray-700 dark:text-gray-300">
+                                                                                        to
+                                                                                    </span>
+                                                                                    <Input
+                                                                                        type="time"
+                                                                                        value={
+                                                                                            (
+                                                                                                general
+                                                                                                    .operating_hours?.[
+                                                                                                    day
+                                                                                                ] as OperatingHours
+                                                                                            )
+                                                                                                ?.close ??
+                                                                                            '17:00'
+                                                                                        }
+                                                                                        onChange={(
+                                                                                            e,
+                                                                                        ) =>
+                                                                                            setData(
+                                                                                                `general.operating_hours.${day}.close`,
+                                                                                                e
+                                                                                                    .target
+                                                                                                    .value,
+                                                                                            )
+                                                                                        }
+                                                                                        className="w-32 border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                                    />
+                                                                                </>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </TabsContent>
+
+                                            <TabsContent value="appointments">
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Enable
+                                                                Appointments
+                                                            </Label>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Allow patients
+                                                                to book
+                                                                appointments
                                                             </div>
-                                                            <Switch
-                                                                checked={
-                                                                    appointments.enable_reminders ?? false
-                                                                }
-                                                                onCheckedChange={(
-                                                                    checked,
-                                                                ) =>
-                                                                    setData(
-                                                                        'appointments.enable_reminders',
-                                                                        checked,
-                                                                    )
-                                                                }
-                                                            />
                                                         </div>
+                                                        <Switch
+                                                            checked={
+                                                                appointments.enable_appointments ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'appointments.enable_appointments',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
 
-                                                        {appointments.enable_reminders && (
+                                                    {appointments.enable_appointments && (
+                                                        <>
                                                             <div className="space-y-2">
                                                                 <Label className="text-gray-900 dark:text-white">
-                                                                    Reminder
-                                                                    Hours Before
+                                                                    Default
+                                                                    Appointment
+                                                                    Duration
+                                                                    (minutes)
                                                                 </Label>
                                                                 <Input
                                                                     type="number"
                                                                     value={
-                                                                        appointments.reminder_hours ?? 0
+                                                                        appointments.appointment_duration ??
+                                                                        0
                                                                     }
                                                                     onChange={(
                                                                         e,
                                                                     ) =>
                                                                         setData(
-                                                                            'appointments.reminder_hours',
+                                                                            'appointments.appointment_duration',
                                                                             parseInt(
                                                                                 e
                                                                                     .target
@@ -625,358 +607,512 @@ export default function Settings({ settings, auth }: Props) {
                                                                             ),
                                                                         )
                                                                     }
-                                                                    min={1}
+                                                                    min={5}
+                                                                    step={5}
                                                                     className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                                                 />
                                                             </div>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </TabsContent>
 
-                                        <TabsContent value="features">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Insurance
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable insurance
-                                                            processing
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            features.enable_insurance ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'features.enable_insurance',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
+                                                            <div className="space-y-2">
+                                                                <Label className="text-gray-900 dark:text-white">
+                                                                    Buffer
+                                                                    Between
+                                                                    Appointments
+                                                                    (minutes)
+                                                                </Label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={
+                                                                        appointments.appointment_buffer ??
+                                                                        0
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'appointments.appointment_buffer',
+                                                                            parseInt(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                    min={0}
+                                                                    step={5}
+                                                                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                />
+                                                            </div>
 
-                                                {features.enable_insurance && (
-                                                    <div className="space-y-2">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Insurance Providers
-                                                        </Label>
-                                                        <Textarea
-                                                            value={(features.insurance_providers || []).join(
-                                                                '\n',
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="space-y-0.5">
+                                                                    <Label className="text-gray-900 dark:text-white">
+                                                                        Enable
+                                                                        Online
+                                                                        Booking
+                                                                    </Label>
+                                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                        Allow
+                                                                        patients
+                                                                        to book
+                                                                        online
+                                                                    </div>
+                                                                </div>
+                                                                <Switch
+                                                                    checked={
+                                                                        appointments.enable_online_booking ??
+                                                                        false
+                                                                    }
+                                                                    onCheckedChange={(
+                                                                        checked,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'appointments.enable_online_booking',
+                                                                            checked,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="space-y-0.5">
+                                                                    <Label className="text-gray-900 dark:text-white">
+                                                                        Enable
+                                                                        Reminders
+                                                                    </Label>
+                                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                        Send
+                                                                        appointment
+                                                                        reminders
+                                                                    </div>
+                                                                </div>
+                                                                <Switch
+                                                                    checked={
+                                                                        appointments.enable_reminders ??
+                                                                        false
+                                                                    }
+                                                                    onCheckedChange={(
+                                                                        checked,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'appointments.enable_reminders',
+                                                                            checked,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+
+                                                            {appointments.enable_reminders && (
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-gray-900 dark:text-white">
+                                                                        Reminder
+                                                                        Hours
+                                                                        Before
+                                                                    </Label>
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={
+                                                                            appointments.reminder_hours ??
+                                                                            0
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            setData(
+                                                                                'appointments.reminder_hours',
+                                                                                parseInt(
+                                                                                    e
+                                                                                        .target
+                                                                                        .value,
+                                                                                ),
+                                                                            )
+                                                                        }
+                                                                        min={1}
+                                                                        className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                    />
+                                                                </div>
                                                             )}
-                                                            onChange={(e) =>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </TabsContent>
+
+                                            <TabsContent value="features">
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Insurance
+                                                            </Label>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable insurance
+                                                                processing
+                                                            </div>
+                                                        </div>
+                                                        <Switch
+                                                            checked={
+                                                                features.enable_insurance ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
                                                                 setData(
-                                                                    'features.insurance_providers',
-                                                                    e.target.value.split(
-                                                                        '\n',
-                                                                    ),
+                                                                    'features.enable_insurance',
+                                                                    checked,
                                                                 )
                                                             }
-                                                            placeholder="One provider per line"
-                                                            rows={3}
-                                                            className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                                         />
                                                     </div>
-                                                )}
 
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Prescriptions
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable prescription
-                                                            management
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            features.enable_prescriptions ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'features.enable_prescriptions',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Lab Results
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable lab results
-                                                            management
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            features.enable_lab_results ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'features.enable_lab_results',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Dental Charts
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable dental
-                                                            charting
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            features.enable_dental_charts ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'features.enable_dental_charts',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Medical History
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable medical
-                                                            history tracking
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            features.enable_medical_history ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'features.enable_medical_history',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Patient Portal
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable patient
-                                                            portal access
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            features.enable_patient_portal ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'features.enable_patient_portal',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </TabsContent>
-
-                                        <TabsContent value="billing">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label className="text-gray-900 dark:text-white">
-                                                            Enable Billing
-                                                        </Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Enable billing and
-                                                            invoicing
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={
-                                                            billing.enable_billing ?? false
-                                                        }
-                                                        onCheckedChange={(
-                                                            checked,
-                                                        ) =>
-                                                            setData(
-                                                                'billing.enable_billing',
-                                                                checked,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-
-                                                {billing.enable_billing && (
-                                                    <>
+                                                    {features.enable_insurance && (
                                                         <div className="space-y-2">
                                                             <Label className="text-gray-900 dark:text-white">
-                                                                Tax Rate (%)
-                                                            </Label>
-                                                            <Input
-                                                                type="number"
-                                                                value={
-                                                                    billing.tax_rate ?? 0
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        'billing.tax_rate',
-                                                                        parseFloat(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        ),
-                                                                    )
-                                                                }
-                                                                min={0}
-                                                                step={0.1}
-                                                                className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                            />
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label className="text-gray-900 dark:text-white">
-                                                                Currency
-                                                            </Label>
-                                                            <Select
-                                                                value={
-                                                                    String(billing.currency ?? '')
-                                                                }
-                                                                onValueChange={(
-                                                                    value,
-                                                                ) =>
-                                                                    setData(
-                                                                        'billing.currency',
-                                                                        value,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <SelectTrigger className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                                                    <SelectValue placeholder="Select currency" />
-                                                                </SelectTrigger>
-                                                                <SelectContent className="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
-                                                                    <SelectItem
-                                                                        value="USD"
-                                                                        className="text-gray-900 dark:text-white"
-                                                                    >
-                                                                        USD ($)
-                                                                    </SelectItem>
-                                                                    <SelectItem
-                                                                        value="EUR"
-                                                                        className="text-gray-900 dark:text-white"
-                                                                    >
-                                                                        EUR (€)
-                                                                    </SelectItem>
-                                                                    <SelectItem
-                                                                        value="GBP"
-                                                                        className="text-gray-900 dark:text-white"
-                                                                    >
-                                                                        GBP (£)
-                                                                    </SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label className="text-gray-900 dark:text-white">
-                                                                Payment Methods
+                                                                Insurance
+                                                                Providers
                                                             </Label>
                                                             <Textarea
-                                                                value={(billing.payment_methods || []).join(
-                                                                    '\n',
-                                                                )}
+                                                                value={(
+                                                                    features.insurance_providers ||
+                                                                    []
+                                                                ).join('\n')}
                                                                 onChange={(e) =>
                                                                     setData(
-                                                                        'billing.payment_methods',
+                                                                        'features.insurance_providers',
                                                                         e.target.value.split(
                                                                             '\n',
                                                                         ),
                                                                     )
                                                                 }
-                                                                placeholder="One payment method per line"
+                                                                placeholder="One provider per line"
                                                                 rows={3}
                                                                 className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                                             />
                                                         </div>
+                                                    )}
 
-                                                        <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
                                                             <Label className="text-gray-900 dark:text-white">
-                                                                Invoice Prefix
+                                                                Prescriptions
                                                             </Label>
-                                                            <Input
-                                                                value={
-                                                                    billing.invoice_prefix ?? ''
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        'billing.invoice_prefix',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                placeholder="INV-"
-                                                                className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                            />
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable
+                                                                prescription
+                                                                management
+                                                            </div>
                                                         </div>
+                                                        <Switch
+                                                            checked={
+                                                                features.enable_prescriptions ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'features.enable_prescriptions',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
 
-                                                        <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
                                                             <Label className="text-gray-900 dark:text-white">
-                                                                Invoice Footer
+                                                                Lab Results
                                                             </Label>
-                                                            <Textarea
-                                                                value={
-                                                                    billing.invoice_footer ?? ''
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        'billing.invoice_footer',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                placeholder="Thank you for your business"
-                                                                rows={3}
-                                                                className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                                            />
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable lab
+                                                                results
+                                                                management
+                                                            </div>
                                                         </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </TabsContent>
-                                    </Tabs>
+                                                        <Switch
+                                                            checked={
+                                                                features.enable_lab_results ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'features.enable_lab_results',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Dental Charts
+                                                            </Label>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable dental
+                                                                charting
+                                                            </div>
+                                                        </div>
+                                                        <Switch
+                                                            checked={
+                                                                features.enable_dental_charts ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'features.enable_dental_charts',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Medical History
+                                                            </Label>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable medical
+                                                                history tracking
+                                                            </div>
+                                                        </div>
+                                                        <Switch
+                                                            checked={
+                                                                features.enable_medical_history ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'features.enable_medical_history',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Patient Portal
+                                                            </Label>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable patient
+                                                                portal access
+                                                            </div>
+                                                        </div>
+                                                        <Switch
+                                                            checked={
+                                                                features.enable_patient_portal ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'features.enable_patient_portal',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </TabsContent>
+
+                                            <TabsContent value="billing">
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-0.5">
+                                                            <Label className="text-gray-900 dark:text-white">
+                                                                Enable Billing
+                                                            </Label>
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Enable billing
+                                                                and invoicing
+                                                            </div>
+                                                        </div>
+                                                        <Switch
+                                                            checked={
+                                                                billing.enable_billing ??
+                                                                false
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked,
+                                                            ) =>
+                                                                setData(
+                                                                    'billing.enable_billing',
+                                                                    checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    {billing.enable_billing && (
+                                                        <>
+                                                            <div className="space-y-2">
+                                                                <Label className="text-gray-900 dark:text-white">
+                                                                    Tax Rate (%)
+                                                                </Label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={
+                                                                        billing.tax_rate ??
+                                                                        0
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'billing.tax_rate',
+                                                                            parseFloat(
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                    min={0}
+                                                                    step={0.1}
+                                                                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                />
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label className="text-gray-900 dark:text-white">
+                                                                    Currency
+                                                                </Label>
+                                                                <Select
+                                                                    value={String(
+                                                                        billing.currency ??
+                                                                            '',
+                                                                    )}
+                                                                    onValueChange={(
+                                                                        value,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'billing.currency',
+                                                                            value,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <SelectTrigger className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                                                        <SelectValue placeholder="Select currency" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent className="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                                                        <SelectItem
+                                                                            value="USD"
+                                                                            className="text-gray-900 dark:text-white"
+                                                                        >
+                                                                            USD
+                                                                            ($)
+                                                                        </SelectItem>
+                                                                        <SelectItem
+                                                                            value="EUR"
+                                                                            className="text-gray-900 dark:text-white"
+                                                                        >
+                                                                            EUR
+                                                                            (€)
+                                                                        </SelectItem>
+                                                                        <SelectItem
+                                                                            value="GBP"
+                                                                            className="text-gray-900 dark:text-white"
+                                                                        >
+                                                                            GBP
+                                                                            (£)
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label className="text-gray-900 dark:text-white">
+                                                                    Payment
+                                                                    Methods
+                                                                </Label>
+                                                                <Textarea
+                                                                    value={(
+                                                                        billing.payment_methods ||
+                                                                        []
+                                                                    ).join(
+                                                                        '\n',
+                                                                    )}
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'billing.payment_methods',
+                                                                            e.target.value.split(
+                                                                                '\n',
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                    placeholder="One payment method per line"
+                                                                    rows={3}
+                                                                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                />
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label className="text-gray-900 dark:text-white">
+                                                                    Invoice
+                                                                    Prefix
+                                                                </Label>
+                                                                <Input
+                                                                    value={
+                                                                        billing.invoice_prefix ??
+                                                                        ''
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'billing.invoice_prefix',
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    placeholder="INV-"
+                                                                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                />
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label className="text-gray-900 dark:text-white">
+                                                                    Invoice
+                                                                    Footer
+                                                                </Label>
+                                                                <Textarea
+                                                                    value={
+                                                                        billing.invoice_footer ??
+                                                                        ''
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'billing.invoice_footer',
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    placeholder="Thank you for your business"
+                                                                    rows={3}
+                                                                    className="border-gray-200 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                                />
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
                                     );
                                 }}
                             </SettingsForm>

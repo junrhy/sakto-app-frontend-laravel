@@ -1,18 +1,47 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { UtensilsIcon, PlusIcon, EditIcon, TrashIcon, SearchIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
-import { FoodDeliveryMenuItem, FoodDeliveryMenuCategory, FoodDeliveryRestaurant, MenuItemFormData } from '../types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import {
+    EditIcon,
+    PlusIcon,
+    SearchIcon,
+    TrashIcon,
+    UtensilsIcon,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import {
+    FoodDeliveryMenuCategory,
+    FoodDeliveryMenuItem,
+    FoodDeliveryRestaurant,
+    MenuItemFormData,
+} from '../types';
 
 interface Props extends PageProps {
     menuItems?: FoodDeliveryMenuItem[];
@@ -20,16 +49,29 @@ interface Props extends PageProps {
     restaurants?: FoodDeliveryRestaurant[];
 }
 
-export default function AdminMenu({ auth, menuItems: initialMenuItems, categories: initialCategories, restaurants: initialRestaurants }: Props) {
-    const [menuItems, setMenuItems] = useState<FoodDeliveryMenuItem[]>(initialMenuItems || []);
-    const [categories, setCategories] = useState<FoodDeliveryMenuCategory[]>(initialCategories || []);
-    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(initialRestaurants || []);
+export default function AdminMenu({
+    auth,
+    menuItems: initialMenuItems,
+    categories: initialCategories,
+    restaurants: initialRestaurants,
+}: Props) {
+    const [menuItems, setMenuItems] = useState<FoodDeliveryMenuItem[]>(
+        initialMenuItems || [],
+    );
+    const [categories, setCategories] = useState<FoodDeliveryMenuCategory[]>(
+        initialCategories || [],
+    );
+    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(
+        initialRestaurants || [],
+    );
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [restaurantFilter, setRestaurantFilter] = useState<string>('all');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<FoodDeliveryMenuItem | null>(null);
+    const [editingItem, setEditingItem] = useState<FoodDeliveryMenuItem | null>(
+        null,
+    );
     const [formData, setFormData] = useState<MenuItemFormData>({
         restaurant_id: '',
         category_id: '',
@@ -46,7 +88,8 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
 
     // Category management state
     const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<FoodDeliveryMenuCategory | null>(null);
+    const [editingCategory, setEditingCategory] =
+        useState<FoodDeliveryMenuCategory | null>(null);
     const [categoryFormData, setCategoryFormData] = useState({
         name: '',
         description: '',
@@ -126,11 +169,14 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
 
     const fetchRestaurants = async () => {
         try {
-            const response = await axios.get('/food-delivery/restaurants/list', {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
+            const response = await axios.get(
+                '/food-delivery/restaurants/list',
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                    },
                 },
-            });
+            );
             if (response.data.success) {
                 setRestaurants(response.data.data || []);
             }
@@ -146,12 +192,17 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                 ...formData,
                 client_identifier: (auth.user as any)?.identifier,
                 price: parseFloat(formData.price),
-                discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
+                discount_price: formData.discount_price
+                    ? parseFloat(formData.discount_price)
+                    : null,
                 preparation_time: parseInt(formData.preparation_time),
             };
 
             if (editingItem) {
-                const response = await axios.put(`/food-delivery/menu/items/${editingItem.id}`, data);
+                const response = await axios.put(
+                    `/food-delivery/menu/items/${editingItem.id}`,
+                    data,
+                );
                 if (response.data.success) {
                     toast.success('Menu item updated successfully');
                     setDialogOpen(false);
@@ -159,7 +210,10 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                     fetchMenuItems();
                 }
             } else {
-                const response = await axios.post('/food-delivery/menu/items', data);
+                const response = await axios.post(
+                    '/food-delivery/menu/items',
+                    data,
+                );
                 if (response.data.success) {
                     toast.success('Menu item created successfully');
                     setDialogOpen(false);
@@ -167,7 +221,9 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                 }
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to save menu item');
+            toast.error(
+                error.response?.data?.message || 'Failed to save menu item',
+            );
         }
     };
 
@@ -175,11 +231,14 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
         if (!confirm('Are you sure you want to delete this menu item?')) return;
 
         try {
-            const response = await axios.delete(`/food-delivery/menu/items/${itemId}`, {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
+            const response = await axios.delete(
+                `/food-delivery/menu/items/${itemId}`,
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                    },
                 },
-            });
+            );
             if (response.data.success) {
                 toast.success('Menu item deleted successfully');
                 fetchMenuItems();
@@ -216,7 +275,10 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
             };
 
             if (editingCategory) {
-                const response = await axios.put(`/food-delivery/menu/categories/${editingCategory.id}`, data);
+                const response = await axios.put(
+                    `/food-delivery/menu/categories/${editingCategory.id}`,
+                    data,
+                );
                 if (response.data.success) {
                     toast.success('Category updated successfully');
                     setCategoryDialogOpen(false);
@@ -224,7 +286,10 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                     fetchCategories();
                 }
             } else {
-                const response = await axios.post('/food-delivery/menu/categories', data);
+                const response = await axios.post(
+                    '/food-delivery/menu/categories',
+                    data,
+                );
                 if (response.data.success) {
                     toast.success('Category created successfully');
                     setCategoryDialogOpen(false);
@@ -232,7 +297,9 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                 }
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to save category');
+            toast.error(
+                error.response?.data?.message || 'Failed to save category',
+            );
         }
     };
 
@@ -240,11 +307,14 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
         if (!confirm('Are you sure you want to delete this category?')) return;
 
         try {
-            const response = await axios.delete(`/food-delivery/menu/categories/${categoryId}`, {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
+            const response = await axios.delete(
+                `/food-delivery/menu/categories/${categoryId}`,
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                    },
                 },
-            });
+            );
             if (response.data.success) {
                 toast.success('Category deleted successfully');
                 fetchCategories();
@@ -255,7 +325,11 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
     };
 
     const formatCurrency = (amount: number) => {
-        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        let currency: {
+            symbol: string;
+            thousands_separator?: string;
+            decimal_separator?: string;
+        };
         const appCurrency = (auth.user as any)?.app_currency;
         if (appCurrency) {
             if (typeof appCurrency === 'string') {
@@ -264,15 +338,24 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                 currency = appCurrency;
             }
         } else {
-            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+            currency = {
+                symbol: '₱',
+                thousands_separator: ',',
+                decimal_separator: '.',
+            };
         }
         return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     const filteredItems = menuItems.filter((item) => {
-        const matchesSearch = !search || item.name.toLowerCase().includes(search.toLowerCase());
-        const matchesRestaurant = restaurantFilter === 'all' || item.restaurant_id.toString() === restaurantFilter;
-        const matchesCategory = categoryFilter === 'all' || item.category_id?.toString() === categoryFilter;
+        const matchesSearch =
+            !search || item.name.toLowerCase().includes(search.toLowerCase());
+        const matchesRestaurant =
+            restaurantFilter === 'all' ||
+            item.restaurant_id.toString() === restaurantFilter;
+        const matchesCategory =
+            categoryFilter === 'all' ||
+            item.category_id?.toString() === categoryFilter;
         return matchesSearch && matchesRestaurant && matchesCategory;
     });
 
@@ -293,11 +376,13 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                             </p>
                         </div>
                     </div>
-                    <Button onClick={() => {
-                        setEditingItem(null);
-                        setDialogOpen(true);
-                    }}>
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                    <Button
+                        onClick={() => {
+                            setEditingItem(null);
+                            setDialogOpen(true);
+                        }}
+                    >
+                        <PlusIcon className="mr-2 h-4 w-4" />
                         Add Menu Item
                     </Button>
                 </div>
@@ -311,11 +396,13 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <CardTitle>Menu Categories</CardTitle>
-                            <Button onClick={() => {
-                                setEditingCategory(null);
-                                setCategoryDialogOpen(true);
-                            }}>
-                                <PlusIcon className="h-4 w-4 mr-2" />
+                            <Button
+                                onClick={() => {
+                                    setEditingCategory(null);
+                                    setCategoryDialogOpen(true);
+                                }}
+                            >
+                                <PlusIcon className="mr-2 h-4 w-4" />
                                 Add Category
                             </Button>
                         </div>
@@ -324,37 +411,65 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                    <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Description</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Display Order</TableHead>
-                                    <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Name
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Description
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Display Order
+                                    </TableHead>
+                                    <TableHead className="text-right text-gray-900 dark:text-white">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {categories.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center text-gray-500 dark:text-gray-400 py-8">
-                                            No categories found. Create one to get started.
+                                        <TableCell
+                                            colSpan={4}
+                                            className="py-8 text-center text-gray-500 dark:text-gray-400"
+                                        >
+                                            No categories found. Create one to
+                                            get started.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     categories
-                                        .sort((a, b) => a.display_order - b.display_order)
+                                        .sort(
+                                            (a, b) =>
+                                                a.display_order -
+                                                b.display_order,
+                                        )
                                         .map((category) => (
-                                            <TableRow key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <TableCell className="text-gray-900 dark:text-white">{category.name}</TableCell>
+                                            <TableRow
+                                                key={category.id}
+                                                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                            >
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {category.description || '—'}
+                                                    {category.name}
                                                 </TableCell>
-                                                <TableCell className="text-gray-900 dark:text-white">{category.display_order}</TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">
+                                                    {category.description ||
+                                                        '—'}
+                                                </TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">
+                                                    {category.display_order}
+                                                </TableCell>
                                                 <TableCell className="text-right text-gray-900 dark:text-white">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => {
-                                                                setEditingCategory(category);
-                                                                setCategoryDialogOpen(true);
+                                                                setEditingCategory(
+                                                                    category,
+                                                                );
+                                                                setCategoryDialogOpen(
+                                                                    true,
+                                                                );
                                                             }}
                                                         >
                                                             <EditIcon className="h-4 w-4" />
@@ -362,7 +477,11 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() => handleCategoryDelete(category.id)}
+                                                            onClick={() =>
+                                                                handleCategoryDelete(
+                                                                    category.id,
+                                                                )
+                                                            }
                                                         >
                                                             <TrashIcon className="h-4 w-4" />
                                                         </Button>
@@ -379,7 +498,7 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                 {/* Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="relative">
                                 <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 <Input
@@ -389,27 +508,43 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                     className="pl-10"
                                 />
                             </div>
-                            <Select value={restaurantFilter} onValueChange={setRestaurantFilter}>
+                            <Select
+                                value={restaurantFilter}
+                                onValueChange={setRestaurantFilter}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="All Restaurants" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Restaurants</SelectItem>
+                                    <SelectItem value="all">
+                                        All Restaurants
+                                    </SelectItem>
                                     {restaurants.map((restaurant) => (
-                                        <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                                        <SelectItem
+                                            key={restaurant.id}
+                                            value={restaurant.id.toString()}
+                                        >
                                             {restaurant.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                            <Select
+                                value={categoryFilter}
+                                onValueChange={setCategoryFilter}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="All Categories" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="all">
+                                        All Categories
+                                    </SelectItem>
                                     {categories.map((category) => (
-                                        <SelectItem key={category.id} value={category.id.toString()}>
+                                        <SelectItem
+                                            key={category.id}
+                                            value={category.id.toString()}
+                                        >
                                             {category.name}
                                         </SelectItem>
                                     ))}
@@ -421,8 +556,8 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
 
                 {/* Menu Items Table */}
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+                    <div className="py-12 text-center">
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white"></div>
                     </div>
                 ) : (
                     <Card>
@@ -430,41 +565,94 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                        <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Restaurant</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Category</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Price</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                        <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Name
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Restaurant
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Category
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Price
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Status
+                                        </TableHead>
+                                        <TableHead className="text-right text-gray-900 dark:text-white">
+                                            Actions
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {menuItems
                                         .filter((item) => {
-                                            if (restaurantFilter !== 'all' && item.restaurant_id.toString() !== restaurantFilter) return false;
-                                            if (categoryFilter !== 'all' && item.category_id?.toString() !== categoryFilter) return false;
-                                            if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
+                                            if (
+                                                restaurantFilter !== 'all' &&
+                                                item.restaurant_id.toString() !==
+                                                    restaurantFilter
+                                            )
+                                                return false;
+                                            if (
+                                                categoryFilter !== 'all' &&
+                                                item.category_id?.toString() !==
+                                                    categoryFilter
+                                            )
+                                                return false;
+                                            if (
+                                                search &&
+                                                !item.name
+                                                    .toLowerCase()
+                                                    .includes(
+                                                        search.toLowerCase(),
+                                                    )
+                                            )
+                                                return false;
                                             return true;
                                         })
                                         .map((item) => (
-                                            <TableRow key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <TableCell className="text-gray-900 dark:text-white">{item.name}</TableCell>
+                                            <TableRow
+                                                key={item.id}
+                                                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                            >
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {restaurants.find(r => r.id === item.restaurant_id)?.name || 'N/A'}
+                                                    {item.name}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {categories.find(c => c.id === item.category_id)?.name || 'N/A'}
+                                                    {restaurants.find(
+                                                        (r) =>
+                                                            r.id ===
+                                                            item.restaurant_id,
+                                                    )?.name || 'N/A'}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {item.effective_price ? formatCurrency(item.effective_price) : formatCurrency(item.price)}
+                                                    {categories.find(
+                                                        (c) =>
+                                                            c.id ===
+                                                            item.category_id,
+                                                    )?.name || 'N/A'}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        item.is_available
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                                    }`}>
-                                                        {item.is_available ? 'Available' : 'Unavailable'}
+                                                    {item.effective_price
+                                                        ? formatCurrency(
+                                                              item.effective_price,
+                                                          )
+                                                        : formatCurrency(
+                                                              item.price,
+                                                          )}
+                                                </TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">
+                                                    <span
+                                                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                            item.is_available
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                                        }`}
+                                                    >
+                                                        {item.is_available
+                                                            ? 'Available'
+                                                            : 'Unavailable'}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-right text-gray-900 dark:text-white">
@@ -473,8 +661,12 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => {
-                                                                setEditingItem(item);
-                                                                setDialogOpen(true);
+                                                                setEditingItem(
+                                                                    item,
+                                                                );
+                                                                setDialogOpen(
+                                                                    true,
+                                                                );
                                                             }}
                                                         >
                                                             <EditIcon className="h-4 w-4" />
@@ -482,7 +674,11 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() => handleDelete(item.id)}
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    item.id,
+                                                                )
+                                                            }
                                                         >
                                                             <TrashIcon className="h-4 w-4" />
                                                         </Button>
@@ -498,16 +694,27 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
 
                 {/* Create/Edit Dialog */}
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>{editingItem ? 'Edit Menu Item' : 'Add Menu Item'}</DialogTitle>
+                            <DialogTitle>
+                                {editingItem
+                                    ? 'Edit Menu Item'
+                                    : 'Add Menu Item'}
+                            </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <Label htmlFor="restaurant_id">Restaurant *</Label>
+                                <Label htmlFor="restaurant_id">
+                                    Restaurant *
+                                </Label>
                                 <Select
                                     value={formData.restaurant_id}
-                                    onValueChange={(value) => setFormData({ ...formData, restaurant_id: value })}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            restaurant_id: value,
+                                        })
+                                    }
                                     required
                                 >
                                     <SelectTrigger>
@@ -515,7 +722,10 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                     </SelectTrigger>
                                     <SelectContent>
                                         {restaurants.map((restaurant) => (
-                                            <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                                            <SelectItem
+                                                key={restaurant.id}
+                                                value={restaurant.id.toString()}
+                                            >
                                                 {restaurant.name}
                                             </SelectItem>
                                         ))}
@@ -527,7 +737,12 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                 <Input
                                     id="name"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            name: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -536,7 +751,12 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                 <Input
                                     id="description"
                                     value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            description: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -547,35 +767,59 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                         type="number"
                                         step="0.01"
                                         value={formData.price}
-                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                price: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="discount_price">Discount Price</Label>
+                                    <Label htmlFor="discount_price">
+                                        Discount Price
+                                    </Label>
                                     <Input
                                         id="discount_price"
                                         type="number"
                                         step="0.01"
                                         value={formData.discount_price}
-                                        onChange={(e) => setFormData({ ...formData, discount_price: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                discount_price: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <Label htmlFor="category_id">Category</Label>
+                                    <Label htmlFor="category_id">
+                                        Category
+                                    </Label>
                                     <Select
                                         value={formData.category_id}
-                                        onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                                        onValueChange={(value) =>
+                                            setFormData({
+                                                ...formData,
+                                                category_id: value,
+                                            })
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select category" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">None</SelectItem>
+                                            <SelectItem value="none">
+                                                None
+                                            </SelectItem>
                                             {categories.map((cat) => (
-                                                <SelectItem key={cat.id} value={cat.id.toString()}>
+                                                <SelectItem
+                                                    key={cat.id}
+                                                    value={cat.id.toString()}
+                                                >
                                                     {cat.name}
                                                 </SelectItem>
                                             ))}
@@ -583,12 +827,20 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label htmlFor="preparation_time">Prep Time (minutes)</Label>
+                                    <Label htmlFor="preparation_time">
+                                        Prep Time (minutes)
+                                    </Label>
                                     <Input
                                         id="preparation_time"
                                         type="number"
                                         value={formData.preparation_time}
-                                        onChange={(e) => setFormData({ ...formData, preparation_time: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                preparation_time:
+                                                    e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                             </div>
@@ -598,24 +850,42 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                                         type="checkbox"
                                         id="is_available"
                                         checked={formData.is_available}
-                                        onChange={(e) => setFormData({ ...formData, is_available: e.target.checked })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                is_available: e.target.checked,
+                                            })
+                                        }
                                         className="rounded"
                                     />
-                                    <Label htmlFor="is_available">Available</Label>
+                                    <Label htmlFor="is_available">
+                                        Available
+                                    </Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <input
                                         type="checkbox"
                                         id="is_featured"
                                         checked={formData.is_featured}
-                                        onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                is_featured: e.target.checked,
+                                            })
+                                        }
                                         className="rounded"
                                     />
-                                    <Label htmlFor="is_featured">Featured</Label>
+                                    <Label htmlFor="is_featured">
+                                        Featured
+                                    </Label>
                                 </div>
                             </div>
                             <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setDialogOpen(false)}
+                                >
                                     Cancel
                                 </Button>
                                 <Button type="submit">Save</Button>
@@ -625,45 +895,80 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
                 </Dialog>
 
                 {/* Create/Edit Category Dialog */}
-                <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+                <Dialog
+                    open={categoryDialogOpen}
+                    onOpenChange={setCategoryDialogOpen}
+                >
                     <DialogContent className="max-w-lg">
                         <DialogHeader>
-                            <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
+                            <DialogTitle>
+                                {editingCategory
+                                    ? 'Edit Category'
+                                    : 'Add Category'}
+                            </DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCategorySubmit} className="space-y-4">
+                        <form
+                            onSubmit={handleCategorySubmit}
+                            className="space-y-4"
+                        >
                             <div>
                                 <Label htmlFor="category_name">Name *</Label>
                                 <Input
                                     id="category_name"
                                     value={categoryFormData.name}
-                                    onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                                    onChange={(e) =>
+                                        setCategoryFormData({
+                                            ...categoryFormData,
+                                            name: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="category_description">Description</Label>
+                                <Label htmlFor="category_description">
+                                    Description
+                                </Label>
                                 <Input
                                     id="category_description"
                                     value={categoryFormData.description}
-                                    onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
+                                    onChange={(e) =>
+                                        setCategoryFormData({
+                                            ...categoryFormData,
+                                            description: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="category_display_order">Display Order</Label>
+                                <Label htmlFor="category_display_order">
+                                    Display Order
+                                </Label>
                                 <Input
                                     id="category_display_order"
                                     type="number"
                                     min="0"
                                     value={categoryFormData.display_order}
-                                    onChange={(e) => setCategoryFormData({ ...categoryFormData, display_order: e.target.value })}
+                                    onChange={(e) =>
+                                        setCategoryFormData({
+                                            ...categoryFormData,
+                                            display_order: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                             <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setCategoryDialogOpen(false)}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setCategoryDialogOpen(false)}
+                                >
                                     Cancel
                                 </Button>
                                 <Button type="submit">
-                                    {editingCategory ? 'Update Category' : 'Create Category'}
+                                    {editingCategory
+                                        ? 'Update Category'
+                                        : 'Create Category'}
                                 </Button>
                             </div>
                         </form>
@@ -673,4 +978,3 @@ export default function AdminMenu({ auth, menuItems: initialMenuItems, categorie
         </AuthenticatedLayout>
     );
 }
-

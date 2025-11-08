@@ -275,7 +275,11 @@ export default function Login({
                 <div className="hidden md:block md:w-1/2">
                     <div className="h-screen w-full">
                         <img
-                            src={PROJECT_IMAGES[validProject as keyof typeof PROJECT_IMAGES] || PROJECT_IMAGES.trial}
+                            src={
+                                PROJECT_IMAGES[
+                                    validProject as keyof typeof PROJECT_IMAGES
+                                ] || PROJECT_IMAGES.trial
+                            }
                             alt={`${validProject?.charAt(0).toUpperCase() + validProject?.slice(1) || 'Default'} workspace`}
                             className="h-full w-full object-cover"
                         />

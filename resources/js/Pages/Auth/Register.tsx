@@ -32,7 +32,11 @@ const PROJECT_IMAGES = {
     fnb: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
 } as const;
 
-export default function Register({ projectParam, projectExists, projects = [] }: Props) {
+export default function Register({
+    projectParam,
+    projectExists,
+    projects = [],
+}: Props) {
     const urlProject = new URLSearchParams(window.location.search).get(
         'project',
     );
@@ -45,7 +49,7 @@ export default function Register({ projectParam, projectExists, projects = [] }:
     }
 
     const validProject = allowedProjectIdentifiers.includes(urlProject || '')
-        ? (urlProject || 'trial')
+        ? urlProject || 'trial'
         : 'trial';
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -274,7 +278,11 @@ export default function Register({ projectParam, projectExists, projects = [] }:
                 <div className="hidden md:block md:w-1/2">
                     <div className="h-screen w-full">
                         <img
-                            src={PROJECT_IMAGES[validProject as keyof typeof PROJECT_IMAGES] || PROJECT_IMAGES.trial}
+                            src={
+                                PROJECT_IMAGES[
+                                    validProject as keyof typeof PROJECT_IMAGES
+                                ] || PROJECT_IMAGES.trial
+                            }
                             alt={`${validProject?.charAt(0).toUpperCase() + validProject?.slice(1) || 'Default'} workspace`}
                             className="h-full w-full object-cover"
                         />

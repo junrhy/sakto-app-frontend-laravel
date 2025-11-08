@@ -119,477 +119,548 @@ export default function Settings({ settings, auth }: Props) {
                         <CardContent>
                             {canEdit ? (
                                 <SettingsForm
-                                    settings={settings as unknown as Record<string, unknown>}
+                                    settings={
+                                        settings as unknown as Record<
+                                            string,
+                                            unknown
+                                        >
+                                    }
                                     onSubmit={handleSubmit}
                                 >
                                     {({ data, setData }) => {
-                                        const twilio = (data.twilio as { account_sid?: string; auth_token?: string; phone_number?: string; default_country_code?: string }) || {};
-                                        const notifications = (data.notifications as { enable_reminders?: boolean; reminder_time?: string; enable_delivery_reports?: boolean; enable_auto_reply?: boolean; auto_reply_message?: string }) || {};
+                                        const twilio =
+                                            (data.twilio as {
+                                                account_sid?: string;
+                                                auth_token?: string;
+                                                phone_number?: string;
+                                                default_country_code?: string;
+                                            }) || {};
+                                        const notifications =
+                                            (data.notifications as {
+                                                enable_reminders?: boolean;
+                                                reminder_time?: string;
+                                                enable_delivery_reports?: boolean;
+                                                enable_auto_reply?: boolean;
+                                                auto_reply_message?: string;
+                                            }) || {};
                                         interface MessageTemplate {
                                             name: string;
                                             content: string;
                                             variables: string[];
                                         }
-                                        const templates = (data.templates as { enabled?: boolean; message_templates?: MessageTemplate[] }) || {};
-                                        const limits = (data.limits as { max_messages_per_day?: number; max_recipients_per_message?: number; blocked_keywords?: string[] }) || {};
+                                        const templates =
+                                            (data.templates as {
+                                                enabled?: boolean;
+                                                message_templates?: MessageTemplate[];
+                                            }) || {};
+                                        const limits =
+                                            (data.limits as {
+                                                max_messages_per_day?: number;
+                                                max_recipients_per_message?: number;
+                                                blocked_keywords?: string[];
+                                            }) || {};
                                         return (
-                                        <Tabs
-                                            defaultValue="twilio"
-                                            className="space-y-4"
-                                        >
-                                            <TabsList>
-                                                <TabsTrigger value="twilio">
-                                                    Twilio
-                                                </TabsTrigger>
-                                                <TabsTrigger value="notifications">
-                                                    Notifications
-                                                </TabsTrigger>
-                                                <TabsTrigger value="templates">
-                                                    Templates
-                                                </TabsTrigger>
-                                                <TabsTrigger value="limits">
-                                                    Limits
-                                                </TabsTrigger>
-                                            </TabsList>
+                                            <Tabs
+                                                defaultValue="twilio"
+                                                className="space-y-4"
+                                            >
+                                                <TabsList>
+                                                    <TabsTrigger value="twilio">
+                                                        Twilio
+                                                    </TabsTrigger>
+                                                    <TabsTrigger value="notifications">
+                                                        Notifications
+                                                    </TabsTrigger>
+                                                    <TabsTrigger value="templates">
+                                                        Templates
+                                                    </TabsTrigger>
+                                                    <TabsTrigger value="limits">
+                                                        Limits
+                                                    </TabsTrigger>
+                                                </TabsList>
 
-                                            <TabsContent value="twilio">
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Account SID
-                                                        </Label>
-                                                        <Input
-                                                            value={
-                                                                twilio.account_sid ?? ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'twilio.account_sid',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Auth Token
-                                                        </Label>
-                                                        <Input
-                                                            type="password"
-                                                            value={
-                                                                twilio.auth_token ?? ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'twilio.auth_token',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="••••••••"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Phone Number
-                                                        </Label>
-                                                        <Input
-                                                            value={
-                                                                twilio.phone_number ?? ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'twilio.phone_number',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="+1234567890"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Default Country Code
-                                                        </Label>
-                                                        <Input
-                                                            value={
-                                                                twilio.default_country_code ?? ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'twilio.default_country_code',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            placeholder="+1"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </TabsContent>
-
-                                            <TabsContent value="notifications">
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="space-y-0.5">
-                                                            <Label>
-                                                                Enable Reminders
-                                                            </Label>
-                                                            <div className="text-sm text-gray-500">
-                                                                Send automated
-                                                                reminder
-                                                                messages
-                                                            </div>
-                                                        </div>
-                                                        <Switch
-                                                            checked={
-                                                                notifications.enable_reminders ?? false
-                                                            }
-                                                            onCheckedChange={(
-                                                                checked,
-                                                            ) =>
-                                                                setData(
-                                                                    'notifications.enable_reminders',
-                                                                    checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    {notifications.enable_reminders && (
+                                                <TabsContent value="twilio">
+                                                    <div className="space-y-4">
                                                         <div className="space-y-2">
                                                             <Label>
-                                                                Reminder Time
+                                                                Account SID
                                                             </Label>
-                                                            <Select
+                                                            <Input
                                                                 value={
-                                                                    notifications.reminder_time ?? ''
-                                                                }
-                                                                onValueChange={(
-                                                                    value,
-                                                                ) =>
-                                                                    setData(
-                                                                        'notifications.reminder_time',
-                                                                        value,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select time" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="1h">
-                                                                        1 hour
-                                                                        before
-                                                                    </SelectItem>
-                                                                    <SelectItem value="2h">
-                                                                        2 hours
-                                                                        before
-                                                                    </SelectItem>
-                                                                    <SelectItem value="24h">
-                                                                        24 hours
-                                                                        before
-                                                                    </SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="space-y-0.5">
-                                                            <Label>
-                                                                Delivery Reports
-                                                            </Label>
-                                                            <div className="text-sm text-gray-500">
-                                                                Track message
-                                                                delivery status
-                                                            </div>
-                                                        </div>
-                                                        <Switch
-                                                            checked={
-                                                                notifications.enable_delivery_reports ?? false
-                                                            }
-                                                            onCheckedChange={(
-                                                                checked,
-                                                            ) =>
-                                                                setData(
-                                                                    'notifications.enable_delivery_reports',
-                                                                    checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="space-y-0.5">
-                                                            <Label>
-                                                                Auto Reply
-                                                            </Label>
-                                                            <div className="text-sm text-gray-500">
-                                                                Send automatic
-                                                                responses
-                                                            </div>
-                                                        </div>
-                                                        <Switch
-                                                            checked={
-                                                                notifications.enable_auto_reply ?? false
-                                                            }
-                                                            onCheckedChange={(
-                                                                checked,
-                                                            ) =>
-                                                                setData(
-                                                                    'notifications.enable_auto_reply',
-                                                                    checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    {notifications.enable_auto_reply && (
-                                                        <div className="space-y-2">
-                                                            <Label>
-                                                                Auto Reply
-                                                                Message
-                                                            </Label>
-                                                            <Textarea
-                                                                value={
-                                                                    notifications.auto_reply_message ?? ''
+                                                                    twilio.account_sid ??
+                                                                    ''
                                                                 }
                                                                 onChange={(e) =>
                                                                     setData(
-                                                                        'notifications.auto_reply_message',
+                                                                        'twilio.account_sid',
                                                                         e.target
                                                                             .value,
                                                                     )
                                                                 }
-                                                                placeholder="Thank you for your message. We'll get back to you soon."
-                                                                rows={3}
+                                                                placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                                                             />
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </TabsContent>
 
-                                            <TabsContent value="templates">
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="space-y-0.5">
+                                                        <div className="space-y-2">
                                                             <Label>
-                                                                Enable Templates
+                                                                Auth Token
                                                             </Label>
-                                                            <div className="text-sm text-gray-500">
-                                                                Use predefined
-                                                                message
-                                                                templates
+                                                            <Input
+                                                                type="password"
+                                                                value={
+                                                                    twilio.auth_token ??
+                                                                    ''
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'twilio.auth_token',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="••••••••"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label>
+                                                                Phone Number
+                                                            </Label>
+                                                            <Input
+                                                                value={
+                                                                    twilio.phone_number ??
+                                                                    ''
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'twilio.phone_number',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="+1234567890"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label>
+                                                                Default Country
+                                                                Code
+                                                            </Label>
+                                                            <Input
+                                                                value={
+                                                                    twilio.default_country_code ??
+                                                                    ''
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'twilio.default_country_code',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="+1"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </TabsContent>
+
+                                                <TabsContent value="notifications">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="space-y-0.5">
+                                                                <Label>
+                                                                    Enable
+                                                                    Reminders
+                                                                </Label>
+                                                                <div className="text-sm text-gray-500">
+                                                                    Send
+                                                                    automated
+                                                                    reminder
+                                                                    messages
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <Switch
-                                                            checked={
-                                                                templates.enabled ?? false
-                                                            }
-                                                            onCheckedChange={(
-                                                                checked,
-                                                            ) =>
-                                                                setData(
-                                                                    'templates.enabled',
+                                                            <Switch
+                                                                checked={
+                                                                    notifications.enable_reminders ??
+                                                                    false
+                                                                }
+                                                                onCheckedChange={(
                                                                     checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    {templates.enabled && (
-                                                        <div className="space-y-4">
-                                                            {((templates.message_templates || []) as MessageTemplate[]).map(
-                                                                (
-                                                                    template,
-                                                                    index: number,
-                                                                ) => (
-                                                                    <div
-                                                                        key={
-                                                                            index
-                                                                        }
-                                                                        className="space-y-2 rounded-lg border p-4"
-                                                                    >
-                                                                        <div className="space-y-2">
-                                                                            <Label>
-                                                                                Template
-                                                                                Name
-                                                                            </Label>
-                                                                            <Input
-                                                                                value={
-                                                                                    template.name
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    const newTemplates =
-                                                                                        [
-                                                                                            ...((templates.message_templates || []) as MessageTemplate[]),
-                                                                                        ];
-                                                                                    (newTemplates[
-                                                                                        index
-                                                                                    ] as MessageTemplate).name =
-                                                                                        e.target.value;
-                                                                                    setData(
-                                                                                        'templates.message_templates',
-                                                                                        newTemplates,
-                                                                                    );
-                                                                                }}
-                                                                            />
-                                                                        </div>
-
-                                                                        <div className="space-y-2">
-                                                                            <Label>
-                                                                                Message
-                                                                                Content
-                                                                            </Label>
-                                                                            <Textarea
-                                                                                value={
-                                                                                    template.content
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    const newTemplates =
-                                                                                        [
-                                                                                            ...((templates.message_templates || []) as MessageTemplate[]),
-                                                                                        ];
-                                                                                    (newTemplates[
-                                                                                        index
-                                                                                    ] as MessageTemplate).content =
-                                                                                        e.target.value;
-                                                                                    setData(
-                                                                                        'templates.message_templates',
-                                                                                        newTemplates,
-                                                                                    );
-                                                                                }}
-                                                                                rows={
-                                                                                    3
-                                                                                }
-                                                                            />
-                                                                        </div>
-
-                                                                        <div className="space-y-2">
-                                                                            <Label>
-                                                                                Variables
-                                                                            </Label>
-                                                                            <Textarea
-                                                                                value={template.variables.join(
-                                                                                    '\n',
-                                                                                )}
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    const newTemplates =
-                                                                                        [
-                                                                                            ...((templates.message_templates || []) as MessageTemplate[]),
-                                                                                        ];
-                                                                                    (newTemplates[
-                                                                                        index
-                                                                                    ] as MessageTemplate).variables =
-                                                                                        e.target.value.split(
-                                                                                            '\n',
-                                                                                        );
-                                                                                    setData(
-                                                                                        'templates.message_templates',
-                                                                                        newTemplates,
-                                                                                    );
-                                                                                }}
-                                                                                placeholder="{{name}}&#10;{{date}}&#10;{{time}}"
-                                                                                rows={
-                                                                                    3
-                                                                                }
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                ),
-                                                            )}
+                                                                ) =>
+                                                                    setData(
+                                                                        'notifications.enable_reminders',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </TabsContent>
 
-                                            <TabsContent value="limits">
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Maximum Messages per
-                                                            Day
-                                                        </Label>
-                                                        <Input
-                                                            type="number"
-                                                            value={
-                                                                limits.max_messages_per_day ?? 0
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'limits.max_messages_per_day',
-                                                                    parseInt(
-                                                                        e.target
-                                                                            .value,
-                                                                    ),
-                                                                )
-                                                            }
-                                                            min={1}
-                                                        />
-                                                    </div>
+                                                        {notifications.enable_reminders && (
+                                                            <div className="space-y-2">
+                                                                <Label>
+                                                                    Reminder
+                                                                    Time
+                                                                </Label>
+                                                                <Select
+                                                                    value={
+                                                                        notifications.reminder_time ??
+                                                                        ''
+                                                                    }
+                                                                    onValueChange={(
+                                                                        value,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'notifications.reminder_time',
+                                                                            value,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder="Select time" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="1h">
+                                                                            1
+                                                                            hour
+                                                                            before
+                                                                        </SelectItem>
+                                                                        <SelectItem value="2h">
+                                                                            2
+                                                                            hours
+                                                                            before
+                                                                        </SelectItem>
+                                                                        <SelectItem value="24h">
+                                                                            24
+                                                                            hours
+                                                                            before
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+                                                        )}
 
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Maximum Recipients
-                                                            per Message
-                                                        </Label>
-                                                        <Input
-                                                            type="number"
-                                                            value={
-                                                                limits.max_recipients_per_message ?? 0
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'limits.max_recipients_per_message',
-                                                                    parseInt(
-                                                                        e.target
-                                                                            .value,
-                                                                    ),
-                                                                )
-                                                            }
-                                                            min={1}
-                                                        />
-                                                    </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="space-y-0.5">
+                                                                <Label>
+                                                                    Delivery
+                                                                    Reports
+                                                                </Label>
+                                                                <div className="text-sm text-gray-500">
+                                                                    Track
+                                                                    message
+                                                                    delivery
+                                                                    status
+                                                                </div>
+                                                            </div>
+                                                            <Switch
+                                                                checked={
+                                                                    notifications.enable_delivery_reports ??
+                                                                    false
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked,
+                                                                ) =>
+                                                                    setData(
+                                                                        'notifications.enable_delivery_reports',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
 
-                                                    <div className="space-y-2">
-                                                        <Label>
-                                                            Blocked Keywords
-                                                        </Label>
-                                                        <Textarea
-                                                            value={(limits.blocked_keywords || []).join(
-                                                                '\n',
-                                                            )}
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'limits.blocked_keywords',
-                                                                    e.target.value.split(
-                                                                        '\n',
-                                                                    ),
-                                                                )
-                                                            }
-                                                            placeholder="spam&#10;scam&#10;adult"
-                                                            rows={4}
-                                                        />
-                                                        <p className="text-sm text-gray-500">
-                                                            Enter one keyword
-                                                            per line
-                                                        </p>
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="space-y-0.5">
+                                                                <Label>
+                                                                    Auto Reply
+                                                                </Label>
+                                                                <div className="text-sm text-gray-500">
+                                                                    Send
+                                                                    automatic
+                                                                    responses
+                                                                </div>
+                                                            </div>
+                                                            <Switch
+                                                                checked={
+                                                                    notifications.enable_auto_reply ??
+                                                                    false
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked,
+                                                                ) =>
+                                                                    setData(
+                                                                        'notifications.enable_auto_reply',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {notifications.enable_auto_reply && (
+                                                            <div className="space-y-2">
+                                                                <Label>
+                                                                    Auto Reply
+                                                                    Message
+                                                                </Label>
+                                                                <Textarea
+                                                                    value={
+                                                                        notifications.auto_reply_message ??
+                                                                        ''
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setData(
+                                                                            'notifications.auto_reply_message',
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    placeholder="Thank you for your message. We'll get back to you soon."
+                                                                    rows={3}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                </div>
-                                            </TabsContent>
-                                        </Tabs>
+                                                </TabsContent>
+
+                                                <TabsContent value="templates">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="space-y-0.5">
+                                                                <Label>
+                                                                    Enable
+                                                                    Templates
+                                                                </Label>
+                                                                <div className="text-sm text-gray-500">
+                                                                    Use
+                                                                    predefined
+                                                                    message
+                                                                    templates
+                                                                </div>
+                                                            </div>
+                                                            <Switch
+                                                                checked={
+                                                                    templates.enabled ??
+                                                                    false
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked,
+                                                                ) =>
+                                                                    setData(
+                                                                        'templates.enabled',
+                                                                        checked,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        {templates.enabled && (
+                                                            <div className="space-y-4">
+                                                                {(
+                                                                    (templates.message_templates ||
+                                                                        []) as MessageTemplate[]
+                                                                ).map(
+                                                                    (
+                                                                        template,
+                                                                        index: number,
+                                                                    ) => (
+                                                                        <div
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="space-y-2 rounded-lg border p-4"
+                                                                        >
+                                                                            <div className="space-y-2">
+                                                                                <Label>
+                                                                                    Template
+                                                                                    Name
+                                                                                </Label>
+                                                                                <Input
+                                                                                    value={
+                                                                                        template.name
+                                                                                    }
+                                                                                    onChange={(
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        const newTemplates =
+                                                                                            [
+                                                                                                ...((templates.message_templates ||
+                                                                                                    []) as MessageTemplate[]),
+                                                                                            ];
+                                                                                        (
+                                                                                            newTemplates[
+                                                                                                index
+                                                                                            ] as MessageTemplate
+                                                                                        ).name =
+                                                                                            e.target.value;
+                                                                                        setData(
+                                                                                            'templates.message_templates',
+                                                                                            newTemplates,
+                                                                                        );
+                                                                                    }}
+                                                                                />
+                                                                            </div>
+
+                                                                            <div className="space-y-2">
+                                                                                <Label>
+                                                                                    Message
+                                                                                    Content
+                                                                                </Label>
+                                                                                <Textarea
+                                                                                    value={
+                                                                                        template.content
+                                                                                    }
+                                                                                    onChange={(
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        const newTemplates =
+                                                                                            [
+                                                                                                ...((templates.message_templates ||
+                                                                                                    []) as MessageTemplate[]),
+                                                                                            ];
+                                                                                        (
+                                                                                            newTemplates[
+                                                                                                index
+                                                                                            ] as MessageTemplate
+                                                                                        ).content =
+                                                                                            e.target.value;
+                                                                                        setData(
+                                                                                            'templates.message_templates',
+                                                                                            newTemplates,
+                                                                                        );
+                                                                                    }}
+                                                                                    rows={
+                                                                                        3
+                                                                                    }
+                                                                                />
+                                                                            </div>
+
+                                                                            <div className="space-y-2">
+                                                                                <Label>
+                                                                                    Variables
+                                                                                </Label>
+                                                                                <Textarea
+                                                                                    value={template.variables.join(
+                                                                                        '\n',
+                                                                                    )}
+                                                                                    onChange={(
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        const newTemplates =
+                                                                                            [
+                                                                                                ...((templates.message_templates ||
+                                                                                                    []) as MessageTemplate[]),
+                                                                                            ];
+                                                                                        (
+                                                                                            newTemplates[
+                                                                                                index
+                                                                                            ] as MessageTemplate
+                                                                                        ).variables =
+                                                                                            e.target.value.split(
+                                                                                                '\n',
+                                                                                            );
+                                                                                        setData(
+                                                                                            'templates.message_templates',
+                                                                                            newTemplates,
+                                                                                        );
+                                                                                    }}
+                                                                                    placeholder="{{name}}&#10;{{date}}&#10;{{time}}"
+                                                                                    rows={
+                                                                                        3
+                                                                                    }
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    ),
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </TabsContent>
+
+                                                <TabsContent value="limits">
+                                                    <div className="space-y-4">
+                                                        <div className="space-y-2">
+                                                            <Label>
+                                                                Maximum Messages
+                                                                per Day
+                                                            </Label>
+                                                            <Input
+                                                                type="number"
+                                                                value={
+                                                                    limits.max_messages_per_day ??
+                                                                    0
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'limits.max_messages_per_day',
+                                                                        parseInt(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                                min={1}
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label>
+                                                                Maximum
+                                                                Recipients per
+                                                                Message
+                                                            </Label>
+                                                            <Input
+                                                                type="number"
+                                                                value={
+                                                                    limits.max_recipients_per_message ??
+                                                                    0
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'limits.max_recipients_per_message',
+                                                                        parseInt(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        ),
+                                                                    )
+                                                                }
+                                                                min={1}
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label>
+                                                                Blocked Keywords
+                                                            </Label>
+                                                            <Textarea
+                                                                value={(
+                                                                    limits.blocked_keywords ||
+                                                                    []
+                                                                ).join('\n')}
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'limits.blocked_keywords',
+                                                                        e.target.value.split(
+                                                                            '\n',
+                                                                        ),
+                                                                    )
+                                                                }
+                                                                placeholder="spam&#10;scam&#10;adult"
+                                                                rows={4}
+                                                            />
+                                                            <p className="text-sm text-gray-500">
+                                                                Enter one
+                                                                keyword per line
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </TabsContent>
+                                            </Tabs>
                                         );
                                     }}
                                 </SettingsForm>

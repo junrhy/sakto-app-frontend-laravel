@@ -346,7 +346,25 @@ export const menuCategories: MenuCategory[] = [
     {
         id: 'travel',
         title: 'Travel',
-        items: [{ id: 'travel', title: 'Travel', href: '/travel?app=travel' }],
+        items: [
+            {
+                id: 'travel',
+                title: 'Packages',
+                href: '/travel?app=travel',
+                urlCheck: 'travel',
+                moduleCheck: 'travel',
+            },
+            {
+                id: 'travel-bookings',
+                title: 'Bookings',
+                href: '/travel/bookings?app=travel',
+                urlCheck: 'travel/bookings',
+                moduleCheck: 'travel',
+                appParamCheck: ['travel'],
+                parentId: 'travel',
+                isSubmenu: true,
+            },
+        ],
     },
 ];
 
@@ -377,7 +395,11 @@ export const shouldShowMenuItem = (
     // Handle submenu items (like clinic-settings) that should be visible when parent module is accessible
     // Skip this logic for standalone modules that happen to have dashes in their names
     // Also skip if item has appParamCheck (let that logic handle it)
-    if (item.id.includes('-') && !standaloneModules.includes(item.id) && !item.appParamCheck) {
+    if (
+        item.id.includes('-') &&
+        !standaloneModules.includes(item.id) &&
+        !item.appParamCheck
+    ) {
         // Try to find parent module - check if item.id starts with any standalone module
         let parentModule = item.id.split('-')[0];
         // Check if there's a longer parent module name (e.g., "parcel-delivery" for "parcel-delivery-couriers")
@@ -419,7 +441,7 @@ export const shouldShowMenuItem = (
         // If there's a custom urlCheck, show when URL matches
         return url.includes(item.urlCheck);
     }
-    
+
     // For main menu items, show if user has access (regardless of current appParam)
     return true;
 };

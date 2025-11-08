@@ -1,24 +1,35 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { UtensilsIcon, ShoppingCartIcon, StarIcon, ClockIcon, MapPinIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { FoodDeliveryRestaurant, FoodDeliveryMenuItem, FoodDeliveryMenuCategory, CartItem } from './types';
-import MenuItemCard from './components/MenuItemCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import { ShoppingCartIcon, StarIcon, UtensilsIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import MenuItemCard from './components/MenuItemCard';
+import {
+    CartItem,
+    FoodDeliveryMenuCategory,
+    FoodDeliveryMenuItem,
+    FoodDeliveryRestaurant,
+} from './types';
 
 interface Props extends PageProps {
     restaurant?: FoodDeliveryRestaurant;
 }
 
-export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRestaurant }: Props) {
-    const [restaurant, setRestaurant] = useState<FoodDeliveryRestaurant | null>(initialRestaurant || null);
+export default function FoodDeliveryRestaurantPage({
+    auth,
+    restaurant: initialRestaurant,
+}: Props) {
+    const [restaurant, setRestaurant] = useState<FoodDeliveryRestaurant | null>(
+        initialRestaurant || null,
+    );
     const [menuItems, setMenuItems] = useState<FoodDeliveryMenuItem[]>([]);
-    const [categories, setCategories] = useState<FoodDeliveryMenuCategory[]>([]);
+    const [categories, setCategories] = useState<FoodDeliveryMenuCategory[]>(
+        [],
+    );
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [cart, setCart] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -33,59 +44,116 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
     useEffect(() => {
         // Load cart from localStorage
         if (restaurant?.id) {
-            const savedCart = localStorage.getItem(`food_delivery_cart_${restaurant.id}`);
+            const savedCart = localStorage.getItem(
+                `food_delivery_cart_${restaurant.id}`,
+            );
             if (savedCart) {
                 try {
                     const cartData = JSON.parse(savedCart);
                     // Handle both old format (array) and new format (object with cart property)
-                    const loadedCart = Array.isArray(cartData) ? cartData : (cartData.cart || []);
-                    
+                    const loadedCart = Array.isArray(cartData)
+                        ? cartData
+                        : cartData.cart || [];
+
                     // Recalculate subtotals to ensure they're valid numbers
-                    const validatedCart = loadedCart.map((item: CartItem) => {
-                        // Get price - prioritize effective_price, then discount_price, then price
-                        let effectivePrice = 0;
-                        if (item.menu_item?.effective_price !== undefined && item.menu_item.effective_price !== null) {
-                            effectivePrice = parseFloat(String(item.menu_item.effective_price)) || 0;
-                        } else if (item.menu_item?.discount_price !== undefined && item.menu_item.discount_price !== null) {
-                            effectivePrice = parseFloat(String(item.menu_item.discount_price)) || 0;
-                        } else if (item.menu_item?.price !== undefined && item.menu_item.price !== null) {
-                            effectivePrice = parseFloat(String(item.menu_item.price)) || 0;
-                        }
-                        
-                        const quantity = parseInt(String(item.quantity)) || 1;
-                        const subtotal = effectivePrice * quantity;
-                        
-                        // Validate the calculated subtotal
-                        if (isNaN(subtotal) || subtotal < 0 || subtotal > 1000000) {
-                            console.warn('Invalid subtotal detected, resetting item:', {
-                                item: item.menu_item?.name,
-                                effectivePrice,
-                                quantity,
-                                calculatedSubtotal: subtotal,
-                                storedSubtotal: item.subtotal
-                            });
-                            // Skip invalid items
-                            return null;
-                        }
-                        
-                        return {
-                            ...item,
-                            quantity,
-                            subtotal: subtotal,
-                            menu_item: {
-                                ...item.menu_item,
-                                price: parseFloat(String(item.menu_item?.price)) || 0,
-                                discount_price: item.menu_item?.discount_price ? parseFloat(String(item.menu_item.discount_price)) : undefined,
-                                effective_price: item.menu_item?.effective_price ? parseFloat(String(item.menu_item.effective_price)) : undefined,
+                    const validatedCart = loadedCart
+                        .map((item: CartItem) => {
+                            // Get price - prioritize effective_price, then discount_price, then price
+                            let effectivePrice = 0;
+                            if (
+                                item.menu_item?.effective_price !== undefined &&
+                                item.menu_item.effective_price !== null
+                            ) {
+                                effectivePrice =
+                                    parseFloat(
+                                        String(item.menu_item.effective_price),
+                                    ) || 0;
+                            } else if (
+                                item.menu_item?.discount_price !== undefined &&
+                                item.menu_item.discount_price !== null
+                            ) {
+                                effectivePrice =
+                                    parseFloat(
+                                        String(item.menu_item.discount_price),
+                                    ) || 0;
+                            } else if (
+                                item.menu_item?.price !== undefined &&
+                                item.menu_item.price !== null
+                            ) {
+                                effectivePrice =
+                                    parseFloat(String(item.menu_item.price)) ||
+                                    0;
                             }
-                        };
-                    }).filter((item: CartItem | null): item is CartItem => item !== null); // Remove null items
-                    
+
+                            const quantity =
+                                parseInt(String(item.quantity)) || 1;
+                            const subtotal = effectivePrice * quantity;
+
+                            // Validate the calculated subtotal
+                            if (
+                                isNaN(subtotal) ||
+                                subtotal < 0 ||
+                                subtotal > 1000000
+                            ) {
+                                console.warn(
+                                    'Invalid subtotal detected, resetting item:',
+                                    {
+                                        item: item.menu_item?.name,
+                                        effectivePrice,
+                                        quantity,
+                                        calculatedSubtotal: subtotal,
+                                        storedSubtotal: item.subtotal,
+                                    },
+                                );
+                                // Skip invalid items
+                                return null;
+                            }
+
+                            return {
+                                ...item,
+                                quantity,
+                                subtotal: subtotal,
+                                menu_item: {
+                                    ...item.menu_item,
+                                    price:
+                                        parseFloat(
+                                            String(item.menu_item?.price),
+                                        ) || 0,
+                                    discount_price: item.menu_item
+                                        ?.discount_price
+                                        ? parseFloat(
+                                              String(
+                                                  item.menu_item.discount_price,
+                                              ),
+                                          )
+                                        : undefined,
+                                    effective_price: item.menu_item
+                                        ?.effective_price
+                                        ? parseFloat(
+                                              String(
+                                                  item.menu_item
+                                                      .effective_price,
+                                              ),
+                                          )
+                                        : undefined,
+                                },
+                            };
+                        })
+                        .filter(
+                            (item: CartItem | null): item is CartItem =>
+                                item !== null,
+                        ); // Remove null items
+
                     setCart(validatedCart);
                 } catch (error) {
-                    console.error('Error loading cart from localStorage:', error);
+                    console.error(
+                        'Error loading cart from localStorage:',
+                        error,
+                    );
                     // Clear corrupted cart data
-                    localStorage.removeItem(`food_delivery_cart_${restaurant.id}`);
+                    localStorage.removeItem(
+                        `food_delivery_cart_${restaurant.id}`,
+                    );
                     localStorage.removeItem('food_delivery_cart');
                     setCart([]);
                 }
@@ -99,11 +167,17 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
             try {
                 const cartData = {
                     cart: cart,
-                    restaurantId: restaurant.id
+                    restaurantId: restaurant.id,
                 };
-                localStorage.setItem(`food_delivery_cart_${restaurant.id}`, JSON.stringify(cartData));
+                localStorage.setItem(
+                    `food_delivery_cart_${restaurant.id}`,
+                    JSON.stringify(cartData),
+                );
                 // Also save to main cart key for Cart.tsx compatibility
-                localStorage.setItem('food_delivery_cart', JSON.stringify(cartData));
+                localStorage.setItem(
+                    'food_delivery_cart',
+                    JSON.stringify(cartData),
+                );
             } catch (error) {
                 console.error('Error saving cart to localStorage:', error);
             }
@@ -124,14 +198,22 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
             if (response.data.success) {
                 // Filter available items in frontend
                 const items = response.data.data || [];
-                setMenuItems(items.filter((item: FoodDeliveryMenuItem) => item.is_available));
+                setMenuItems(
+                    items.filter(
+                        (item: FoodDeliveryMenuItem) => item.is_available,
+                    ),
+                );
             } else {
                 console.error('Failed to load menu items:', response.data);
-                toast.error(response.data.message || 'Failed to load menu items');
+                toast.error(
+                    response.data.message || 'Failed to load menu items',
+                );
             }
         } catch (error: any) {
             console.error('Error loading menu items:', error);
-            toast.error(error.response?.data?.message || 'Failed to load menu items');
+            toast.error(
+                error.response?.data?.message || 'Failed to load menu items',
+            );
         } finally {
             setLoading(false);
         }
@@ -156,14 +238,20 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
     const addToCart = (item: FoodDeliveryMenuItem) => {
         // Get price - prioritize effective_price, then discount_price, then price
         let effectivePrice = 0;
-        if (item.effective_price !== undefined && item.effective_price !== null) {
+        if (
+            item.effective_price !== undefined &&
+            item.effective_price !== null
+        ) {
             effectivePrice = parseFloat(String(item.effective_price)) || 0;
-        } else if (item.discount_price !== undefined && item.discount_price !== null) {
+        } else if (
+            item.discount_price !== undefined &&
+            item.discount_price !== null
+        ) {
             effectivePrice = parseFloat(String(item.discount_price)) || 0;
         } else if (item.price !== undefined && item.price !== null) {
             effectivePrice = parseFloat(String(item.price)) || 0;
         }
-        
+
         const existingItem = cart.find((ci) => ci.menu_item.id === item.id);
         if (existingItem) {
             setCart(
@@ -171,20 +259,40 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
                     if (ci.menu_item.id === item.id) {
                         // Get price for existing item
                         let ciEffectivePrice = 0;
-                        if (ci.menu_item.effective_price !== undefined && ci.menu_item.effective_price !== null) {
-                            ciEffectivePrice = parseFloat(String(ci.menu_item.effective_price)) || 0;
-                        } else if (ci.menu_item.discount_price !== undefined && ci.menu_item.discount_price !== null) {
-                            ciEffectivePrice = parseFloat(String(ci.menu_item.discount_price)) || 0;
-                        } else if (ci.menu_item.price !== undefined && ci.menu_item.price !== null) {
-                            ciEffectivePrice = parseFloat(String(ci.menu_item.price)) || 0;
+                        if (
+                            ci.menu_item.effective_price !== undefined &&
+                            ci.menu_item.effective_price !== null
+                        ) {
+                            ciEffectivePrice =
+                                parseFloat(
+                                    String(ci.menu_item.effective_price),
+                                ) || 0;
+                        } else if (
+                            ci.menu_item.discount_price !== undefined &&
+                            ci.menu_item.discount_price !== null
+                        ) {
+                            ciEffectivePrice =
+                                parseFloat(
+                                    String(ci.menu_item.discount_price),
+                                ) || 0;
+                        } else if (
+                            ci.menu_item.price !== undefined &&
+                            ci.menu_item.price !== null
+                        ) {
+                            ciEffectivePrice =
+                                parseFloat(String(ci.menu_item.price)) || 0;
                         }
-                        
+
                         const newQuantity = ci.quantity + 1;
                         const subtotal = ciEffectivePrice * newQuantity;
-                        return { ...ci, quantity: newQuantity, subtotal: isNaN(subtotal) ? 0 : subtotal };
+                        return {
+                            ...ci,
+                            quantity: newQuantity,
+                            subtotal: isNaN(subtotal) ? 0 : subtotal,
+                        };
                     }
                     return ci;
-                })
+                }),
             );
         } else {
             setCart([
@@ -214,25 +322,47 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
                 if (ci.menu_item.id === itemId) {
                     // Get price - prioritize effective_price, then discount_price, then price
                     let effectivePrice = 0;
-                    if (ci.menu_item.effective_price !== undefined && ci.menu_item.effective_price !== null) {
-                        effectivePrice = parseFloat(String(ci.menu_item.effective_price)) || 0;
-                    } else if (ci.menu_item.discount_price !== undefined && ci.menu_item.discount_price !== null) {
-                        effectivePrice = parseFloat(String(ci.menu_item.discount_price)) || 0;
-                    } else if (ci.menu_item.price !== undefined && ci.menu_item.price !== null) {
-                        effectivePrice = parseFloat(String(ci.menu_item.price)) || 0;
+                    if (
+                        ci.menu_item.effective_price !== undefined &&
+                        ci.menu_item.effective_price !== null
+                    ) {
+                        effectivePrice =
+                            parseFloat(String(ci.menu_item.effective_price)) ||
+                            0;
+                    } else if (
+                        ci.menu_item.discount_price !== undefined &&
+                        ci.menu_item.discount_price !== null
+                    ) {
+                        effectivePrice =
+                            parseFloat(String(ci.menu_item.discount_price)) ||
+                            0;
+                    } else if (
+                        ci.menu_item.price !== undefined &&
+                        ci.menu_item.price !== null
+                    ) {
+                        effectivePrice =
+                            parseFloat(String(ci.menu_item.price)) || 0;
                     }
-                    
+
                     const newQuantity = parseInt(String(quantity)) || 1;
                     const subtotal = effectivePrice * newQuantity;
-                    return { ...ci, quantity: newQuantity, subtotal: isNaN(subtotal) ? 0 : subtotal };
+                    return {
+                        ...ci,
+                        quantity: newQuantity,
+                        subtotal: isNaN(subtotal) ? 0 : subtotal,
+                    };
                 }
                 return ci;
-            })
+            }),
         );
     };
 
     const formatCurrency = (amount: number) => {
-        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        let currency: {
+            symbol: string;
+            thousands_separator?: string;
+            decimal_separator?: string;
+        };
         const appCurrency = (auth.user as any)?.app_currency;
         if (appCurrency) {
             if (typeof appCurrency === 'string') {
@@ -241,7 +371,11 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
                 currency = appCurrency;
             }
         } else {
-            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+            currency = {
+                symbol: '₱',
+                thousands_separator: ',',
+                decimal_separator: '.',
+            };
         }
         return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
@@ -251,64 +385,85 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
         const subtotal = cart.reduce((sum, item) => {
             // Get price - prioritize effective_price, then discount_price, then price
             let effectivePrice = 0;
-            if (item.menu_item.effective_price !== undefined && item.menu_item.effective_price !== null) {
-                effectivePrice = parseFloat(String(item.menu_item.effective_price)) || 0;
-            } else if (item.menu_item.discount_price !== undefined && item.menu_item.discount_price !== null) {
-                effectivePrice = parseFloat(String(item.menu_item.discount_price)) || 0;
-            } else if (item.menu_item.price !== undefined && item.menu_item.price !== null) {
+            if (
+                item.menu_item.effective_price !== undefined &&
+                item.menu_item.effective_price !== null
+            ) {
+                effectivePrice =
+                    parseFloat(String(item.menu_item.effective_price)) || 0;
+            } else if (
+                item.menu_item.discount_price !== undefined &&
+                item.menu_item.discount_price !== null
+            ) {
+                effectivePrice =
+                    parseFloat(String(item.menu_item.discount_price)) || 0;
+            } else if (
+                item.menu_item.price !== undefined &&
+                item.menu_item.price !== null
+            ) {
                 effectivePrice = parseFloat(String(item.menu_item.price)) || 0;
             }
-            
+
             const quantity = parseInt(String(item.quantity)) || 1;
             const calculatedSubtotal = effectivePrice * quantity;
-            
+
             if (isNaN(calculatedSubtotal) || calculatedSubtotal < 0) {
                 console.warn('Invalid subtotal calculation for item:', {
                     item: item.menu_item.name,
                     price: item.menu_item.price,
                     quantity: item.quantity,
-                    calculatedSubtotal
+                    calculatedSubtotal,
                 });
                 return sum;
             }
-            
+
             // Ensure sum is a number before adding
-            const currentSum = typeof sum === 'number' ? sum : parseFloat(String(sum)) || 0;
+            const currentSum =
+                typeof sum === 'number' ? sum : parseFloat(String(sum)) || 0;
             return currentSum + calculatedSubtotal;
         }, 0);
-        
+
         return isNaN(subtotal) ? 0 : subtotal;
     };
 
     const getTotal = () => {
         const subtotal = getSubtotal();
         const deliveryFee = parseFloat(String(restaurant?.delivery_fee)) || 0;
-        
+
         // Ensure both are numbers before adding
-        const numSubtotal = typeof subtotal === 'number' ? subtotal : parseFloat(String(subtotal)) || 0;
-        const numDeliveryFee = typeof deliveryFee === 'number' ? deliveryFee : parseFloat(String(deliveryFee)) || 0;
+        const numSubtotal =
+            typeof subtotal === 'number'
+                ? subtotal
+                : parseFloat(String(subtotal)) || 0;
+        const numDeliveryFee =
+            typeof deliveryFee === 'number'
+                ? deliveryFee
+                : parseFloat(String(deliveryFee)) || 0;
         const total = numSubtotal + numDeliveryFee;
-        
+
         if (isNaN(total)) {
             console.error('Invalid total calculation:', {
                 subtotal: numSubtotal,
                 deliveryFee: numDeliveryFee,
-                cart: cart.map(item => ({
+                cart: cart.map((item) => ({
                     name: item.menu_item.name,
                     price: item.menu_item.price,
                     quantity: item.quantity,
-                    storedSubtotal: item.subtotal
-                }))
+                    storedSubtotal: item.subtotal,
+                })),
             });
             return 0;
         }
-        
+
         return total;
     };
 
-    const filteredItems = selectedCategory === 'all'
-        ? menuItems
-        : menuItems.filter((item) => item.category_id?.toString() === selectedCategory);
+    const filteredItems =
+        selectedCategory === 'all'
+            ? menuItems
+            : menuItems.filter(
+                  (item) => item.category_id?.toString() === selectedCategory,
+              );
 
     if (!restaurant) {
         return (
@@ -343,10 +498,10 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
                         onClick={() => router.visit('/food-delivery/cart')}
                         className="relative"
                     >
-                        <ShoppingCartIcon className="h-4 w-4 mr-2" />
+                        <ShoppingCartIcon className="mr-2 h-4 w-4" />
                         Cart
                         {cart.length > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
                                 {cart.length}
                             </span>
                         )}
@@ -356,104 +511,136 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
         >
             <Head title={restaurant.name} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+            <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-3">
                 {/* Main Content */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-6 lg:col-span-2">
                     {/* Restaurant Info */}
                     <Card>
-                    <div className="relative h-64 bg-gray-200 dark:bg-gray-700 rounded-t-lg overflow-hidden">
-                        {restaurant.cover_image ? (
-                            <img
-                                src={restaurant.cover_image}
-                                alt={restaurant.name}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <UtensilsIcon className="h-24 w-24 text-gray-400" />
-                            </div>
-                        )}
-                    </div>
-                    <CardContent className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Rating</p>
-                                <div className="flex items-center space-x-1">
-                                    <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-medium text-gray-900 dark:text-white">
-                                        {restaurant.rating && typeof restaurant.rating === 'number' ? restaurant.rating.toFixed(1) : 'N/A'}
-                                    </span>
+                        <div className="relative h-64 overflow-hidden rounded-t-lg bg-gray-200 dark:bg-gray-700">
+                            {restaurant.cover_image ? (
+                                <img
+                                    src={restaurant.cover_image}
+                                    alt={restaurant.name}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center">
+                                    <UtensilsIcon className="h-24 w-24 text-gray-400" />
+                                </div>
+                            )}
+                        </div>
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Rating
+                                    </p>
+                                    <div className="flex items-center space-x-1">
+                                        <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                        <span className="font-medium text-gray-900 dark:text-white">
+                                            {restaurant.rating &&
+                                            typeof restaurant.rating ===
+                                                'number'
+                                                ? restaurant.rating.toFixed(1)
+                                                : 'N/A'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Delivery Fee
+                                    </p>
+                                    <p className="font-medium text-gray-900 dark:text-white">
+                                        {formatCurrency(
+                                            restaurant.delivery_fee,
+                                        )}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Prep Time
+                                    </p>
+                                    <p className="font-medium text-gray-900 dark:text-white">
+                                        {restaurant.estimated_prep_time} min
+                                    </p>
                                 </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Delivery Fee</p>
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    {formatCurrency(restaurant.delivery_fee)}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Prep Time</p>
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    {restaurant.estimated_prep_time} min
-                                </p>
-                            </div>
-                        </div>
-                        {restaurant.minimum_order_amount > 0 && (
-                            <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                Minimum order: {formatCurrency(restaurant.minimum_order_amount)}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Category Filter */}
-                {categories.length > 0 && (
-                    <div className="flex gap-2 overflow-x-auto pb-2">
-                        <Button
-                            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                            onClick={() => setSelectedCategory('all')}
-                            className="whitespace-nowrap"
-                        >
-                            All
-                        </Button>
-                        {categories.map((category) => (
-                            <Button
-                                key={category.id}
-                                variant={selectedCategory === category.id.toString() ? 'default' : 'outline'}
-                                onClick={() => setSelectedCategory(category.id.toString())}
-                                className="whitespace-nowrap"
-                            >
-                                {category.name}
-                            </Button>
-                        ))}
-                    </div>
-                )}
-
-                {/* Menu Items */}
-                {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-                        <p className="mt-2 text-gray-500">Loading menu...</p>
-                    </div>
-                ) : filteredItems.length === 0 ? (
-                    <Card>
-                        <CardContent className="p-12 text-center">
-                            <UtensilsIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-500">No menu items available</p>
+                            {restaurant.minimum_order_amount > 0 && (
+                                <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                                    Minimum order:{' '}
+                                    {formatCurrency(
+                                        restaurant.minimum_order_amount,
+                                    )}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredItems.map((item) => (
-                            <MenuItemCard
-                                key={item.id}
-                                item={item}
-                                formatCurrency={formatCurrency}
-                                onAddToCart={addToCart}
-                            />
-                        ))}
-                    </div>
-                )}
+
+                    {/* Category Filter */}
+                    {categories.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                            <Button
+                                variant={
+                                    selectedCategory === 'all'
+                                        ? 'default'
+                                        : 'outline'
+                                }
+                                onClick={() => setSelectedCategory('all')}
+                                className="whitespace-nowrap"
+                            >
+                                All
+                            </Button>
+                            {categories.map((category) => (
+                                <Button
+                                    key={category.id}
+                                    variant={
+                                        selectedCategory ===
+                                        category.id.toString()
+                                            ? 'default'
+                                            : 'outline'
+                                    }
+                                    onClick={() =>
+                                        setSelectedCategory(
+                                            category.id.toString(),
+                                        )
+                                    }
+                                    className="whitespace-nowrap"
+                                >
+                                    {category.name}
+                                </Button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Menu Items */}
+                    {loading ? (
+                        <div className="py-12 text-center">
+                            <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white"></div>
+                            <p className="mt-2 text-gray-500">
+                                Loading menu...
+                            </p>
+                        </div>
+                    ) : filteredItems.length === 0 ? (
+                        <Card>
+                            <CardContent className="p-12 text-center">
+                                <UtensilsIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                                <p className="text-gray-500">
+                                    No menu items available
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredItems.map((item) => (
+                                <MenuItemCard
+                                    key={item.id}
+                                    item={item}
+                                    formatCurrency={formatCurrency}
+                                    onAddToCart={addToCart}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Cart Summary Sidebar */}
@@ -464,47 +651,101 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
                                 <span>Your Cart</span>
                                 {cart.length > 0 && (
                                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                        {cart.length} item{cart.length !== 1 ? 's' : ''}
+                                        {cart.length} item
+                                        {cart.length !== 1 ? 's' : ''}
                                     </span>
                                 )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {cart.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <ShoppingCartIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Your cart is empty</p>
-                                    <p className="text-xs text-gray-400 dark:text-gray-500">Add items from the menu to get started</p>
+                                <div className="py-8 text-center">
+                                    <ShoppingCartIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                                    <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                                        Your cart is empty
+                                    </p>
+                                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                                        Add items from the menu to get started
+                                    </p>
                                 </div>
                             ) : (
                                 <>
                                     {/* Cart Items List */}
-                                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                                    <div className="max-h-64 space-y-3 overflow-y-auto">
                                         {cart.map((item) => {
                                             // Calculate effective price
                                             let effectivePrice = 0;
-                                            if (item.menu_item.effective_price !== undefined && item.menu_item.effective_price !== null) {
-                                                effectivePrice = parseFloat(String(item.menu_item.effective_price)) || 0;
-                                            } else if (item.menu_item.discount_price !== undefined && item.menu_item.discount_price !== null) {
-                                                effectivePrice = parseFloat(String(item.menu_item.discount_price)) || 0;
-                                            } else if (item.menu_item.price !== undefined && item.menu_item.price !== null) {
-                                                effectivePrice = parseFloat(String(item.menu_item.price)) || 0;
+                                            if (
+                                                item.menu_item
+                                                    .effective_price !==
+                                                    undefined &&
+                                                item.menu_item
+                                                    .effective_price !== null
+                                            ) {
+                                                effectivePrice =
+                                                    parseFloat(
+                                                        String(
+                                                            item.menu_item
+                                                                .effective_price,
+                                                        ),
+                                                    ) || 0;
+                                            } else if (
+                                                item.menu_item
+                                                    .discount_price !==
+                                                    undefined &&
+                                                item.menu_item
+                                                    .discount_price !== null
+                                            ) {
+                                                effectivePrice =
+                                                    parseFloat(
+                                                        String(
+                                                            item.menu_item
+                                                                .discount_price,
+                                                        ),
+                                                    ) || 0;
+                                            } else if (
+                                                item.menu_item.price !==
+                                                    undefined &&
+                                                item.menu_item.price !== null
+                                            ) {
+                                                effectivePrice =
+                                                    parseFloat(
+                                                        String(
+                                                            item.menu_item
+                                                                .price,
+                                                        ),
+                                                    ) || 0;
                                             }
-                                            const quantity = parseInt(String(item.quantity)) || 1;
-                                            const itemSubtotal = effectivePrice * quantity;
-                                            
+                                            const quantity =
+                                                parseInt(
+                                                    String(item.quantity),
+                                                ) || 1;
+                                            const itemSubtotal =
+                                                effectivePrice * quantity;
+
                                             return (
-                                                <div key={item.menu_item.id} className="flex items-start justify-between gap-2 pb-3 border-b last:border-0">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                            {item.menu_item.name}
+                                                <div
+                                                    key={item.menu_item.id}
+                                                    className="flex items-start justify-between gap-2 border-b pb-3 last:border-0"
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                                            {
+                                                                item.menu_item
+                                                                    .name
+                                                            }
                                                         </p>
                                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {quantity} × {formatCurrency(effectivePrice)}
+                                                            {quantity} ×{' '}
+                                                            {formatCurrency(
+                                                                effectivePrice,
+                                                            )}
                                                         </p>
                                                     </div>
-                                                    <p className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                                        {formatCurrency(itemSubtotal)}
+                                                    <p className="whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                                        {formatCurrency(
+                                                            itemSubtotal,
+                                                        )}
                                                     </p>
                                                 </div>
                                             );
@@ -512,26 +753,43 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
                                     </div>
 
                                     {/* Price Breakdown */}
-                                    <div className="space-y-2 pt-2 border-t">
+                                    <div className="space-y-2 border-t pt-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                                            <span className="text-gray-900 dark:text-white">{formatCurrency(getSubtotal())}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Subtotal
+                                            </span>
+                                            <span className="text-gray-900 dark:text-white">
+                                                {formatCurrency(getSubtotal())}
+                                            </span>
                                         </div>
-                                        {restaurant?.delivery_fee && restaurant.delivery_fee > 0 && (
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-gray-600 dark:text-gray-400">Delivery Fee</span>
-                                                <span className="text-gray-900 dark:text-white">{formatCurrency(restaurant.delivery_fee)}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between pt-2 border-t font-bold">
-                                            <span className="text-gray-900 dark:text-white">Total</span>
-                                            <span className="text-gray-900 dark:text-white">{formatCurrency(getTotal())}</span>
+                                        {restaurant?.delivery_fee &&
+                                            restaurant.delivery_fee > 0 && (
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-gray-600 dark:text-gray-400">
+                                                        Delivery Fee
+                                                    </span>
+                                                    <span className="text-gray-900 dark:text-white">
+                                                        {formatCurrency(
+                                                            restaurant.delivery_fee,
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        <div className="flex justify-between border-t pt-2 font-bold">
+                                            <span className="text-gray-900 dark:text-white">
+                                                Total
+                                            </span>
+                                            <span className="text-gray-900 dark:text-white">
+                                                {formatCurrency(getTotal())}
+                                            </span>
                                         </div>
                                     </div>
 
                                     {/* View Cart Button */}
-                                    <Button 
-                                        onClick={() => router.visit('/food-delivery/cart')} 
+                                    <Button
+                                        onClick={() =>
+                                            router.visit('/food-delivery/cart')
+                                        }
                                         className="w-full"
                                     >
                                         View Cart
@@ -545,4 +803,3 @@ export default function FoodDeliveryRestaurantPage({ auth, restaurant: initialRe
         </AuthenticatedLayout>
     );
 }
-

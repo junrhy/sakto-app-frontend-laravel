@@ -1,8 +1,3 @@
-import MerchantLayout from '@/Layouts/Merchant/MerchantLayout';
-import { PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -30,6 +25,11 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
+import MerchantLayout from '@/Layouts/Merchant/MerchantLayout';
+import { PageProps } from '@/types';
+import { Head } from '@inertiajs/react';
+import axios from 'axios';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Props extends PageProps {}
 
@@ -71,12 +71,18 @@ interface MenuItemFormData {
 }
 
 export default function MerchantRestaurantMenu({ auth }: Props) {
-    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>([]);
-    const [categories, setCategories] = useState<FoodDeliveryMenuCategory[]>([]);
+    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(
+        [],
+    );
+    const [categories, setCategories] = useState<FoodDeliveryMenuCategory[]>(
+        [],
+    );
     const [menuItems, setMenuItems] = useState<FoodDeliveryMenuItem[]>([]);
     const [selectedRestaurant, setSelectedRestaurant] = useState<string>('');
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<FoodDeliveryMenuItem | null>(null);
+    const [editingItem, setEditingItem] = useState<FoodDeliveryMenuItem | null>(
+        null,
+    );
     const [formData, setFormData] = useState<MenuItemFormData>({
         restaurant_id: 0,
         name: '',
@@ -91,7 +97,9 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
 
     const filteredItems = useMemo(() => {
         if (!selectedRestaurant) return [];
-        return menuItems.filter((item) => String(item.restaurant_id) === selectedRestaurant);
+        return menuItems.filter(
+            (item) => String(item.restaurant_id) === selectedRestaurant,
+        );
     }, [menuItems, selectedRestaurant]);
 
     useEffect(() => {
@@ -107,12 +115,15 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
 
     const fetchRestaurants = async () => {
         try {
-            const response = await axios.get('/food-delivery/restaurants/list', {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
-                    status: 'all',
+            const response = await axios.get(
+                '/food-delivery/restaurants/list',
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                        status: 'all',
+                    },
                 },
-            });
+            );
 
             if (response.data.success && response.data.data) {
                 setRestaurants(response.data.data);
@@ -182,11 +193,17 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
             name: item.name,
             description: item.description || '',
             price: String(item.price ?? 0),
-            discount_price: item.discount_price ? String(item.discount_price) : '',
-            category_id: item.menu_category_id ? String(item.menu_category_id) : 'none',
+            discount_price: item.discount_price
+                ? String(item.discount_price)
+                : '',
+            category_id: item.menu_category_id
+                ? String(item.menu_category_id)
+                : 'none',
             is_available: !!item.is_available,
             is_featured: !!item.is_featured,
-            preparation_time: item.preparation_time ? String(item.preparation_time) : '',
+            preparation_time: item.preparation_time
+                ? String(item.preparation_time)
+                : '',
         });
         setDialogOpen(true);
     };
@@ -196,16 +213,26 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
         const payload = {
             ...formData,
             client_identifier: (auth.user as any)?.identifier,
-            category_id: formData.category_id === 'none' ? null : Number(formData.category_id),
+            category_id:
+                formData.category_id === 'none'
+                    ? null
+                    : Number(formData.category_id),
             restaurant_id: Number(formData.restaurant_id),
             price: parseFloat(formData.price),
-            discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
-            preparation_time: formData.preparation_time ? Number(formData.preparation_time) : null,
+            discount_price: formData.discount_price
+                ? parseFloat(formData.discount_price)
+                : null,
+            preparation_time: formData.preparation_time
+                ? Number(formData.preparation_time)
+                : null,
         };
 
         try {
             if (editingItem) {
-                await axios.put(`/food-delivery/menu/items/${editingItem.id}`, payload);
+                await axios.put(
+                    `/food-delivery/menu/items/${editingItem.id}`,
+                    payload,
+                );
             } else {
                 await axios.post('/food-delivery/menu/items', payload);
             }
@@ -234,7 +261,11 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
         <MerchantLayout
             auth={{ user: auth.user }}
             title="Menu Management"
-            header={<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Menu Management</h2>}
+            header={
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    Menu Management
+                </h2>
+            }
         >
             <Head title="Menu Management" />
 
@@ -247,13 +278,22 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             <div>
                                 <Label htmlFor="restaurant">Restaurant</Label>
-                                <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
-                                    <SelectTrigger id="restaurant" className="mt-1">
+                                <Select
+                                    value={selectedRestaurant}
+                                    onValueChange={setSelectedRestaurant}
+                                >
+                                    <SelectTrigger
+                                        id="restaurant"
+                                        className="mt-1"
+                                    >
                                         <SelectValue placeholder="Select a restaurant" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {restaurants.map((restaurant) => (
-                                            <SelectItem key={restaurant.id} value={String(restaurant.id)}>
+                                            <SelectItem
+                                                key={restaurant.id}
+                                                value={String(restaurant.id)}
+                                            >
                                                 {restaurant.name}
                                             </SelectItem>
                                         ))}
@@ -262,7 +302,10 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                             </div>
 
                             <div className="self-end">
-                                <Button onClick={handleCreate} disabled={!selectedRestaurant}>
+                                <Button
+                                    onClick={handleCreate}
+                                    disabled={!selectedRestaurant}
+                                >
                                     Add Menu Item
                                 </Button>
                             </div>
@@ -278,41 +321,82 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                    <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Category</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Price</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                    <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Name
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Category
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Price
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="text-right text-gray-900 dark:text-white">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredItems.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <TableCell
+                                            colSpan={5}
+                                            className="py-8 text-center text-gray-500 dark:text-gray-400"
+                                        >
                                             No items available.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredItems.map((item) => (
-                                        <TableRow key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <TableCell className="text-gray-900 dark:text-white">{item.name}</TableCell>
+                                        <TableRow
+                                            key={item.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {item.name}
+                                            </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {item.menu_category_id
-                                                    ? categories.find((category) => category.id === item.menu_category_id)?.name || '—'
+                                                    ? categories.find(
+                                                          (category) =>
+                                                              category.id ===
+                                                              item.menu_category_id,
+                                                      )?.name || '—'
                                                     : '—'}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                ₱{Number(item.price ?? 0).toFixed(2)}
+                                                ₱
+                                                {Number(
+                                                    item.price ?? 0,
+                                                ).toFixed(2)}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {item.is_available ? 'Available' : 'Unavailable'}
+                                                {item.is_available
+                                                    ? 'Available'
+                                                    : 'Unavailable'}
                                             </TableCell>
                                             <TableCell className="text-right text-gray-900 dark:text-white">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEdit(item)
+                                                        }
+                                                    >
                                                         Edit
                                                     </Button>
-                                                    <Button variant="outline" size="sm" onClick={() => handleDelete(item.id)}>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                item.id,
+                                                            )
+                                                        }
+                                                    >
                                                         Delete
                                                     </Button>
                                                 </div>
@@ -329,7 +413,9 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>{editingItem ? 'Edit Menu Item' : 'Add Menu Item'}</DialogTitle>
+                        <DialogTitle>
+                            {editingItem ? 'Edit Menu Item' : 'Add Menu Item'}
+                        </DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -338,7 +424,12 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                             <Input
                                 id="name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        name: e.target.value,
+                                    })
+                                }
                                 required
                             />
                         </div>
@@ -348,7 +439,12 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                             <Textarea
                                 id="description"
                                 value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        description: e.target.value,
+                                    })
+                                }
                                 rows={3}
                             />
                         </div>
@@ -362,20 +458,32 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                                     min="0"
                                     step="0.01"
                                     value={formData.price}
-                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            price: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="discount_price">Discount Price</Label>
+                                <Label htmlFor="discount_price">
+                                    Discount Price
+                                </Label>
                                 <Input
                                     id="discount_price"
                                     type="number"
                                     min="0"
                                     step="0.01"
                                     value={formData.discount_price}
-                                    onChange={(e) => setFormData({ ...formData, discount_price: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            discount_price: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
@@ -385,17 +493,31 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                                 <Label htmlFor="category">Category</Label>
                                 <Select
                                     value={formData.category_id}
-                                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            category_id: value,
+                                        })
+                                    }
                                 >
                                     <SelectTrigger id="category">
                                         <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">No category</SelectItem>
+                                        <SelectItem value="none">
+                                            No category
+                                        </SelectItem>
                                         {categories
-                                            .sort((a, b) => a.display_order - b.display_order)
+                                            .sort(
+                                                (a, b) =>
+                                                    a.display_order -
+                                                    b.display_order,
+                                            )
                                             .map((category) => (
-                                                <SelectItem key={category.id} value={String(category.id)}>
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={String(category.id)}
+                                                >
                                                     {category.name}
                                                 </SelectItem>
                                             ))}
@@ -404,40 +526,67 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
                             </div>
 
                             <div>
-                                <Label htmlFor="preparation_time">Preparation Time (minutes)</Label>
+                                <Label htmlFor="preparation_time">
+                                    Preparation Time (minutes)
+                                </Label>
                                 <Input
                                     id="preparation_time"
                                     type="number"
                                     min="0"
                                     value={formData.preparation_time}
-                                    onChange={(e) => setFormData({ ...formData, preparation_time: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            preparation_time: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label className="flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Available</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Available
+                                </span>
                                 <Switch
                                     checked={formData.is_available}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, is_available: checked })}
+                                    onCheckedChange={(checked) =>
+                                        setFormData({
+                                            ...formData,
+                                            is_available: checked,
+                                        })
+                                    }
                                 />
                             </label>
 
                             <label className="flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Featured</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Featured
+                                </span>
                                 <Switch
                                     checked={formData.is_featured}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+                                    onCheckedChange={(checked) =>
+                                        setFormData({
+                                            ...formData,
+                                            is_featured: checked,
+                                        })
+                                    }
                                 />
                             </label>
                         </div>
 
                         <div className="flex justify-end gap-3">
-                            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setDialogOpen(false)}
+                            >
                                 Cancel
                             </Button>
-                            <Button type="submit">{editingItem ? 'Save Changes' : 'Create Item'}</Button>
+                            <Button type="submit">
+                                {editingItem ? 'Save Changes' : 'Create Item'}
+                            </Button>
                         </div>
                     </form>
                 </DialogContent>
@@ -445,4 +594,3 @@ export default function MerchantRestaurantMenu({ auth }: Props) {
         </MerchantLayout>
     );
 }
-

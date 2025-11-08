@@ -4,21 +4,21 @@ export type ParcelDelivery = {
     client_identifier: string;
     delivery_reference: string;
     delivery_type: 'express' | 'standard' | 'economy';
-    
+
     // Sender information
     sender_name: string;
     sender_phone: string;
     sender_email?: string;
     sender_address: string;
     sender_coordinates?: string;
-    
+
     // Recipient information
     recipient_name: string;
     recipient_phone: string;
     recipient_email?: string;
     recipient_address: string;
     recipient_coordinates?: string;
-    
+
     // Package details
     package_description: string;
     package_weight: number;
@@ -26,7 +26,7 @@ export type ParcelDelivery = {
     package_width?: number;
     package_height?: number;
     package_value?: number;
-    
+
     // Pricing
     distance_km?: number;
     base_rate: number;
@@ -36,7 +36,7 @@ export type ParcelDelivery = {
     delivery_type_multiplier: number;
     estimated_cost?: number;
     final_cost?: number;
-    
+
     // Delivery schedule
     pickup_date: string;
     pickup_time: string;
@@ -44,31 +44,46 @@ export type ParcelDelivery = {
     estimated_delivery_time?: string;
     actual_delivery_date?: string;
     actual_delivery_time?: string;
-    
+
     // Courier assignment
     courier_id?: number;
     courier_name?: string;
     courier_phone?: string;
     courier?: ParcelDeliveryCourier;
-    
+
     // Status
-    status: 'pending' | 'confirmed' | 'scheduled' | 'out_for_pickup' | 'picked_up' | 'at_warehouse' | 'in_transit' | 'out_for_delivery' | 'delivery_attempted' | 'delivered' | 'returned' | 'returned_to_sender' | 'on_hold' | 'failed' | 'cancelled';
+    status:
+        | 'pending'
+        | 'confirmed'
+        | 'scheduled'
+        | 'out_for_pickup'
+        | 'picked_up'
+        | 'at_warehouse'
+        | 'in_transit'
+        | 'out_for_delivery'
+        | 'delivery_attempted'
+        | 'delivered'
+        | 'returned'
+        | 'returned_to_sender'
+        | 'on_hold'
+        | 'failed'
+        | 'cancelled';
     payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
     payment_method?: string;
-    
+
     // External service integration
     external_service?: string;
     external_order_id?: string;
     external_tracking_url?: string;
-    
+
     // Metadata
     special_instructions?: string;
     notes?: string;
     pricing_breakdown?: Record<string, any>;
-    
+
     // Tracking
     trackings?: ParcelDeliveryTracking[];
-    
+
     created_at: string;
     updated_at: string;
 };
@@ -76,7 +91,22 @@ export type ParcelDelivery = {
 export type ParcelDeliveryTracking = {
     id: number;
     parcel_delivery_id: number;
-    status: 'pending' | 'confirmed' | 'scheduled' | 'out_for_pickup' | 'picked_up' | 'at_warehouse' | 'in_transit' | 'out_for_delivery' | 'delivery_attempted' | 'delivered' | 'returned' | 'returned_to_sender' | 'on_hold' | 'failed' | 'cancelled';
+    status:
+        | 'pending'
+        | 'confirmed'
+        | 'scheduled'
+        | 'out_for_pickup'
+        | 'picked_up'
+        | 'at_warehouse'
+        | 'in_transit'
+        | 'out_for_delivery'
+        | 'delivery_attempted'
+        | 'delivered'
+        | 'returned'
+        | 'returned_to_sender'
+        | 'on_hold'
+        | 'failed'
+        | 'cancelled';
     location?: string;
     notes?: string;
     updated_by?: string;
@@ -282,8 +312,22 @@ export interface DeliveryStats {
 
 // Status update form data
 export interface StatusUpdateFormData {
-    status: 'pending' | 'confirmed' | 'scheduled' | 'out_for_pickup' | 'picked_up' | 'at_warehouse' | 'in_transit' | 'out_for_delivery' | 'delivery_attempted' | 'delivered' | 'returned' | 'returned_to_sender' | 'on_hold' | 'failed' | 'cancelled';
+    status:
+        | 'pending'
+        | 'confirmed'
+        | 'scheduled'
+        | 'out_for_pickup'
+        | 'picked_up'
+        | 'at_warehouse'
+        | 'in_transit'
+        | 'out_for_delivery'
+        | 'delivery_attempted'
+        | 'delivered'
+        | 'returned'
+        | 'returned_to_sender'
+        | 'on_hold'
+        | 'failed'
+        | 'cancelled';
     location?: string;
     notes?: string;
 }
-

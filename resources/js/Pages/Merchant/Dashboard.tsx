@@ -50,7 +50,8 @@ const cards = [
         key: 'total_revenue',
         label: 'Revenue (All Time)',
         color: 'from-amber-500 to-amber-600',
-        formatter: (value: number) => `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+        formatter: (value: number) =>
+            `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
     },
 ] as const;
 
@@ -58,7 +59,8 @@ export default function Dashboard({ auth, profile, stats }: DashboardProps) {
     const contactPhone =
         profile?.phone ??
         (auth.user && 'contact_number' in auth.user
-            ? (auth.user as { contact_number?: string }).contact_number ?? null
+            ? ((auth.user as { contact_number?: string }).contact_number ??
+              null)
             : null);
 
     return (
@@ -68,7 +70,8 @@ export default function Dashboard({ auth, profile, stats }: DashboardProps) {
             header={
                 <div>
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">
-                        Welcome back, {profile?.business_name ?? auth.user?.name}
+                        Welcome back,{' '}
+                        {profile?.business_name ?? auth.user?.name}
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         Overview of your merchant operations
@@ -109,28 +112,51 @@ export default function Dashboard({ auth, profile, stats }: DashboardProps) {
                                 </p>
                             </div>
                             <div className="grid gap-4 px-6 py-6 md:grid-cols-2">
-                                <ProfileRow label="Business Name" value={profile?.business_name ?? 'Not set'} />
-                                <ProfileRow label="Business Type" value={profile?.business_type ?? 'Not set'} />
-                                <ProfileRow label="Industry" value={profile?.industry ?? 'Not set'} />
+                                <ProfileRow
+                                    label="Business Name"
+                                    value={profile?.business_name ?? 'Not set'}
+                                />
+                                <ProfileRow
+                                    label="Business Type"
+                                    value={profile?.business_type ?? 'Not set'}
+                                />
+                                <ProfileRow
+                                    label="Industry"
+                                    value={profile?.industry ?? 'Not set'}
+                                />
                                 <ProfileRow
                                     label="Website"
-                                    value={profile?.website ? (
-                                        <a
-                                            href={profile.website}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-                                        >
-                                            {profile.website}
-                                        </a>
-                                    ) : (
-                                        'Not set'
-                                    )}
+                                    value={
+                                        profile?.website ? (
+                                            <a
+                                                href={profile.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                                            >
+                                                {profile.website}
+                                            </a>
+                                        ) : (
+                                            'Not set'
+                                        )
+                                    }
                                 />
-                                <ProfileRow label="Contact Email" value={auth.user?.email ?? 'Not set'} />
-                                <ProfileRow label="Contact Phone" value={contactPhone ?? 'Not set'} />
-                                <ProfileRow label="Country" value={profile?.country ?? 'Not set'} />
-                                <ProfileRow label="City" value={profile?.city ?? 'Not set'} />
+                                <ProfileRow
+                                    label="Contact Email"
+                                    value={auth.user?.email ?? 'Not set'}
+                                />
+                                <ProfileRow
+                                    label="Contact Phone"
+                                    value={contactPhone ?? 'Not set'}
+                                />
+                                <ProfileRow
+                                    label="Country"
+                                    value={profile?.country ?? 'Not set'}
+                                />
+                                <ProfileRow
+                                    label="City"
+                                    value={profile?.city ?? 'Not set'}
+                                />
                             </div>
                         </div>
                     </div>
@@ -141,9 +167,18 @@ export default function Dashboard({ auth, profile, stats }: DashboardProps) {
                                 Quick actions
                             </h3>
                             <div className="mt-4 space-y-3">
-                                <ActionButton href="#" label="Create new catalog" />
-                                <ActionButton href="#" label="Invite team member" />
-                                <ActionButton href="#" label="Connect payment channels" />
+                                <ActionButton
+                                    href="#"
+                                    label="Create new catalog"
+                                />
+                                <ActionButton
+                                    href="#"
+                                    label="Invite team member"
+                                />
+                                <ActionButton
+                                    href="#"
+                                    label="Connect payment channels"
+                                />
                             </div>
                         </div>
 
@@ -153,7 +188,9 @@ export default function Dashboard({ auth, profile, stats }: DashboardProps) {
                             </h3>
                             <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400">
                                 <li>• Configure your product catalog</li>
-                                <li>• Set delivery and fulfillment preferences</li>
+                                <li>
+                                    • Set delivery and fulfillment preferences
+                                </li>
                                 <li>• Invite teammates to collaborate</li>
                             </ul>
                         </div>
@@ -175,7 +212,9 @@ function ProfileRow({ label, value }: ProfileRowProps) {
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 {label}
             </p>
-            <p className="mt-1 text-sm text-gray-800 dark:text-gray-200">{value}</p>
+            <p className="mt-1 text-sm text-gray-800 dark:text-gray-200">
+                {value}
+            </p>
         </div>
     );
 }

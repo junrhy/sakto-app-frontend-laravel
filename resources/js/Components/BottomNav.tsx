@@ -39,7 +39,8 @@ const createNavItems = (unreadCount: number = 0): NavItem[] => [
 export default function BottomNav() {
     const { url } = usePage();
     const page = usePage();
-    const unreadCount = (page.props as { unreadCount?: number }).unreadCount ?? 0;
+    const unreadCount =
+        (page.props as { unreadCount?: number }).unreadCount ?? 0;
 
     const items = createNavItems(unreadCount);
 

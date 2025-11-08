@@ -13,8 +13,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ParcelDeliveryCourier } from '../types';
 
@@ -34,7 +34,9 @@ export default function CourierAssignmentDialog({
     onSuccess,
 }: CourierAssignmentDialogProps) {
     const [couriers, setCouriers] = useState<ParcelDeliveryCourier[]>([]);
-    const [selectedCourierId, setSelectedCourierId] = useState<string>(currentCourierId?.toString() || '');
+    const [selectedCourierId, setSelectedCourierId] = useState<string>(
+        currentCourierId?.toString() || '',
+    );
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
 
@@ -68,9 +70,12 @@ export default function CourierAssignmentDialog({
 
         setLoading(true);
         try {
-            const response = await axios.post(`/parcel-delivery/${deliveryId}/assign-courier`, {
-                courier_id: parseInt(selectedCourierId),
-            });
+            const response = await axios.post(
+                `/parcel-delivery/${deliveryId}/assign-courier`,
+                {
+                    courier_id: parseInt(selectedCourierId),
+                },
+            );
 
             if (response.data.success) {
                 toast.success('Courier assigned successfully');
@@ -79,7 +84,9 @@ export default function CourierAssignmentDialog({
                     onSuccess();
                 }
             } else {
-                toast.error(response.data.message || 'Failed to assign courier');
+                toast.error(
+                    response.data.message || 'Failed to assign courier',
+                );
             }
         } catch (error: any) {
             toast.error('Failed to assign courier');
@@ -89,7 +96,9 @@ export default function CourierAssignmentDialog({
         }
     };
 
-    const availableCouriers = couriers.filter(c => c.status === 'available' || c.id === currentCourierId);
+    const availableCouriers = couriers.filter(
+        (c) => c.status === 'available' || c.id === currentCourierId,
+    );
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -108,15 +117,29 @@ export default function CourierAssignmentDialog({
                             disabled={fetching}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder={fetching ? 'Loading couriers...' : 'Select a courier'} />
+                                <SelectValue
+                                    placeholder={
+                                        fetching
+                                            ? 'Loading couriers...'
+                                            : 'Select a courier'
+                                    }
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {availableCouriers.length === 0 ? (
-                                    <SelectItem value="none" disabled>No available couriers</SelectItem>
+                                    <SelectItem value="none" disabled>
+                                        No available couriers
+                                    </SelectItem>
                                 ) : (
                                     availableCouriers.map((courier) => (
-                                        <SelectItem key={courier.id} value={courier.id.toString()}>
-                                            {courier.name} ({courier.phone}) {courier.status === 'busy' ? '(Busy)' : ''}
+                                        <SelectItem
+                                            key={courier.id}
+                                            value={courier.id.toString()}
+                                        >
+                                            {courier.name} ({courier.phone}){' '}
+                                            {courier.status === 'busy'
+                                                ? '(Busy)'
+                                                : ''}
                                         </SelectItem>
                                     ))
                                 )}
@@ -124,7 +147,8 @@ export default function CourierAssignmentDialog({
                         </Select>
                         {availableCouriers.length === 0 && !fetching && (
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                No available couriers. Please add couriers first.
+                                No available couriers. Please add couriers
+                                first.
                             </p>
                         )}
                     </div>
@@ -138,8 +162,8 @@ export default function CourierAssignmentDialog({
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             disabled={loading || !selectedCourierId || fetching}
                         >
                             {loading ? 'Assigning...' : 'Assign Courier'}
@@ -150,4 +174,3 @@ export default function CourierAssignmentDialog({
         </Dialog>
     );
 }
-

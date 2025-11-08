@@ -322,9 +322,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                 </span>
                             </h2>
                             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-slate-600 lg:text-2xl">
-                                Launch and manage your own job board business with our
-                                comprehensive platform. Connect employers with job seekers
-                                and build your recruitment marketplace.
+                                Launch and manage your own job board business
+                                with our comprehensive platform. Connect
+                                employers with job seekers and build your
+                                recruitment marketplace.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
                                 {!auth.user && (
@@ -361,8 +362,9 @@ export default function JobsIndex({ auth }: PageProps) {
                                 </h3>
                                 <p className="mx-auto max-w-3xl text-lg text-slate-600">
                                     Our platform provides comprehensive tools
-                                    and resources to help you manage job postings,
-                                    track applications, and grow your recruitment business.
+                                    and resources to help you manage job
+                                    postings, track applications, and grow your
+                                    recruitment business.
                                 </p>
                             </div>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -380,8 +382,9 @@ export default function JobsIndex({ auth }: PageProps) {
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
                                         Create and manage multiple job boards,
-                                        post job listings, and organize opportunities
-                                        by category or industry to attract the right candidates.
+                                        post job listings, and organize
+                                        opportunities by category or industry to
+                                        attract the right candidates.
                                     </p>
                                 </div>
 
@@ -398,9 +401,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                         Application Tracking
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Track applications, manage applicant profiles,
-                                        and streamline your hiring process with
-                                        comprehensive applicant management tools.
+                                        Track applications, manage applicant
+                                        profiles, and streamline your hiring
+                                        process with comprehensive applicant
+                                        management tools.
                                     </p>
                                 </div>
 
@@ -417,9 +421,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                         Applicant Profiles
                                     </h4>
                                     <p className="leading-relaxed text-slate-600">
-                                        Build comprehensive applicant databases with
-                                        resume information, skills, and experience
-                                        to help you find the perfect candidates.
+                                        Build comprehensive applicant databases
+                                        with resume information, skills, and
+                                        experience to help you find the perfect
+                                        candidates.
                                     </p>
                                 </div>
                             </div>
@@ -586,8 +591,8 @@ export default function JobsIndex({ auth }: PageProps) {
                         <p className="mx-auto max-w-2xl text-lg text-slate-600">
                             After your free trial, select the perfect plan for
                             your job board business. All plans include our core
-                            job board management features with different levels of
-                            support and capacity.
+                            job board management features with different levels
+                            of support and capacity.
                         </p>
                     </div>
 
@@ -936,7 +941,8 @@ export default function JobsIndex({ auth }: PageProps) {
                                                 />
                                             </svg>
                                             <span className="text-slate-600">
-                                                Priority support & custom features
+                                                Priority support & custom
+                                                features
                                             </span>
                                         </li>
                                     </ul>
@@ -958,9 +964,12 @@ export default function JobsIndex({ auth }: PageProps) {
                                             How do I create a job board?
                                         </dt>
                                         <dd className="text-slate-600">
-                                            Simply sign up for an account, create your first job board,
-                                            and start posting job listings. You can manage multiple
-                                            job boards and track all applications from your dashboard.
+                                            Simply sign up for an account,
+                                            create your first job board, and
+                                            start posting job listings. You can
+                                            manage multiple job boards and track
+                                            all applications from your
+                                            dashboard.
                                         </dd>
                                     </div>
                                     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -969,10 +978,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                         </dt>
                                         <dd className="text-slate-600">
                                             Yes, we take data security
-                                            seriously. Your business and applicant data
-                                            is encrypted and protected. We never
-                                            share your data without your
-                                            consent.
+                                            seriously. Your business and
+                                            applicant data is encrypted and
+                                            protected. We never share your data
+                                            without your consent.
                                         </dd>
                                     </div>
                                 </dl>
@@ -1003,9 +1012,10 @@ export default function JobsIndex({ auth }: PageProps) {
                                     </span>
                                 </div>
                                 <p className="mb-4 max-w-md text-slate-300">
-                                    Launch and manage your own job board business with our
-                                    comprehensive platform. Connect employers with job seekers
-                                    and build your recruitment marketplace.
+                                    Launch and manage your own job board
+                                    business with our comprehensive platform.
+                                    Connect employers with job seekers and build
+                                    your recruitment marketplace.
                                 </p>
                             </div>
 

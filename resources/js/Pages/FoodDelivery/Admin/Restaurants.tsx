@@ -1,18 +1,42 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { UtensilsIcon, PlusIcon, EditIcon, TrashIcon, SearchIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { FoodDeliveryRestaurant, RestaurantFormData } from '../types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import {
+    EditIcon,
+    PlusIcon,
+    SearchIcon,
+    TrashIcon,
+    UtensilsIcon,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { FoodDeliveryRestaurant, RestaurantFormData } from '../types';
 
 interface Props extends PageProps {
     restaurants?: FoodDeliveryRestaurant[];
@@ -20,12 +44,20 @@ interface Props extends PageProps {
     mode?: 'create' | 'edit';
 }
 
-export default function AdminRestaurants({ auth, restaurants: initialRestaurants, restaurant: initialRestaurant, mode: initialMode }: Props) {
-    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(initialRestaurants || []);
+export default function AdminRestaurants({
+    auth,
+    restaurants: initialRestaurants,
+    restaurant: initialRestaurant,
+    mode: initialMode,
+}: Props) {
+    const [restaurants, setRestaurants] = useState<FoodDeliveryRestaurant[]>(
+        initialRestaurants || [],
+    );
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [dialogOpen, setDialogOpen] = useState(!!initialMode);
-    const [editingRestaurant, setEditingRestaurant] = useState<FoodDeliveryRestaurant | null>(initialRestaurant || null);
+    const [editingRestaurant, setEditingRestaurant] =
+        useState<FoodDeliveryRestaurant | null>(initialRestaurant || null);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState<RestaurantFormData>({
         name: '',
@@ -59,8 +91,10 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                 email: editingRestaurant.email || '',
                 status: editingRestaurant.status,
                 delivery_fee: editingRestaurant.delivery_fee.toString(),
-                minimum_order_amount: editingRestaurant.minimum_order_amount.toString(),
-                estimated_prep_time: editingRestaurant.estimated_prep_time.toString(),
+                minimum_order_amount:
+                    editingRestaurant.minimum_order_amount.toString(),
+                estimated_prep_time:
+                    editingRestaurant.estimated_prep_time.toString(),
             });
         } else {
             setFormData({
@@ -90,7 +124,10 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                 params.search = search;
             }
 
-            const response = await axios.get('/food-delivery/restaurants/list', { params });
+            const response = await axios.get(
+                '/food-delivery/restaurants/list',
+                { params },
+            );
             if (response.data.success) {
                 setRestaurants(response.data.data || []);
             }
@@ -109,42 +146,65 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
             const payload = {
                 ...formData,
                 delivery_fee: parseFloat(formData.delivery_fee) || 0,
-                minimum_order_amount: parseFloat(formData.minimum_order_amount) || 0,
-                estimated_prep_time: parseInt(formData.estimated_prep_time) || 30,
+                minimum_order_amount:
+                    parseFloat(formData.minimum_order_amount) || 0,
+                estimated_prep_time:
+                    parseInt(formData.estimated_prep_time) || 30,
                 client_identifier: (auth.user as any)?.identifier,
             };
 
             let response;
             if (editingRestaurant) {
-                response = await axios.put(`/food-delivery/restaurants/${editingRestaurant.id}`, payload);
+                response = await axios.put(
+                    `/food-delivery/restaurants/${editingRestaurant.id}`,
+                    payload,
+                );
             } else {
-                response = await axios.post('/food-delivery/restaurants', payload);
+                response = await axios.post(
+                    '/food-delivery/restaurants',
+                    payload,
+                );
             }
 
             if (response.data.success) {
-                toast.success(editingRestaurant ? 'Restaurant updated successfully' : 'Restaurant created successfully');
+                toast.success(
+                    editingRestaurant
+                        ? 'Restaurant updated successfully'
+                        : 'Restaurant created successfully',
+                );
                 setDialogOpen(false);
                 setEditingRestaurant(null);
                 fetchRestaurants();
                 // Clear the URL mode parameter
-                router.visit('/food-delivery/admin/restaurants', { replace: true });
+                router.visit('/food-delivery/admin/restaurants', {
+                    replace: true,
+                });
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || (editingRestaurant ? 'Failed to update restaurant' : 'Failed to create restaurant'));
+            toast.error(
+                error.response?.data?.message ||
+                    (editingRestaurant
+                        ? 'Failed to update restaurant'
+                        : 'Failed to create restaurant'),
+            );
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (restaurantId: number) => {
-        if (!confirm('Are you sure you want to delete this restaurant?')) return;
+        if (!confirm('Are you sure you want to delete this restaurant?'))
+            return;
 
         try {
-            const response = await axios.delete(`/food-delivery/restaurants/${restaurantId}`, {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
+            const response = await axios.delete(
+                `/food-delivery/restaurants/${restaurantId}`,
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                    },
                 },
-            });
+            );
             if (response.data.success) {
                 toast.success('Restaurant deleted successfully');
                 fetchRestaurants();
@@ -165,7 +225,11 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
     };
 
     const formatCurrency = (amount: number) => {
-        let currency: { symbol: string; thousands_separator?: string; decimal_separator?: string };
+        let currency: {
+            symbol: string;
+            thousands_separator?: string;
+            decimal_separator?: string;
+        };
         const appCurrency = (auth.user as any)?.app_currency;
         if (appCurrency) {
             if (typeof appCurrency === 'string') {
@@ -174,7 +238,11 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                 currency = appCurrency;
             }
         } else {
-            currency = { symbol: '₱', thousands_separator: ',', decimal_separator: '.' };
+            currency = {
+                symbol: '₱',
+                thousands_separator: ',',
+                decimal_separator: '.',
+            };
         }
         return `${currency.symbol}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
@@ -197,7 +265,7 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                         </div>
                     </div>
                     <Button onClick={handleCreate}>
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                        <PlusIcon className="mr-2 h-4 w-4" />
                         Add Restaurant
                     </Button>
                 </div>
@@ -223,15 +291,19 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
 
                 {/* Restaurants Table */}
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-                        <p className="mt-2 text-gray-500">Loading restaurants...</p>
+                    <div className="py-12 text-center">
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white"></div>
+                        <p className="mt-2 text-gray-500">
+                            Loading restaurants...
+                        </p>
                     </div>
                 ) : restaurants.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
-                            <UtensilsIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-500">No restaurants found</p>
+                            <UtensilsIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                            <p className="text-gray-500">
+                                No restaurants found
+                            </p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -240,31 +312,58 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                        <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Phone</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Address</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Delivery Fee</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                        <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Name
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Phone
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Address
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Delivery Fee
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Status
+                                        </TableHead>
+                                        <TableHead className="text-right text-gray-900 dark:text-white">
+                                            Actions
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {restaurants.map((restaurant) => (
-                                        <TableRow key={restaurant.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <TableCell className="text-gray-900 dark:text-white">{restaurant.name}</TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{restaurant.phone}</TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{restaurant.address}</TableCell>
+                                        <TableRow
+                                            key={restaurant.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {formatCurrency(restaurant.delivery_fee)}
+                                                {restaurant.name}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    restaurant.status === 'active'
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                        : restaurant.status === 'inactive'
-                                                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                                }`}>
+                                                {restaurant.phone}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {restaurant.address}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {formatCurrency(
+                                                    restaurant.delivery_fee,
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <span
+                                                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                        restaurant.status ===
+                                                        'active'
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                            : restaurant.status ===
+                                                                'inactive'
+                                                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                                    }`}
+                                                >
                                                     {restaurant.status}
                                                 </span>
                                             </TableCell>
@@ -273,14 +372,22 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleEdit(restaurant)}
+                                                        onClick={() =>
+                                                            handleEdit(
+                                                                restaurant,
+                                                            )
+                                                        }
                                                     >
                                                         <EditIcon className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleDelete(restaurant.id)}
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                restaurant.id,
+                                                            )
+                                                        }
                                                     >
                                                         <TrashIcon className="h-4 w-4" />
                                                     </Button>
@@ -295,25 +402,41 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                 )}
 
                 {/* Create/Edit Dialog */}
-                <Dialog open={dialogOpen} onOpenChange={(open) => {
-                    setDialogOpen(open);
-                    if (!open) {
-                        setEditingRestaurant(null);
-                        router.visit('/food-delivery/admin/restaurants', { replace: true });
-                    }
-                }}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <Dialog
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        setDialogOpen(open);
+                        if (!open) {
+                            setEditingRestaurant(null);
+                            router.visit('/food-delivery/admin/restaurants', {
+                                replace: true,
+                            });
+                        }
+                    }}
+                >
+                    <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>{editingRestaurant ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
+                            <DialogTitle>
+                                {editingRestaurant
+                                    ? 'Edit Restaurant'
+                                    : 'Add Restaurant'}
+                            </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="name">Restaurant Name *</Label>
+                                    <Label htmlFor="name">
+                                        Restaurant Name *
+                                    </Label>
                                     <Input
                                         id="name"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                name: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
@@ -322,7 +445,12 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                                     <Input
                                         id="phone"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                phone: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
@@ -332,31 +460,59 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                                         id="email"
                                         type="email"
                                         value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                email: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                                 <div>
                                     <Label htmlFor="status">Status *</Label>
                                     <Select
                                         value={formData.status}
-                                        onValueChange={(value: 'active' | 'inactive' | 'closed') => setFormData({ ...formData, status: value })}
+                                        onValueChange={(
+                                            value:
+                                                | 'active'
+                                                | 'inactive'
+                                                | 'closed',
+                                        ) =>
+                                            setFormData({
+                                                ...formData,
+                                                status: value,
+                                            })
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="inactive">Inactive</SelectItem>
-                                            <SelectItem value="closed">Closed</SelectItem>
+                                            <SelectItem value="active">
+                                                Active
+                                            </SelectItem>
+                                            <SelectItem value="inactive">
+                                                Inactive
+                                            </SelectItem>
+                                            <SelectItem value="closed">
+                                                Closed
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <Label htmlFor="description">Description</Label>
+                                    <Label htmlFor="description">
+                                        Description
+                                    </Label>
                                     <Input
                                         id="description"
                                         value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                description: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -364,48 +520,83 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                                     <Input
                                         id="address"
                                         value={formData.address}
-                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                address: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="coordinates">Coordinates (lat,lng)</Label>
+                                    <Label htmlFor="coordinates">
+                                        Coordinates (lat,lng)
+                                    </Label>
                                     <Input
                                         id="coordinates"
                                         value={formData.coordinates}
-                                        onChange={(e) => setFormData({ ...formData, coordinates: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                coordinates: e.target.value,
+                                            })
+                                        }
                                         placeholder="14.5995,120.9842"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="delivery_fee">Delivery Fee *</Label>
+                                    <Label htmlFor="delivery_fee">
+                                        Delivery Fee *
+                                    </Label>
                                     <Input
                                         id="delivery_fee"
                                         type="number"
                                         step="0.01"
                                         value={formData.delivery_fee}
-                                        onChange={(e) => setFormData({ ...formData, delivery_fee: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                delivery_fee: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="minimum_order_amount">Minimum Order Amount *</Label>
+                                    <Label htmlFor="minimum_order_amount">
+                                        Minimum Order Amount *
+                                    </Label>
                                     <Input
                                         id="minimum_order_amount"
                                         type="number"
                                         step="0.01"
                                         value={formData.minimum_order_amount}
-                                        onChange={(e) => setFormData({ ...formData, minimum_order_amount: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                minimum_order_amount:
+                                                    e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="estimated_prep_time">Estimated Prep Time (minutes) *</Label>
+                                    <Label htmlFor="estimated_prep_time">
+                                        Estimated Prep Time (minutes) *
+                                    </Label>
                                     <Input
                                         id="estimated_prep_time"
                                         type="number"
                                         value={formData.estimated_prep_time}
-                                        onChange={(e) => setFormData({ ...formData, estimated_prep_time: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                estimated_prep_time:
+                                                    e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
@@ -417,13 +608,20 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
                                     onClick={() => {
                                         setDialogOpen(false);
                                         setEditingRestaurant(null);
-                                        router.visit('/food-delivery/admin/restaurants', { replace: true });
+                                        router.visit(
+                                            '/food-delivery/admin/restaurants',
+                                            { replace: true },
+                                        );
                                     }}
                                 >
                                     Cancel
                                 </Button>
                                 <Button type="submit" disabled={saving}>
-                                    {saving ? 'Saving...' : editingRestaurant ? 'Update Restaurant' : 'Create Restaurant'}
+                                    {saving
+                                        ? 'Saving...'
+                                        : editingRestaurant
+                                          ? 'Update Restaurant'
+                                          : 'Create Restaurant'}
                                 </Button>
                             </div>
                         </form>
@@ -433,4 +631,3 @@ export default function AdminRestaurants({ auth, restaurants: initialRestaurants
         </AuthenticatedLayout>
     );
 }
-

@@ -1,5 +1,10 @@
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { getVisibleItems, groupMenuItems, menuCategories, GroupedMenuItem } from './MenuConfig';
+import {
+    getVisibleItems,
+    GroupedMenuItem,
+    groupMenuItems,
+    menuCategories,
+} from './MenuConfig';
 
 interface MobileMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;
@@ -45,19 +50,22 @@ export default function MobileMenu({
                                     >
                                         {item.title}
                                     </ResponsiveNavLink>
-                                    {item.submenuItems && item.submenuItems.length > 0 && (
-                                        <div className="ml-4 space-y-1 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
-                                            {item.submenuItems.map((submenu) => (
-                                                <ResponsiveNavLink
-                                                    key={submenu.id}
-                                                    href={submenu.href}
-                                                    className="flex justify-center rounded-lg bg-white/40 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:text-white hover:shadow-md dark:bg-white/3 dark:text-white/70 dark:hover:from-blue-500 dark:hover:to-purple-600"
-                                                >
-                                                    {submenu.title}
-                                                </ResponsiveNavLink>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {item.submenuItems &&
+                                        item.submenuItems.length > 0 && (
+                                            <div className="ml-4 space-y-1 border-l-2 border-gray-300 pl-3 dark:border-gray-600">
+                                                {item.submenuItems.map(
+                                                    (submenu) => (
+                                                        <ResponsiveNavLink
+                                                            key={submenu.id}
+                                                            href={submenu.href}
+                                                            className="dark:bg-white/3 flex justify-center rounded-lg bg-white/40 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:text-white hover:shadow-md dark:text-white/70 dark:hover:from-blue-500 dark:hover:to-purple-600"
+                                                        >
+                                                            {submenu.title}
+                                                        </ResponsiveNavLink>
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
                                 </div>
                             ))}
                         </div>

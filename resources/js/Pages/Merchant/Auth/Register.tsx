@@ -60,9 +60,13 @@ export default function Register({
             <div className="flex min-h-screen w-full bg-white dark:bg-gray-900">
                 <div className="hidden w-2/5 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-900 p-12 text-white md:flex md:flex-col md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Create your merchant account</h1>
+                        <h1 className="text-3xl font-bold">
+                            Create your merchant account
+                        </h1>
                         <p className="mt-4 text-sm text-indigo-100">
-                            Access your unified dashboard for orders, inventory, delivery, and customer engagement tools. Manage your entire business ecosystem in one place.
+                            Access your unified dashboard for orders, inventory,
+                            delivery, and customer engagement tools. Manage your
+                            entire business ecosystem in one place.
                         </p>
                     </div>
 
@@ -72,9 +76,18 @@ export default function Register({
                                 Why merchants choose Sakto
                             </p>
                             <ul className="mt-3 space-y-2 text-sm text-indigo-100">
-                                <li>• Unified tools across retail, food, logistics, and services</li>
-                                <li>• Real-time visibility across your teams and locations</li>
-                                <li>• Integrated payment, delivery, and customer channels</li>
+                                <li>
+                                    • Unified tools across retail, food,
+                                    logistics, and services
+                                </li>
+                                <li>
+                                    • Real-time visibility across your teams and
+                                    locations
+                                </li>
+                                <li>
+                                    • Integrated payment, delivery, and customer
+                                    channels
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -112,45 +125,72 @@ export default function Register({
                             </div>
 
                             <div className="lg:col-span-2">
-                                <InputLabel htmlFor="business_name" value="Business Name" />
+                                <InputLabel
+                                    htmlFor="business_name"
+                                    value="Business Name"
+                                />
                                 <TextInput
                                     id="business_name"
                                     value={data.business_name}
                                     className="mt-1 block w-full"
                                     autoComplete="organization"
                                     required
-                                    onChange={(e) => setData('business_name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('business_name', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.business_name} className="mt-2" />
+                                <InputError
+                                    message={errors.business_name}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="business_type" value="Business Type" />
+                                <InputLabel
+                                    htmlFor="business_type"
+                                    value="Business Type"
+                                />
                                 <select
                                     id="business_type"
                                     value={data.business_type}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    onChange={(e) => setData('business_type', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('business_type', e.target.value)
+                                    }
                                 >
-                                    <option value="">Select business type</option>
+                                    <option value="">
+                                        Select business type
+                                    </option>
                                     {businessTypes.map((type) => (
                                         <option key={type} value={type}>
-                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            {type.charAt(0).toUpperCase() +
+                                                type.slice(1)}
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.business_type} className="mt-2" />
+                                <InputError
+                                    message={errors.business_type}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="industry" value="Industry" />
+                                <InputLabel
+                                    htmlFor="industry"
+                                    value="Industry"
+                                />
                                 <TextInput
                                     id="industry"
                                     value={data.industry}
                                     className="mt-1 block w-full"
-                                    onChange={(e) => setData('industry', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('industry', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.industry} className="mt-2" />
+                                <InputError
+                                    message={errors.industry}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
@@ -160,27 +200,46 @@ export default function Register({
                                     value={data.website}
                                     className="mt-1 block w-full"
                                     placeholder="https://"
-                                    onChange={(e) => setData('website', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('website', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.website} className="mt-2" />
+                                <InputError
+                                    message={errors.website}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="project_identifier" value="Primary Application" />
+                                <InputLabel
+                                    htmlFor="project_identifier"
+                                    value="Primary Application"
+                                />
                                 <select
                                     id="project_identifier"
                                     value={data.project_identifier}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    onChange={(e) => setData('project_identifier', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'project_identifier',
+                                            e.target.value,
+                                        )
+                                    }
                                 >
                                     <option value="">Select application</option>
                                     {projects.map((project) => (
-                                        <option key={project.identifier} value={project.identifier}>
+                                        <option
+                                            key={project.identifier}
+                                            value={project.identifier}
+                                        >
                                             {project.name}
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.project_identifier} className="mt-2" />
+                                <InputError
+                                    message={errors.project_identifier}
+                                    className="mt-2"
+                                />
                             </div>
                         </section>
 
@@ -192,15 +251,23 @@ export default function Register({
                             </div>
 
                             <div className="lg:col-span-2">
-                                <InputLabel htmlFor="contact_name" value="Contact Name" />
+                                <InputLabel
+                                    htmlFor="contact_name"
+                                    value="Contact Name"
+                                />
                                 <TextInput
                                     id="contact_name"
                                     value={data.contact_name}
                                     className="mt-1 block w-full"
                                     required
-                                    onChange={(e) => setData('contact_name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('contact_name', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.contact_name} className="mt-2" />
+                                <InputError
+                                    message={errors.contact_name}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
@@ -212,26 +279,42 @@ export default function Register({
                                     className="mt-1 block w-full"
                                     autoComplete="email"
                                     required
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.email} className="mt-2" />
+                                <InputError
+                                    message={errors.email}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="phone_number" value="Phone Number" />
+                                <InputLabel
+                                    htmlFor="phone_number"
+                                    value="Phone Number"
+                                />
                                 <TextInput
                                     id="phone_number"
                                     value={data.phone_number}
                                     className="mt-1 block w-full"
                                     autoComplete="tel"
                                     required
-                                    onChange={(e) => setData('phone_number', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('phone_number', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.phone_number} className="mt-2" />
+                                <InputError
+                                    message={errors.phone_number}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password" value="Password" />
+                                <InputLabel
+                                    htmlFor="password"
+                                    value="Password"
+                                />
                                 <TextInput
                                     id="password"
                                     type="password"
@@ -239,13 +322,21 @@ export default function Register({
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
                                     required
-                                    onChange={(e) => setData('password', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.password} className="mt-2" />
+                                <InputError
+                                    message={errors.password}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
+                                <InputLabel
+                                    htmlFor="password_confirmation"
+                                    value="Confirm Password"
+                                />
                                 <TextInput
                                     id="password_confirmation"
                                     type="password"
@@ -253,7 +344,12 @@ export default function Register({
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
                                     required
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'password_confirmation',
+                                            e.target.value,
+                                        )
+                                    }
                                 />
                             </div>
                         </section>
@@ -271,9 +367,14 @@ export default function Register({
                                     id="street"
                                     value={data.street}
                                     className="mt-1 block w-full"
-                                    onChange={(e) => setData('street', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('street', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.street} className="mt-2" />
+                                <InputError
+                                    message={errors.street}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
@@ -282,31 +383,52 @@ export default function Register({
                                     id="city"
                                     value={data.city}
                                     className="mt-1 block w-full"
-                                    onChange={(e) => setData('city', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('city', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.city} className="mt-2" />
+                                <InputError
+                                    message={errors.city}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="state" value="State / Province" />
+                                <InputLabel
+                                    htmlFor="state"
+                                    value="State / Province"
+                                />
                                 <TextInput
                                     id="state"
                                     value={data.state}
                                     className="mt-1 block w-full"
-                                    onChange={(e) => setData('state', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('state', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.state} className="mt-2" />
+                                <InputError
+                                    message={errors.state}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="postal_code" value="Postal Code" />
+                                <InputLabel
+                                    htmlFor="postal_code"
+                                    value="Postal Code"
+                                />
                                 <TextInput
                                     id="postal_code"
                                     value={data.postal_code}
                                     className="mt-1 block w-full"
-                                    onChange={(e) => setData('postal_code', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('postal_code', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.postal_code} className="mt-2" />
+                                <InputError
+                                    message={errors.postal_code}
+                                    className="mt-2"
+                                />
                             </div>
 
                             <div>
@@ -315,26 +437,39 @@ export default function Register({
                                     id="country"
                                     value={data.country}
                                     className="mt-1 block w-full"
-                                    onChange={(e) => setData('country', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('country', e.target.value)
+                                    }
                                 />
-                                <InputError message={errors.country} className="mt-2" />
+                                <InputError
+                                    message={errors.country}
+                                    className="mt-2"
+                                />
                             </div>
                         </section>
 
                         <div className="flex items-center justify-between">
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                 By creating an account you agree to our{' '}
-                                <Link href="/terms" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                                <Link
+                                    href="/terms"
+                                    className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                                >
                                     Terms
                                 </Link>{' '}
                                 and{' '}
-                                <Link href="/privacy" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                                <Link
+                                    href="/privacy"
+                                    className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                                >
                                     Privacy Policy
                                 </Link>
                                 .
                             </p>
                             <PrimaryButton disabled={processing}>
-                                {processing ? 'Creating account...' : 'Create Account'}
+                                {processing
+                                    ? 'Creating account...'
+                                    : 'Create Account'}
                             </PrimaryButton>
                         </div>
                     </form>

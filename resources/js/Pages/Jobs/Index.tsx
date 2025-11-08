@@ -1,11 +1,11 @@
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Briefcase, Plus, SearchIcon } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import JobBoardCard from './components/JobBoardCard';
 
@@ -37,20 +37,30 @@ export default function Index({ auth, jobBoards }: Props) {
         return jobBoards.filter(
             (board) =>
                 board.name.toLowerCase().includes(searchLower) ||
-                board.description?.toLowerCase().includes(searchLower)
+                board.description?.toLowerCase().includes(searchLower),
         );
     }, [jobBoards, search]);
 
     const stats = useMemo(() => {
         const total = jobBoards.length;
         const active = jobBoards.filter((board) => board.is_active).length;
-        const totalJobs = jobBoards.reduce((sum, board) => sum + board.jobs_count, 0);
-        const publishedJobs = jobBoards.reduce((sum, board) => sum + board.published_jobs_count, 0);
+        const totalJobs = jobBoards.reduce(
+            (sum, board) => sum + board.jobs_count,
+            0,
+        );
+        const publishedJobs = jobBoards.reduce(
+            (sum, board) => sum + board.published_jobs_count,
+            0,
+        );
         return { total, active, totalJobs, publishedJobs };
     }, [jobBoards]);
 
     const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this job board? This will also delete all jobs in this board.')) {
+        if (
+            confirm(
+                'Are you sure you want to delete this job board? This will also delete all jobs in this board.',
+            )
+        ) {
             router.delete(route('jobs.destroyBoard', id), {
                 onSuccess: () => {
                     toast.success('Job board deleted successfully');
@@ -155,58 +165,62 @@ export default function Index({ auth, jobBoards }: Props) {
             <Head title="Job Boards" />
 
             <div className="space-y-6">
-                    {/* Search Bar */}
-                    <Card className="shadow-sm">
-                        <CardContent className="p-6">
-                            <div className="relative">
-                                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400" />
-                                <Input
-                                    type="search"
-                                    placeholder="Search job boards..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="border-gray-300 bg-white pl-9 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
-                                />
-                            </div>
+                {/* Search Bar */}
+                <Card className="shadow-sm">
+                    <CardContent className="p-6">
+                        <div className="relative">
+                            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400" />
+                            <Input
+                                type="search"
+                                placeholder="Search job boards..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="border-gray-300 bg-white pl-9 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Job Boards Grid */}
+                {filteredJobBoards.length === 0 ? (
+                    <Card>
+                        <CardContent className="p-12 text-center">
+                            <Briefcase className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                            <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                                {search
+                                    ? 'No job boards found'
+                                    : 'No job boards yet'}
+                            </h3>
+                            <p className="mt-2 text-gray-600 dark:text-gray-400">
+                                {search
+                                    ? 'Try adjusting your search terms'
+                                    : 'Get started by creating your first job board'}
+                            </p>
+                            {!search && (
+                                <Link
+                                    href={route('jobs.createBoard')}
+                                    className="mt-6 inline-block"
+                                >
+                                    <Button>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Create Job Board
+                                    </Button>
+                                </Link>
+                            )}
                         </CardContent>
                     </Card>
-
-                    {/* Job Boards Grid */}
-                    {filteredJobBoards.length === 0 ? (
-                        <Card>
-                            <CardContent className="p-12 text-center">
-                                <Briefcase className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-                                <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                                    {search ? 'No job boards found' : 'No job boards yet'}
-                                </h3>
-                                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                                    {search
-                                        ? 'Try adjusting your search terms'
-                                        : 'Get started by creating your first job board'}
-                                </p>
-                                {!search && (
-                                    <Link href={route('jobs.createBoard')} className="mt-6 inline-block">
-                                        <Button>
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Create Job Board
-                                        </Button>
-                                    </Link>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredJobBoards.map((board) => (
-                                <JobBoardCard
-                                    key={board.id}
-                                    board={board}
-                                    onDelete={handleDelete}
-                                />
-                            ))}
-                        </div>
-                    )}
+                ) : (
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredJobBoards.map((board) => (
+                            <JobBoardCard
+                                key={board.id}
+                                board={board}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </AuthenticatedLayout>
     );
 }
-

@@ -18,8 +18,8 @@ import {
     faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { router } from '@inertiajs/react';
 import type { FormDataConvertible } from '@inertiajs/core';
+import { router } from '@inertiajs/react';
 import React, { useState } from 'react';
 
 interface AppointmentFormData {

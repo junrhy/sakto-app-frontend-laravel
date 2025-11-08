@@ -78,7 +78,15 @@ export type FoodDeliveryOrder = {
     total_amount: number;
     payment_method: 'online' | 'cash_on_delivery';
     payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
-    order_status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled';
+    order_status:
+        | 'pending'
+        | 'accepted'
+        | 'preparing'
+        | 'ready'
+        | 'assigned'
+        | 'out_for_delivery'
+        | 'delivered'
+        | 'cancelled';
     special_instructions?: string;
     estimated_delivery_time?: string;
     restaurant?: FoodDeliveryRestaurant;
@@ -107,7 +115,15 @@ export type FoodDeliveryOrderItem = {
 export type FoodDeliveryOrderTracking = {
     id: number;
     order_id: number;
-    status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled';
+    status:
+        | 'pending'
+        | 'accepted'
+        | 'preparing'
+        | 'ready'
+        | 'assigned'
+        | 'out_for_delivery'
+        | 'delivered'
+        | 'cancelled';
     location?: string;
     notes?: string;
     updated_by?: string;
@@ -253,8 +269,15 @@ export interface OrderStats {
 
 // Status update form data
 export interface StatusUpdateFormData {
-    order_status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled';
+    order_status:
+        | 'pending'
+        | 'accepted'
+        | 'preparing'
+        | 'ready'
+        | 'assigned'
+        | 'out_for_delivery'
+        | 'delivered'
+        | 'cancelled';
     location?: string;
     notes?: string;
 }
-

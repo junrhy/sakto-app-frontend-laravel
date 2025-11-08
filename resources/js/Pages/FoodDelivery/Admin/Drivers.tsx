@@ -1,18 +1,42 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { TruckIcon, PlusIcon, EditIcon, TrashIcon, SearchIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { FoodDeliveryDriver } from '../types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import {
+    EditIcon,
+    PlusIcon,
+    SearchIcon,
+    TrashIcon,
+    TruckIcon,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { FoodDeliveryDriver } from '../types';
 
 interface Props extends PageProps {
     drivers?: FoodDeliveryDriver[];
@@ -31,12 +55,20 @@ interface DriverFormData {
     current_coordinates: string;
 }
 
-export default function AdminDrivers({ auth, drivers: initialDrivers, driver: initialDriver, mode: initialMode }: Props) {
-    const [drivers, setDrivers] = useState<FoodDeliveryDriver[]>(initialDrivers || []);
+export default function AdminDrivers({
+    auth,
+    drivers: initialDrivers,
+    driver: initialDriver,
+    mode: initialMode,
+}: Props) {
+    const [drivers, setDrivers] = useState<FoodDeliveryDriver[]>(
+        initialDrivers || [],
+    );
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [dialogOpen, setDialogOpen] = useState(!!initialMode);
-    const [editingDriver, setEditingDriver] = useState<FoodDeliveryDriver | null>(initialDriver || null);
+    const [editingDriver, setEditingDriver] =
+        useState<FoodDeliveryDriver | null>(initialDriver || null);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState<DriverFormData>({
         name: '',
@@ -89,7 +121,9 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                 params.search = search;
             }
 
-            const response = await axios.get('/food-delivery/drivers/list', { params });
+            const response = await axios.get('/food-delivery/drivers/list', {
+                params,
+            });
             if (response.data.success) {
                 setDrivers(response.data.data || []);
             }
@@ -112,20 +146,32 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
 
             let response;
             if (editingDriver) {
-                response = await axios.put(`/food-delivery/drivers/${editingDriver.id}`, payload);
+                response = await axios.put(
+                    `/food-delivery/drivers/${editingDriver.id}`,
+                    payload,
+                );
             } else {
                 response = await axios.post('/food-delivery/drivers', payload);
             }
 
             if (response.data.success) {
-                toast.success(editingDriver ? 'Driver updated successfully' : 'Driver created successfully');
+                toast.success(
+                    editingDriver
+                        ? 'Driver updated successfully'
+                        : 'Driver created successfully',
+                );
                 setDialogOpen(false);
                 setEditingDriver(null);
                 fetchDrivers();
                 router.visit('/food-delivery/admin/drivers', { replace: true });
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || (editingDriver ? 'Failed to update driver' : 'Failed to create driver'));
+            toast.error(
+                error.response?.data?.message ||
+                    (editingDriver
+                        ? 'Failed to update driver'
+                        : 'Failed to create driver'),
+            );
         } finally {
             setSaving(false);
         }
@@ -135,11 +181,14 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
         if (!confirm('Are you sure you want to delete this driver?')) return;
 
         try {
-            const response = await axios.delete(`/food-delivery/drivers/${driverId}`, {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
+            const response = await axios.delete(
+                `/food-delivery/drivers/${driverId}`,
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                    },
                 },
-            });
+            );
             if (response.data.success) {
                 toast.success('Driver deleted successfully');
                 fetchDrivers();
@@ -161,10 +210,14 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'available': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-            case 'busy': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-            case 'offline': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+            case 'available':
+                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+            case 'busy':
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+            case 'offline':
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+            default:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
         }
     };
 
@@ -186,7 +239,7 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                         </div>
                     </div>
                     <Button onClick={handleCreate}>
-                        <PlusIcon className="h-4 w-4 mr-2" />
+                        <PlusIcon className="mr-2 h-4 w-4" />
                         Add Driver
                     </Button>
                 </div>
@@ -210,8 +263,8 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                 </Card>
 
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+                    <div className="py-12 text-center">
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white"></div>
                     </div>
                 ) : (
                     <Card>
@@ -219,43 +272,80 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                        <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Phone</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Vehicle</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Rating</TableHead>
-                                        <TableHead className="text-gray-900 dark:text-white">Deliveries</TableHead>
-                                        <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Name
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Phone
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Vehicle
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Status
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Rating
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Deliveries
+                                        </TableHead>
+                                        <TableHead className="text-right text-gray-900 dark:text-white">
+                                            Actions
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {drivers.map((driver) => (
-                                        <TableRow key={driver.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <TableCell className="text-gray-900 dark:text-white">{driver.name}</TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{driver.phone}</TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{driver.vehicle_type || 'N/A'}</TableCell>
+                                        <TableRow
+                                            key={driver.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(driver.status)}`}>
+                                                {driver.name}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {driver.phone}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {driver.vehicle_type || 'N/A'}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <span
+                                                    className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(driver.status)}`}
+                                                >
                                                     {driver.status}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {driver.rating && typeof driver.rating === 'number' ? driver.rating.toFixed(1) : 'N/A'}
+                                                {driver.rating &&
+                                                typeof driver.rating ===
+                                                    'number'
+                                                    ? driver.rating.toFixed(1)
+                                                    : 'N/A'}
                                             </TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">{driver.total_deliveries}</TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {driver.total_deliveries}
+                                            </TableCell>
                                             <TableCell className="text-right text-gray-900 dark:text-white">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleEdit(driver)}
+                                                        onClick={() =>
+                                                            handleEdit(driver)
+                                                        }
                                                     >
                                                         <EditIcon className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleDelete(driver.id)}
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                driver.id,
+                                                            )
+                                                        }
                                                     >
                                                         <TrashIcon className="h-4 w-4" />
                                                     </Button>
@@ -270,25 +360,37 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                 )}
 
                 {/* Create/Edit Dialog */}
-                <Dialog open={dialogOpen} onOpenChange={(open) => {
-                    setDialogOpen(open);
-                    if (!open) {
-                        setEditingDriver(null);
-                        router.visit('/food-delivery/admin/drivers', { replace: true });
-                    }
-                }}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <Dialog
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                        setDialogOpen(open);
+                        if (!open) {
+                            setEditingDriver(null);
+                            router.visit('/food-delivery/admin/drivers', {
+                                replace: true,
+                            });
+                        }
+                    }}
+                >
+                    <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>{editingDriver ? 'Edit Driver' : 'Add Driver'}</DialogTitle>
+                            <DialogTitle>
+                                {editingDriver ? 'Edit Driver' : 'Add Driver'}
+                            </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <Label htmlFor="name">Name *</Label>
                                     <Input
                                         id="name"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                name: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
@@ -297,7 +399,12 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                                     <Input
                                         id="phone"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                phone: e.target.value,
+                                            })
+                                        }
                                         required
                                     />
                                 </div>
@@ -307,57 +414,108 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                                         id="email"
                                         type="email"
                                         value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                email: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                                 <div>
                                     <Label htmlFor="status">Status *</Label>
                                     <Select
                                         value={formData.status}
-                                        onValueChange={(value: 'available' | 'busy' | 'offline') => setFormData({ ...formData, status: value })}
+                                        onValueChange={(
+                                            value:
+                                                | 'available'
+                                                | 'busy'
+                                                | 'offline',
+                                        ) =>
+                                            setFormData({
+                                                ...formData,
+                                                status: value,
+                                            })
+                                        }
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="available">Available</SelectItem>
-                                            <SelectItem value="busy">Busy</SelectItem>
-                                            <SelectItem value="offline">Offline</SelectItem>
+                                            <SelectItem value="available">
+                                                Available
+                                            </SelectItem>
+                                            <SelectItem value="busy">
+                                                Busy
+                                            </SelectItem>
+                                            <SelectItem value="offline">
+                                                Offline
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label htmlFor="vehicle_type">Vehicle Type</Label>
+                                    <Label htmlFor="vehicle_type">
+                                        Vehicle Type
+                                    </Label>
                                     <Input
                                         id="vehicle_type"
                                         value={formData.vehicle_type}
-                                        onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                vehicle_type: e.target.value,
+                                            })
+                                        }
                                         placeholder="e.g., Motorcycle, Car, Bicycle"
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="license_number">License Number</Label>
+                                    <Label htmlFor="license_number">
+                                        License Number
+                                    </Label>
                                     <Input
                                         id="license_number"
                                         value={formData.license_number}
-                                        onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                license_number: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <Label htmlFor="current_location">Current Location</Label>
+                                    <Label htmlFor="current_location">
+                                        Current Location
+                                    </Label>
                                     <Input
                                         id="current_location"
                                         value={formData.current_location}
-                                        onChange={(e) => setFormData({ ...formData, current_location: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                current_location:
+                                                    e.target.value,
+                                            })
+                                        }
                                         placeholder="e.g., Manila, Philippines"
                                     />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <Label htmlFor="current_coordinates">Coordinates (lat,lng)</Label>
+                                    <Label htmlFor="current_coordinates">
+                                        Coordinates (lat,lng)
+                                    </Label>
                                     <Input
                                         id="current_coordinates"
                                         value={formData.current_coordinates}
-                                        onChange={(e) => setFormData({ ...formData, current_coordinates: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                current_coordinates:
+                                                    e.target.value,
+                                            })
+                                        }
                                         placeholder="14.5995,120.9842"
                                     />
                                 </div>
@@ -369,13 +527,20 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
                                     onClick={() => {
                                         setDialogOpen(false);
                                         setEditingDriver(null);
-                                        router.visit('/food-delivery/admin/drivers', { replace: true });
+                                        router.visit(
+                                            '/food-delivery/admin/drivers',
+                                            { replace: true },
+                                        );
                                     }}
                                 >
                                     Cancel
                                 </Button>
                                 <Button type="submit" disabled={saving}>
-                                    {saving ? 'Saving...' : editingDriver ? 'Update Driver' : 'Create Driver'}
+                                    {saving
+                                        ? 'Saving...'
+                                        : editingDriver
+                                          ? 'Update Driver'
+                                          : 'Create Driver'}
                                 </Button>
                             </div>
                         </form>
@@ -385,4 +550,3 @@ export default function AdminDrivers({ auth, drivers: initialDrivers, driver: in
         </AuthenticatedLayout>
     );
 }
-

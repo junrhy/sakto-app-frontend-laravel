@@ -7,9 +7,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { Link } from '@inertiajs/react';
-import { Edit, MoreHorizontal, Trash2, Eye, CheckCircle, XCircle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
+import {
+    CheckCircle,
+    Edit,
+    Eye,
+    MoreHorizontal,
+    Trash2,
+    XCircle,
+} from 'lucide-react';
 import JobStatusBadge from './JobStatusBadge';
 
 interface Job {
@@ -36,7 +43,12 @@ interface JobCardProps {
     onClose: (id: number) => void;
 }
 
-export default function JobCard({ job, onDelete, onPublish, onClose }: JobCardProps) {
+export default function JobCard({
+    job,
+    onDelete,
+    onPublish,
+    onClose,
+}: JobCardProps) {
     const formatSalary = () => {
         if (!job.salary_min && !job.salary_max) {
             return 'Salary not specified';
@@ -54,7 +66,7 @@ export default function JobCard({ job, onDelete, onPublish, onClose }: JobCardPr
     };
 
     return (
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="transition-shadow hover:shadow-lg">
             <CardHeader>
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -63,7 +75,10 @@ export default function JobCard({ job, onDelete, onPublish, onClose }: JobCardPr
                                 {job.title}
                             </CardTitle>
                             {job.is_featured && (
-                                <Badge variant="default" className="bg-yellow-500">
+                                <Badge
+                                    variant="default"
+                                    className="bg-yellow-500"
+                                >
                                     Featured
                                 </Badge>
                             )}
@@ -100,13 +115,17 @@ export default function JobCard({ job, onDelete, onPublish, onClose }: JobCardPr
                                 </Link>
                             </DropdownMenuItem>
                             {job.status === 'draft' && (
-                                <DropdownMenuItem onClick={() => onPublish(job.id)}>
+                                <DropdownMenuItem
+                                    onClick={() => onPublish(job.id)}
+                                >
                                     <CheckCircle className="mr-2 h-4 w-4" />
                                     Publish
                                 </DropdownMenuItem>
                             )}
                             {job.status === 'published' && (
-                                <DropdownMenuItem onClick={() => onClose(job.id)}>
+                                <DropdownMenuItem
+                                    onClick={() => onClose(job.id)}
+                                >
                                     <XCircle className="mr-2 h-4 w-4" />
                                     Close
                                 </DropdownMenuItem>
@@ -124,7 +143,7 @@ export default function JobCard({ job, onDelete, onPublish, onClose }: JobCardPr
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                    <p className="line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
                         {job.description}
                     </p>
 
@@ -157,4 +176,3 @@ export default function JobCard({ job, onDelete, onPublish, onClose }: JobCardPr
         </Card>
     );
 }
-

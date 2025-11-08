@@ -1,3 +1,4 @@
+import { Label } from '@/Components/ui/label';
 import {
     Select,
     SelectContent,
@@ -5,7 +6,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Label } from '@/Components/ui/label';
 
 interface JobFiltersProps {
     statusFilter: string;
@@ -29,7 +29,9 @@ export default function JobFilters({
     employmentTypes,
 }: JobFiltersProps) {
     const hasActiveFilters =
-        statusFilter !== 'all' || categoryFilter !== 'all' || employmentTypeFilter !== 'all';
+        statusFilter !== 'all' ||
+        categoryFilter !== 'all' ||
+        employmentTypeFilter !== 'all';
 
     const clearFilters = () => {
         setStatusFilter('all');
@@ -40,7 +42,10 @@ export default function JobFilters({
     return (
         <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0">
             <div className="flex items-center space-x-2">
-                <Label htmlFor="status-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                    htmlFor="status-filter"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                     Status:
                 </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -58,11 +63,20 @@ export default function JobFilters({
 
             {categories.length > 0 && (
                 <div className="flex items-center space-x-2">
-                    <Label htmlFor="category-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <Label
+                        htmlFor="category-filter"
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                         Category:
                     </Label>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger id="category-filter" className="w-[140px]">
+                    <Select
+                        value={categoryFilter}
+                        onValueChange={setCategoryFilter}
+                    >
+                        <SelectTrigger
+                            id="category-filter"
+                            className="w-[140px]"
+                        >
                             <SelectValue placeholder="All categories" />
                         </SelectTrigger>
                         <SelectContent>
@@ -79,10 +93,16 @@ export default function JobFilters({
 
             {employmentTypes.length > 0 && (
                 <div className="flex items-center space-x-2">
-                    <Label htmlFor="type-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <Label
+                        htmlFor="type-filter"
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                         Type:
                     </Label>
-                    <Select value={employmentTypeFilter} onValueChange={setEmploymentTypeFilter}>
+                    <Select
+                        value={employmentTypeFilter}
+                        onValueChange={setEmploymentTypeFilter}
+                    >
                         <SelectTrigger id="type-filter" className="w-[140px]">
                             <SelectValue placeholder="All types" />
                         </SelectTrigger>
@@ -109,4 +129,3 @@ export default function JobFilters({
         </div>
     );
 }
-

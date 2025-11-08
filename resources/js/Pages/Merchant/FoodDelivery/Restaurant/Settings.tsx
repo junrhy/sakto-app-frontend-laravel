@@ -1,13 +1,13 @@
-import MerchantLayout from '@/Layouts/Merchant/MerchantLayout';
-import { PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Switch } from '@/Components/ui/switch';
+import MerchantLayout from '@/Layouts/Merchant/MerchantLayout';
+import { PageProps } from '@/types';
+import { Head } from '@inertiajs/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 interface Props extends PageProps {}
 
@@ -37,14 +37,21 @@ export default function RestaurantSettings({ auth }: Props) {
 
     const fetchProfile = async () => {
         try {
-            const response = await axios.get('/food-delivery/restaurants/list', {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
-                    status: 'all',
+            const response = await axios.get(
+                '/food-delivery/restaurants/list',
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                        status: 'all',
+                    },
                 },
-            });
+            );
 
-            if (response.data.success && response.data.data && response.data.data.length > 0) {
+            if (
+                response.data.success &&
+                response.data.data &&
+                response.data.data.length > 0
+            ) {
                 setProfile(response.data.data[0]);
             }
         } catch (error: any) {
@@ -78,7 +85,11 @@ export default function RestaurantSettings({ auth }: Props) {
         <MerchantLayout
             auth={{ user: auth.user }}
             title="Restaurant Settings"
-            header={<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Settings</h2>}
+            header={
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    Settings
+                </h2>
+            }
         >
             <Head title="Restaurant Settings" />
 
@@ -101,17 +112,26 @@ export default function RestaurantSettings({ auth }: Props) {
                                     <Input
                                         id="name"
                                         value={profile.name}
-                                        onChange={(e) => handleChange('name', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange('name', e.target.value)
+                                        }
                                         required
                                     />
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="description">Description</Label>
+                                    <Label htmlFor="description">
+                                        Description
+                                    </Label>
                                     <Input
                                         id="description"
                                         value={profile.description ?? ''}
-                                        onChange={(e) => handleChange('description', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'description',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
 
@@ -121,7 +141,12 @@ export default function RestaurantSettings({ auth }: Props) {
                                         <Input
                                             id="phone"
                                             value={profile.phone ?? ''}
-                                            onChange={(e) => handleChange('phone', e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    'phone',
+                                                    e.target.value,
+                                                )
+                                            }
                                         />
                                     </div>
 
@@ -131,7 +156,12 @@ export default function RestaurantSettings({ auth }: Props) {
                                             id="email"
                                             type="email"
                                             value={profile.email ?? ''}
-                                            onChange={(e) => handleChange('email', e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    'email',
+                                                    e.target.value,
+                                                )
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -148,7 +178,12 @@ export default function RestaurantSettings({ auth }: Props) {
                                     <Input
                                         id="street"
                                         value={profile.street ?? ''}
-                                        onChange={(e) => handleChange('street', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'street',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div>
@@ -156,15 +191,24 @@ export default function RestaurantSettings({ auth }: Props) {
                                     <Input
                                         id="city"
                                         value={profile.city ?? ''}
-                                        onChange={(e) => handleChange('city', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange('city', e.target.value)
+                                        }
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="state">State / Province</Label>
+                                    <Label htmlFor="state">
+                                        State / Province
+                                    </Label>
                                     <Input
                                         id="state"
                                         value={profile.state ?? ''}
-                                        onChange={(e) => handleChange('state', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'state',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div>
@@ -172,15 +216,27 @@ export default function RestaurantSettings({ auth }: Props) {
                                     <Input
                                         id="country"
                                         value={profile.country ?? ''}
-                                        onChange={(e) => handleChange('country', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'country',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="postal_code">Postal Code</Label>
+                                    <Label htmlFor="postal_code">
+                                        Postal Code
+                                    </Label>
                                     <Input
                                         id="postal_code"
                                         value={profile.postal_code ?? ''}
-                                        onChange={(e) => handleChange('postal_code', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'postal_code',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
                             </CardContent>
@@ -192,21 +248,35 @@ export default function RestaurantSettings({ auth }: Props) {
                             </CardHeader>
                             <CardContent className="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <Label htmlFor="opening_time">Opening Time</Label>
+                                    <Label htmlFor="opening_time">
+                                        Opening Time
+                                    </Label>
                                     <Input
                                         id="opening_time"
                                         type="time"
                                         value={profile.opening_time ?? ''}
-                                        onChange={(e) => handleChange('opening_time', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'opening_time',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="closing_time">Closing Time</Label>
+                                    <Label htmlFor="closing_time">
+                                        Closing Time
+                                    </Label>
                                     <Input
                                         id="closing_time"
                                         type="time"
                                         value={profile.closing_time ?? ''}
-                                        onChange={(e) => handleChange('closing_time', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'closing_time',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -216,7 +286,9 @@ export default function RestaurantSettings({ auth }: Props) {
                                         </span>
                                         <Switch
                                             checked={!!profile.is_open}
-                                            onCheckedChange={(checked) => handleChange('is_open', checked)}
+                                            onCheckedChange={(checked) =>
+                                                handleChange('is_open', checked)
+                                            }
                                         />
                                     </label>
                                 </div>

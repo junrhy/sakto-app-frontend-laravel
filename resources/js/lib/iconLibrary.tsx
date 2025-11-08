@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaUsers } from 'react-icons/fa';
 import {
     RxAccessibility,
     RxActivityLog,
@@ -63,7 +64,6 @@ import {
     RxUpload,
     RxVideo,
 } from 'react-icons/rx';
-import { FaUsers } from 'react-icons/fa';
 
 // Icon Library - Direct mapping of icon names to components
 export const ICON_LIBRARY = {

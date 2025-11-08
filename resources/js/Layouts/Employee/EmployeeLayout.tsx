@@ -1,7 +1,7 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { User } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode } from 'react';
-import { User } from '@/types';
 import { Toaster } from 'sonner';
 
 interface EmployeeLayoutProps {
@@ -45,14 +45,23 @@ export default function EmployeeLayout({
 
             <header className="border-b border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
                 <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-                    <Link href="/employee/dashboard" className="flex items-center gap-3">
+                    <Link
+                        href="/employee/dashboard"
+                        className="flex items-center gap-3"
+                    >
                         <ApplicationLogo className="h-8 w-auto" />
-                        <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Employee Portal</span>
+                        <span className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                            Employee Portal
+                        </span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {user?.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {user?.email}
+                            </p>
                         </div>
                         <button
                             onClick={logout}
@@ -79,7 +88,9 @@ export default function EmployeeLayout({
                             }`}
                         >
                             <p className="font-semibold">{item.label}</p>
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                {item.description}
+                            </p>
                         </Link>
                     ))}
                 </nav>

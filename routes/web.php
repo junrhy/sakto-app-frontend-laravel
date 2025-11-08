@@ -95,7 +95,6 @@ require __DIR__.'/web/RentalItemController.php';
 require __DIR__.'/web/RentalPropertyController.php';
 require __DIR__.'/web/PayrollController.php';
 require __DIR__.'/web/TravelController.php';
-require __DIR__.'/web/FlightController.php';
 require __DIR__.'/web/SmsTwilioController.php';
 require __DIR__.'/web/SmsWhatsAppController.php';
 require __DIR__.'/web/WhatsAppAccountController.php';

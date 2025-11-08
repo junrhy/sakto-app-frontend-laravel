@@ -493,7 +493,8 @@ export const pricingConfig: Record<string, ServicePricing> = {
             {
                 id: 'starter',
                 name: 'Starter',
-                description: 'Start your job board business risk-free for 14 days',
+                description:
+                    'Start your job board business risk-free for 14 days',
                 tagline:
                     'Test drive all features to create and manage your job board with zero commitment and zero cost',
                 prices: {

@@ -1,36 +1,61 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useState, useEffect } from 'react';
-import { PackageIcon, PlusIcon, EditIcon, TrashIcon, SearchIcon, FilterIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
-import { ParcelDeliveryCourier, CourierFormData } from './types';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
+import {
+    EditIcon,
+    PackageIcon,
+    PlusIcon,
+    SearchIcon,
+    TrashIcon,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { CourierFormData, ParcelDeliveryCourier } from './types';
 
 interface Props extends PageProps {
     couriers?: ParcelDeliveryCourier[];
 }
 
-export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers }: Props) {
-    const [couriers, setCouriers] = useState<ParcelDeliveryCourier[]>(initialCouriers || []);
+export default function ParcelDeliveryCouriers({
+    auth,
+    couriers: initialCouriers,
+}: Props) {
+    const [couriers, setCouriers] = useState<ParcelDeliveryCourier[]>(
+        initialCouriers || [],
+    );
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingCourier, setEditingCourier] = useState<ParcelDeliveryCourier | null>(null);
+    const [editingCourier, setEditingCourier] =
+        useState<ParcelDeliveryCourier | null>(null);
     const [formData, setFormData] = useState<CourierFormData>({
         name: '',
         phone: '',
@@ -59,7 +84,9 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                 params.status = statusFilter;
             }
 
-            const response = await axios.get('/parcel-delivery/couriers/list', { params });
+            const response = await axios.get('/parcel-delivery/couriers/list', {
+                params,
+            });
             if (response.data.success) {
                 setCouriers(response.data.data || []);
             }
@@ -119,14 +146,20 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
             });
 
             if (response.data.success) {
-                toast.success(editingCourier ? 'Courier updated successfully' : 'Courier created successfully');
+                toast.success(
+                    editingCourier
+                        ? 'Courier updated successfully'
+                        : 'Courier created successfully',
+                );
                 handleCloseDialog();
                 fetchCouriers();
             } else {
                 toast.error(response.data.message || 'Failed to save courier');
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to save courier');
+            toast.error(
+                error.response?.data?.message || 'Failed to save courier',
+            );
         } finally {
             setLoading(false);
         }
@@ -139,20 +172,27 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
 
         setLoading(true);
         try {
-            const response = await axios.delete(`/parcel-delivery/couriers/${id}`, {
-                params: {
-                    client_identifier: (auth.user as any)?.identifier,
+            const response = await axios.delete(
+                `/parcel-delivery/couriers/${id}`,
+                {
+                    params: {
+                        client_identifier: (auth.user as any)?.identifier,
+                    },
                 },
-            });
+            );
 
             if (response.data.success) {
                 toast.success('Courier deleted successfully');
                 fetchCouriers();
             } else {
-                toast.error(response.data.message || 'Failed to delete courier');
+                toast.error(
+                    response.data.message || 'Failed to delete courier',
+                );
             }
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to delete courier');
+            toast.error(
+                error.response?.data?.message || 'Failed to delete courier',
+            );
         } finally {
             setLoading(false);
         }
@@ -220,20 +260,31 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                                     <Input
                                         placeholder="Search couriers..."
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                         className="pl-10"
                                     />
                                 </div>
                             </div>
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <Select
+                                value={statusFilter}
+                                onValueChange={setStatusFilter}
+                            >
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Filter by status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="available">Available</SelectItem>
+                                    <SelectItem value="all">
+                                        All Status
+                                    </SelectItem>
+                                    <SelectItem value="available">
+                                        Available
+                                    </SelectItem>
                                     <SelectItem value="busy">Busy</SelectItem>
-                                    <SelectItem value="offline">Offline</SelectItem>
+                                    <SelectItem value="offline">
+                                        Offline
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -246,38 +297,61 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                    <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Contact</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Vehicle Type</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                    <TableHead className="text-gray-900 dark:text-white">Location</TableHead>
-                                    <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Name
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Contact
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Vehicle Type
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Location
+                                    </TableHead>
+                                    <TableHead className="text-right text-gray-900 dark:text-white">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center text-gray-500">
+                                        <TableCell
+                                            colSpan={6}
+                                            className="text-center text-gray-500"
+                                        >
                                             Loading...
                                         </TableCell>
                                     </TableRow>
                                 ) : couriers.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center text-gray-500">
+                                        <TableCell
+                                            colSpan={6}
+                                            className="text-center text-gray-500"
+                                        >
                                             No couriers found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     couriers.map((courier) => (
-                                        <TableRow key={courier.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <TableCell className="text-gray-900 dark:text-white font-medium">
+                                        <TableRow
+                                            key={courier.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            <TableCell className="font-medium text-gray-900 dark:text-white">
                                                 {courier.name}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div>
                                                     <div>{courier.phone}</div>
                                                     {courier.email && (
-                                                        <div className="text-sm text-gray-500">{courier.email}</div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {courier.email}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </TableCell>
@@ -285,26 +359,37 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                                                 {courier.vehicle_type || '-'}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(courier.status)}`}>
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(courier.status)}`}
+                                                >
                                                     {courier.status}
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {courier.current_location || '-'}
+                                                {courier.current_location ||
+                                                    '-'}
                                             </TableCell>
                                             <TableCell className="text-right text-gray-900 dark:text-white">
                                                 <div className="flex items-center justify-end space-x-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleOpenDialog(courier)}
+                                                        onClick={() =>
+                                                            handleOpenDialog(
+                                                                courier,
+                                                            )
+                                                        }
                                                     >
                                                         <EditIcon className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleDelete(courier.id)}
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                courier.id,
+                                                            )
+                                                        }
                                                     >
                                                         <TrashIcon className="h-4 w-4 text-red-600" />
                                                     </Button>
@@ -334,7 +419,12 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                                 <Input
                                     id="name"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            name: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -343,7 +433,12 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                                 <Input
                                     id="phone"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            phone: e.target.value,
+                                        })
+                                    }
                                     required
                                 />
                             </div>
@@ -355,15 +450,27 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                                     id="email"
                                     type="email"
                                     value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            email: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="vehicle_type">Vehicle Type</Label>
+                                <Label htmlFor="vehicle_type">
+                                    Vehicle Type
+                                </Label>
                                 <Input
                                     id="vehicle_type"
                                     value={formData.vehicle_type}
-                                    onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            vehicle_type: e.target.value,
+                                        })
+                                    }
                                     placeholder="e.g., Motorcycle, Van, Truck"
                                 />
                             </div>
@@ -372,33 +479,59 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                             <Label htmlFor="status">Status</Label>
                             <Select
                                 value={formData.status}
-                                onValueChange={(value) => setFormData({ ...formData, status: value as 'available' | 'busy' | 'offline' })}
+                                onValueChange={(value) =>
+                                    setFormData({
+                                        ...formData,
+                                        status: value as
+                                            | 'available'
+                                            | 'busy'
+                                            | 'offline',
+                                    })
+                                }
                             >
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="available">Available</SelectItem>
+                                    <SelectItem value="available">
+                                        Available
+                                    </SelectItem>
                                     <SelectItem value="busy">Busy</SelectItem>
-                                    <SelectItem value="offline">Offline</SelectItem>
+                                    <SelectItem value="offline">
+                                        Offline
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="current_location">Current Location</Label>
+                            <Label htmlFor="current_location">
+                                Current Location
+                            </Label>
                             <Input
                                 id="current_location"
                                 value={formData.current_location}
-                                onChange={(e) => setFormData({ ...formData, current_location: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        current_location: e.target.value,
+                                    })
+                                }
                                 placeholder="e.g., Manila, Quezon City"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="current_coordinates">Coordinates (lat,lng)</Label>
+                            <Label htmlFor="current_coordinates">
+                                Coordinates (lat,lng)
+                            </Label>
                             <Input
                                 id="current_coordinates"
                                 value={formData.current_coordinates}
-                                onChange={(e) => setFormData({ ...formData, current_coordinates: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        current_coordinates: e.target.value,
+                                    })
+                                }
                                 placeholder="e.g., 14.5995,120.9842"
                             />
                         </div>
@@ -407,7 +540,12 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                             <Textarea
                                 id="notes"
                                 value={formData.notes}
-                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        notes: e.target.value,
+                                    })
+                                }
                                 rows={3}
                                 placeholder="Additional notes about the courier"
                             />
@@ -422,7 +560,11 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={loading}>
-                                {loading ? 'Saving...' : editingCourier ? 'Update' : 'Create'}
+                                {loading
+                                    ? 'Saving...'
+                                    : editingCourier
+                                      ? 'Update'
+                                      : 'Create'}
                             </Button>
                         </div>
                     </form>
@@ -431,4 +573,3 @@ export default function ParcelDeliveryCouriers({ auth, couriers: initialCouriers
         </AuthenticatedLayout>
     );
 }
-
