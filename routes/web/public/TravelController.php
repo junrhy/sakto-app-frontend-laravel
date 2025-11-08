@@ -12,4 +12,5 @@ use App\Http\Controllers\TravelController;
 */
 
 // Business Landing Pages
-Route::get('/travel/{identifier}', [TravelController::class, 'show'])->name('travel.show');
+Route::get('/travel/page/{identifier}', [TravelController::class, 'show'])
+    ->name('travel.show');

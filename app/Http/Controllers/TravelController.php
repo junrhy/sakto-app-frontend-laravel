@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserAddress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class TravelController extends Controller
 {
@@ -376,21 +378,19 @@ class TravelController extends Controller
     /**
      * Public travel profile page.
      */
-    public function show(string $identifier)
+    public function show(Request $request, string $identifier)
     {
         try {
-            // Check if identifier is numeric (ID) or string (slug)
+            // Check if identifier is numeric (ID) or string (slug/identifier)
             $travel = null;
 
             if (is_numeric($identifier)) {
-                $travel = \App\Models\User::where('project_identifier', 'travel')
-                    ->where('id', $identifier)
-                    ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
-                    ->first();
+                $travel = \App\Models\User::select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+                    ->find($identifier);
             } else {
-                $travel = \App\Models\User::where('project_identifier', 'travel')
+                $travel = \App\Models\User::select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
                     ->where('slug', $identifier)
-                    ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+                    ->orWhere('identifier', $identifier)
                     ->first();
             }
 
@@ -398,16 +398,74 @@ class TravelController extends Controller
                 abort(404, 'Travel service not found');
             }
 
+            $primaryAddress = UserAddress::where('user_id', $travel->id)
+                ->orderByDesc('is_primary')
+                ->orderByDesc('created_at')
+                ->first([
+                    'street',
+                    'unit_number',
+                    'city',
+                    'state',
+                    'postal_code',
+                    'country',
+                    'phone',
+                    'is_primary',
+                ]);
+
+            $packages = [];
+
+            try {
+                $packagesResponse = Http::withToken($this->apiToken)
+                    ->acceptJson()
+                    ->timeout(config('http.timeout', 15))
+                    ->get("{$this->apiUrl}/travel-packages", [
+                        'client_identifier' => $travel->identifier,
+                        'status' => 'published',
+                        'per_page' => 50,
+                    ]);
+
+                if ($packagesResponse->successful()) {
+                    $packages = $packagesResponse->json('data') ?? [];
+                }
+            } catch (\Throwable $innerException) {
+                Log::warning('TravelController show packages fetch failed', [
+                    'identifier' => $identifier,
+                    'error' => $innerException->getMessage(),
+                ]);
+            }
+
+            $appCurrency = null;
+            if (!empty($travel->app_currency)) {
+                $decodedCurrency = json_decode($travel->app_currency, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCurrency)) {
+                    $appCurrency = $decodedCurrency;
+                }
+            }
+
+            $theme = strtolower($request->query('theme', 'default'));
+            $allowedThemes = ['default', 'ocean', 'forest', 'sunset'];
+            if (!in_array($theme, $allowedThemes, true)) {
+                $theme = 'default';
+            }
+
             return Inertia::render('Public/Travel/Show', [
                 'travel' => $travel,
                 'identifier' => $identifier,
+                'packages' => $packages,
+                'appCurrency' => $appCurrency,
                 'canLogin' => \Illuminate\Support\Facades\Route::has('login'),
                 'canRegister' => \Illuminate\Support\Facades\Route::has('register'),
+                'primaryAddress' => $primaryAddress,
+                'theme' => $theme,
                 'auth' => [
                     'user' => auth()->user(),
                 ],
             ]);
         } catch (\Throwable $e) {
+            if ($e instanceof HttpExceptionInterface) {
+                throw $e;
+            }
+
             Log::error('TravelController show error: ' . $e->getMessage());
             abort(500, 'Unable to load travel information');
         }

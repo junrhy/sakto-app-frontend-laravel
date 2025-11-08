@@ -196,7 +196,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             icon: Plane,
             href: getHref('travel', '/travel'),
             gradient: 'from-cyan-500 to-blue-500',
-            comingSoon: true,
+            comingSoon: false,
             projectIdentifier: 'travel',
         },
         {

@@ -164,7 +164,7 @@ export default function Welcome({ auth }: PageProps) {
             href: '/travel',
             color: 'text-cyan-600',
             bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
         {
             name: 'F&B',

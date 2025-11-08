@@ -107,6 +107,24 @@ const PAYMENT_STATUS_OPTIONS: TravelPaymentStatus[] = [
     'refunded',
 ];
 
+const formatDisplayDate = (value?: string | null) => {
+    if (!value) {
+        return '—';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    }).format(date);
+};
+
 export default function TravelBookingsIndex({
     bookings,
     packages,
@@ -649,9 +667,9 @@ export default function TravelBookingsIndex({
                                                         <div className="flex items-center gap-1">
                                                             <Calendar className="h-4 w-4 text-gray-500" />
                                                             <span>
-                                                                {
-                                                                    booking.travel_date
-                                                                }
+                                                                {formatDisplayDate(
+                                                                    booking.travel_date,
+                                                                )}
                                                             </span>
                                                         </div>
                                                     </TableCell>
@@ -789,8 +807,8 @@ export default function TravelBookingsIndex({
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
-                <DialogContent className="max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
+                <DialogContent className="p-0 sm:max-w-3xl">
+                    <DialogHeader className="px-6 pt-6 pb-4">
                         <DialogTitle>
                             {activeBooking ? 'Edit Booking' : 'Create Booking'}
                         </DialogTitle>
@@ -800,273 +818,284 @@ export default function TravelBookingsIndex({
                                 : 'Capture a new booking for one of your travel packages.'}
                         </DialogDescription>
                     </DialogHeader>
-                    <form className="space-y-4" onSubmit={handleSubmit}>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label>Travel Package</Label>
-                                <Select
-                                    value={
-                                        formState.travel_package_id === ''
-                                            ? ''
-                                            : String(
-                                                  formState.travel_package_id,
-                                              )
-                                    }
-                                    onValueChange={(value) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            travel_package_id: value
-                                                ? Number(value)
-                                                : '',
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a package" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {packageOptions.map((pkg) => (
-                                            <SelectItem
-                                                key={pkg.id}
-                                                value={String(pkg.id)}
-                                            >
-                                                {pkg.title}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <Label htmlFor="booking_reference">
-                                    Booking Reference
-                                </Label>
-                                <Input
-                                    id="booking_reference"
-                                    placeholder="Optional reference code"
-                                    value={formState.booking_reference}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            booking_reference:
-                                                event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label htmlFor="customer_name">
-                                    Customer Name
-                                </Label>
-                                <Input
-                                    id="customer_name"
-                                    required
-                                    value={formState.customer_name}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            customer_name: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="customer_email">
-                                    Customer Email
-                                </Label>
-                                <Input
-                                    id="customer_email"
-                                    type="email"
-                                    value={formState.customer_email}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            customer_email: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label htmlFor="customer_contact_number">
-                                    Contact Number
-                                </Label>
-                                <Input
-                                    id="customer_contact_number"
-                                    value={formState.customer_contact_number}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            customer_contact_number:
-                                                event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="travel_date">Travel Date</Label>
-                                <Input
-                                    id="travel_date"
-                                    type="date"
-                                    required
-                                    value={formState.travel_date}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            travel_date: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label htmlFor="travelers_count">
-                                    Travelers
-                                </Label>
-                                <Input
-                                    id="travelers_count"
-                                    type="number"
-                                    min="1"
-                                    value={formState.travelers_count}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            travelers_count: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="total_price">Total Price</Label>
-                                <Input
-                                    id="total_price"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={formState.total_price}
-                                    onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            total_price: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label>Status</Label>
-                                <Select
-                                    value={formState.status}
-                                    onValueChange={(value) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            status: value as TravelBookingStatus,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {BOOKING_STATUS_OPTIONS.map(
-                                            (status) => (
+                    <form className="flex max-h-[70vh] flex-col" onSubmit={handleSubmit}>
+                        <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label>Travel Package</Label>
+                                    <Select
+                                        value={
+                                            formState.travel_package_id === ''
+                                                ? ''
+                                                : String(
+                                                      formState.travel_package_id,
+                                                  )
+                                        }
+                                        onValueChange={(value) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                travel_package_id: value
+                                                    ? Number(value)
+                                                    : '',
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a package" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {packageOptions.map((pkg) => (
                                                 <SelectItem
-                                                    key={status}
-                                                    value={status}
+                                                    key={pkg.id}
+                                                    value={String(pkg.id)}
                                                 >
-                                                    {status
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                        status.slice(1)}
+                                                    {pkg.title}
                                                 </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="booking_reference">
+                                        Booking Reference
+                                    </Label>
+                                    <Input
+                                        id="booking_reference"
+                                        placeholder="Optional reference code"
+                                        value={formState.booking_reference}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                booking_reference:
+                                                    event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="customer_name">
+                                        Customer Name
+                                    </Label>
+                                    <Input
+                                        id="customer_name"
+                                        required
+                                        value={formState.customer_name}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                customer_name:
+                                                    event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer_email">
+                                        Customer Email
+                                    </Label>
+                                    <Input
+                                        id="customer_email"
+                                        type="email"
+                                        value={formState.customer_email}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                customer_email:
+                                                    event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="customer_contact_number">
+                                        Contact Number
+                                    </Label>
+                                    <Input
+                                        id="customer_contact_number"
+                                        value={formState.customer_contact_number}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                customer_contact_number:
+                                                    event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="travel_date">
+                                        Travel Date
+                                    </Label>
+                                    <Input
+                                        id="travel_date"
+                                        type="date"
+                                        required
+                                        value={formState.travel_date}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                travel_date: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="travelers_count">
+                                        Travelers
+                                    </Label>
+                                    <Input
+                                        id="travelers_count"
+                                        type="number"
+                                        min="1"
+                                        value={formState.travelers_count}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                travelers_count:
+                                                    event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="total_price">
+                                        Total Price
+                                    </Label>
+                                    <Input
+                                        id="total_price"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={formState.total_price}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                total_price: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label>Status</Label>
+                                    <Select
+                                        value={formState.status}
+                                        onValueChange={(value) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                status:
+                                                    value as TravelBookingStatus,
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {BOOKING_STATUS_OPTIONS.map(
+                                                (status) => (
+                                                    <SelectItem
+                                                        key={status}
+                                                        value={status}
+                                                    >
+                                                        {status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            status.slice(1)}
+                                                    </SelectItem>
+                                                ),
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label>Payment Status</Label>
+                                    <Select
+                                        value={formState.payment_status}
+                                        onValueChange={(value) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                payment_status:
+                                                    value as TravelPaymentStatus,
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select payment status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {PAYMENT_STATUS_OPTIONS.map(
+                                                (status) => (
+                                                    <SelectItem
+                                                        key={status}
+                                                        value={status}
+                                                    >
+                                                        {status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            status.slice(1)}
+                                                    </SelectItem>
+                                                ),
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                             <div>
-                                <Label>Payment Status</Label>
-                                <Select
-                                    value={formState.payment_status}
-                                    onValueChange={(value) =>
+                                <Label htmlFor="notes">Notes</Label>
+                                <Textarea
+                                    id="notes"
+                                    rows={4}
+                                    placeholder="Special requests, reminders, or internal notes."
+                                    value={formState.notes}
+                                    onChange={(event) =>
                                         setFormState((prev) => ({
                                             ...prev,
-                                            payment_status:
-                                                value as TravelPaymentStatus,
+                                            notes: event.target.value,
                                         }))
                                     }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select payment status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {PAYMENT_STATUS_OPTIONS.map(
-                                            (status) => (
-                                                <SelectItem
-                                                    key={status}
-                                                    value={status}
-                                                >
-                                                    {status
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                        status.slice(1)}
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="metadata">Metadata (JSON)</Label>
+                                <Textarea
+                                    id="metadata"
+                                    rows={4}
+                                    placeholder='{"special_request": "Vegetarian meals"}'
+                                    value={formState.metadata}
+                                    onChange={(event) =>
+                                        setFormState((prev) => ({
+                                            ...prev,
+                                            metadata: event.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="send_confirmation_email"
+                                    checked={formState.send_confirmation_email}
+                                    onCheckedChange={(value) =>
+                                        setFormState((prev) => ({
+                                            ...prev,
+                                            send_confirmation_email:
+                                                Boolean(value),
+                                        }))
+                                    }
+                                />
+                                <Label htmlFor="send_confirmation_email">
+                                    Send confirmation email to customer
+                                </Label>
                             </div>
                         </div>
-                        <div>
-                            <Label htmlFor="notes">Notes</Label>
-                            <Textarea
-                                id="notes"
-                                rows={4}
-                                placeholder="Special requests, reminders, or internal notes."
-                                value={formState.notes}
-                                onChange={(event) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        notes: event.target.value,
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="metadata">Metadata (JSON)</Label>
-                            <Textarea
-                                id="metadata"
-                                rows={4}
-                                placeholder='{"special_request": "Vegetarian meals"}'
-                                value={formState.metadata}
-                                onChange={(event) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        metadata: event.target.value,
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="send_confirmation_email"
-                                checked={formState.send_confirmation_email}
-                                onCheckedChange={(value) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        send_confirmation_email: Boolean(value),
-                                    }))
-                                }
-                            />
-                            <Label htmlFor="send_confirmation_email">
-                                Send confirmation email to customer
-                            </Label>
-                        </div>
-                        <DialogFooter>
+                        <DialogFooter className="border-t px-6 py-4">
                             <Button
                                 type="button"
                                 variant="ghost"

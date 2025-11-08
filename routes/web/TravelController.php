@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'team.member.selection', 'premium'])->prefix('travel')->name('travel.')->group(function () {
     // Inertia pages
-    Route::get('/', [TravelController::class, 'index'])->name('packages.index');
+    Route::get('/packages', [TravelController::class, 'index'])->name('packages.index');
     Route::get('/bookings', [TravelController::class, 'bookings'])->name('bookings.index');
 
     // Package management proxies

@@ -3,8 +3,12 @@ import {
     getVisibleItems,
     GroupedMenuItem,
     groupMenuItems,
+    MenuContext,
     menuCategories,
+    MenuItem,
 } from './MenuConfig';
+import type { PageProps } from '@/types';
+import { usePage } from '@inertiajs/react';
 
 interface DesktopMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;
@@ -17,6 +21,23 @@ export default function DesktopMenu({
     appParam,
     url,
 }: DesktopMenuProps) {
+    const { auth } = usePage<PageProps>().props;
+    const menuContext: MenuContext = { auth };
+
+    const resolveMenuItem = (item: MenuItem): MenuItem | null => {
+        if (item.hrefResolver) {
+            const resolvedHref = item.hrefResolver(menuContext);
+            if (!resolvedHref) {
+                return item.hideIfNoHref ? null : { ...item };
+            }
+            return {
+                ...item,
+                href: resolvedHref,
+            };
+        }
+        return item;
+    };
+
     return (
         <>
             {menuCategories.map((category) => {
@@ -25,7 +46,9 @@ export default function DesktopMenu({
                     hasModuleAccess,
                     appParam,
                     url,
-                );
+                )
+                    .map(resolveMenuItem)
+                    .filter((item): item is MenuItem => Boolean(item));
                 if (visibleItems.length === 0) return null;
 
                 const { mainItems } = groupMenuItems(visibleItems);

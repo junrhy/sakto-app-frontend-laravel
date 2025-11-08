@@ -21,7 +21,7 @@ const Ziggy = {
         travel: { uri: 'travel', methods: ['GET', 'HEAD'] },
         fnb: { uri: 'fnb', methods: ['GET', 'HEAD'] },
         'travel.show': {
-            uri: 'travel\/{identifier}',
+            uri: 'travel\/page\/{identifier}',
             methods: ['GET', 'HEAD'],
             parameters: ['identifier'],
         },

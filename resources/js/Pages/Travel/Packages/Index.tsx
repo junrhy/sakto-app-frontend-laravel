@@ -69,7 +69,7 @@ type PackageFormState = {
     duration_days: string;
     duration_label: string;
     price: string;
-    inclusions: string[];
+    inclusionsText: string;
     package_type: TravelPackageType;
     status: TravelPackageStatus;
     is_featured: boolean;
@@ -83,7 +83,7 @@ const DEFAULT_FORM_STATE: PackageFormState = {
     duration_days: '',
     duration_label: '',
     price: '',
-    inclusions: [],
+    inclusionsText: '',
     package_type: 'standard',
     status: 'draft',
     is_featured: false,
@@ -148,7 +148,7 @@ export default function TravelPackagesIndex({
             duration_days: pkg.duration_days ? String(pkg.duration_days) : '',
             duration_label: pkg.duration_label ?? '',
             price: pkg.price ? String(pkg.price) : '',
-            inclusions: pkg.inclusions ?? [],
+            inclusionsText: (pkg.inclusions ?? []).join('\n'),
             package_type: (pkg.package_type as TravelPackageType) || 'standard',
             status: (pkg.status as TravelPackageStatus) || 'draft',
             is_featured: Boolean(pkg.is_featured),
@@ -185,8 +185,13 @@ export default function TravelPackagesIndex({
     const handleSavePackage = async () => {
         try {
             setSaving(true);
+            const { inclusionsText, ...rest } = formState;
             const payload = {
-                ...formState,
+                ...rest,
+                inclusions: inclusionsText
+                    .split('\n')
+                    .map((item) => item.trim())
+                    .filter(Boolean),
                 duration_days: formState.duration_days
                     ? Number(formState.duration_days)
                     : null,
@@ -239,15 +244,10 @@ export default function TravelPackagesIndex({
         }
     };
 
-    const inclusionText = formState.inclusions.join('\\n');
-
     const handleInclusionChange = (value: string) => {
         setFormState((prev) => ({
             ...prev,
-            inclusions: value
-                .split('\\n')
-                .map((item) => item.trim())
-                .filter(Boolean),
+            inclusionsText: value,
         }));
     };
 
@@ -614,8 +614,8 @@ export default function TravelPackagesIndex({
                 open={isCreateOpen || isEditOpen}
                 onOpenChange={handleCloseDialogs}
             >
-                <DialogContent className="max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
+                <DialogContent className="p-0 sm:max-w-2xl">
+                    <DialogHeader className="px-6 pt-6 pb-4">
                         <DialogTitle>
                             {activePackage
                                 ? 'Edit Travel Package'
@@ -627,201 +627,206 @@ export default function TravelPackagesIndex({
                                 : 'Provide the information below to publish a new travel package.'}
                         </DialogDescription>
                     </DialogHeader>
-                    <form className="space-y-4" onSubmit={handleSubmit}>
-                        <div className="grid gap-4 md:grid-cols-2">
+                    <form
+                        className="flex max-h-[70vh] flex-col"
+                        onSubmit={handleSubmit}
+                    >
+                        <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="title">Package Title</Label>
+                                    <Input
+                                        id="title"
+                                        required
+                                        value={formState.title}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                title: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="slug">Slug</Label>
+                                    <Input
+                                        id="slug"
+                                        placeholder="boracay-getaway-package"
+                                        value={formState.slug}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                slug: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
                             <div>
-                                <Label htmlFor="title">Package Title</Label>
+                                <Label htmlFor="tagline">Tagline</Label>
                                 <Input
-                                    id="title"
-                                    required
-                                    value={formState.title}
+                                    id="tagline"
+                                    placeholder="Short highlight for this package"
+                                    value={formState.tagline}
                                     onChange={(event) =>
                                         setFormState((prev) => ({
                                             ...prev,
-                                            title: event.target.value,
+                                            tagline: event.target.value,
                                         }))
                                     }
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="slug">Slug</Label>
-                                <Input
-                                    id="slug"
-                                    placeholder="boracay-getaway-package"
-                                    value={formState.slug}
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    rows={5}
+                                    placeholder="Detailed description, activities, and value proposition."
+                                    value={formState.description}
                                     onChange={(event) =>
                                         setFormState((prev) => ({
                                             ...prev,
-                                            slug: event.target.value,
+                                            description: event.target.value,
                                         }))
                                     }
                                 />
                             </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="tagline">Tagline</Label>
-                            <Input
-                                id="tagline"
-                                placeholder="Short highlight for this package"
-                                value={formState.tagline}
-                                onChange={(event) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        tagline: event.target.value,
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                rows={5}
-                                placeholder="Detailed description, activities, and value proposition."
-                                value={formState.description}
-                                onChange={(event) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        description: event.target.value,
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="duration_days">
+                                        Duration (Days)
+                                    </Label>
+                                    <Input
+                                        id="duration_days"
+                                        type="number"
+                                        min="1"
+                                        value={formState.duration_days}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                duration_days: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="duration_label">
+                                        Duration Label
+                                    </Label>
+                                    <Input
+                                        id="duration_label"
+                                        placeholder="3 days, 2 nights"
+                                        value={formState.duration_label}
+                                        onChange={(event) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                duration_label: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
                             <div>
-                                <Label htmlFor="duration_days">
-                                    Duration (Days)
-                                </Label>
+                                <Label htmlFor="price">Base Price</Label>
                                 <Input
-                                    id="duration_days"
+                                    id="price"
                                     type="number"
-                                    min="1"
-                                    value={formState.duration_days}
+                                    min="0"
+                                    step="0.01"
+                                    value={formState.price}
                                     onChange={(event) =>
                                         setFormState((prev) => ({
                                             ...prev,
-                                            duration_days: event.target.value,
+                                            price: event.target.value,
                                         }))
                                     }
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="duration_label">
-                                    Duration Label
+                                <Label htmlFor="inclusions">
+                                    Inclusions (one per line)
                                 </Label>
-                                <Input
-                                    id="duration_label"
-                                    placeholder="3 days, 2 nights"
-                                    value={formState.duration_label}
+                                <Textarea
+                                    id="inclusions"
+                                    rows={4}
+                                    placeholder="Hotel accommodation\nDaily breakfast\nGuided tours\nAirport transfers"
+                                value={formState.inclusionsText}
                                     onChange={(event) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            duration_label: event.target.value,
-                                        }))
+                                        handleInclusionChange(event.target.value)
                                     }
                                 />
                             </div>
-                        </div>
-                        <div>
-                            <Label htmlFor="price">Base Price</Label>
-                            <Input
-                                id="price"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={formState.price}
-                                onChange={(event) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        price: event.target.value,
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="inclusions">
-                                Inclusions (one per line)
-                            </Label>
-                            <Textarea
-                                id="inclusions"
-                                rows={4}
-                                placeholder="Hotel accommodation\nDaily breakfast\nGuided tours\nAirport transfers"
-                                value={inclusionText}
-                                onChange={(event) =>
-                                    handleInclusionChange(event.target.value)
-                                }
-                            />
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label>Package Type</Label>
-                                <Select
-                                    value={formState.package_type}
-                                    onValueChange={(value) =>
-                                        setFormState((prev) => ({
-                                            ...prev,
-                                            package_type:
-                                                value as TravelPackageType,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select package type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {PACKAGE_TYPES.map((type) => (
-                                            <SelectItem key={type} value={type}>
-                                                {type.charAt(0).toUpperCase() +
-                                                    type.slice(1)}
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label>Package Type</Label>
+                                    <Select
+                                        value={formState.package_type}
+                                        onValueChange={(value) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                package_type:
+                                                    value as TravelPackageType,
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select package type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {PACKAGE_TYPES.map((type) => (
+                                                <SelectItem key={type} value={type}>
+                                                    {type.charAt(0).toUpperCase() +
+                                                        type.slice(1)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label>Status</Label>
+                                    <Select
+                                        value={formState.status}
+                                        onValueChange={(value) =>
+                                            setFormState((prev) => ({
+                                                ...prev,
+                                                status: value as TravelPackageStatus,
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="draft">
+                                                Draft
                                             </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                            <SelectItem value="published">
+                                                Published
+                                            </SelectItem>
+                                            <SelectItem value="archived">
+                                                Archived
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                            <div>
-                                <Label>Status</Label>
-                                <Select
-                                    value={formState.status}
-                                    onValueChange={(value) =>
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="is_featured"
+                                    checked={formState.is_featured}
+                                    onCheckedChange={(value) =>
                                         setFormState((prev) => ({
                                             ...prev,
-                                            status: value as TravelPackageStatus,
+                                            is_featured: Boolean(value),
                                         }))
                                     }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="draft">
-                                            Draft
-                                        </SelectItem>
-                                        <SelectItem value="published">
-                                            Published
-                                        </SelectItem>
-                                        <SelectItem value="archived">
-                                            Archived
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                />
+                                <Label htmlFor="is_featured">
+                                    Feature this package
+                                </Label>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="is_featured"
-                                checked={formState.is_featured}
-                                onCheckedChange={(value) =>
-                                    setFormState((prev) => ({
-                                        ...prev,
-                                        is_featured: Boolean(value),
-                                    }))
-                                }
-                            />
-                            <Label htmlFor="is_featured">
-                                Feature this package
-                            </Label>
-                        </div>
-                        <DialogFooter>
+                        <DialogFooter className="border-t px-6 py-4">
                             <Button
                                 type="button"
                                 variant="ghost"

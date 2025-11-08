@@ -8,12 +8,25 @@ export interface MenuItem {
     appParamCheck?: string | string[]; // Custom appParam values that should show this item (for submenu items)
     parentId?: string; // ID of parent menu item (for submenu items)
     isSubmenu?: boolean; // Explicitly mark as submenu item
+    hrefResolver?: (context: MenuContext) => string | null;
+    hideIfNoHref?: boolean;
 }
 
 export interface MenuCategory {
     id: string;
     title: string;
     items: MenuItem[];
+}
+
+export interface MenuContext {
+    auth?:
+        | {
+              user?: {
+                  identifier?: string | null;
+                  slug?: string | null;
+              } | null;
+          }
+        | null;
 }
 
 export const menuCategories: MenuCategory[] = [
@@ -348,21 +361,34 @@ export const menuCategories: MenuCategory[] = [
         title: 'Travel',
         items: [
             {
-                id: 'travel',
-                title: 'Packages',
-                href: '/travel?app=travel',
-                urlCheck: 'travel',
+                id: 'travel-packages',
+                title: 'Travel Packages',
+                href: '/travel/packages?app=travel',
+                urlCheck: 'travel/packages',
                 moduleCheck: 'travel',
             },
             {
                 id: 'travel-bookings',
-                title: 'Bookings',
+                title: 'Travel Bookings',
                 href: '/travel/bookings?app=travel',
                 urlCheck: 'travel/bookings',
                 moduleCheck: 'travel',
-                appParamCheck: ['travel'],
-                parentId: 'travel',
-                isSubmenu: true,
+            },
+            {
+                id: 'travel-public-profile',
+                title: 'Your Travel Page',
+                href: '/travel/page',
+                urlCheck: 'travel/page',
+                moduleCheck: 'travel',
+                hrefResolver: ({ auth }) => {
+                    const slug = auth?.user?.slug;
+                    if (slug) {
+                        return `/travel/page/${slug}`;
+                    }
+
+                    return null;
+                },
+                hideIfNoHref: true,
             },
         ],
     },
@@ -497,3 +523,4 @@ export const shouldShowCategory = (
 ) => {
     return getVisibleItems(category, hasModuleAccess, appParam, url).length > 0;
 };
+
