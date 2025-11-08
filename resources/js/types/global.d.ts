@@ -26,6 +26,7 @@ declare module '@inertiajs/core' {
                 project_identifier: string;
                 theme: 'light' | 'dark' | 'system';
                 theme_color: string;
+                slug?: string | null;
             };
         };
     }

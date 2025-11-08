@@ -19,19 +19,18 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    identifier?: string;
-    app_currency?:
-        | string
-        | {
-              symbol: string;
-              decimal_separator?: string;
-              thousands_separator?: string;
-          };
-    credits?: number;
-    is_admin?: boolean;
-    project_identifier?: string;
-    theme?: 'light' | 'dark' | 'system';
-    theme_color?: string;
+    identifier: string;
+    app_currency: {
+        symbol: string;
+        decimal_separator?: string;
+        thousands_separator?: string;
+    };
+    credits: number;
+    is_admin: boolean;
+    project_identifier: string;
+    theme: 'light' | 'dark' | 'system';
+    theme_color: string;
+    slug?: string | null;
     contact_number?: string;
     subscription?: {
         status: 'active' | 'cancelled' | 'expired' | 'pending';
@@ -52,9 +51,10 @@ export interface User {
 }
 
 export interface Project {
-    id: number;
-    name: string;
-    identifier: string;
+    id?: number;
+    name?: string;
+    identifier?: string;
+    enabledModules?: string[];
 }
 
 export interface ProjectModule {
@@ -107,7 +107,8 @@ export interface Widget {
     id: number;
     type: WidgetType;
     column: number;
-    dashboard_id: number;
+    order: number;
+    dashboard_id?: number;
     // Add any other properties that your widgets use
 }
 
@@ -129,7 +130,7 @@ export interface Product {
     sku: string;
     quantity: number;
     price: number;
-    images: string[];
+    images?: string[];
     category_id?: number;
     description?: string;
     status?: 'in_stock' | 'low_stock' | 'out_of_stock';
