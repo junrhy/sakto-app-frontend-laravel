@@ -214,7 +214,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             icon: GraduationCap,
             href: getHref('education', '/education'),
             gradient: 'from-violet-500 to-purple-600',
-            comingSoon: true,
+            comingSoon: false,
             projectIdentifier: 'education',
         },
         {

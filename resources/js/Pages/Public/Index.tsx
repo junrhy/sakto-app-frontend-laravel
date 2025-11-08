@@ -184,7 +184,7 @@ export default function Welcome({ auth }: PageProps) {
             href: '/education',
             color: 'text-indigo-600',
             bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
         {
             name: 'Finance',
