@@ -19,14 +19,12 @@ export interface MenuCategory {
 }
 
 export interface MenuContext {
-    auth?:
-        | {
-              user?: {
-                  identifier?: string | null;
-                  slug?: string | null;
-              } | null;
-          }
-        | null;
+    auth?: {
+        user?: {
+            identifier?: string | null;
+            slug?: string | null;
+        } | null;
+    } | null;
 }
 
 export const menuCategories: MenuCategory[] = [
@@ -83,6 +81,11 @@ export const menuCategories: MenuCategory[] = [
                 id: 'transportation',
                 title: 'Transportation',
                 href: '/transportation?app=transportation',
+            },
+            {
+                id: 'handyman',
+                title: 'Handyman',
+                href: '/handyman?app=handyman',
             },
             {
                 id: 'transportation-settings',
@@ -523,4 +526,3 @@ export const shouldShowCategory = (
 ) => {
     return getVisibleItems(category, hasModuleAccess, appParam, url).length > 0;
 };
-

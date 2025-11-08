@@ -121,6 +121,7 @@ require __DIR__.'/web/ClinicEmbedController.php';
 require __DIR__.'/web/ChatController.php';
 require __DIR__.'/web/FileStorageController.php';
 require __DIR__.'/web/JobsController.php';
+require __DIR__.'/web/HandymanController.php';
 });
 
 // Include authentication routes

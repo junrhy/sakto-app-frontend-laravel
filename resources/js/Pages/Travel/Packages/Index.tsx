@@ -43,7 +43,6 @@ import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { PageProps } from '@/types';
 
-import { useTravelApi } from '@/Pages/Travel/useTravelApi';
 import type {
     AppCurrencySettings,
     PaginatedResponse,
@@ -51,6 +50,7 @@ import type {
     TravelPackageStatus,
     TravelPackageType,
 } from '@/Pages/Travel/travel';
+import { useTravelApi } from '@/Pages/Travel/useTravelApi';
 
 interface TravelPackagesPageProps extends PageProps {
     packages: PaginatedResponse<TravelPackage>;
@@ -615,7 +615,7 @@ export default function TravelPackagesIndex({
                 onOpenChange={handleCloseDialogs}
             >
                 <DialogContent className="p-0 sm:max-w-2xl">
-                    <DialogHeader className="px-6 pt-6 pb-4">
+                    <DialogHeader className="px-6 pb-4 pt-6">
                         <DialogTitle>
                             {activePackage
                                 ? 'Edit Travel Package'
@@ -704,7 +704,8 @@ export default function TravelPackagesIndex({
                                         onChange={(event) =>
                                             setFormState((prev) => ({
                                                 ...prev,
-                                                duration_days: event.target.value,
+                                                duration_days:
+                                                    event.target.value,
                                             }))
                                         }
                                     />
@@ -720,7 +721,8 @@ export default function TravelPackagesIndex({
                                         onChange={(event) =>
                                             setFormState((prev) => ({
                                                 ...prev,
-                                                duration_label: event.target.value,
+                                                duration_label:
+                                                    event.target.value,
                                             }))
                                         }
                                     />
@@ -750,9 +752,11 @@ export default function TravelPackagesIndex({
                                     id="inclusions"
                                     rows={4}
                                     placeholder="Hotel accommodation\nDaily breakfast\nGuided tours\nAirport transfers"
-                                value={formState.inclusionsText}
+                                    value={formState.inclusionsText}
                                     onChange={(event) =>
-                                        handleInclusionChange(event.target.value)
+                                        handleInclusionChange(
+                                            event.target.value,
+                                        )
                                     }
                                 />
                             </div>
@@ -774,8 +778,13 @@ export default function TravelPackagesIndex({
                                         </SelectTrigger>
                                         <SelectContent>
                                             {PACKAGE_TYPES.map((type) => (
-                                                <SelectItem key={type} value={type}>
-                                                    {type.charAt(0).toUpperCase() +
+                                                <SelectItem
+                                                    key={type}
+                                                    value={type}
+                                                >
+                                                    {type
+                                                        .charAt(0)
+                                                        .toUpperCase() +
                                                         type.slice(1)}
                                                 </SelectItem>
                                             ))}

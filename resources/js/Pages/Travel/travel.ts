@@ -76,4 +76,3 @@ export interface AppCurrencySettings {
     decimal_separator?: string;
     thousands_separator?: string;
 }
-

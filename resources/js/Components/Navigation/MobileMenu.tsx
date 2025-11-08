@@ -1,14 +1,14 @@
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import type { PageProps } from '@/types';
+import { usePage } from '@inertiajs/react';
 import {
     getVisibleItems,
     GroupedMenuItem,
     groupMenuItems,
+    menuCategories,
     MenuContext,
     MenuItem,
-    menuCategories,
 } from './MenuConfig';
-import type { PageProps } from '@/types';
-import { usePage } from '@inertiajs/react';
 
 interface MobileMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;

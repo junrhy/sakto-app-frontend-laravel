@@ -2,13 +2,13 @@ import { usePage } from '@inertiajs/react';
 import axios, { AxiosError } from 'axios';
 import { useMemo } from 'react';
 
-import type { PageProps } from '@/types';
 import type {
     AppCurrencySettings,
     PaginatedResponse,
     TravelBooking,
     TravelPackage,
 } from '@/Pages/Travel/travel';
+import type { PageProps } from '@/types';
 
 type FetchParams = Record<string, unknown>;
 
@@ -113,4 +113,3 @@ function logDebug(error: unknown, context: string) {
         console.debug(`Travel API ${context} debug:`, error);
     }
 }
-

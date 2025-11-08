@@ -44,7 +44,6 @@ import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { PageProps } from '@/types';
 
-import { useTravelApi } from '@/Pages/Travel/useTravelApi';
 import type {
     AppCurrencySettings,
     PaginatedResponse,
@@ -53,6 +52,7 @@ import type {
     TravelPackage,
     TravelPaymentStatus,
 } from '@/Pages/Travel/travel';
+import { useTravelApi } from '@/Pages/Travel/useTravelApi';
 
 interface TravelBookingsPageProps extends PageProps {
     bookings: PaginatedResponse<TravelBooking>;
@@ -808,7 +808,7 @@ export default function TravelBookingsIndex({
 
             <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
                 <DialogContent className="p-0 sm:max-w-3xl">
-                    <DialogHeader className="px-6 pt-6 pb-4">
+                    <DialogHeader className="px-6 pb-4 pt-6">
                         <DialogTitle>
                             {activeBooking ? 'Edit Booking' : 'Create Booking'}
                         </DialogTitle>
@@ -818,7 +818,10 @@ export default function TravelBookingsIndex({
                                 : 'Capture a new booking for one of your travel packages.'}
                         </DialogDescription>
                     </DialogHeader>
-                    <form className="flex max-h-[70vh] flex-col" onSubmit={handleSubmit}>
+                    <form
+                        className="flex max-h-[70vh] flex-col"
+                        onSubmit={handleSubmit}
+                    >
                         <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
@@ -916,7 +919,9 @@ export default function TravelBookingsIndex({
                                     </Label>
                                     <Input
                                         id="customer_contact_number"
-                                        value={formState.customer_contact_number}
+                                        value={
+                                            formState.customer_contact_number
+                                        }
                                         onChange={(event) =>
                                             setFormState((prev) => ({
                                                 ...prev,
@@ -990,8 +995,7 @@ export default function TravelBookingsIndex({
                                         onValueChange={(value) =>
                                             setFormState((prev) => ({
                                                 ...prev,
-                                                status:
-                                                    value as TravelBookingStatus,
+                                                status: value as TravelBookingStatus,
                                             }))
                                         }
                                     >
@@ -1064,7 +1068,9 @@ export default function TravelBookingsIndex({
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="metadata">Metadata (JSON)</Label>
+                                <Label htmlFor="metadata">
+                                    Metadata (JSON)
+                                </Label>
                                 <Textarea
                                     id="metadata"
                                     rows={4}

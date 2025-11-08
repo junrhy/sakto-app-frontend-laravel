@@ -1,14 +1,14 @@
 import Dropdown from '@/Components/Dropdown';
+import type { PageProps } from '@/types';
+import { usePage } from '@inertiajs/react';
 import {
     getVisibleItems,
     GroupedMenuItem,
     groupMenuItems,
-    MenuContext,
     menuCategories,
+    MenuContext,
     MenuItem,
 } from './MenuConfig';
-import type { PageProps } from '@/types';
-import { usePage } from '@inertiajs/react';
 
 interface DesktopMenuProps {
     hasModuleAccess: (moduleId: string) => boolean;

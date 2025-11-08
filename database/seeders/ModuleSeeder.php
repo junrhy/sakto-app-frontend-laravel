@@ -181,6 +181,19 @@ class ModuleSeeder extends Seeder
                 'rating' => 4.2
             ],
             [
+                'title' => 'Handyman',
+                'route' => '/dashboard?app=handyman',
+                'icon' => 'RxGear',
+                'visible' => false,
+                'description' => 'Coordinate technician dispatch, work order fulfillment, and tool inventory for on-site service teams',
+                'price' => 149,
+                'categories' => ['Operations', 'Field Service', 'Maintenance'],
+                'comingSoon' => false,
+                'pricingType' => 'subscription',
+                'bgColor' => 'bg-slate-100 dark:bg-slate-900/30',
+                'rating' => 4.6
+            ],
+            [
                 'title' => 'Parcel Delivery',
                 'route' => '/dashboard?app=parcel-delivery',
                 'icon' => 'RxBox',
