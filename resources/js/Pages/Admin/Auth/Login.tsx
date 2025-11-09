@@ -43,9 +43,20 @@ export default function Login() {
             <div className="mt-6 w-full overflow-hidden border border-gray-200 bg-white px-6 py-4 shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:max-w-md sm:rounded-lg">
                 <div className="mb-6 flex justify-center">
                     <Link href="/">
-                        <div className="flex items-center">
-                            <ApplicationLogo className="h-14 w-14 fill-current text-gray-800 dark:text-gray-200" />
-                            <span className="ml-2 text-2xl font-black text-gray-900 dark:text-white">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="flex items-center justify-center">
+                                <img
+                                    src="/images/neulify-logo-big.png"
+                                    alt="Neulify"
+                                    className="block h-8 w-auto dark:hidden"
+                                />
+                                <img
+                                    src="/images/neulify-logo-big-white.png"
+                                    alt="Neulify"
+                                    className="hidden h-8 w-auto dark:block"
+                                />
+                            </div>
+                            <span className="text-2xl font-black text-gray-900 dark:text-white">
                                 {hostname}{' '}
                                 <span className="text-blue-600 dark:text-blue-400">
                                     Admin
@@ -92,7 +103,7 @@ export default function Login() {
 
                     <div className="mt-4 flex items-center justify-end">
                         <Link
-                            href={route('login')}
+                            href={route('public')}
                             className="rounded-md text-sm text-gray-600 underline transition-colors duration-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-200 dark:focus:ring-offset-gray-800"
                         >
                             Back to regular login
