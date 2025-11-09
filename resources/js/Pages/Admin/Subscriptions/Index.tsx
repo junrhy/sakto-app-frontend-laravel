@@ -12,7 +12,8 @@ import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps, Project, User } from '@/types/index';
 import { SubscriptionPlan, UserSubscription } from '@/types/models';
 import { Head, Link, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Copy, Eye, Pencil, Power, RefreshCcw, Search, Trash2, Plus } from 'lucide-react';
 import Tabs from './Tabs';
 
 interface Props {
@@ -21,7 +22,10 @@ interface Props {
     projects: Project[];
     users: User[];
     subscriptions: {
-        data: (UserSubscription & { user_name?: string })[];
+        data: (UserSubscription & {
+            user_name?: string;
+            total_sales?: number;
+        })[];
         links: any[];
         meta: {
             current_page: number;
@@ -34,6 +38,7 @@ interface Props {
             total: number;
         };
     };
+    totalSales?: number;
     filters: {
         project_id?: string;
         user_id?: string;
@@ -54,12 +59,26 @@ const getCurrencySymbol = (currency?: string): string => {
     return symbols[currency || 'USD'] || currency || 'USD';
 };
 
+const formatCurrency = (amount: number, currency = 'USD') => {
+    try {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency,
+        }).format(amount);
+    } catch {
+        return (
+            getCurrencySymbol(currency) + ' ' + amount.toLocaleString()
+        );
+    }
+};
+
 export default function Index({
     auth,
     plans,
     projects,
     users,
     subscriptions,
+    totalSales = 0,
     filters,
 }: Props) {
     const [activeTab, setActiveTab] = useState<'plans' | 'subscriptions'>(
@@ -81,6 +100,8 @@ export default function Index({
     const [currencyFilter, setCurrencyFilter] = useState(
         filters.currency || '',
     );
+    const [planSearch, setPlanSearch] = useState('');
+    const [subscriptionSearch, setSubscriptionSearch] = useState('');
 
     const createForm = useForm({
         name: '',
@@ -116,6 +137,26 @@ export default function Index({
     });
 
     const deleteForm = useForm({});
+    const duplicatePlanForm = useForm({});
+    const duplicateMultipleForm = useForm<{
+        plan_ids: number[];
+        project_id: number | null;
+    }>({
+        plan_ids: [],
+        project_id: filters.project_id ? Number(filters.project_id) : null,
+    });
+
+    const [selectedPlans, setSelectedPlans] = useState<number[]>([]);
+    const selectAllCheckboxRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        duplicateMultipleForm.setData(
+            'project_id',
+            projectFilter ? Number(projectFilter) : null,
+        );
+        duplicateMultipleForm.setData('plan_ids', []);
+        setSelectedPlans([]);
+    }, [projectFilter, plans]);
 
     const runRenewalForm = useForm({});
 
@@ -209,6 +250,15 @@ export default function Index({
         }
     };
 
+    const duplicatePlan = (plan: SubscriptionPlan) => {
+        duplicatePlanForm.post(
+            route('admin.subscriptions.plans.duplicate', plan.id),
+            {
+                preserveScroll: true,
+            },
+        );
+    };
+
     const togglePlanStatus = (plan: SubscriptionPlan) => {
         window.location.href = route(
             'admin.subscriptions.plans.toggle-status',
@@ -226,6 +276,20 @@ export default function Index({
                 console.error('Failed to run renewal command:', errors);
             },
         });
+    };
+
+    const duplicateSelectedPlans = () => {
+        if (selectedPlans.length === 0) {
+            return;
+        }
+        duplicateMultipleForm.setData('plan_ids', selectedPlans);
+        duplicateMultipleForm.post(
+            route('admin.subscriptions.plans.bulk-duplicate'),
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelectedPlans([]),
+            },
+        );
     };
 
     const openRenewalModal = () => {
@@ -267,6 +331,86 @@ export default function Index({
         }
         window.location.href = url.toString();
     };
+
+    const normalizedPlanSearch = planSearch.trim().toLowerCase();
+    const filteredPlans = useMemo(() => {
+        if (!normalizedPlanSearch) {
+            return plans;
+        }
+        return plans.filter((plan) => {
+            const projectName = plan.project?.name ?? '';
+            const badge = plan.badge_text ?? '';
+            const haystack = [
+                plan.name,
+                plan.slug,
+                projectName,
+                String(plan.price ?? ''),
+                badge,
+            ]
+                .join(' ')
+                .toLowerCase();
+            return haystack.includes(normalizedPlanSearch);
+        });
+    }, [plans, normalizedPlanSearch]);
+
+    const normalizedSubscriptionSearch = subscriptionSearch.trim().toLowerCase();
+    const filteredSubscriptions = useMemo(() => {
+        if (!normalizedSubscriptionSearch) {
+            return subscriptions?.data ?? [];
+        }
+        return (
+            subscriptions?.data?.filter((subscription) => {
+                const haystack = [
+                    subscription.user_name ?? '',
+                    subscription.user_identifier ?? '',
+                    subscription.plan?.name ?? '',
+                    subscription.status ?? '',
+                    subscription.payment_method ?? '',
+                    subscription.payment_transaction_id ?? '',
+                ]
+                    .join(' ')
+                    .toLowerCase();
+                return haystack.includes(normalizedSubscriptionSearch);
+            }) ?? []
+        );
+    }, [subscriptions?.data, normalizedSubscriptionSearch]);
+
+    const isPlanSelected = (planId: number) => selectedPlans.includes(planId);
+
+    const handlePlanSelection = (planId: number, checked: boolean) => {
+        setSelectedPlans((prev) => {
+            let updated: number[];
+            if (checked) {
+                updated = prev.includes(planId) ? prev : [...prev, planId];
+            } else {
+                updated = prev.filter((id) => id !== planId);
+            }
+            duplicateMultipleForm.setData('plan_ids', updated);
+            return updated;
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            const allIds = filteredPlans.map((plan) => plan.id);
+            setSelectedPlans(allIds);
+            duplicateMultipleForm.setData('plan_ids', allIds);
+        } else {
+            setSelectedPlans([]);
+            duplicateMultipleForm.setData('plan_ids', []);
+        }
+    };
+
+    const allPlansSelected =
+        filteredPlans.length > 0 &&
+        filteredPlans.every((plan) => selectedPlans.includes(plan.id));
+
+    useEffect(() => {
+        if (selectAllCheckboxRef.current) {
+            selectAllCheckboxRef.current.indeterminate =
+                selectedPlans.length > 0 && !allPlansSelected;
+        }
+    }, [selectedPlans, allPlansSelected]);
 
     return (
         <AdminLayout
@@ -450,19 +594,70 @@ export default function Index({
                                                 </button>
                                             )}
                                         </div>
+
+                                        {/* Plan Search */}
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                            <label
+                                                htmlFor="plan-search"
+                                                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                            >
+                                                Search:
+                                            </label>
+                                            <div className="flex w-full items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 sm:w-64">
+                                                <Search className="h-4 w-4 text-gray-400 dark:text-gray-300" />
+                                                <TextInput
+                                                    id="plan-search"
+                                                    value={planSearch}
+                                                    onChange={(e) =>
+                                                        setPlanSearch(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    className="mt-0 w-full border-none bg-transparent p-0 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-gray-100"
+                                                    placeholder="Search plans..."
+                                                />
+                                            </div>
+                                            {planSearch && (
+                                                <button
+                                                    onClick={() =>
+                                                        setPlanSearch('')
+                                                    }
+                                                    className="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                                >
+                                                    Clear Search
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2 sm:flex-row">
                                         <PrimaryButton
                                             onClick={openCreateModal}
+                                            className="flex items-center gap-2"
                                         >
-                                            Add New Plan
+                                            <Plus className="h-4 w-4" />
+                                            Add
                                         </PrimaryButton>
-                                        <SecondaryButton
-                                            onClick={openRenewalModal}
-                                        >
-                                            Run Renewal Command
-                                        </SecondaryButton>
+                                        {activeTab === 'plans' && (
+                                            <>
+                                                <SecondaryButton
+                                                    onClick={duplicateSelectedPlans}
+                                                    disabled={
+                                                        selectedPlans.length ===
+                                                            0 ||
+                                                        duplicateMultipleForm.processing
+                                                    }
+                                                    className={`flex items-center gap-2 ${
+                                                        duplicateMultipleForm.processing
+                                                            ? 'cursor-wait opacity-70'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    <Copy className="h-4 w-4" />
+                                                    Duplicate
+                                                </SecondaryButton>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -470,6 +665,22 @@ export default function Index({
                                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead className="bg-gray-50 dark:bg-gray-700">
                                             <tr>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3"
+                                                >
+                                                    <Checkbox
+                                                        ref={selectAllCheckboxRef}
+                                                        checked={allPlansSelected}
+                                                        onChange={(event) =>
+                                                            handleSelectAll(
+                                                                event.target
+                                                                    .checked,
+                                                            )
+                                                        }
+                                                        aria-label="Select all plans"
+                                                    />
+                                                </th>
                                                 <th
                                                     scope="col"
                                                     className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
@@ -533,11 +744,27 @@ export default function Index({
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                            {plans.map((plan) => (
+                                            {filteredPlans.length > 0 ? (
+                                                filteredPlans.map((plan) => (
                                                 <tr
                                                     key={plan.id}
                                                     className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                                                 >
+                                                    <td className="whitespace-nowrap px-3 py-4">
+                                                        <Checkbox
+                                                            checked={isPlanSelected(
+                                                                plan.id,
+                                                            )}
+                                                            onChange={(event) =>
+                                                                handlePlanSelection(
+                                                                    plan.id,
+                                                                    event.target
+                                                                        .checked,
+                                                                )
+                                                            }
+                                                            aria-label={`Select ${plan.name}`}
+                                                        />
+                                                    </td>
                                                     <td className="whitespace-nowrap px-3 py-4">
                                                         <div className="flex items-center">
                                                             <div>
@@ -637,16 +864,42 @@ export default function Index({
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
                                                         <div className="flex space-x-2">
                                                             <button
+                                                                className="rounded-full p-2 text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
                                                                 onClick={() =>
                                                                     openEditModal(
                                                                         plan,
                                                                     )
                                                                 }
-                                                                className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                             >
-                                                                Edit
+                                                                <Pencil className="h-4 w-4" />
                                                             </button>
                                                             <button
+                                                                className={`rounded-full p-2 text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300 ${
+                                                                    duplicatePlanForm.processing
+                                                                        ? 'cursor-wait opacity-60'
+                                                                        : ''
+                                                                }`}
+                                                                onClick={() =>
+                                                                    duplicatePlan(
+                                                                        plan,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    duplicatePlanForm.processing
+                                                                }
+                                                            >
+                                                                <Copy className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                className={`rounded-full p-2 transition-colors ${
+                                                                    plan.is_active &&
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                                                                        : plan.is_active
+                                                                          ? 'text-orange-600 hover:bg-orange-50 hover:text-orange-900 dark:text-orange-400 dark:hover:bg-orange-950/40 dark:hover:text-orange-300'
+                                                                          : 'text-green-600 hover:bg-green-50 hover:text-green-900 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-300'
+                                                                }`}
                                                                 onClick={() =>
                                                                     togglePlanStatus(
                                                                         plan,
@@ -657,15 +910,6 @@ export default function Index({
                                                                     (plan.active_users_count ||
                                                                         0) > 0
                                                                 }
-                                                                className={`${
-                                                                    plan.is_active &&
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
-                                                                        : plan.is_active
-                                                                          ? 'text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300'
-                                                                          : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                                                } transition-colors`}
                                                                 title={
                                                                     plan.is_active &&
                                                                     (plan.active_users_count ||
@@ -674,11 +918,15 @@ export default function Index({
                                                                         : undefined
                                                                 }
                                                             >
-                                                                {plan.is_active
-                                                                    ? 'Deactivate'
-                                                                    : 'Activate'}
+                                                                <Power className="h-4 w-4" />
                                                             </button>
                                                             <button
+                                                                className={`rounded-full p-2 transition-colors ${
+                                                                    (plan.active_users_count ||
+                                                                        0) > 0
+                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                                                                        : 'text-red-600 hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300'
+                                                                }`}
                                                                 onClick={() =>
                                                                     openDeleteModal(
                                                                         plan,
@@ -688,12 +936,6 @@ export default function Index({
                                                                     (plan.active_users_count ||
                                                                         0) > 0
                                                                 }
-                                                                className={`${
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
-                                                                        : 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                                                                } transition-colors`}
                                                                 title={
                                                                     (plan.active_users_count ||
                                                                         0) > 0
@@ -701,12 +943,22 @@ export default function Index({
                                                                         : undefined
                                                                 }
                                                             >
-                                                                Delete
+                                                                <Trash2 className="h-4 w-4" />
                                                             </button>
                                                         </div>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan={11}
+                                                        className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
+                                                    >
+                                                        No subscription plans found for this search.
+                                                    </td>
+                                                </tr>
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -716,8 +968,8 @@ export default function Index({
                         {/* User Subscriptions Tab */}
                         {activeTab === 'subscriptions' && (
                             <div className="p-6">
-                                {/* User Filter */}
-                                <div className="mb-4">
+                                <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                    {/* User Filter */}
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                         <label
                                             htmlFor="user-filter"
@@ -755,6 +1007,40 @@ export default function Index({
                                                 Clear Filter
                                             </button>
                                         )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                        <div className="flex w-full items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 sm:w-72">
+                                            <Search className="h-4 w-4 text-gray-400 dark:text-gray-300" />
+                                            <TextInput
+                                                id="subscription-search"
+                                                value={subscriptionSearch}
+                                                onChange={(e) =>
+                                                    setSubscriptionSearch(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="mt-0 w-full border-none bg-transparent p-0 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 dark:text-gray-100"
+                                                placeholder="Search subscriptions..."
+                                            />
+                                        </div>
+                                        {subscriptionSearch && (
+                                            <button
+                                                onClick={() =>
+                                                    setSubscriptionSearch('')
+                                                }
+                                                className="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            >
+                                                Clear Search
+                                            </button>
+                                        )}
+                                        <SecondaryButton
+                                            onClick={openRenewalModal}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <RefreshCcw className="h-4 w-4" />
+                                            Run Renewal Command
+                                        </SecondaryButton>
                                     </div>
                                 </div>
 
@@ -802,13 +1088,20 @@ export default function Index({
                                                     scope="col"
                                                     className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
                                                 >
+                                                    Total Sales
+                                                </th>
+                                                <th
+                                                    scope="col"
+                                                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300"
+                                                >
                                                     Actions
                                                 </th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                            {subscriptions?.data?.map(
-                                                (subscription) => (
+                                            {filteredSubscriptions.length > 0 ? (
+                                                filteredSubscriptions.map(
+                                                    (subscription) => (
                                                     <tr
                                                         key={subscription.id}
                                                         className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -876,19 +1169,40 @@ export default function Index({
                                                                     : 'No'}
                                                             </span>
                                                         </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {formatCurrency(
+                                                                    subscription.total_sales ??
+                                                                        0,
+                                                                    subscription.plan
+                                                                        ?.currency,
+                                                                )}
+                                                            </div>
+                                                        </td>
                                                         <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
                                                             <Link
                                                                 href={route(
                                                                     'admin.subscriptions.view',
                                                                     subscription.id,
                                                                 )}
-                                                                className="text-indigo-600 transition-colors hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                                className="inline-flex rounded-full p-2 text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+                                                                aria-label="View details"
                                                             >
-                                                                View Details
+                                                                <Eye className="h-4 w-4" />
                                                             </Link>
                                                         </td>
                                                     </tr>
-                                                ),
+                                                    ),
+                                                )
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan={7}
+                                                        className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
+                                                    >
+                                                        No user subscriptions found for this search.
+                                                    </td>
+                                                </tr>
                                             )}
                                         </tbody>
                                     </table>

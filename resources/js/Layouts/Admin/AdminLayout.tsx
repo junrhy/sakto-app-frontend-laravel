@@ -259,27 +259,6 @@ export default function AdminLayout({
                                 Settings
                             </Link>
 
-                            {/* Return to App */}
-                            <Link
-                                href={route('home')}
-                                className="flex items-center rounded-lg px-4 py-2 text-sm text-white transition-colors duration-150 hover:bg-white/5"
-                            >
-                                <svg
-                                    className="mr-3 h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
-                                    />
-                                </svg>
-                                Return to App
-                            </Link>
-
                             {/* Log Out */}
                             <Link
                                 href={route('admin.logout')}

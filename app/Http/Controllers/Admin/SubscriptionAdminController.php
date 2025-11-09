@@ -61,14 +61,70 @@ class SubscriptionAdminController extends Controller
             $subscriptionsQuery->where('users.id', $request->user_id);
         }
         
-        $subscriptions = $subscriptionsQuery->orderBy('user_subscriptions.created_at', 'desc')->paginate(10);
+        $subscriptionsCollection = $subscriptionsQuery
+            ->orderBy('user_subscriptions.created_at', 'desc')
+            ->get();
+
+        $totalSales = (clone $subscriptionsQuery)->sum('user_subscriptions.amount_paid');
+
+        $groupedSubscriptions = $subscriptionsCollection
+            ->groupBy(function ($subscription) {
+                return $subscription->user_identifier . '|' . $subscription->subscription_plan_id;
+            })
+            ->map(function ($group) {
+                /** @var \App\Models\UserSubscription $first */
+                $first = $group->first();
+
+                $hasActive = $group->contains(function ($subscription) {
+                    return $subscription->status === 'active';
+                });
+
+                $status = $hasActive ? 'active' : $group->first()->status;
+                $latestStartDate = $group->max('start_date');
+                $latestEndDate = $group->max('end_date');
+                $autoRenew = $group->contains(function ($subscription) {
+                    return (bool) $subscription->auto_renew;
+                });
+
+                return [
+                    'id' => $first->id,
+                    'user_identifier' => $first->user_identifier,
+                    'user_name' => $first->user_name,
+                    'subscription_plan_id' => $first->subscription_plan_id,
+                    'plan' => $first->plan ? $first->plan->toArray() : null,
+                    'status' => $status,
+                    'start_date' => $latestStartDate,
+                    'end_date' => $latestEndDate,
+                    'auto_renew' => $autoRenew,
+                    'amount_paid' => $group->sum('amount_paid'),
+                    'total_sales' => $group->sum('amount_paid'),
+                    'created_at' => $first->created_at,
+                    'updated_at' => $first->updated_at,
+                ];
+            })
+            ->sortByDesc('start_date')
+            ->values();
+
+        $perPage = 10;
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $paginatedSubscriptions = new \Illuminate\Pagination\LengthAwarePaginator(
+            $groupedSubscriptions->slice(($currentPage - 1) * $perPage, $perPage)->values(),
+            $groupedSubscriptions->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
+                'query' => $request->query(),
+            ]
+        );
         
         return Inertia::render('Admin/Subscriptions/Index', [
             'plans' => $plans,
             'projects' => $projects,
             'users' => $users,
-            'subscriptions' => $subscriptions,
+            'subscriptions' => $paginatedSubscriptions,
             'filters' => $request->only(['project_id', 'user_id', 'currency']),
+            'totalSales' => $totalSales,
         ]);
     }
     
@@ -99,6 +155,98 @@ class SubscriptionAdminController extends Controller
         SubscriptionPlan::create($validated);
         
         return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription plan created successfully');
+    }
+    
+    /**
+     * Duplicate the specified subscription plan.
+     */
+    public function duplicatePlan($id)
+    {
+        $plan = SubscriptionPlan::findOrFail($id);
+        
+        try {
+            $duplicate = $plan->replicate();
+            $duplicate->name = $this->generateUniquePlanName($plan->name);
+            $duplicate->slug = $this->generateUniqueSlug($plan->slug);
+            $duplicate->is_active = false;
+            $duplicate->is_popular = false;
+            $duplicate->lemon_squeezy_variant_id = null;
+            $duplicate->save();
+            
+            return redirect()
+                ->route('admin.subscriptions.index', [
+                    'project_id' => $plan->project_id,
+                ])
+                ->with('success', 'Subscription plan duplicated successfully. Please review and activate when ready.');
+        } catch (\Exception $e) {
+            Log::error('Failed to duplicate subscription plan', [
+                'plan_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()
+                ->route('admin.subscriptions.index', [
+                    'project_id' => $plan->project_id,
+                ])
+                ->with('error', 'Failed to duplicate subscription plan. Please try again.');
+        }
+    }
+    
+    /**
+     * Duplicate multiple subscription plans in bulk.
+     */
+    public function duplicateMultiplePlans(Request $request)
+    {
+        $validated = $request->validate([
+            'plan_ids' => 'required|array',
+            'plan_ids.*' => 'integer|exists:subscription_plans,id',
+            'project_id' => 'nullable|integer|exists:projects,id',
+        ]);
+        
+        $plans = SubscriptionPlan::whereIn('id', $validated['plan_ids'])->get();
+        $duplicatesCreated = 0;
+        $errors = [];
+        
+        foreach ($plans as $plan) {
+            try {
+                $duplicate = $plan->replicate();
+                $duplicate->name = $this->generateUniquePlanName($plan->name);
+                $duplicate->slug = $this->generateUniqueSlug($plan->slug);
+                $duplicate->is_active = false;
+                $duplicate->is_popular = false;
+                $duplicate->lemon_squeezy_variant_id = null;
+                $duplicate->save();
+                
+                $duplicatesCreated++;
+            } catch (\Exception $e) {
+                Log::error('Failed to duplicate subscription plan (bulk operation)', [
+                    'plan_id' => $plan->id,
+                    'error' => $e->getMessage(),
+                ]);
+                
+                $errors[] = $plan->name;
+            }
+        }
+        
+        $redirectParams = [];
+        if (!empty($validated['project_id'])) {
+            $redirectParams['project_id'] = $validated['project_id'];
+        }
+        
+        if ($duplicatesCreated === 0) {
+            return redirect()
+                ->route('admin.subscriptions.index', $redirectParams)
+                ->with('error', 'Failed to duplicate the selected subscription plans. Please try again.');
+        }
+        
+        $message = "{$duplicatesCreated} subscription plan(s) duplicated successfully. Review and activate them when ready.";
+        if (!empty($errors)) {
+            $message .= ' The following plans could not be duplicated: ' . implode(', ', $errors) . '.';
+        }
+        
+        return redirect()
+            ->route('admin.subscriptions.index', $redirectParams)
+            ->with('success', $message);
     }
     
     /**
@@ -186,6 +334,40 @@ class SubscriptionAdminController extends Controller
     }
     
     /**
+     * Generate a unique plan name when duplicating.
+     */
+    protected function generateUniquePlanName(string $originalName): string
+    {
+        $baseName = trim($originalName);
+        $copyName = $baseName . ' (Copy)';
+        $counter = 2;
+        
+        while (SubscriptionPlan::where('name', $copyName)->exists()) {
+            $copyName = $baseName . ' (Copy ' . $counter . ')';
+            $counter++;
+        }
+        
+        return $copyName;
+    }
+    
+    /**
+     * Generate a unique slug when duplicating.
+     */
+    protected function generateUniqueSlug(string $originalSlug): string
+    {
+        $baseSlug = Str::slug($originalSlug . '-copy');
+        $slug = $baseSlug;
+        $counter = 2;
+        
+        while (SubscriptionPlan::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+        
+        return $slug;
+    }
+    
+    /**
      * View details of a user subscription.
      */
     public function viewSubscription($id)
@@ -201,6 +383,7 @@ class SubscriptionAdminController extends Controller
             ->select('user_subscriptions.*')
             ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
             ->addSelect('users.name as user_name')
+            ->selectRaw('user_subscriptions.amount_paid AS total_sales')
             ->where('user_subscriptions.user_identifier', $subscription->user_identifier)
             ->orderBy('user_subscriptions.created_at', 'desc')
             ->get();

@@ -21,9 +21,7 @@ Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 
 // Admin routes
 Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
     // Admin Dashboard
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
     
     // Admin User Management
     Route::prefix('admin/users')->group(function () {
@@ -60,6 +58,8 @@ Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
     Route::prefix('admin/subscriptions')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'index'])->name('admin.subscriptions.index');
         Route::post('/plans', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'storePlan'])->name('admin.subscriptions.plans.store');
+        Route::post('/plans/{id}/duplicate', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'duplicatePlan'])->name('admin.subscriptions.plans.duplicate');
+        Route::post('/plans/bulk-duplicate', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'duplicateMultiplePlans'])->name('admin.subscriptions.plans.bulk-duplicate');
         Route::put('/plans/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'updatePlan'])->name('admin.subscriptions.plans.update');
         Route::delete('/plans/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'destroyPlan'])->name('admin.subscriptions.plans.destroy');
         Route::get('/plans/{id}/toggle-status', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'togglePlanStatus'])->name('admin.subscriptions.plans.toggle-status');
