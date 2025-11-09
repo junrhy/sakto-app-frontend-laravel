@@ -6,6 +6,15 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextArea from '@/Components/TextArea';
 import TextInput from '@/Components/TextInput';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps } from '@/types/index';
 import { UserSubscription } from '@/types/models';
@@ -15,13 +24,19 @@ import React, { useState } from 'react';
 interface Props {
     auth: PageProps['auth'];
     subscription: UserSubscription & { user_name?: string };
+    history: UserSubscription[];
     flash?: {
         message?: string;
         error?: string;
     };
 }
 
-export default function View({ auth, subscription, flash = {} }: Props) {
+export default function View({
+    auth,
+    subscription,
+    history,
+    flash = {},
+}: Props) {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
     const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
@@ -109,6 +124,18 @@ export default function View({ auth, subscription, flash = {} }: Props) {
                 return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
             default:
                 return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+        }
+    };
+
+    const formatCurrency = (amount: number, currency = 'PHP') => {
+        try {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency,
+                minimumFractionDigits: 2,
+            }).format(amount);
+        } catch {
+            return `${currency} ${amount.toLocaleString()}`;
         }
     };
 
@@ -418,6 +445,83 @@ export default function View({ auth, subscription, flash = {} }: Props) {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div className="pb-12">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <Card className="bg-white dark:bg-gray-800">
+                        <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                Subscription History
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {history.length > 0 ? (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Plan
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Status
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Start Date
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                End Date
+                                            </TableHead>
+                                            <TableHead className="text-right text-gray-900 dark:text-white">
+                                                Amount Paid
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {history.map((item) => (
+                                            <TableRow
+                                                key={item.id}
+                                                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                            >
+                                                <TableCell className="text-gray-900 dark:text-white">
+                                                    {item.plan?.name ?? '—'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold leading-5 ${getStatusBadgeClass(item.status)}`}
+                                                    >
+                                                        {item.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            item.status.slice(1)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">
+                                                    {formatDate(item.start_date)}
+                                                </TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">
+                                                    {formatDate(item.end_date)}
+                                                </TableCell>
+                                                <TableCell className="text-right text-gray-900 dark:text-white">
+                                                    {formatCurrency(
+                                                        item.amount_paid,
+                                                        item.plan?.currency ||
+                                                            'PHP',
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            ) : (
+                                <div className="p-6 text-sm text-gray-600 dark:text-gray-300">
+                                    No subscription history available for this
+                                    user yet.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
 

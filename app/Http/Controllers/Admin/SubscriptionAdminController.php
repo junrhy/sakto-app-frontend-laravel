@@ -31,7 +31,10 @@ class SubscriptionAdminController extends Controller
             $query->where('currency', $request->currency);
         }
         
-        $plans = $query->orderBy('slug')->get();
+        $plans = $query
+            ->orderBy('project_id')
+            ->orderBy('price')
+            ->get();
         
         // Add active users count for each plan
         $plans->each(function ($plan) {
@@ -49,7 +52,9 @@ class SubscriptionAdminController extends Controller
         $subscriptionsQuery = UserSubscription::with('plan')
             ->select('user_subscriptions.*')
             ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
-            ->addSelect('users.name as user_name');
+            ->addSelect('users.name as user_name')
+            ->where('user_subscriptions.status', 'active')
+            ->where('user_subscriptions.end_date', '>', now());
         
         // Apply user filter if provided
         if ($request->filled('user_id')) {
@@ -124,7 +129,11 @@ class SubscriptionAdminController extends Controller
         
         $plan->update($validated);
         
-        return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription plan updated successfully');
+        return redirect()
+            ->route('admin.subscriptions.index', [
+                'project_id' => $plan->project_id,
+            ])
+            ->with('success', 'Subscription plan updated successfully');
     }
     
     /**
@@ -187,9 +196,18 @@ class SubscriptionAdminController extends Controller
             ->addSelect('users.name as user_name')
             ->where('user_subscriptions.id', $id)
             ->firstOrFail();
+
+        $subscriptionHistory = UserSubscription::with('plan')
+            ->select('user_subscriptions.*')
+            ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
+            ->addSelect('users.name as user_name')
+            ->where('user_subscriptions.user_identifier', $subscription->user_identifier)
+            ->orderBy('user_subscriptions.created_at', 'desc')
+            ->get();
         
         return Inertia::render('Admin/Subscriptions/View', [
             'subscription' => $subscription,
+            'history' => $subscriptionHistory,
         ]);
     }
     
