@@ -44,7 +44,7 @@ export default function Login() {
                 <div className="mb-6 flex justify-center">
                     <Link href="/">
                         <div className="flex items-center">
-                            <ApplicationLogo className="h-20 w-20 fill-current text-gray-800 dark:text-gray-200" />
+                            <ApplicationLogo className="h-14 w-14 fill-current text-gray-800 dark:text-gray-200" />
                             <span className="ml-2 text-2xl font-black text-gray-900 dark:text-white">
                                 {hostname}{' '}
                                 <span className="text-blue-600 dark:text-blue-400">
