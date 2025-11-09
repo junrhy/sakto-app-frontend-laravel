@@ -44,7 +44,7 @@ export default function AdminLayout({
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-7 w-auto fill-current text-white" />
                                 <span className="ml-2 text-lg font-black text-white">
-                                    Sakto{' '}
+                                    Neulify{' '}
                                     <span className="text-blue-400">Admin</span>
                                 </span>
                             </div>

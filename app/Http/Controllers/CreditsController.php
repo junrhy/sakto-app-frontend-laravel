@@ -34,43 +34,7 @@ class CreditsController extends Controller
         }
 
         return Inertia::render('Credits/Buy', [
-            'packages' => [
-                [
-                    'id' => 1,
-                    'name' => '100 Credits',
-                    'credits' => 100,
-                    'price' => 2.99,
-                    'popular' => false,
-                    'lemon_squeezy_variant_id' => '1035913',
-                ],
-                [
-                    'id' => 2,
-                    'name' => '500 Credits',
-                    'credits' => 500,
-                    'price' => 8.99,
-                    'popular' => true,
-                    'savings' => '40%',
-                    'lemon_squeezy_variant_id' => '1035919',
-                ],
-                [
-                    'id' => 3,
-                    'name' => '1000 Credits',
-                    'credits' => 1000,
-                    'price' => 14.99,
-                    'popular' => false,
-                    'savings' => '50%',
-                    'lemon_squeezy_variant_id' => '1035920',
-                ],
-                [
-                    'id' => 4,
-                    'name' => '2500 Credits',
-                    'credits' => 2500,
-                    'price' => 29.99,
-                    'popular' => false,
-                    'savings' => '60%',
-                    'lemon_squeezy_variant_id' => '1035921',
-                ],
-            ],
+            'packages' => config('credits.packages'),
             'paymentMethods' => [
                 [
                     'id' => 'card',
