@@ -214,7 +214,7 @@ export default function Welcome({ auth }: PageProps) {
             href: '/construction',
             color: 'text-orange-600',
             bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-            comingSoon: true,
+            comingSoon: false,
         },
     ];
 

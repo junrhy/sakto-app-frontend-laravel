@@ -8,6 +8,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     BadgeCheck,
     Briefcase,
+    Building2,
+    Clock,
     Crown,
     GraduationCap,
     HardHat,
@@ -97,6 +99,16 @@ export default function MobileSolutions({ auth }: PageProps) {
     const urlParams = new URLSearchParams(window.location.search);
     const typeParam = urlParams.get('type');
 
+    const portalLabelMap: Record<string, string> = {
+        client: 'Admin Portal',
+        employee: 'Employee Portal',
+        merchant: 'Merchant Portal',
+        customer: 'Customer Portal',
+    };
+
+    const headerLabel =
+        (typeParam && portalLabelMap[typeParam]) || 'Mobile Solutions';
+
     const handleLogout = () => {
         router.post(
             route('logout'),
@@ -124,6 +136,10 @@ export default function MobileSolutions({ auth }: PageProps) {
     const getHref = (projectIdentifier: string, defaultHref: string) => {
         if (typeParam === 'customer') {
             return `/customer/login?project=${projectIdentifier}`;
+        } else if (typeParam === 'employee') {
+            return `/employee/login?project=${projectIdentifier}`;
+        } else if (typeParam === 'merchant') {
+            return `/merchant/login?project=${projectIdentifier}`;
         } else if (typeParam === 'client') {
             return `/login?project=${projectIdentifier}`;
         }
@@ -181,7 +197,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             projectIdentifier: 'delivery',
         },
         {
-            name: 'Human Resources',
+            name: 'HR',
             description: 'Manage your own human resources business',
             icon: Briefcase,
             href: getHref('hr', '/hr'),
@@ -242,7 +258,7 @@ export default function MobileSolutions({ auth }: PageProps) {
             icon: HardHat,
             href: getHref('construction', '/construction'),
             gradient: 'from-yellow-500 to-orange-600',
-            comingSoon: true,
+            comingSoon: false,
             projectIdentifier: 'construction',
         },
     ];
@@ -265,13 +281,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                 {/* Status Bar */}
                 <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3 dark:border-gray-800">
                     <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        {new Date().toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                        })}
+                        Neulify
                     </div>
                     <div className="text-sm font-bold text-gray-900 dark:text-white">
-                        Neulify
+                        {headerLabel}
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -292,6 +305,28 @@ export default function MobileSolutions({ auth }: PageProps) {
                                     >
                                         <Users className="mr-2 h-4 w-4" />
                                         <span>Customer</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            router.visit(
+                                                '/public?mobile=1&type=employee',
+                                            )
+                                        }
+                                        className="cursor-pointer"
+                                    >
+                                        <Clock className="mr-2 h-4 w-4" />
+                                        <span>Employee</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            router.visit(
+                                                '/public?mobile=1&type=merchant',
+                                            )
+                                        }
+                                        className="cursor-pointer"
+                                    >
+                                        <Building2 className="mr-2 h-4 w-4" />
+                                        <span>Merchant</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onClick={() =>
