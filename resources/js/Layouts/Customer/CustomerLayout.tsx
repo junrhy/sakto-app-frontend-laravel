@@ -5,6 +5,13 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { Toaster } from 'sonner';
 
+interface SidebarSectionItem {
+    id: string;
+    label: string;
+    isActive?: boolean;
+    onSelect?: (id: string) => void;
+}
+
 interface CustomerLayoutProps {
     auth?: {
         user?: User;
@@ -13,6 +20,7 @@ interface CustomerLayoutProps {
     };
     header?: ReactNode;
     title?: string;
+    sidebarSections?: SidebarSectionItem[];
 }
 
 export default function CustomerLayout({
@@ -20,6 +28,7 @@ export default function CustomerLayout({
     header,
     children,
     title = 'Customer Dashboard',
+    sidebarSections = [],
 }: PropsWithChildren<CustomerLayoutProps>) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const pageProps = usePage().props as any;
@@ -232,6 +241,8 @@ export default function CustomerLayout({
         },
     ];
 
+    const isProfileRoute = route().current('customer.profile.edit');
+
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <Head title={title} />
@@ -353,37 +364,35 @@ export default function CustomerLayout({
                                     </NavLink>
                                 ))}
 
-                            {/* Profile */}
-                            <NavLink
-                                href={route('customer.profile.edit')}
-                                active={route().current(
-                                    'customer.profile.edit',
-                                )}
-                                className={`flex items-center px-4 py-2.5 text-white transition-all duration-200 ${
-                                    route().current('customer.profile.edit')
-                                        ? 'bg-white/10 text-white'
-                                        : 'hover:bg-white/10'
-                                }`}
-                            >
-                                <svg
-                                    className={`mr-3 h-5 w-5 text-white transition-transform duration-200 ${route().current('customer.profile.edit') ? 'scale-110' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                </svg>
-                                <span
-                                    className={`font-medium ${route().current('customer.profile.edit') ? 'text-white' : 'text-white/80'}`}
-                                >
-                                    Profile
-                                </span>
-                            </NavLink>
+                            {sidebarSections.length > 0 && (
+                                <div className="mt-6 space-y-2 border-t border-white/10 pt-4">
+                                    <p className="px-4 text-xs font-semibold uppercase tracking-wide text-indigo-200/70">
+                                        This Page
+                                    </p>
+                                    <div className="flex flex-col space-y-1">
+                                        {sidebarSections.map((section) => (
+                                            <button
+                                                key={section.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    section.onSelect?.(section.id);
+                                                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                                                        setIsSidebarOpen(false);
+                                                    }
+                                                }}
+                                                className={`flex items-center rounded-md px-4 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
+                                                    section.isActive
+                                                        ? 'bg-white/10 text-white'
+                                                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                                                }`}
+                                            >
+                                                <span className="mr-3 h-2 w-2 rounded-full bg-white/60" />
+                                                <span>{section.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </nav>
 
@@ -405,6 +414,29 @@ export default function CustomerLayout({
                             </div>
                         </div>
                         <div className="mt-4 space-y-1">
+                            <Link
+                                href={route('customer.profile.edit')}
+                                className={`flex w-full items-center rounded-lg px-4 py-2 text-sm transition-colors duration-150 ${
+                                    isProfileRoute
+                                        ? 'bg-white/10 text-white'
+                                        : 'text-white hover:bg-white/5'
+                                }`}
+                            >
+                                <svg
+                                    className="mr-3 h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    />
+                                </svg>
+                                Profile
+                            </Link>
                             {/* Log Out */}
                             <Link
                                 href={route('customer.logout')}

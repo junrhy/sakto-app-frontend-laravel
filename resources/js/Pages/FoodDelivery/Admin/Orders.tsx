@@ -23,8 +23,8 @@ import axios from 'axios';
 import { PackageIcon, SearchIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import DriverAssignmentDialog from '../../Customer/FoodDelivery/components/DriverAssignmentDialog';
-import OrderStatusDialog from '../../Customer/FoodDelivery/components/OrderStatusDialog';
+import DriverAssignmentDialog from '../../Customer/Delivery/components/DriverAssignmentDialog';
+import OrderStatusDialog from '../../Customer/Delivery/components/OrderStatusDialog';
 import { FoodDeliveryOrder } from '../types';
 
 interface Props extends PageProps {

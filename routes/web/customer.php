@@ -52,8 +52,28 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
     
     // Customer Communities
     Route::get('/customer/communities', [App\Http\Controllers\Customer\CommunityController::class, 'index'])->name('customer.communities');
+    Route::get('/customer/communities/{community}', [App\Http\Controllers\Customer\CommunityController::class, 'show'])->name('customer.communities.show');
     Route::post('/customer/communities/{id}/join', [App\Http\Controllers\Customer\CommunityController::class, 'join'])->name('customer.communities.join');
     Route::post('/customer/communities/{id}/unjoin', [App\Http\Controllers\Customer\CommunityController::class, 'unjoin'])->name('customer.communities.unjoin');
+    Route::prefix('/customer/{project}/{owner}/courses')
+        ->name('customer.projects.courses.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\CourseController::class, 'index'])->name('index');
+            Route::get('/categories', [App\Http\Controllers\Customer\CourseController::class, 'categories'])->name('categories');
+            Route::get('/{course}', [App\Http\Controllers\Customer\CourseController::class, 'show'])->name('show');
+            Route::get('/{course}/lessons', [App\Http\Controllers\Customer\CourseController::class, 'lessons'])->name('lessons');
+            Route::get('/{course}/learn', [App\Http\Controllers\Customer\CourseController::class, 'learn'])->name('learn');
+            Route::post('/{course}/check-enrollment', [App\Http\Controllers\Customer\CourseController::class, 'checkEnrollment'])->name('check-enrollment');
+            Route::post('/enrollments/{enrollment}/progress/{lesson}/start', [App\Http\Controllers\Customer\CourseController::class, 'markLessonStarted'])->name('progress.start');
+            Route::post('/enrollments/{enrollment}/progress/{lesson}/complete', [App\Http\Controllers\Customer\CourseController::class, 'markLessonCompleted'])->name('progress.complete');
+        });
+    Route::prefix('/customer/{project}/{owner}/marketplace')
+        ->name('customer.projects.marketplace.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\MarketplaceController::class, 'index'])->name('index');
+            Route::get('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'show'])->name('products.show');
+            Route::get('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'orders'])->name('orders');
+        });
     
     // Customer Logistics
     Route::get('/customer/logistics', [App\Http\Controllers\Customer\LogisticsController::class, 'index'])->name('customer.logistics');

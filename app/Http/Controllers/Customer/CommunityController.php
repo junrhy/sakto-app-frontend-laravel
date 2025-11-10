@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserCustomer;
 use App\Models\CommunityJoinRequest;
 use App\Mail\CommunityJoinRequestMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class CommunityController extends Controller
+class CommunityController extends CustomerProjectController
 {
     /**
      * Display a listing of all community members
@@ -51,6 +52,102 @@ class CommunityController extends Controller
             'pendingRequestIds' => $pendingRequestIds,
         ]);
     }
+
+    /**
+     * Display the specified community details
+     */
+    public function show(Request $request, $communityIdentifier): Response
+    {
+        if ($request->user()->project_identifier !== 'community') {
+            abort(403, 'Unauthorized access');
+        }
+
+        $communityQuery = User::where('project_identifier', 'community')
+            ->where('user_type', 'user')
+            ->select('id', 'name', 'email', 'contact_number', 'created_at', 'slug', 'identifier', 'app_currency', 'project_identifier');
+
+        if (is_numeric($communityIdentifier)) {
+            $communityQuery->where('id', $communityIdentifier);
+        } else {
+            $communityQuery->where('slug', $communityIdentifier);
+        }
+
+        /** @var \App\Models\User $community */
+        $community = $communityQuery->firstOrFail();
+
+        $community->app_currency = $this->decodeCurrency($community->app_currency);
+
+        $isJoined = UserCustomer::where('user_id', $community->id)
+            ->where('customer_id', $request->user()->id)
+            ->exists();
+
+        $isPending = CommunityJoinRequest::where('community_id', $community->id)
+            ->where('customer_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        $apiPayload = ['client_identifier' => $community->identifier];
+
+        $challenges = $this->fetchApiCollection('challenges', array_merge($apiPayload, [
+            'status' => 'published',
+            'limit' => 6,
+        ]));
+
+        $events = $this->fetchApiCollection('events', array_merge($apiPayload, [
+            'is_public' => true,
+            'limit' => 5,
+        ]));
+
+        $pages = $this->fetchApiCollection('pages', array_merge($apiPayload, [
+            'is_published' => true,
+        ]));
+
+        $updates = $this->fetchApiCollection('content-creator', array_merge($apiPayload, [
+            'status' => 'published',
+            'limit' => 10,
+        ]));
+
+        $customer = $request->user();
+        $customerName = $customer->name ? trim($customer->name) : null;
+        $customerContact = $customer->contact_number ? trim($customer->contact_number) : null;
+
+        $productsResponse = $this->fetchApiRaw('products', array_merge($apiPayload, [
+            'status' => 'published',
+            'limit' => 6,
+        ]));
+        $products = $productsResponse['data'] ?? $productsResponse;
+
+        $courses = $this->fetchApiCollection('courses', array_merge($apiPayload, [
+            'status' => 'published',
+            'limit' => 6,
+        ]));
+
+        $orderHistory = $this->fetchApiCollection('product-orders', array_merge($apiPayload, [
+            'per_page' => 50,
+        ]));
+
+        $lendingRecords = $this->fetchLendingRecordsForCustomer($community, $customerName, $customerContact);
+        $healthcareRecords = $this->fetchHealthcareRecordsForCustomer($community, $customerName, $customerContact);
+        $mortuaryRecords = $this->fetchMortuaryRecordsForCustomer($community, $customerName, $customerContact);
+
+        return Inertia::render('Customer/Communities/Show', [
+            'community' => $community,
+            'isJoined' => $isJoined,
+            'isPending' => $isPending,
+            'challenges' => $challenges,
+            'events' => $events,
+            'pages' => $pages,
+            'updates' => $updates,
+            'products' => $products,
+            'courses' => $courses,
+            'orderHistory' => $orderHistory,
+            'lendingRecords' => $lendingRecords,
+            'healthcareRecords' => $healthcareRecords,
+            'mortuaryRecords' => $mortuaryRecords,
+            'appUrl' => config('app.url'),
+        ]);
+    }
+
 
     /**
      * Request to join a community
@@ -229,6 +326,180 @@ class CommunityController extends Controller
             return redirect()->route('customer.dashboard')
                 ->with('error', 'Failed to deny request: ' . $e->getMessage());
         }
+    }
+
+    private function fetchApiCollection(string $endpoint, array $params): array
+    {
+        $response = $this->fetchApiRaw($endpoint, $params);
+
+        return $response['data'] ?? [];
+    }
+
+    private function fetchApiRaw(string $endpoint, array $params): array
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/{$endpoint}", $params);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Throwable $th) {
+            // Optional: add logging here in the future
+        }
+
+        return [];
+    }
+
+    private function fetchLendingRecordsForCustomer(User $community, ?string $name, ?string $contactNumber): array
+    {
+        if (!$name && !$contactNumber) {
+            return [];
+        }
+
+        try {
+            $params = [
+                'client_identifier' => $community->identifier,
+            ];
+
+            if ($name) {
+                $params['borrower_name'] = $name;
+            }
+
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending", $params);
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            $loans = $response->json()['data']['loans'] ?? [];
+            $normalizedContact = $this->normalizePhoneNumber($contactNumber);
+
+            return collect($loans)
+                ->filter(function ($loan) use ($name, $normalizedContact) {
+                    $matchesName = $name
+                        ? stripos($loan['borrower_name'] ?? '', $name) !== false
+                        : false;
+
+                    $loanContact = $this->normalizePhoneNumber($loan['borrower_contact_number'] ?? ($loan['contact_number'] ?? null));
+                    $matchesContact = $normalizedContact && $loanContact
+                        ? str_contains($loanContact, $normalizedContact)
+                        : false;
+
+                    return $matchesName || $matchesContact;
+                })
+                ->values()
+                ->all();
+        } catch (\Throwable $th) {
+            return [];
+        }
+    }
+
+    private function fetchHealthcareRecordsForCustomer(User $community, ?string $name, ?string $contactNumber): array
+    {
+        if (!$name && !$contactNumber) {
+            return [];
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/health-insurance", [
+                    'client_identifier' => $community->identifier,
+                ]);
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            $members = $response->json()['data']['members'] ?? [];
+            $normalizedContact = $this->normalizePhoneNumber($contactNumber);
+
+            return collect($members)
+                ->filter(function ($member) use ($name, $normalizedContact) {
+                    $matchesName = $name
+                        ? stripos($member['name'] ?? '', $name) !== false
+                        : false;
+
+                    $memberContact = $this->normalizePhoneNumber($member['contact_number'] ?? null);
+                    $matchesContact = $normalizedContact && $memberContact
+                        ? str_contains($memberContact, $normalizedContact)
+                        : false;
+
+                    return $matchesName || $matchesContact;
+                })
+                ->values()
+                ->all();
+        } catch (\Throwable $th) {
+            return [];
+        }
+    }
+
+    private function fetchMortuaryRecordsForCustomer(User $community, ?string $name, ?string $contactNumber): array
+    {
+        if (!$name && !$contactNumber) {
+            return [];
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/mortuary", [
+                    'client_identifier' => $community->identifier,
+                ]);
+
+            if (!$response->successful()) {
+                return [];
+            }
+
+            $members = $response->json()['data']['members'] ?? [];
+            $normalizedContact = $this->normalizePhoneNumber($contactNumber);
+
+            return collect($members)
+                ->filter(function ($member) use ($name, $normalizedContact) {
+                    $matchesName = $name
+                        ? stripos($member['name'] ?? '', $name) !== false
+                        : false;
+
+                    $memberContact = $this->normalizePhoneNumber($member['contact_number'] ?? null);
+                    $matchesContact = $normalizedContact && $memberContact
+                        ? str_contains($memberContact, $normalizedContact)
+                        : false;
+
+                    return $matchesName || $matchesContact;
+                })
+                ->values()
+                ->all();
+        } catch (\Throwable $th) {
+            return [];
+        }
+    }
+
+    private function normalizePhoneNumber(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $digitsOnly = preg_replace('/\D+/', '', $value);
+
+        return $digitsOnly ?: null;
+    }
+
+    private function resolveCommunity(string $identifier): User
+    {
+        $query = User::where('project_identifier', 'community')
+            ->where('user_type', 'user');
+
+        if (is_numeric($identifier)) {
+            $query->where('id', $identifier);
+        } else {
+            $query->where(function ($builder) use ($identifier) {
+                $builder->where('slug', $identifier)
+                    ->orWhere('identifier', $identifier);
+            });
+        }
+
+        return $query->firstOrFail();
     }
 }
 
