@@ -180,6 +180,40 @@ export default function AdminLayout({
                                 </span>
                             </NavLink>
 
+                            {/* Wallet Management */}
+                            <NavLink
+                                href={route('admin.wallets.index')}
+                                active={route().current('admin.wallets.index')}
+                                className={`flex items-center px-4 py-2.5 text-white transition-all duration-200 ${
+                                    route().current('admin.wallets.index')
+                                        ? 'bg-white/10 text-white'
+                                        : 'hover:bg-white/10'
+                                }`}
+                            >
+                                <svg
+                                    className={`mr-3 h-5 w-5 text-white transition-transform duration-200 ${
+                                        route().current('admin.wallets.index') ? 'scale-110' : ''
+                                    }`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h1m4 4h9a2 2 0 002-2v-6a2 2 0 00-2-2h-9a2 2 0 00-2 2v6a2 2 0 002 2zm0 0a2 2 0 002-2v-4a2 2 0 00-2-2H6"
+                                    />
+                                </svg>
+                                <span
+                                    className={`font-medium ${
+                                        route().current('admin.wallets.index') ? 'text-white' : 'text-white/80'
+                                    }`}
+                                >
+                                    Wallets
+                                </span>
+                            </NavLink>
+
                             {/* Subscription Management */}
                             <NavLink
                                 href={route('admin.subscriptions.index')}

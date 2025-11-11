@@ -242,6 +242,7 @@ export default function CustomerLayout({
     ];
 
     const isProfileRoute = route().current('customer.profile.edit');
+    const isWalletRoute = route().current('customer.wallet.index');
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -414,6 +415,29 @@ export default function CustomerLayout({
                             </div>
                         </div>
                         <div className="mt-4 space-y-1">
+                            <Link
+                                href={route('customer.wallet.index')}
+                                className={`flex w-full items-center rounded-lg px-4 py-2 text-sm transition-colors duration-150 ${
+                                    isWalletRoute
+                                        ? 'bg-white/10 text-white'
+                                        : 'text-white hover:bg-white/5'
+                                }`}
+                            >
+                                <svg
+                                    className="mr-3 h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h1m4 4h9a2 2 0 002-2v-6a2 2 0 00-2-2h-9a2 2 0 00-2 2v6a2 2 0 002 2zm0 0a2 2 0 002-2v-4a2 2 0 00-2-2H6"
+                                    />
+                                </svg>
+                                Wallet
+                            </Link>
                             <Link
                                 href={route('customer.profile.edit')}
                                 className={`flex w-full items-center rounded-lg px-4 py-2 text-sm transition-colors duration-150 ${

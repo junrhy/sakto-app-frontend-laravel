@@ -26,3 +26,14 @@ Route::prefix('chat-auth')->group(function () {
     Route::put('/profile', [ChatAuthController::class, 'updateProfile']);
     Route::post('/change-password', [ChatAuthController::class, 'changePassword']);
 });
+
+Route::middleware('auth:sanctum')->prefix('wallets')->group(function () {
+    Route::get('/{customer}', [\App\Http\Controllers\Api\WalletController::class, 'show'])
+        ->name('api.wallets.show');
+    Route::get('/{customer}/history', [\App\Http\Controllers\Api\WalletController::class, 'history'])
+        ->name('api.wallets.history');
+    Route::post('/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])
+        ->name('api.wallets.transfer');
+    Route::post('/{customer}/top-up', [\App\Http\Controllers\Api\WalletController::class, 'topUp'])
+        ->name('api.wallets.top-up');
+});

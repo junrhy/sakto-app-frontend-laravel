@@ -610,7 +610,8 @@ export function MarketplaceSection({
                                                 `ORD-${index + 1}`;
                                             const statusLabel = coerceToString(order.order_status ?? order.status);
                                             const totalLabel = computeOrderTotal(order, appCurrency);
-                                            const placedDate = order.created_at ?? order.ordered_at ?? order.date;
+                                            const placedDateRaw = order.created_at ?? order.ordered_at ?? order.date;
+                                            const placedDate = coerceToString(placedDateRaw);
                                             const itemsCount = (() => {
                                                 const items = order.items as Array<unknown> | undefined;
                                                 if (Array.isArray(items)) {
@@ -716,7 +717,9 @@ export function MarketplaceSection({
                                                     `Order-${index + 1}`;
                                                 const statusLabel = coerceToString(item.order_status ?? item.status);
                                                 const totalLabel = computeOrderTotal(item, appCurrency);
-                                                const dateValue = item.created_at ?? item.ordered_at ?? item.date;
+                                                const dateValue = coerceToString(
+                                                    item.created_at ?? item.ordered_at ?? item.date,
+                                                );
 
                                                 return (
                                                     <TableRow

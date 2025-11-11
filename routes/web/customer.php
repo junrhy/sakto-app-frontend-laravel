@@ -83,6 +83,15 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
             Route::get('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'orders'])->name('orders');
             Route::post('/orders/{order}/cancel', [App\Http\Controllers\Customer\MarketplaceController::class, 'cancelOrder'])->name('orders.cancel');
         });
+
+    Route::prefix('/customer/wallet')
+        ->name('customer.wallet.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\WalletController::class, 'index'])->name('index');
+            Route::get('/history', [App\Http\Controllers\Customer\WalletController::class, 'history'])->name('history');
+            Route::post('/transfer', [App\Http\Controllers\Customer\WalletController::class, 'transfer'])->name('transfer');
+            Route::post('/top-up', [App\Http\Controllers\Customer\WalletController::class, 'topUp'])->name('top-up');
+        });
     
     // Customer Logistics
     Route::get('/customer/logistics', [App\Http\Controllers\Customer\LogisticsController::class, 'index'])->name('customer.logistics');

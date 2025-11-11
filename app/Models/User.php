@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use LemonSqueezy\Laravel\Billable;
+use App\Models\CustomerWallet;
+use App\Models\WalletTransaction;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -162,6 +164,16 @@ class User extends Authenticatable implements MustVerifyEmail
                     'profile_picture' => $member->profile_picture,
                 ];
             });
+    }
+
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(CustomerWallet::class, 'customer_id');
+    }
+
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class, 'customer_id');
     }
 
     /**

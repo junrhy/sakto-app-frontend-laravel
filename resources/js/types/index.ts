@@ -22,6 +22,7 @@ export interface User {
     identifier: string;
     app_currency: {
         symbol: string;
+        code?: string;
         decimal_separator?: string;
         thousands_separator?: string;
     };

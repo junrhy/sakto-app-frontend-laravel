@@ -80,4 +80,10 @@ Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
         Route::delete('/{index}', [App\Http\Controllers\Admin\AppsController::class, 'destroy'])->name('admin.apps.destroy');
         Route::post('/reorder', [App\Http\Controllers\Admin\AppsController::class, 'reorder'])->name('admin.apps.reorder');
     });
+
+    // Admin Wallet Management
+    Route::prefix('admin/wallets')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\WalletController::class, 'index'])->name('admin.wallets.index');
+        Route::post('/top-up', [App\Http\Controllers\Admin\WalletController::class, 'topUp'])->name('admin.wallets.top-up');
+    });
 });
