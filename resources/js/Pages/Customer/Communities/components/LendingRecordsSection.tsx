@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -53,158 +53,154 @@ export function LendingRecordsSection({
 }: LendingRecordsSectionProps) {
     const items = Array.isArray(records) ? records : [];
 
-    if (items.length === 0) {
-        return (
-            <section id={id} className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Lending Records
-                </h3>
-                <Card>
-                    <CardContent className="p-8 text-center text-gray-500 dark:text-gray-400">
-                        <p className="text-sm font-medium">{emptyMessage}</p>
-                        <p className="mt-2 text-xs">
-                            We could not find any lending records that match your
-                            profile details.
-                        </p>
-                    </CardContent>
-                </Card>
-            </section>
-        );
-    }
-
     return (
         <section id={id} className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Lending Records
-            </h3>
-            <Card>
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Loan
-                                </TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Status
-                                </TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Original Amount
-                                </TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Balance
-                                </TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Interest Rate
-                                </TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Term
-                                </TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">
-                                    Period
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {items.map((record) => (
-                                <TableRow
-                                    key={record.id}
-                                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                                >
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">
-                                                {record.borrower_name ?? 'Unnamed Borrower'}
-                                            </span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                Loan ID: {record.id}
-                                            </span>
-                                            {(record.contact_number ?? '').trim() !== '' && (
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                    Contact: {record.contact_number}
+            <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Lending Records
+                    </CardTitle>
+                    <CardDescription>
+                        Active and historical loans that matched your contact details.
+                    </CardDescription>
+                </CardHeader>
+                {items.length === 0 ? (
+                    <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-8 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {emptyMessage}
+                        </p>
+                        <p className="text-xs">
+                            We could not find any lending records that match your profile details.
+                        </p>
+                    </CardContent>
+                ) : (
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Loan
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Original Amount
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Balance
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Interest Rate
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Term
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Period
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {items.map((record) => (
+                                    <TableRow
+                                        key={record.id}
+                                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">
+                                                    {record.borrower_name ?? 'Unnamed Borrower'}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        <div className="flex flex-col">
-                                            <span>{record.status ?? '—'}</span>
-                                            {record.interest_type && (
                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {record.interest_type} interest
+                                                    Loan ID: {record.id}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        {formatAmount(record.amount, appCurrency)}
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        <div className="flex flex-col">
-                                            <span>
-                                                {formatAmount(record.total_balance, appCurrency)}
-                                            </span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                Paid:{' '}
-                                                {formatAmount(record.paid_amount, appCurrency)}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        {record.interest_rate !== undefined &&
-                                        record.interest_rate !== null
-                                            ? `${record.interest_rate}%`
-                                            : '—'}
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        <div className="flex flex-col">
-                                            <span>
-                                                {formatDateTimeForDisplay(
-                                                    record.start_date ?? null,
-                                                    {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                    },
+                                                {(record.contact_number ?? '').trim() !== '' && (
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Contact: {record.contact_number}
+                                                    </span>
                                                 )}
-                                            </span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                to{' '}
-                                                {formatDateTimeForDisplay(
-                                                    record.end_date ?? null,
-                                                    {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                    },
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <span>{record.status ?? '—'}</span>
+                                                {record.interest_type && (
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {record.interest_type} interest
+                                                    </span>
                                                 )}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-gray-900 dark:text-white">
-                                        <div className="flex flex-col">
-                                            <span>{record.frequency ?? '—'}</span>
-                                            {record.installment_frequency && (
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                    Installment:{' '}
-                                                    {record.installment_frequency}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {formatAmount(record.amount, appCurrency)}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <span>
+                                                    {formatAmount(record.total_balance, appCurrency)}
                                                 </span>
-                                            )}
-                                            {record.installment_amount && (
                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {formatAmount(
-                                                        record.installment_amount,
-                                                        appCurrency,
+                                                    Paid:{' '}
+                                                    {formatAmount(record.paid_amount, appCurrency)}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {record.interest_rate !== undefined &&
+                                            record.interest_rate !== null
+                                                ? `${record.interest_rate}%`
+                                                : '—'}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <span>
+                                                    {formatDateTimeForDisplay(
+                                                        record.start_date ?? null,
+                                                        {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                        },
                                                     )}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                    to{' '}
+                                                    {formatDateTimeForDisplay(
+                                                        record.end_date ?? null,
+                                                        {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                        },
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <span>{record.frequency ?? '—'}</span>
+                                                {record.installment_frequency && (
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Installment: {record.installment_frequency}
+                                                    </span>
+                                                )}
+                                                {record.installment_amount && (
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {formatAmount(
+                                                            record.installment_amount,
+                                                            appCurrency,
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                )}
             </Card>
         </section>
     );

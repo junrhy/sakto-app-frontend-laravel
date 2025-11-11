@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/react';
 import { BookOpen, Clock, Eye, Play, Search, Star, Users } from 'lucide-react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
@@ -250,24 +250,24 @@ export function CoursesSection({
     if (normalizedCourses.length === 0) {
         return (
             <section id={id} className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Courses
-                </h3>
-                <Card>
+                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                             <BookOpen className="h-5 w-5" />
                             Courses
                         </CardTitle>
+                        <CardDescription>
+                            Browse training programs curated by this community.
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-                            <BookOpen className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                            <p className="font-medium">{emptyMessage}</p>
-                            <p className="mt-1 text-sm">
-                                Check back later for new learning opportunities.
-                            </p>
-                        </div>
+                    <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-8 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
+                        <BookOpen className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+                        <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                            {emptyMessage}
+                        </p>
+                        <p className="text-sm">
+                            Check back later for new learning opportunities.
+                        </p>
                     </CardContent>
                 </Card>
             </section>
@@ -276,23 +276,28 @@ export function CoursesSection({
 
     return (
         <section id={id} className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        Courses
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Browse training programs curated by this community.
-                    </p>
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Showing <span className="font-medium text-gray-900 dark:text-gray-200">{filteredCourses.length}</span>{' '}
-                    course{filteredCourses.length === 1 ? '' : 's'}
-                </div>
-            </div>
-
-            <Card>
-                <CardHeader>
+            <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                <CardHeader className="gap-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <BookOpen className="h-5 w-5" />
+                                Courses
+                            </CardTitle>
+                            <CardDescription>
+                                Browse training programs curated by this community.
+                            </CardDescription>
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Showing{' '}
+                            <span className="font-medium text-gray-900 dark:text-gray-200">
+                                {filteredCourses.length}
+                            </span>{' '}
+                            course{filteredCourses.length === 1 ? '' : 's'}
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div className="flex-1">
                             <div className="relative">
@@ -338,8 +343,7 @@ export function CoursesSection({
                             </Select>
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent>
+
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {filteredCourses.map((course) => {
                             const courseIdentifier = course.id ?? course.slug ?? '';
@@ -362,7 +366,7 @@ export function CoursesSection({
                             return (
                                 <Card
                                     key={`course-${courseIdentifier}`}
-                                    className="overflow-hidden border border-gray-200 transition-shadow duration-200 hover:shadow-lg dark:border-gray-700"
+                                    className="overflow-hidden border border-gray-200/80 bg-white/80 transition-shadow duration-200 hover:shadow-md dark:border-gray-600/70 dark:bg-gray-800/60"
                                 >
                                     <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
                                         {course.thumbnail_url ? (
@@ -464,10 +468,12 @@ export function CoursesSection({
                     </div>
 
                     {filteredCourses.length === 0 && (
-                        <div className="py-10 text-center text-gray-500 dark:text-gray-400">
-                            <BookOpen className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                            <p className="font-medium">No courses match the selected filters.</p>
-                            <p className="mt-1 text-sm">
+                        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-10 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
+                            <BookOpen className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                No courses match the selected filters.
+                            </p>
+                            <p className="text-sm">
                                 Try clearing your filters or adjusting the search keywords.
                             </p>
                         </div>

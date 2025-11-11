@@ -84,6 +84,7 @@ export interface CommunityDetailProps extends PageProps {
     community: Community;
     isJoined: boolean;
     isPending: boolean;
+    joinedAt?: string | null;
     challenges: CommunityCollectionItem[];
     events: CommunityCollectionItem[];
     pages: CommunityCollectionItem[];

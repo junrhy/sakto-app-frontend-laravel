@@ -1,11 +1,11 @@
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { LeaveCommunityDialog } from './components/LeaveCommunityDialog';
 import { CommunityOrderHistory } from './components/CommunityOrderHistory';
 import { CommunityOverviewCard } from './components/CommunityOverviewCard';
-import { CommunitySectionCard } from './components/CommunitySectionCard';
 import { NewsfeedSection } from './components/NewsfeedSection';
 import { EventsSection } from './components/EventsSection';
 import { ResourcesSection } from './components/ResourcesSection';
@@ -14,6 +14,7 @@ import { HealthcareRecordsSection } from './components/HealthcareRecordsSection'
 import { MortuaryRecordsSection } from './components/MortuaryRecordsSection';
 import { LendingRecordsSection } from './components/LendingRecordsSection';
 import { CoursesSection } from './components/CoursesSection';
+import { MarketplaceSection } from './components/MarketplaceSection';
 import {
     CommunityCollectionItem,
     CommunityDetailProps,
@@ -25,6 +26,7 @@ export default function Show({
     community,
     isJoined,
     isPending,
+    joinedAt,
     challenges,
     events,
     pages,
@@ -72,8 +74,6 @@ export default function Show({
     const navigationItems = useMemo(
         () => [
             { id: 'overview', label: 'Overview' },
-            { id: 'newsfeed', label: 'Newsfeed' },
-            { id: 'events', label: 'Events' },
             { id: 'resources', label: 'Resources' },
             { id: 'challenges', label: 'Challenges' },
             { id: 'marketplace', label: 'Marketplace' },
@@ -158,6 +158,7 @@ export default function Show({
                         'community',
                         'isJoined',
                         'isPending',
+                        'joinedAt',
                         'orderHistory',
                         'lendingRecords',
                         'healthcareRecords',
@@ -201,6 +202,7 @@ export default function Show({
                         'community',
                         'isJoined',
                         'isPending',
+                        'joinedAt',
                         'orderHistory',
                         'lendingRecords',
                         'healthcareRecords',
@@ -233,30 +235,39 @@ export default function Show({
                             leaving={leaving}
                             onJoin={handleJoin}
                             onLeaveClick={() => setLeaveConfirmOpen(true)}
+                            joinedAt={joinedAt}
                         />
-                    </div>
-                ),
-            },
-            {
-                id: 'newsfeed',
-                node: (
-                    <div id="newsfeed">
-                        <NewsfeedSection
-                            key="newsfeed"
-                            updates={normalizedSections.updates}
-                        />
-                    </div>
-                ),
-            },
-            {
-                id: 'events',
-                node: (
-                    <div id="events">
-                        <EventsSection
-                            key="events"
-                            events={normalizedSections.events}
-                            formatPrice={formatPrice}
-                        />
+                        <div className="mt-8 space-y-6">
+                            <div className="grid gap-6 lg:grid-cols-2">
+                                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            What's happening in {community.name}?
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <NewsfeedSection
+                                            key="newsfeed"
+                                            updates={normalizedSections.updates}
+                                        />
+                                    </CardContent>
+                                </Card>
+                                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            Upcoming Events
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <EventsSection
+                                            key="events"
+                                            events={normalizedSections.events}
+                                            formatPrice={formatPrice}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
                     </div>
                 ),
             },
@@ -285,42 +296,18 @@ export default function Show({
             {
                 id: 'marketplace',
                 node: (
-                    <div id="marketplace" className="space-y-6">
-                        <CommunitySectionCard
-                            key="marketplace"
-                            id="marketplace-list"
-                            title="Marketplace"
-                            items={normalizedSections.products}
-                            emptyMessage="No marketplace items available."
-                            itemValueKeys={[
-                                'price_formatted',
-                                'price',
-                                'currency',
-                                'status',
-                            ]}
-                        />
-                        <CommunityOrderHistory
-                            key="order-history"
-                            id="order-history"
-                            items={
-                                normalizedSections.orderHistory as CommunityCollectionItem[]
-                            }
-                        />
-                        <div className="flex justify-end">
-                            <Link
-                                href={route('customer.projects.marketplace.index', {
-                                    project: projectIdentifier,
-                                    owner:
-                                        community.slug ||
-                                        community.identifier ||
-                                        community.id,
-                                })}
-                                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                            >
-                                Browse Full Marketplace
-                            </Link>
-                        </div>
-                    </div>
+                    <MarketplaceSection
+                        key="marketplace"
+                        id="marketplace"
+                        community={community}
+                        projectIdentifier={projectIdentifier}
+                        products={normalizedSections.products}
+                        orderHistory={
+                            normalizedSections.orderHistory as CommunityCollectionItem[]
+                        }
+                        appCurrency={community.app_currency}
+                        authUser={auth.user as any}
+                    />
                 ),
             },
             {
@@ -389,11 +376,11 @@ export default function Show({
     return (
         <CustomerLayout
             auth={auth}
-            title="Community Details"
+            title={`${community.name} Community`}
             header={
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        Community Details
+                        {`${community.name}`}
                     </h2>
                     <Link
                         href={route('customer.communities')}

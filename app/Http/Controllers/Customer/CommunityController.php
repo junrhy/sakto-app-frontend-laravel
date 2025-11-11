@@ -86,6 +86,11 @@ class CommunityController extends CustomerProjectController
             ->where('status', 'pending')
             ->exists();
 
+        $membership = UserCustomer::where('user_id', $community->id)
+            ->where('customer_id', $request->user()->id)
+            ->where('relationship_type', 'member')
+            ->first();
+
         $apiPayload = ['client_identifier' => $community->identifier];
 
         $challenges = $this->fetchApiCollection('challenges', array_merge($apiPayload, [
@@ -134,6 +139,7 @@ class CommunityController extends CustomerProjectController
             'community' => $community,
             'isJoined' => $isJoined,
             'isPending' => $isPending,
+            'joinedAt' => optional($membership?->created_at)?->toIso8601String(),
             'challenges' => $challenges,
             'events' => $events,
             'pages' => $pages,

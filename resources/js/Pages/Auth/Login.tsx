@@ -153,7 +153,7 @@ export default function Login({
                                         type="email"
                                         name="email"
                                         value={data.email}
-                                        className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2"
                                         autoComplete="username"
                                         isFocused={true}
                                         onChange={(e) =>
@@ -177,7 +177,7 @@ export default function Login({
                                         type="password"
                                         name="password"
                                         value={data.password}
-                                        className="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2 sm:text-base"
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:mt-2"
                                         autoComplete="current-password"
                                         onChange={(e) =>
                                             setData('password', e.target.value)

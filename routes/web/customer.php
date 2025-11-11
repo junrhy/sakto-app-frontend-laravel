@@ -71,8 +71,17 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
         ->name('customer.projects.marketplace.')
         ->group(function () {
             Route::get('/', [App\Http\Controllers\Customer\MarketplaceController::class, 'index'])->name('index');
+            Route::get('/checkout', [App\Http\Controllers\Customer\MarketplaceController::class, 'checkout'])->name('checkout');
+            Route::get('/my-products', [App\Http\Controllers\Customer\MarketplaceController::class, 'myProducts'])->name('my-products');
             Route::get('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'show'])->name('products.show');
+            Route::post('/products', [App\Http\Controllers\Customer\MarketplaceController::class, 'store'])->name('products.store');
+            Route::put('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'update'])->name('products.update');
+            Route::delete('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'destroy'])->name('products.destroy');
+            Route::post('/products/{product}/images', [App\Http\Controllers\Customer\MarketplaceController::class, 'uploadProductImages'])->name('products.images.store');
+            Route::delete('/products/{product}/images/{image}', [App\Http\Controllers\Customer\MarketplaceController::class, 'deleteProductImage'])->name('products.images.destroy');
+            Route::get('/products/{product}/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'productOrders'])->name('products.orders');
             Route::get('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'orders'])->name('orders');
+            Route::post('/orders/{order}/cancel', [App\Http\Controllers\Customer\MarketplaceController::class, 'cancelOrder'])->name('orders.cancel');
         });
     
     // Customer Logistics

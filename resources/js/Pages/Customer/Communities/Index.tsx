@@ -38,7 +38,7 @@ export default function Communities({
                     ? joinedCommunityIds.includes(community.id)
                     : true,
             )
-            .filter((community) => {
+        .filter((community) => {
                 const matchesName = community.name
                     .toLowerCase()
                     .includes(lowerQuery);
