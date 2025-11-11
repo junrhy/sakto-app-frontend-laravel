@@ -34,6 +34,13 @@ import {
     DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { SubscriptionPlan } from '@/types/models';
 import { format } from 'date-fns';
 
@@ -540,12 +547,22 @@ export default function Index({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <Tabs
-                        value={activeTab}
-                        onValueChange={setActiveTab}
-                        className="w-full"
-                    >
-                        <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 dark:bg-gray-700">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <div className="px-4 md:hidden">
+                            <Select value={activeTab} onValueChange={setActiveTab}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select section" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="overview">Overview</SelectItem>
+                                    <SelectItem value="plans">Plans</SelectItem>
+                                    <SelectItem value="history">
+                                        Subscription History
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <TabsList className="hidden w-full grid-cols-3 bg-gray-100 p-1 dark:bg-gray-700 md:grid">
                             <TabsTrigger
                                 value="overview"
                                 className="data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100"
