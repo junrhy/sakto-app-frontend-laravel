@@ -9,6 +9,8 @@ import { Link, usePage } from '@inertiajs/react';
 import React from 'react';
 import { RxEnvelopeOpen, RxHome, RxMix, RxPerson } from 'react-icons/rx';
 
+import { PageProps } from '@/types';
+
 interface NavItem {
     icon: React.ReactNode;
     label: string;
@@ -22,49 +24,57 @@ interface NavItem {
 
 const createNavItems = (
     unreadCount: number = 0,
-    projectIdentifier: string = '',
-): NavItem[] => [
-    {
-        icon: <RxHome />,
-        label: 'Home',
-        route: '/home',
-        isHome: true,
-    },
-    {
-        icon: <RxMix />,
-        label: 'Apps',
-        route: '/apps',
-    },
-    {
-        icon: <RxEnvelopeOpen />,
-        label: 'Inbox',
-        route: '/inbox',
-        notifications: unreadCount,
-    },
-    {
-        icon: <RxPerson />,
-        label: 'Profile',
-        route: '/profile',
-    },
-    {
-        icon: <CreditCardIcon className="h-6 w-6" />,
-        label: 'Buy Credits',
-        route: '/credits/buy',
-        isAction: true,
-    },
-    {
-        icon: <QuestionMarkCircleIcon className="h-6 w-6" />,
-        label: 'Help',
-        route: '/help',
-    },
-    {
-        icon: <ArrowRightStartOnRectangleIcon className="h-6 w-6" />,
-        label: 'Logout',
-        route: `/logout/${projectIdentifier}`,
-        isLogout: true,
-        method: 'post',
-    },
-];
+    projectIdentifier: string | null = null,
+): NavItem[] => {
+    const baseItems: NavItem[] = [
+        {
+            icon: <RxHome />,
+            label: 'Home',
+            route: '/home',
+            isHome: true,
+        },
+        {
+            icon: <RxMix />,
+            label: 'Apps',
+            route: '/apps',
+        },
+        {
+            icon: <RxEnvelopeOpen />,
+            label: 'Inbox',
+            route: '/inbox',
+            notifications: unreadCount,
+        },
+        {
+            icon: <RxPerson />,
+            label: 'Profile',
+            route: '/profile',
+        },
+        {
+            icon: <CreditCardIcon className="h-6 w-6" />,
+            label: 'Buy Credits',
+            route: '/credits/buy',
+            isAction: true,
+        },
+        {
+            icon: <QuestionMarkCircleIcon className="h-6 w-6" />,
+            label: 'Help',
+            route: '/help',
+        },
+        {
+            icon: <ArrowRightStartOnRectangleIcon className="h-6 w-6" />,
+            label: 'Logout',
+            route: `/logout/${projectIdentifier ?? ''}`,
+            isLogout: true,
+            method: 'post',
+        },
+    ];
+
+    if (projectIdentifier !== 'enterprise') {
+        return baseItems.filter((item) => item.route !== '/apps');
+    }
+
+    return baseItems;
+};
 
 interface MobileSidebarProps {
     isOpen: boolean;
@@ -87,14 +97,12 @@ export default function MobileSidebar({
     isOpen,
     onToggle,
 }: MobileSidebarProps) {
-    const { url } = usePage();
-    const page = usePage();
-    const pageProps = page.props as {
-        auth?: { project?: { identifier?: string } };
-        unreadCount?: number;
-    };
-    const unreadCount = pageProps.unreadCount ?? 0;
-    const projectIdentifier = pageProps.auth?.project?.identifier ?? '';
+    const { url, props } = usePage<PageProps & { unreadCount?: number }>();
+    const unreadCount = props.unreadCount ?? 0;
+    const projectIdentifier =
+        props.auth?.user?.project_identifier ??
+        props.auth?.project?.identifier ??
+        null;
 
     const items = createNavItems(unreadCount, projectIdentifier);
 

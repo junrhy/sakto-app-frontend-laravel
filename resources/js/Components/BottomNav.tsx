@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
+import { PageProps } from '@/types';
 import { RxEnvelopeOpen, RxHome, RxMix, RxPerson } from 'react-icons/rx';
 
 interface NavItem {
@@ -37,12 +38,15 @@ const createNavItems = (unreadCount: number = 0): NavItem[] => [
 ];
 
 export default function BottomNav() {
-    const { url } = usePage();
-    const page = usePage();
-    const unreadCount =
-        (page.props as { unreadCount?: number }).unreadCount ?? 0;
+    const page = usePage<PageProps>();
+    const { url } = page;
+    const unreadCount = page.props.unreadCount ?? 0;
+    const projectIdentifier =
+        page.props.auth?.user?.project_identifier ?? null;
 
-    const items = createNavItems(unreadCount);
+    const items = createNavItems(unreadCount).filter((item) =>
+        projectIdentifier === 'enterprise' ? true : item.route !== '/apps'
+    );
 
     return (
         <div className="fixed bottom-0 left-0 right-0 hidden border-t border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 md:block">
