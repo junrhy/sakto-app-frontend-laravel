@@ -25,6 +25,7 @@ return new class extends Migration
                 $this->addPostgresEnumValue($enumType, 'employee');
             } else {
                 // Column is not using an enum type yet; recreate with the expected values.
+                DB::statement('ALTER TABLE users ALTER COLUMN user_type DROP DEFAULT');
                 DB::statement('ALTER TABLE users ALTER COLUMN user_type TYPE TEXT');
 
                 $enumTypeName = 'users_user_type_enum';
