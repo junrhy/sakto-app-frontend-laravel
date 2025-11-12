@@ -26,7 +26,7 @@ Route::get('/customer/register', [App\Http\Controllers\Customer\RegisteredCustom
 Route::post('/customer/register', [App\Http\Controllers\Customer\RegisteredCustomerController::class, 'store'])->name('customer.register.store');
 
 // Customer Email Verification Routes
-Route::middleware(['auth', 'customer'])->group(function () {
+Route::middleware(['auth', 'customer', 'ensure_user_type:customer'])->group(function () {
     Route::get('/customer/verify-email', App\Http\Controllers\Customer\EmailVerificationPromptController::class)
         ->name('customer.verification.notice');
 
@@ -40,7 +40,7 @@ Route::middleware(['auth', 'customer'])->group(function () {
 });
 
 // Customer routes (authenticated and verified)
-Route::middleware(['auth', 'customer', 'verified'])->group(function () {
+Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])->group(function () {
     // Customer Dashboard
     Route::get('/customer/dashboard', [App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('customer.dashboard');
     

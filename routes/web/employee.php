@@ -21,7 +21,7 @@ Route::get('/employee/register', [App\Http\Controllers\Employee\RegisteredEmploy
 Route::post('/employee/register', [App\Http\Controllers\Employee\RegisteredEmployeeController::class, 'store'])->name('employee.register.store');
 
 // Protected employee routes
-Route::middleware(['auth', 'employee'])->group(function () {
+Route::middleware(['auth', 'employee', 'ensure_user_type:employee'])->group(function () {
     Route::get('/employee/dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('employee.dashboard');
 });
 

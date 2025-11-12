@@ -57,7 +57,7 @@ require __DIR__.'/web/merchant.php';
 require __DIR__.'/web/employee.php';
 
 // Authenticated simple routes
-Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'ensure_user_type:user'])->group(function () {
     Route::get('/home', function () {
         $limitService = app(\App\Services\SubscriptionLimitService::class);
         $projectIdentifier = auth()->user()->project_identifier ?? 'fnb';

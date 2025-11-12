@@ -250,6 +250,17 @@ export function EventsOverviewSection({
                                   })
                                 : '#';
 
+                        let publicEventLink: string | undefined;
+                        if (typeof event.id === 'number') {
+                            publicEventLink = route('events.public-register', event.id);
+                        } else if (
+                            typeof event.id === 'string' &&
+                            event.id.trim() !== '' &&
+                            !Number.isNaN(Number(event.id))
+                        ) {
+                            publicEventLink = route('events.public-register', Number(event.id));
+                        }
+
                         const formattedPrice =
                             rawPrice !== null
                                 ? formatCurrency(rawPrice as number | string, appCurrency)
@@ -368,14 +379,26 @@ export function EventsOverviewSection({
                                             )}
                                         </div>
 
-                                        {hasProjectContext && (
-                                            <div className="flex justify-end">
-                                                <Link
-                                                    href={eventLink}
-                                                    className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                                                >
-                                                    View Event Details
-                                                </Link>
+                                        {(hasProjectContext || publicEventLink) && (
+                                            <div className="flex flex-wrap justify-end gap-2">
+                                                {publicEventLink && (
+                                                    <Link
+                                                        href={publicEventLink}
+                                                        className="inline-flex items-center rounded-lg border border-indigo-500 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Public Event Page
+                                                    </Link>
+                                                )}
+                                                {hasProjectContext && (
+                                                    <Link
+                                                        href={eventLink}
+                                                        className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                                    >
+                                                        View Event Details
+                                                    </Link>
+                                                )}
                                             </div>
                                         )}
                                     </div>

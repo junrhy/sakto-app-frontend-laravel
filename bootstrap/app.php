@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'team.member.selection' => \App\Http\Middleware\TeamMemberSelectionMiddleware::class,
             'cors' => \App\Http\Middleware\CorsMiddleware::class,
             'premium' => \App\Http\Middleware\RequiresPremiumAccess::class,
+            'ensure_user_type' => \App\Http\Middleware\EnsureUserType::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

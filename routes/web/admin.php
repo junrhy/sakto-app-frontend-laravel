@@ -19,7 +19,7 @@ Route::post('/admin/login', [App\Http\Controllers\Admin\AuthController::class, '
 Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('admin.logout');
 
 // Admin routes
-Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
+Route::middleware(['auth', 'ip_restriction', 'admin', 'ensure_user_type:admin'])->group(function () {
     // Admin Dashboard
     Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
     

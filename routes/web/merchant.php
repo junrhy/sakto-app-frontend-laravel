@@ -19,7 +19,7 @@ Route::post('/merchant/logout', [App\Http\Controllers\Merchant\AuthController::c
 Route::get('/merchant/register', [App\Http\Controllers\Merchant\RegisteredMerchantController::class, 'create'])->name('merchant.register');
 Route::post('/merchant/register', [App\Http\Controllers\Merchant\RegisteredMerchantController::class, 'store'])->name('merchant.register.store');
 
-Route::middleware(['auth', 'merchant'])->group(function () {
+Route::middleware(['auth', 'merchant', 'ensure_user_type:merchant'])->group(function () {
     Route::get('/merchant/dashboard', [App\Http\Controllers\Merchant\DashboardController::class, 'index'])->name('merchant.dashboard');
 });
 
