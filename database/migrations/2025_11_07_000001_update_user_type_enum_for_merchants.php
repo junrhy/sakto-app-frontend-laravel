@@ -24,17 +24,11 @@ return new class extends Migration
                 $this->addPostgresEnumValue($enumType, 'merchant');
                 $this->addPostgresEnumValue($enumType, 'employee');
             } else {
-                // Column is not using an enum type yet; recreate with the expected values.
+                // Column is not using an enum type; ensure it is at least a string column with the allowed default.
                 DB::statement('ALTER TABLE users ALTER COLUMN user_type DROP DEFAULT');
-                DB::statement('ALTER TABLE users ALTER COLUMN user_type TYPE TEXT');
-
-                $enumTypeName = 'users_user_type_enum';
-                $quotedEnumType = $this->quoteIdentifier($enumTypeName);
-
-                DB::statement("DROP TYPE IF EXISTS {$quotedEnumType}");
-                DB::statement("CREATE TYPE {$quotedEnumType} AS ENUM ('user','admin','customer','merchant','employee')");
-                DB::statement("ALTER TABLE users ALTER COLUMN user_type TYPE {$quotedEnumType} USING user_type::text::{$quotedEnumType}");
-                DB::statement("ALTER TABLE users ALTER COLUMN user_type SET DEFAULT 'user'");
+                Schema::table('users', function (Blueprint $table) {
+                    $table->string('user_type')->default('user')->change();
+                });
             }
         } else {
             Schema::table('users', function (Blueprint $table) {
