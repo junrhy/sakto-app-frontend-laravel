@@ -18,17 +18,8 @@ return new class extends Migration
         if ($driver === 'mysql') {
             DB::statement("ALTER TABLE users MODIFY COLUMN user_type ENUM('user','admin','customer','merchant','employee') DEFAULT 'user'");
         } elseif ($driver === 'pgsql') {
-            // Attempt to add the new values to the enum type if it exists
-            try {
-                DB::statement("ALTER TYPE user_type ADD VALUE IF NOT EXISTS 'merchant'");
-                DB::statement("ALTER TYPE user_type ADD VALUE IF NOT EXISTS 'employee'");
-            } catch (\Throwable $e) {
-                // Fallback: change column to text temporarily and recreate enum
-                DB::statement('ALTER TABLE users ALTER COLUMN user_type TYPE TEXT');
-                DB::statement("DROP TYPE IF EXISTS user_type");
-                DB::statement("CREATE TYPE user_type AS ENUM ('user','admin','customer','merchant','employee')");
-                DB::statement("ALTER TABLE users ALTER COLUMN user_type TYPE user_type USING user_type::user_type");
-            }
+            $this->addPostgresEnumValue('user_type', 'merchant');
+            $this->addPostgresEnumValue('user_type', 'employee');
         } else {
             Schema::table('users', function (Blueprint $table) {
                 $table->string('user_type')->default('user')->change();
@@ -49,5 +40,27 @@ return new class extends Migration
         } elseif ($driver === 'pgsql') {
             // Removing enum values is not straightforward; document the limitation.
         }
+    }
+
+    private function addPostgresEnumValue(string $typeName, string $value): void
+    {
+        $escapedType = addslashes($typeName);
+        $escapedValue = addslashes($value);
+
+        DB::statement("
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_type t
+                    JOIN pg_enum e ON t.oid = e.enumtypid
+                    WHERE t.typname = '{$escapedType}'
+                      AND e.enumlabel = '{$escapedValue}'
+                ) THEN
+                    ALTER TYPE {$typeName} ADD VALUE '{$value}';
+                END IF;
+            END
+            $$;
+        ");
     }
 };
