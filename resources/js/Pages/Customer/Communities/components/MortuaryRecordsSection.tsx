@@ -7,12 +7,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { Link } from '@inertiajs/react';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
 import { CommunityCurrency, MortuaryRecord } from '../types';
 
 interface MortuaryRecordsSectionProps {
     id: string;
     records: MortuaryRecord[];
+    communityIdentifier: string;
     appCurrency?: CommunityCurrency | null;
     emptyMessage?: string;
 }
@@ -48,6 +50,7 @@ const formatAmount = (
 export function MortuaryRecordsSection({
     id,
     records,
+    communityIdentifier,
     appCurrency,
     emptyMessage = 'No mortuary records found.',
 }: MortuaryRecordsSectionProps) {
@@ -164,10 +167,40 @@ export function MortuaryRecordsSection({
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {contributionsCount}
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>{contributionsCount}</span>
+                                                    <Link
+                                                        href={route(
+                                                            'customer.communities.mortuary.contributions',
+                                                            {
+                                                                community:
+                                                                    communityIdentifier,
+                                                                member: record.id,
+                                                            },
+                                                        )}
+                                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                    >
+                                                        View
+                                                    </Link>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {claimsCount}
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>{claimsCount}</span>
+                                                    <Link
+                                                        href={route(
+                                                            'customer.communities.mortuary.claims',
+                                                            {
+                                                                community:
+                                                                    communityIdentifier,
+                                                                member: record.id,
+                                                            },
+                                                        )}
+                                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                    >
+                                                        View
+                                                    </Link>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     );

@@ -331,6 +331,7 @@ export default function Show({
                         key="healthcare"
                         id="healthcare"
                         records={healthcareRecordsSafe}
+                        communityIdentifier={community.identifier}
                         appCurrency={community.app_currency}
                     />
                 ),
@@ -342,6 +343,7 @@ export default function Show({
                         key="mortuary"
                         id="mortuary"
                         records={mortuaryRecordsSafe}
+                        communityIdentifier={community.identifier}
                         appCurrency={community.app_currency}
                     />
                 ),

@@ -243,7 +243,7 @@ export const menuCategories: MenuCategory[] = [
             {
                 id: 'healthcare',
                 title: 'Healthcare',
-                href: '/health-insurance?app=health-insurance',
+                href: '/health-insurance?app=healthcare',
             },
         ],
     },

@@ -53,6 +53,10 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
     // Customer Communities
     Route::get('/customer/communities', [App\Http\Controllers\Customer\CommunityController::class, 'index'])->name('customer.communities');
     Route::get('/customer/communities/{community}', [App\Http\Controllers\Customer\CommunityController::class, 'show'])->name('customer.communities.show');
+    Route::get('/customer/communities/{community}/healthcare/{member}/contributions', [App\Http\Controllers\Customer\CommunityController::class, 'healthcareContributions'])->name('customer.communities.healthcare.contributions');
+    Route::get('/customer/communities/{community}/healthcare/{member}/claims', [App\Http\Controllers\Customer\CommunityController::class, 'healthcareClaims'])->name('customer.communities.healthcare.claims');
+    Route::get('/customer/communities/{community}/mortuary/{member}/contributions', [App\Http\Controllers\Customer\CommunityController::class, 'mortuaryContributions'])->name('customer.communities.mortuary.contributions');
+    Route::get('/customer/communities/{community}/mortuary/{member}/claims', [App\Http\Controllers\Customer\CommunityController::class, 'mortuaryClaims'])->name('customer.communities.mortuary.claims');
     Route::post('/customer/communities/{id}/join', [App\Http\Controllers\Customer\CommunityController::class, 'join'])->name('customer.communities.join');
     Route::post('/customer/communities/{id}/unjoin', [App\Http\Controllers\Customer\CommunityController::class, 'unjoin'])->name('customer.communities.unjoin');
     Route::prefix('/customer/{project}/{owner}/courses')
