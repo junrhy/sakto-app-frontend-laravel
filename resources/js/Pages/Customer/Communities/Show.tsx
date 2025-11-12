@@ -4,17 +4,16 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { LeaveCommunityDialog } from './components/LeaveCommunityDialog';
-import { CommunityOrderHistory } from './components/CommunityOrderHistory';
 import { CommunityOverviewCard } from './components/CommunityOverviewCard';
-import { NewsfeedSection } from './components/NewsfeedSection';
-import { EventsSection } from './components/EventsSection';
-import { ResourcesSection } from './components/ResourcesSection';
-import { ChallengesSection } from './components/ChallengesSection';
-import { HealthcareRecordsSection } from './components/HealthcareRecordsSection';
-import { MortuaryRecordsSection } from './components/MortuaryRecordsSection';
-import { LendingRecordsSection } from './components/LendingRecordsSection';
-import { CoursesSection } from './components/CoursesSection';
-import { MarketplaceSection } from './components/MarketplaceSection';
+import { HealthcareRecordsSection } from '@/Pages/Customer/Healthcare/Index';
+import { MortuaryRecordsSection } from '@/Pages/Customer/Mortuary/Index';
+import { LendingRecordsSection } from '@/Pages/Customer/Lending/Index';
+import { CoursesOverviewSection } from '@/Pages/Customer/Courses/Overview';
+import { MarketplaceOverviewSection } from '@/Pages/Customer/Marketplace/Overview';
+import { ChallengesOverviewSection } from '@/Pages/Customer/Challenges/Overview';
+import { ResourcesOverviewSection } from '@/Pages/Customer/Resources/Overview';
+import { EventsOverviewSection } from '@/Pages/Customer/Events/Overview';
+import { NewsfeedOverviewSection } from '@/Pages/Customer/Newsfeed/Overview';
 import {
     CommunityCollectionItem,
     CommunityDetailProps,
@@ -70,10 +69,14 @@ export default function Show({
     );
 
     const projectIdentifier = community.project_identifier ?? 'community';
+    const ownerIdentifier =
+        community.slug ?? community.identifier ?? String(community.id);
 
     const navigationItems = useMemo(
         () => [
             { id: 'overview', label: 'Overview' },
+            { id: 'newsfeed', label: 'Newsfeed' },
+            { id: 'events', label: 'Events' },
             { id: 'resources', label: 'Resources' },
             { id: 'challenges', label: 'Challenges' },
             { id: 'marketplace', label: 'Marketplace' },
@@ -104,31 +107,6 @@ export default function Show({
                 onSelect: handleNavigation,
             })),
         [navigationItems, activeSection, handleNavigation],
-    );
-
-    const formatPrice = useCallback(
-        (price: number | string) => {
-            const currency = community.app_currency;
-            const symbol = currency?.symbol ?? '₱';
-            const decimalSeparator = currency?.decimal_separator ?? '.';
-            const thousandsSeparator = currency?.thousands_separator ?? ',';
-
-            const numericValue =
-                typeof price === 'string' ? Number.parseFloat(price) : Number(price);
-
-            if (Number.isNaN(numericValue)) {
-                return `${symbol}0${decimalSeparator}00`;
-            }
-
-            const [whole, fraction = '00'] = numericValue.toFixed(2).split('.');
-            const wholeWithSeparators = whole.replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                thousandsSeparator,
-            );
-
-            return `${symbol}${wholeWithSeparators}${decimalSeparator}${fraction}`;
-        },
-        [community.app_currency],
     );
 
     const handleJoin = useCallback(async () => {
@@ -246,26 +224,27 @@ export default function Show({
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <NewsfeedSection
-                                            key="newsfeed"
-                                            updates={normalizedSections.updates}
+                                        <NewsfeedOverviewSection
+                                            key="newsfeed-preview"
+                                            id="newsfeed-preview"
+                                            updates={normalizedSections.updates.slice(0, 3)}
+                                            projectIdentifier={projectIdentifier}
+                                            ownerIdentifier={ownerIdentifier}
+                                            emptyMessage="No newsfeed items."
                                         />
                                     </CardContent>
                                 </Card>
-                                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                            Upcoming Events
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <EventsSection
-                                            key="events"
-                                            events={normalizedSections.events}
-                                            formatPrice={formatPrice}
-                                        />
-                                    </CardContent>
-                                </Card>
+                                <div className="h-full">
+                                    <EventsOverviewSection
+                                        key="overview-events"
+                                        id="overview-events"
+                                        events={normalizedSections.events.slice(0, 3)}
+                                        projectIdentifier={projectIdentifier}
+                                        ownerIdentifier={ownerIdentifier}
+                                        appCurrency={community.app_currency}
+                                        emptyMessage="No upcoming events."
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -274,33 +253,62 @@ export default function Show({
             {
                 id: 'resources',
                 node: (
-                    <div id="resources">
-                        <ResourcesSection
-                            key="resources"
-                            pages={normalizedSections.pages}
-                        />
-                    </div>
+                    <ResourcesOverviewSection
+                        key="resources"
+                        id="resources"
+                        resources={normalizedSections.pages}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
+                    />
+                ),
+            },
+            {
+                id: 'newsfeed',
+                node: (
+                    <NewsfeedOverviewSection
+                        key="newsfeed"
+                        id="newsfeed"
+                        updates={normalizedSections.updates}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
+                        emptyMessage="No newsfeed items."
+                    />
+                ),
+            },
+            {
+                id: 'events',
+                node: (
+                    <EventsOverviewSection
+                        key="events"
+                        id="events"
+                        events={normalizedSections.events}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
+                        appCurrency={community.app_currency}
+                        emptyMessage="No events found."
+                    />
                 ),
             },
             {
                 id: 'challenges',
                 node: (
-                    <div id="challenges">
-                        <ChallengesSection
-                            key="challenges"
-                            challenges={normalizedSections.challenges}
-                        />
-                    </div>
+                    <ChallengesOverviewSection
+                        key="challenges"
+                        id="challenges"
+                        challenges={normalizedSections.challenges}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
+                    />
                 ),
             },
             {
                 id: 'marketplace',
                 node: (
-                    <MarketplaceSection
+                    <MarketplaceOverviewSection
                         key="marketplace"
                         id="marketplace"
-                        community={community}
                         projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
                         products={normalizedSections.products}
                         orderHistory={
                             normalizedSections.orderHistory as CommunityCollectionItem[]
@@ -313,12 +321,12 @@ export default function Show({
             {
                 id: 'courses',
                 node: (
-                    <CoursesSection
+                    <CoursesOverviewSection
                         key="courses"
                         id="courses"
                         courses={normalizedSections.courses}
-                        community={community}
-                                    projectIdentifier={projectIdentifier}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
                         appCurrency={community.app_currency}
                         emptyMessage="No courses available."
                     />
@@ -331,7 +339,8 @@ export default function Show({
                         key="healthcare"
                         id="healthcare"
                         records={healthcareRecordsSafe}
-                        communityIdentifier={community.identifier}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
                         appCurrency={community.app_currency}
                     />
                 ),
@@ -343,7 +352,8 @@ export default function Show({
                         key="mortuary"
                         id="mortuary"
                         records={mortuaryRecordsSafe}
-                        communityIdentifier={community.identifier}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
                         appCurrency={community.app_currency}
                     />
                 ),
@@ -355,6 +365,8 @@ export default function Show({
                         key="lending"
                         id="lending"
                         records={lendingRecordsSafe}
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
                         appCurrency={community.app_currency}
                     />
                 ),
@@ -367,11 +379,12 @@ export default function Show({
             joining,
             leaving,
             normalizedSections,
-            formatPrice,
             handleJoin,
             healthcareRecordsSafe,
             mortuaryRecordsSafe,
             lendingRecordsSafe,
+            projectIdentifier,
+            ownerIdentifier,
         ],
     );
 

@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { Link, Head } from '@inertiajs/react';
+import { PageProps } from '@/types';
+import {
+    CommunityCollectionItem,
+    CommunityCurrency,
+} from '../Communities/types';
 import { BookOpen, Clock, Eye, Play, Search, Star, Users } from 'lucide-react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -12,19 +18,31 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import {
-    Community,
-    CommunityCollectionItem,
-    CommunityCurrency,
-} from '../types';
 
-interface CoursesSectionProps {
-    id: string;
+interface CoursesOverviewSectionProps {
+    id?: string;
     courses: CommunityCollectionItem[];
-    community: Community;
-    projectIdentifier: string;
+    projectIdentifier?: string;
+    ownerIdentifier?: string | number;
     appCurrency?: CommunityCurrency | null;
     emptyMessage?: string;
+}
+
+type OwnerSummary = {
+    id: number | string;
+    name?: string | null;
+    slug?: string | null;
+    identifier?: string | null;
+    project_identifier?: string | null;
+};
+
+export interface CoursesOverviewPageProps extends PageProps {
+    project: string;
+    owner: OwnerSummary;
+    courses: CommunityCollectionItem[];
+    appCurrency?: CommunityCurrency | null;
+    backUrl?: string;
+    error?: string | null;
 }
 
 interface NormalizedCourse {
@@ -181,14 +199,14 @@ const normalizeCourse = (item: CommunityCollectionItem): NormalizedCourse => {
     };
 };
 
-export function CoursesSection({
-    id,
+export function CoursesOverviewSection({
+    id = 'courses-overview',
     courses,
-    community,
     projectIdentifier,
+    ownerIdentifier,
     appCurrency,
     emptyMessage = 'No courses available yet.',
-}: CoursesSectionProps) {
+}: CoursesOverviewSectionProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedFilter, setSelectedFilter] = useState('all');
@@ -247,6 +265,12 @@ export function CoursesSection({
         return filtered;
     }, [normalizedCourses, searchTerm, selectedCategory, selectedFilter]);
 
+    const hasProjectContext =
+        projectIdentifier !== undefined &&
+        projectIdentifier !== null &&
+        ownerIdentifier !== undefined &&
+        ownerIdentifier !== null;
+
     if (normalizedCourses.length === 0) {
         return (
             <section id={id} className="space-y-4">
@@ -257,7 +281,7 @@ export function CoursesSection({
                             Courses
                         </CardTitle>
                         <CardDescription>
-                            Browse training programs curated by this community.
+                            Browse training programs curated by this partner.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-8 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
@@ -285,7 +309,7 @@ export function CoursesSection({
                                 Courses
                             </CardTitle>
                             <CardDescription>
-                                Browse training programs curated by this community.
+                                Browse training programs curated by this partner.
                             </CardDescription>
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -347,21 +371,22 @@ export function CoursesSection({
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {filteredCourses.map((course) => {
                             const courseIdentifier = course.id ?? course.slug ?? '';
-                            const ownerIdentifier =
-                                community.slug || community.identifier || community.id;
-                            const courseUrl = route('customer.projects.courses.show', {
-                                project: projectIdentifier,
-                                owner: ownerIdentifier,
-                                course: courseIdentifier,
-                            });
-                            const courseLessonsUrl = route(
-                                'customer.projects.courses.lessons',
-                                {
-                                    project: projectIdentifier,
-                                    owner: ownerIdentifier,
-                                    course: courseIdentifier,
-                                },
-                            );
+                            const courseUrl =
+                                hasProjectContext
+                                    ? route('customer.projects.courses.show', {
+                                          project: projectIdentifier,
+                                          owner: ownerIdentifier,
+                                          course: courseIdentifier,
+                                      })
+                                    : undefined;
+                            const courseLessonsUrl =
+                                hasProjectContext
+                                    ? route('customer.projects.courses.lessons', {
+                                          project: projectIdentifier,
+                                          owner: ownerIdentifier,
+                                          course: courseIdentifier,
+                                      })
+                                    : undefined;
 
                             return (
                                 <Card
@@ -448,14 +473,19 @@ export function CoursesSection({
                                                 asChild
                                                 variant="outline"
                                                 className="min-w-0 flex-1"
+                                                disabled={!courseUrl}
                                             >
-                                                <Link href={courseUrl}>
+                                                <Link href={courseUrl ?? '#'} >
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     View Course
                                                 </Link>
                                             </Button>
-                                            <Button asChild className="min-w-0 flex-1">
-                                                <Link href={courseLessonsUrl}>
+                                            <Button
+                                                asChild
+                                                className="min-w-0 flex-1"
+                                                disabled={!courseLessonsUrl}
+                                            >
+                                                <Link href={courseLessonsUrl ?? '#'} >
                                                     <BookOpen className="mr-2 h-4 w-4" />
                                                     View Lessons
                                                 </Link>
@@ -481,6 +511,92 @@ export function CoursesSection({
                 </CardContent>
             </Card>
         </section>
+    );
+}
+
+export default function CoursesOverviewPage({
+    auth,
+    project,
+    owner,
+    courses,
+    appCurrency,
+    backUrl,
+    error,
+}: CoursesOverviewPageProps) {
+    const ownerName = owner?.name ?? 'Courses Partner';
+    const ownerIdentifier =
+        owner.slug ?? owner.identifier ?? String(owner.id);
+
+    return (
+        <CustomerLayout
+            auth={auth}
+            title={`Courses Overview – ${ownerName}`}
+            header={
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                            Courses Overview
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Learning opportunities from {ownerName}.
+                        </p>
+                    </div>
+                    <Link
+                        href={backUrl ?? route('customer.dashboard')}
+                        className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
+                    >
+                        ← Back
+                    </Link>
+                </div>
+            }
+        >
+            <Head title={`Courses Overview – ${ownerName}`} />
+
+            <div className="space-y-6">
+                {error && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-700/70 dark:bg-red-900/20 dark:text-red-300">
+                        {error}
+                    </div>
+                )}
+
+                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Partner Details
+                        </CardTitle>
+                        <CardDescription>
+                            Project: <span className="font-semibold">{project}</span>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Partner
+                            </p>
+                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                {ownerName}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Identifier
+                            </p>
+                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+                                {ownerIdentifier}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <CoursesOverviewSection
+                    id="courses-overview"
+                    courses={courses}
+                    projectIdentifier={project}
+                    ownerIdentifier={ownerIdentifier}
+                    appCurrency={appCurrency}
+                />
+            </div>
+        </CustomerLayout>
     );
 }
 

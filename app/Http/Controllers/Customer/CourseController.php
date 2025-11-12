@@ -11,6 +11,42 @@ use Illuminate\Support\Facades\Http;
 
 class CourseController extends CustomerProjectController
 {
+    public function overview(Request $request, string $project, $ownerIdentifier): Response
+    {
+        $this->ensureCustomerProject($request, $project);
+
+        try {
+            $owner = $this->resolveOwner($project, $ownerIdentifier);
+            $owner->app_currency = $this->decodeCurrency($owner->app_currency);
+
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses", [
+                    'client_identifier' => $owner->identifier,
+                    'status' => 'published',
+                    'per_page' => 24,
+                    'page' => 1,
+                ]);
+
+            $courses = [];
+            if ($response->successful()) {
+                $payload = $response->json();
+                $courses = $payload['data'] ?? ($payload['courses'] ?? []);
+            }
+
+            return Inertia::render('Customer/Courses/Overview', [
+                'project' => $project,
+                'owner' => $this->transformOwner($owner),
+                'courses' => $courses,
+                'appCurrency' => $owner->app_currency ?? $this->decodeCurrency($request->user()->app_currency),
+                'backUrl' => $this->resolveBackUrl($project, $owner),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            abort(404, 'Owner not found');
+        } catch (\Throwable $th) {
+            abort(500, 'Failed to load courses overview');
+        }
+    }
+
     public function index(Request $request, string $project, $ownerIdentifier): JsonResponse
     {
         $this->ensureCustomerProject($request, $project);
@@ -270,6 +306,28 @@ class CourseController extends CustomerProjectController
                 'error' => 'Failed to mark lesson as completed',
             ], 500);
         }
+    }
+
+    private function transformOwner($owner): array
+    {
+        return [
+            'id' => $owner->id,
+            'name' => $owner->name,
+            'slug' => $owner->slug,
+            'identifier' => $owner->identifier,
+            'project_identifier' => $owner->project_identifier,
+        ];
+    }
+
+    private function resolveBackUrl(string $project, $owner): string
+    {
+        if ($project === 'community') {
+            $identifier = $owner->slug ?? $owner->identifier ?? $owner->id;
+
+            return route('customer.communities.show', $identifier);
+        }
+
+        return route('customer.dashboard');
     }
 }
 

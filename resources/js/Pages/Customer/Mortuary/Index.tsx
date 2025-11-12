@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -7,14 +8,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import type { PageProps } from '@/types';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
-import { CommunityCurrency, HealthcareRecord } from '../types';
+import type { CommunityCurrency, MortuaryRecord } from '../Communities/types';
 
-interface HealthcareRecordsSectionProps {
-    id: string;
-    records: HealthcareRecord[];
-    communityIdentifier: string;
+export interface MortuaryRecordsSectionProps {
+    id?: string;
+    records: MortuaryRecord[];
+    projectIdentifier?: string;
+    ownerIdentifier?: string;
     appCurrency?: CommunityCurrency | null;
     emptyMessage?: string;
 }
@@ -47,13 +50,14 @@ const formatAmount = (
     return `${symbol}${wholeWithSeparators}${decimal}${fraction}`;
 };
 
-export function HealthcareRecordsSection({
-    id,
+export function MortuaryRecordsSection({
+    id = 'mortuary-records',
     records,
-    communityIdentifier,
+    projectIdentifier,
+    ownerIdentifier,
     appCurrency,
-    emptyMessage = 'No healthcare records found.',
-}: HealthcareRecordsSectionProps) {
+    emptyMessage = 'No mortuary records found.',
+}: MortuaryRecordsSectionProps) {
     const items = Array.isArray(records) ? records : [];
 
     return (
@@ -61,10 +65,10 @@ export function HealthcareRecordsSection({
             <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
                 <CardHeader>
                     <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        Healthcare Records
+                        Mortuary Records
                     </CardTitle>
                     <CardDescription>
-                        Matched using your membership information and contact details.
+                        Coverage and contribution information associated with your membership.
                     </CardDescription>
                 </CardHeader>
                 {items.length === 0 ? (
@@ -73,7 +77,7 @@ export function HealthcareRecordsSection({
                             {emptyMessage}
                         </p>
                         <p className="text-xs">
-                            We could not find any healthcare records that match your profile details.
+                            We could not find any mortuary records at this time.
                         </p>
                     </CardContent>
                 ) : (
@@ -169,37 +173,41 @@ export function HealthcareRecordsSection({
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>{contributionsCount}</span>
-                                                    <Link
-                                                        href={route(
-                                                            'customer.communities.healthcare.contributions',
-                                                            {
-                                                                community:
-                                                                    communityIdentifier,
-                                                                member: record.id,
-                                                            },
-                                                        )}
-                                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        View
-                                                    </Link>
+                                                    {projectIdentifier && ownerIdentifier && (
+                                                        <Link
+                                                            href={route(
+                                                                'customer.projects.mortuary.contributions',
+                                                                {
+                                                                    project: projectIdentifier,
+                                                                    owner: ownerIdentifier,
+                                                                    member: record.id,
+                                                                },
+                                                            )}
+                                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                        >
+                                                            View
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>{claimsCount}</span>
-                                                    <Link
-                                                        href={route(
-                                                            'customer.communities.healthcare.claims',
-                                                            {
-                                                                community:
-                                                                    communityIdentifier,
-                                                                member: record.id,
-                                                            },
-                                                        )}
-                                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        View
-                                                    </Link>
+                                                    {projectIdentifier && ownerIdentifier && (
+                                                        <Link
+                                                            href={route(
+                                                                'customer.projects.mortuary.claims',
+                                                                {
+                                                                    project: projectIdentifier,
+                                                                    owner: ownerIdentifier,
+                                                                    member: record.id,
+                                                                },
+                                                            )}
+                                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                        >
+                                                            View
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -213,4 +221,111 @@ export function HealthcareRecordsSection({
         </section>
     );
 }
+
+type OwnerSummary = {
+    id: number | string;
+    name?: string | null;
+    slug?: string | null;
+    identifier?: string | null;
+    project_identifier?: string | null;
+};
+
+export interface MortuaryIndexProps extends PageProps {
+    project: string;
+    owner: OwnerSummary;
+    records: MortuaryRecord[];
+    appCurrency?: CommunityCurrency | null;
+    error?: string | null;
+    emptyMessage?: string;
+    backUrl?: string;
+}
+
+export default function MortuaryIndex({
+    auth,
+    project,
+    owner,
+    records,
+    appCurrency,
+    error,
+    emptyMessage,
+    backUrl,
+}: MortuaryIndexProps) {
+    const ownerName = owner?.name ?? 'Mortuary Partner';
+    const ownerIdentifier =
+        owner.slug ?? owner.identifier ?? String(owner.id);
+
+    return (
+        <CustomerLayout
+            auth={auth}
+            title={`Mortuary Members – ${ownerName}`}
+            header={
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                            Mortuary Members
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Coverage records for {ownerName}.
+                        </p>
+                    </div>
+                    <Link
+                        href={backUrl ?? route('customer.dashboard')}
+                        className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
+                    >
+                        ← Back
+                    </Link>
+                </div>
+            }
+        >
+            <Head title={`Mortuary Members – ${ownerName}`} />
+
+            <div className="space-y-6">
+                {error && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-700/70 dark:bg-red-900/20 dark:text-red-300">
+                        {error}
+                    </div>
+                )}
+
+                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Partner Details
+                        </CardTitle>
+                        <CardDescription>
+                            Project: <span className="font-semibold">{project}</span>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Partner
+                            </p>
+                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                {ownerName}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Identifier
+                            </p>
+                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+                                {ownerIdentifier}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <MortuaryRecordsSection
+                    id="mortuary-records"
+                    records={records}
+                    projectIdentifier={project}
+                    ownerIdentifier={ownerIdentifier}
+                    appCurrency={appCurrency}
+                    emptyMessage={emptyMessage}
+                />
+            </div>
+        </CustomerLayout>
+    );
+}
+
 

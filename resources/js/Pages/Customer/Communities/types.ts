@@ -72,6 +72,19 @@ export interface LendingRecord {
     installment_amount?: number | string;
     total_interest?: number | string;
     contact_number?: string;
+    payments?: Array<{
+        id?: number | string;
+        amount?: number | string;
+        payment_date?: string | null;
+        reference_number?: string | null;
+        method?: string | null;
+    }>;
+    bills?: Array<{
+        id?: number | string;
+        amount?: number | string;
+        due_date?: string | null;
+        status?: string | null;
+    }>;
 }
 
 export interface CommunitiesProps extends PageProps {

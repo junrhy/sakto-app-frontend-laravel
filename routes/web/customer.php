@@ -53,15 +53,12 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
     // Customer Communities
     Route::get('/customer/communities', [App\Http\Controllers\Customer\CommunityController::class, 'index'])->name('customer.communities');
     Route::get('/customer/communities/{community}', [App\Http\Controllers\Customer\CommunityController::class, 'show'])->name('customer.communities.show');
-    Route::get('/customer/communities/{community}/healthcare/{member}/contributions', [App\Http\Controllers\Customer\CommunityController::class, 'healthcareContributions'])->name('customer.communities.healthcare.contributions');
-    Route::get('/customer/communities/{community}/healthcare/{member}/claims', [App\Http\Controllers\Customer\CommunityController::class, 'healthcareClaims'])->name('customer.communities.healthcare.claims');
-    Route::get('/customer/communities/{community}/mortuary/{member}/contributions', [App\Http\Controllers\Customer\CommunityController::class, 'mortuaryContributions'])->name('customer.communities.mortuary.contributions');
-    Route::get('/customer/communities/{community}/mortuary/{member}/claims', [App\Http\Controllers\Customer\CommunityController::class, 'mortuaryClaims'])->name('customer.communities.mortuary.claims');
     Route::post('/customer/communities/{id}/join', [App\Http\Controllers\Customer\CommunityController::class, 'join'])->name('customer.communities.join');
     Route::post('/customer/communities/{id}/unjoin', [App\Http\Controllers\Customer\CommunityController::class, 'unjoin'])->name('customer.communities.unjoin');
     Route::prefix('/customer/{project}/{owner}/courses')
         ->name('customer.projects.courses.')
         ->group(function () {
+            Route::get('/overview', [App\Http\Controllers\Customer\CourseController::class, 'overview'])->name('overview');
             Route::get('/', [App\Http\Controllers\Customer\CourseController::class, 'index'])->name('index');
             Route::get('/categories', [App\Http\Controllers\Customer\CourseController::class, 'categories'])->name('categories');
             Route::get('/{course}', [App\Http\Controllers\Customer\CourseController::class, 'show'])->name('show');
@@ -71,9 +68,30 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
             Route::post('/enrollments/{enrollment}/progress/{lesson}/start', [App\Http\Controllers\Customer\CourseController::class, 'markLessonStarted'])->name('progress.start');
             Route::post('/enrollments/{enrollment}/progress/{lesson}/complete', [App\Http\Controllers\Customer\CourseController::class, 'markLessonCompleted'])->name('progress.complete');
         });
+    Route::prefix('/customer/{project}/{owner}/newsfeed')
+        ->name('customer.projects.newsfeed.')
+        ->group(function () {
+            Route::get('/overview', [App\Http\Controllers\Customer\NewsfeedController::class, 'overview'])->name('overview');
+        });
+    Route::prefix('/customer/{project}/{owner}/events')
+        ->name('customer.projects.events.')
+        ->group(function () {
+            Route::get('/overview', [App\Http\Controllers\Customer\EventController::class, 'overview'])->name('overview');
+        });
+    Route::prefix('/customer/{project}/{owner}/resources')
+        ->name('customer.projects.resources.')
+        ->group(function () {
+            Route::get('/overview', [App\Http\Controllers\Customer\ResourceController::class, 'overview'])->name('overview');
+        });
+    Route::prefix('/customer/{project}/{owner}/challenges')
+        ->name('customer.projects.challenges.')
+        ->group(function () {
+            Route::get('/overview', [App\Http\Controllers\Customer\ChallengeController::class, 'overview'])->name('overview');
+        });
     Route::prefix('/customer/{project}/{owner}/marketplace')
         ->name('customer.projects.marketplace.')
         ->group(function () {
+            Route::get('/overview', [App\Http\Controllers\Customer\MarketplaceController::class, 'overview'])->name('overview');
             Route::get('/', [App\Http\Controllers\Customer\MarketplaceController::class, 'index'])->name('index');
             Route::get('/checkout', [App\Http\Controllers\Customer\MarketplaceController::class, 'checkout'])->name('checkout');
             Route::get('/my-products', [App\Http\Controllers\Customer\MarketplaceController::class, 'myProducts'])->name('my-products');
@@ -86,6 +104,29 @@ Route::middleware(['auth', 'customer', 'verified'])->group(function () {
             Route::get('/products/{product}/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'productOrders'])->name('products.orders');
             Route::get('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'orders'])->name('orders');
             Route::post('/orders/{order}/cancel', [App\Http\Controllers\Customer\MarketplaceController::class, 'cancelOrder'])->name('orders.cancel');
+        });
+
+    Route::prefix('/customer/{project}/{owner}/healthcare')
+        ->name('customer.projects.healthcare.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\HealthcareController::class, 'index'])->name('index');
+            Route::get('/members/{member}/contributions', [App\Http\Controllers\Customer\HealthcareController::class, 'contributions'])->name('contributions');
+            Route::get('/members/{member}/claims', [App\Http\Controllers\Customer\HealthcareController::class, 'claims'])->name('claims');
+        });
+
+    Route::prefix('/customer/{project}/{owner}/mortuary')
+        ->name('customer.projects.mortuary.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\MortuaryController::class, 'index'])->name('index');
+            Route::get('/members/{member}/contributions', [App\Http\Controllers\Customer\MortuaryController::class, 'contributions'])->name('contributions');
+            Route::get('/members/{member}/claims', [App\Http\Controllers\Customer\MortuaryController::class, 'claims'])->name('claims');
+        });
+
+    Route::prefix('/customer/{project}/{owner}/lending')
+        ->name('customer.projects.lending.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\LendingController::class, 'index'])->name('index');
+            Route::get('/loans/{loan}', [App\Http\Controllers\Customer\LendingController::class, 'show'])->name('show');
         });
 
     Route::prefix('/customer/wallet')

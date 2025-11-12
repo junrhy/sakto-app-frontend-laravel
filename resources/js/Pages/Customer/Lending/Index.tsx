@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -7,14 +8,38 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { Head, Link } from '@inertiajs/react';
+import type { PageProps } from '@/types';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
-import { CommunityCurrency, LendingRecord } from '../types';
+import type { CommunityCurrency, LendingRecord } from '../Communities/types';
 
 interface LendingRecordsSectionProps {
-    id: string;
+    id?: string;
     records: LendingRecord[];
+    projectIdentifier?: string;
+    ownerIdentifier?: string;
     appCurrency?: CommunityCurrency | null;
     emptyMessage?: string;
+}
+
+interface LendingPayment {
+    id: number | string;
+    amount: number;
+    payment_date?: string | null;
+    reference_number?: string | null;
+    method?: string | null;
+}
+
+interface LendingBill {
+    id: number | string;
+    amount: number;
+    due_date?: string | null;
+    status?: string | null;
+}
+
+export interface LendingRecordWithDetails extends LendingRecord {
+    payments?: LendingPayment[];
+    bills?: LendingBill[];
 }
 
 const formatAmount = (
@@ -45,9 +70,26 @@ const formatAmount = (
     return `${symbol}${wholeWithSeparators}${decimal}${fraction}`;
 };
 
+const formatPercent = (value?: number | string | null): string => {
+    if (value === null || value === undefined) {
+        return '—';
+    }
+
+    const numeric =
+        typeof value === 'string' ? Number.parseFloat(value) : Number(value);
+
+    if (Number.isNaN(numeric)) {
+        return '—';
+    }
+
+    return `${numeric}%`;
+};
+
 export function LendingRecordsSection({
-    id,
+    id = 'lending-records',
     records,
+    projectIdentifier,
+    ownerIdentifier,
     appCurrency,
     emptyMessage = 'No lending records found.',
 }: LendingRecordsSectionProps) {
@@ -61,7 +103,7 @@ export function LendingRecordsSection({
                         Lending Records
                     </CardTitle>
                     <CardDescription>
-                        Active and historical loans that matched your contact details.
+                        Active and historical loans matched to your profile information.
                     </CardDescription>
                 </CardHeader>
                 {items.length === 0 ? (
@@ -98,6 +140,9 @@ export function LendingRecordsSection({
                                     </TableHead>
                                     <TableHead className="text-gray-900 dark:text-white">
                                         Period
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Details
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -147,10 +192,7 @@ export function LendingRecordsSection({
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            {record.interest_rate !== undefined &&
-                                            record.interest_rate !== null
-                                                ? `${record.interest_rate}%`
-                                                : '—'}
+                                            {formatPercent(record.interest_rate)}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             <div className="flex flex-col">
@@ -195,6 +237,27 @@ export function LendingRecordsSection({
                                                 )}
                                             </div>
                                         </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {projectIdentifier && ownerIdentifier ? (
+                                                <Link
+                                                    href={route(
+                                                        'customer.projects.lending.show',
+                                                        {
+                                                            project: projectIdentifier,
+                                                            owner: ownerIdentifier,
+                                                            loan: record.id,
+                                                        },
+                                                    )}
+                                                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                >
+                                                    View
+                                                </Link>
+                                            ) : (
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                    –
+                                                </span>
+                                            )}
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -205,4 +268,130 @@ export function LendingRecordsSection({
         </section>
     );
 }
+
+type OwnerSummary = {
+    id: number | string;
+    name?: string | null;
+    slug?: string | null;
+    identifier?: string | null;
+    project_identifier?: string | null;
+};
+
+export interface LendingIndexProps extends PageProps {
+    project: string;
+    owner: OwnerSummary;
+    records: LendingRecordWithDetails[];
+    appCurrency?: CommunityCurrency | null;
+    error?: string | null;
+    emptyMessage?: string;
+    backUrl?: string;
+}
+
+export default function LendingIndex({
+    auth,
+    project,
+    owner,
+    records,
+    appCurrency,
+    error,
+    emptyMessage,
+    backUrl,
+}: LendingIndexProps) {
+    const ownerName = owner?.name ?? 'Lending Partner';
+    const ownerIdentifier =
+        owner.slug ?? owner.identifier ?? String(owner.id);
+
+    const loansTotal = records.length;
+    const activeLoans = records.filter((loan) => loan.status === 'active').length;
+
+    return (
+        <CustomerLayout
+            auth={auth}
+            title={`Lending Records – ${ownerName}`}
+            header={
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                            Lending Records
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Loans and repayment activity for {ownerName}.
+                        </p>
+                    </div>
+                    <Link
+                        href={backUrl ?? route('customer.dashboard')}
+                        className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
+                    >
+                        ← Back
+                    </Link>
+                </div>
+            }
+        >
+            <Head title={`Lending Records – ${ownerName}`} />
+
+            <div className="space-y-6">
+                {error && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-700/70 dark:bg-red-900/20 dark:text-red-300">
+                        {error}
+                    </div>
+                )}
+
+                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Partner Overview
+                        </CardTitle>
+                        <CardDescription>
+                            Project: <span className="font-semibold">{project}</span>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Partner
+                            </p>
+                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                {ownerName}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Identifier
+                            </p>
+                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+                                {ownerIdentifier}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Total Loans
+                            </p>
+                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                {loansTotal}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Active Loans
+                            </p>
+                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                {activeLoans}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <LendingRecordsSection
+                    id="lending-records"
+                    records={records}
+                    projectIdentifier={project}
+                    ownerIdentifier={ownerIdentifier}
+                    appCurrency={appCurrency}
+                    emptyMessage={emptyMessage}
+                />
+            </div>
+        </CustomerLayout>
+    );
+}
+
 

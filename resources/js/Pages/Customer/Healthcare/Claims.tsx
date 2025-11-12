@@ -13,25 +13,23 @@ import { cn } from '@/lib/utils';
 import { Link, Head } from '@inertiajs/react';
 import type { PageProps } from '@/types';
 
-interface CommunitySummary {
+interface OwnerSummary {
     id: number | string;
-    name: string;
+    name?: string | null;
     slug?: string | null;
     identifier?: string | null;
+    project_identifier?: string | null;
 }
 
-interface Contribution {
+interface Claim {
     id: string;
+    claim_type?: string | null;
     amount: number;
-    payment_date?: string | null;
-    payment_method?: string | null;
-    reference_number?: string | null;
+    date_of_service?: string | null;
+    status?: string | null;
+    hospital_name?: string | null;
+    diagnosis?: string | null;
     created_at?: string | null;
-}
-
-interface ScheduledContribution {
-    due_date?: string | null;
-    amount?: number | string | null;
 }
 
 interface MemberSummary {
@@ -50,15 +48,14 @@ interface CurrencySettings {
     thousands_separator?: string;
 }
 
-interface ContributionsPageProps extends PageProps {
-    community: CommunitySummary;
-    memberId: string;
+interface ClaimsPageProps extends PageProps {
+    project: string;
+    owner: OwnerSummary;
     member?: MemberSummary | null;
-    contributions: Contribution[];
-    upcomingContributions: ScheduledContribution[];
-    pastDueContributions: ScheduledContribution[];
+    claims: Claim[];
     appCurrency?: CurrencySettings | null;
     error?: string | null;
+    backUrl: string;
 }
 
 const formatAmount = (amount: number | string | null | undefined, currency?: CurrencySettings | null) => {
@@ -110,42 +107,65 @@ const formatDate = (value?: string | null, includeTime = false) => {
     return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
-export default function HealthcareContributions({
+const formatStatus = (value?: string | null) => {
+    if (!value) {
+        return 'Unknown';
+    }
+
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const claimTypeLabels: Record<string, string> = {
+    hospitalization: 'Hospitalization',
+    outpatient: 'Outpatient',
+    dental: 'Dental',
+    optical: 'Optical',
+    prescription: 'Prescription',
+};
+
+const statusVariants: Record<string, string> = {
+    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200',
+    approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200',
+    rejected: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200',
+};
+
+export default function HealthcareClaims({
     auth,
-    community,
+    owner,
     member,
-    contributions,
+    claims,
     appCurrency,
     error,
-}: ContributionsPageProps) {
-    const routeParam = community.slug ?? community.identifier ?? community.id;
+    backUrl,
+}: ClaimsPageProps) {
+    const ownerName = owner?.name ?? 'Healthcare Partner';
     const memberName = member?.name ?? 'Member';
-    const hasContributions = contributions.length > 0;
+    const hasClaims = claims.length > 0;
 
     return (
         <CustomerLayout
             auth={auth}
-            title={`Healthcare Contributions – ${memberName}`}
+            title={`Healthcare Claims – ${memberName}`}
             header={
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                            Healthcare Contributions
+                            Healthcare Claims
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Detailed contribution history sourced from {community.name}.
+                            Claim submissions filed with {ownerName}.
                         </p>
                     </div>
                     <Link
-                        href={route('customer.communities.show', routeParam)}
+                        href={backUrl}
                         className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
                     >
-                        ← Back to Community
+                        ← Back
                     </Link>
                 </div>
             }
         >
-            <Head title={`Healthcare Contributions – ${memberName}`} />
+            <Head title={`Healthcare Claims – ${memberName}`} />
 
             <div className="space-y-6">
                 {error && (
@@ -160,7 +180,7 @@ export default function HealthcareContributions({
                             Member Overview
                         </CardTitle>
                         <CardDescription>
-                            Summary of the selected healthcare member&apos;s contribution details.
+                            Member profile linked to these healthcare claims.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-2">
@@ -213,57 +233,72 @@ export default function HealthcareContributions({
                 <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
                     <CardHeader>
                         <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Contribution History
+                            Claim History
                         </CardTitle>
                         <CardDescription>
-                            Recorded payments for {memberName}. Amounts are displayed using the community&apos;s
-                            currency settings.
+                            Submitted healthcare claims with their current status and details.
                         </CardDescription>
                     </CardHeader>
-                    {hasContributions ? (
+                    {hasClaims ? (
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 dark:bg-gray-700">
                                         <TableHead className="text-gray-900 dark:text-white">
-                                            Payment Date
+                                            Claim Type
                                         </TableHead>
                                         <TableHead className="text-gray-900 dark:text-white">
                                             Amount
                                         </TableHead>
                                         <TableHead className="text-gray-900 dark:text-white">
-                                            Payment Method
+                                            Date of Service
                                         </TableHead>
                                         <TableHead className="text-gray-900 dark:text-white">
-                                            Reference
+                                            Hospital / Facility
                                         </TableHead>
                                         <TableHead className="text-gray-900 dark:text-white">
-                                            Recorded On
+                                            Diagnosis
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Status
+                                        </TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">
+                                            Submitted On
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {contributions.map((contribution) => (
-                                        <TableRow
-                                            key={contribution.id}
-                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                                        >
+                                    {claims.map((claim) => (
+                                        <TableRow key={claim.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {formatDate(contribution.payment_date)}
-                                            </TableCell>
-                                            <TableCell className="text-gray-900 dark:text-white">
-                                                {formatAmount(contribution.amount, appCurrency)}
-                                            </TableCell>
-                                            <TableCell className="capitalize text-gray-900 dark:text-white">
-                                                {contribution.payment_method
-                                                    ? contribution.payment_method.replace(/_/g, ' ')
+                                                {claim.claim_type
+                                                    ? claimTypeLabels[claim.claim_type] ?? formatStatus(claim.claim_type)
                                                     : '—'}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {contribution.reference_number || '—'}
+                                                {formatAmount(claim.amount, appCurrency)}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {formatDate(contribution.created_at, true)}
+                                                {formatDate(claim.date_of_service)}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {claim.hospital_name || '—'}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {claim.diagnosis || '—'}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <Badge
+                                                    className={cn(
+                                                        'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+                                                        claim.status ? statusVariants[claim.status] ?? '' : '',
+                                                    )}
+                                                >
+                                                    {formatStatus(claim.status)}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {formatDate(claim.created_at, true)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -273,12 +308,11 @@ export default function HealthcareContributions({
                     ) : (
                         <CardContent>
                             <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-600 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
-                                No contributions have been recorded for this member yet.
+                                No claims have been submitted for this member yet.
                             </div>
                         </CardContent>
                     )}
                 </Card>
-
             </div>
         </CustomerLayout>
     );

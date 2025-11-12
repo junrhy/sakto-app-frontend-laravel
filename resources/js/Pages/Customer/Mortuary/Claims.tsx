@@ -13,11 +13,12 @@ import { cn } from '@/lib/utils';
 import { Link, Head } from '@inertiajs/react';
 import type { PageProps } from '@/types';
 
-interface CommunitySummary {
+interface OwnerSummary {
     id: number | string;
-    name: string;
+    name?: string | null;
     slug?: string | null;
     identifier?: string | null;
+    project_identifier?: string | null;
 }
 
 interface Claim {
@@ -49,12 +50,13 @@ interface CurrencySettings {
 }
 
 interface ClaimsPageProps extends PageProps {
-    community: CommunitySummary;
-    memberId: string;
+    project: string;
+    owner: OwnerSummary;
     member?: MemberSummary | null;
     claims: Claim[];
     appCurrency?: CurrencySettings | null;
     error?: string | null;
+    backUrl: string;
 }
 
 const formatAmount = (amount: number | string | null | undefined, currency?: CurrencySettings | null) => {
@@ -130,13 +132,14 @@ const statusVariants: Record<string, string> = {
 
 export default function MortuaryClaims({
     auth,
-    community,
+    owner,
     member,
     claims,
     appCurrency,
     error,
+    backUrl,
 }: ClaimsPageProps) {
-    const routeParam = community.slug ?? community.identifier ?? community.id;
+    const ownerName = owner?.name ?? 'Mortuary Partner';
     const memberName = member?.name ?? 'Member';
     const hasClaims = claims.length > 0;
 
@@ -151,14 +154,14 @@ export default function MortuaryClaims({
                             Mortuary Claims
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Claim submissions filed for {community.name}.
+                            Claim submissions filed for {ownerName}.
                         </p>
                     </div>
                     <Link
-                        href={route('customer.communities.show', routeParam)}
+                        href={backUrl}
                         className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
                     >
-                        ← Back to Community
+                        ← Back
                     </Link>
                 </div>
             }
@@ -295,9 +298,7 @@ export default function MortuaryClaims({
                                                 <Badge
                                                     className={cn(
                                                         'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-                                                        claim.status
-                                                            ? statusVariants[claim.status] ?? ''
-                                                            : '',
+                                                        claim.status ? statusVariants[claim.status] ?? '' : '',
                                                     )}
                                                 >
                                                     {formatStatus(claim.status)}

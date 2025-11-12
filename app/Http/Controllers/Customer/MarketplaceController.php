@@ -68,6 +68,41 @@ class MarketplaceController extends CustomerProjectController
         }
     }
 
+    public function overview(Request $request, string $project, $ownerIdentifier): Response
+    {
+        $this->ensureCustomerProject($request, $project);
+
+        try {
+            $owner = $this->resolveOwner($project, $ownerIdentifier);
+            $owner->app_currency = $this->decodeCurrency($owner->app_currency);
+
+            $productsResponse = $this->fetchMarketplaceProducts($owner, [
+                'status' => 'published',
+                'per_page' => 12,
+                'page' => 1,
+            ]);
+
+            $ordersResponse = $this->fetchMarketplaceOrders($owner, $request->user(), [
+                'per_page' => 50,
+                'page' => 1,
+            ]);
+
+            return Inertia::render('Customer/Marketplace/Overview', [
+                'project' => $project,
+                'owner' => $this->transformOwner($owner),
+                'products' => $productsResponse['data'] ?? ($productsResponse['products'] ?? []),
+                'orderHistory' => $ordersResponse['data'] ?? ($ordersResponse['orders'] ?? []),
+                'appCurrency' => $owner->app_currency ?? $this->decodeCurrency($request->user()->app_currency),
+                'authUser' => $this->transformAuthUser($request->user()),
+                'backUrl' => $this->resolveBackUrl($project, $owner),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            abort(404, 'Owner not found');
+        } catch (\Throwable $th) {
+            abort(500, 'Failed to load marketplace overview');
+        }
+    }
+
     public function show(Request $request, string $project, $ownerIdentifier, $productId): Response
     {
         $this->ensureCustomerProject($request, $project);
@@ -580,6 +615,37 @@ class MarketplaceController extends CustomerProjectController
         }
 
         return null;
+    }
+
+    private function transformOwner(User $owner): array
+    {
+        return [
+            'id' => $owner->id,
+            'name' => $owner->name,
+            'slug' => $owner->slug,
+            'identifier' => $owner->identifier,
+            'project_identifier' => $owner->project_identifier,
+        ];
+    }
+
+    private function transformAuthUser(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'identifier' => $user->identifier,
+            'name' => $user->name,
+        ];
+    }
+
+    private function resolveBackUrl(string $project, User $owner): string
+    {
+        if ($project === 'community') {
+            $identifier = $owner->slug ?? $owner->identifier ?? $owner->id;
+
+            return route('customer.communities.show', $identifier);
+        }
+
+        return route('customer.dashboard');
     }
 }
 

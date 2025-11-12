@@ -13,11 +13,12 @@ import { cn } from '@/lib/utils';
 import { Link, Head } from '@inertiajs/react';
 import type { PageProps } from '@/types';
 
-interface CommunitySummary {
+interface OwnerSummary {
     id: number | string;
-    name: string;
+    name?: string | null;
     slug?: string | null;
     identifier?: string | null;
+    project_identifier?: string | null;
 }
 
 interface Contribution {
@@ -46,12 +47,13 @@ interface CurrencySettings {
 }
 
 interface ContributionsPageProps extends PageProps {
-    community: CommunitySummary;
-    memberId: string;
+    project: string;
+    owner: OwnerSummary;
     member?: MemberSummary | null;
     contributions: Contribution[];
     appCurrency?: CurrencySettings | null;
     error?: string | null;
+    backUrl: string;
 }
 
 const formatAmount = (amount: number | string | null | undefined, currency?: CurrencySettings | null) => {
@@ -105,13 +107,14 @@ const formatDate = (value?: string | null, includeTime = false) => {
 
 export default function MortuaryContributions({
     auth,
-    community,
+    owner,
     member,
     contributions,
     appCurrency,
     error,
+    backUrl,
 }: ContributionsPageProps) {
-    const routeParam = community.slug ?? community.identifier ?? community.id;
+    const ownerName = owner?.name ?? 'Mortuary Partner';
     const memberName = member?.name ?? 'Member';
     const hasContributions = contributions.length > 0;
 
@@ -126,14 +129,14 @@ export default function MortuaryContributions({
                             Mortuary Contributions
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Payments recorded for {community.name}&apos;s mortuary coverage.
+                            Payments recorded for {ownerName}.
                         </p>
                     </div>
                     <Link
-                        href={route('customer.communities.show', routeParam)}
+                        href={backUrl}
                         className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
                     >
-                        ← Back to Community
+                        ← Back
                     </Link>
                 </div>
             }
