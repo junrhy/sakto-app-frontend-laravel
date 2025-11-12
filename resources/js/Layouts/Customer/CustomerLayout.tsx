@@ -376,8 +376,14 @@ export default function CustomerLayout({
                                                 key={section.id}
                                                 type="button"
                                                 onClick={() => {
-                                                    section.onSelect?.(section.id);
-                                                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                                                    section.onSelect?.(
+                                                        section.id,
+                                                    );
+                                                    if (
+                                                        typeof window !==
+                                                            'undefined' &&
+                                                        window.innerWidth < 1024
+                                                    ) {
                                                         setIsSidebarOpen(false);
                                                     }
                                                 }}

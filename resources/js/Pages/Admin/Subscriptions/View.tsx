@@ -494,11 +494,15 @@ export default function View({
                                                         {item.status
                                                             .charAt(0)
                                                             .toUpperCase() +
-                                                            item.status.slice(1)}
+                                                            item.status.slice(
+                                                                1,
+                                                            )}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
-                                                    {formatDate(item.start_date)}
+                                                    {formatDate(
+                                                        item.start_date,
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-white">
                                                     {formatDate(item.end_date)}

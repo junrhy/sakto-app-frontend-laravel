@@ -1,12 +1,15 @@
-import { useMemo } from 'react';
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Link, Head } from '@inertiajs/react';
-import type { PageProps } from '@/types';
 import {
-    CommunityCollectionItem,
-    CommunityCurrency,
-} from '../Communities/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { useMemo } from 'react';
+import { CommunityCollectionItem } from '../Communities/types';
 
 interface ChallengesOverviewSectionProps {
     id?: string;
@@ -103,7 +106,8 @@ export function ChallengesOverviewSection({
                             Challenges
                         </CardTitle>
                         <CardDescription>
-                            Join activities and competitions organized by this partner.
+                            Join activities and competitions organized by this
+                            partner.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-8 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
@@ -146,22 +150,42 @@ export function ChallengesOverviewSection({
                         Challenges
                     </CardTitle>
                     <CardDescription>
-                        Join activities and competitions organized by this partner.
+                        Join activities and competitions organized by this
+                        partner.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {normalizedChallenges.map((challenge, index) => {
                         const idValue = challenge.id ?? challenge.slug ?? index;
-                        const title = toString(challenge.title ?? challenge.name, 'Untitled Challenge');
+                        const title = toString(
+                            challenge.title ?? challenge.name,
+                            'Untitled Challenge',
+                        );
                         const description = toString(challenge.description, '');
-                        const status = toString(challenge.status ?? 'active', 'active').toLowerCase();
+                        const status = toString(
+                            challenge.status ?? 'active',
+                            'active',
+                        ).toLowerCase();
                         const prize = toString(challenge.prize, '');
-                        const participants = Array.isArray(challenge.participants)
+                        const participants = Array.isArray(
+                            challenge.participants,
+                        )
                             ? challenge.participants.length
-                            : toNumber(challenge.participant_count ?? challenge.participants_count ?? 0);
-                        const startLabel = formatDate(challenge.start_date ?? challenge.startDate);
-                        const endLabel = formatDate(challenge.end_date ?? challenge.endDate ?? challenge.due_date);
-                        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                            : toNumber(
+                                  challenge.participant_count ??
+                                      challenge.participants_count ??
+                                      0,
+                              );
+                        const startLabel = formatDate(
+                            challenge.start_date ?? challenge.startDate,
+                        );
+                        const endLabel = formatDate(
+                            challenge.end_date ??
+                                challenge.endDate ??
+                                challenge.due_date,
+                        );
+                        const statusLabel =
+                            status.charAt(0).toUpperCase() + status.slice(1);
 
                         const statusClass =
                             status === 'active'
@@ -170,13 +194,12 @@ export function ChallengesOverviewSection({
                                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
 
-                        const challengeDetailsUrl =
-                            hasProjectContext
-                                ? route('customer.projects.challenges.overview', {
-                                      project: projectIdentifier,
-                                      owner: ownerIdentifier,
-                                  })
-                                : undefined;
+                        const challengeDetailsUrl = hasProjectContext
+                            ? route('customer.projects.challenges.overview', {
+                                  project: projectIdentifier,
+                                  owner: ownerIdentifier,
+                              })
+                            : undefined;
 
                         return (
                             <div
@@ -278,8 +301,7 @@ export default function ChallengesOverviewPage({
     error,
 }: ChallengesOverviewPageProps) {
     const ownerName = owner?.name ?? 'Challenges Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     return (
         <CustomerLayout
@@ -292,7 +314,8 @@ export default function ChallengesOverviewPage({
                             Challenges
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Engage with community activities hosted by {ownerName}.
+                            Engage with community activities hosted by{' '}
+                            {ownerName}.
                         </p>
                     </div>
                     <Link
@@ -319,7 +342,8 @@ export default function ChallengesOverviewPage({
                             Partner Details
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -351,5 +375,3 @@ export default function ChallengesOverviewPage({
         </CustomerLayout>
     );
 }
-
-

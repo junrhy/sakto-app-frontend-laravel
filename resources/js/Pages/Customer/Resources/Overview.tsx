@@ -1,12 +1,15 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Link, Head } from '@inertiajs/react';
-import type { PageProps } from '@/types';
 import {
-    CommunityCollectionItem,
-    CommunityCurrency,
-} from '../Communities/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { CommunityCollectionItem } from '../Communities/types';
 
 interface ResourcesOverviewSectionProps {
     id?: string;
@@ -52,7 +55,9 @@ export function ResourcesOverviewSection({
     emptyMessage = 'No resources available yet.',
 }: ResourcesOverviewSectionProps) {
     const publishedResources = Array.isArray(resources)
-        ? resources.filter((resource) => Boolean(resource.is_published ?? resource.published ?? true))
+        ? resources.filter((resource) =>
+              Boolean(resource.is_published ?? resource.published ?? true),
+          )
         : [];
 
     const hasProjectContext =
@@ -76,7 +81,8 @@ export function ResourcesOverviewSection({
                         Resources
                     </CardTitle>
                     <CardDescription>
-                        Helpful guides, documents, and announcements curated by this partner.
+                        Helpful guides, documents, and announcements curated by
+                        this partner.
                     </CardDescription>
                 </CardHeader>
                 {publishedResources.length === 0 ? (
@@ -104,20 +110,41 @@ export function ResourcesOverviewSection({
                 ) : (
                     <CardContent className="space-y-4">
                         {publishedResources.map((resource, index) => {
-                            const idValue = resource.id ?? resource.slug ?? index;
-                            const title = toString(resource.title ?? resource.name, 'Untitled Resource');
-                            const description = toString(resource.meta_description ?? resource.description, '');
-                            const featuredImage = toString(resource.featured_image ?? resource.image_url ?? '');
-                            const updatedAt = toString(resource.updated_at ?? resource.created_at ?? '');
+                            const idValue =
+                                resource.id ?? resource.slug ?? index;
+                            const title = toString(
+                                resource.title ?? resource.name,
+                                'Untitled Resource',
+                            );
+                            const description = toString(
+                                resource.meta_description ??
+                                    resource.description,
+                                '',
+                            );
+                            const featuredImage = toString(
+                                resource.featured_image ??
+                                    resource.image_url ??
+                                    '',
+                            );
+                            const updatedAt = toString(
+                                resource.updated_at ??
+                                    resource.created_at ??
+                                    '',
+                            );
                             const externalUrl = toString(resource.url, '');
                             const slug = toString(resource.slug, '');
 
                             const resourceUrl =
                                 externalUrl ||
-                                (hasProjectContext ? route('customer.projects.resources.overview', {
-                                    project: projectIdentifier,
-                                    owner: ownerIdentifier,
-                                }) : '#');
+                                (hasProjectContext
+                                    ? route(
+                                          'customer.projects.resources.overview',
+                                          {
+                                              project: projectIdentifier,
+                                              owner: ownerIdentifier,
+                                          },
+                                      )
+                                    : '#');
 
                             const isExternal = Boolean(externalUrl);
 
@@ -134,8 +161,10 @@ export function ResourcesOverviewSection({
                                                     alt={title}
                                                     className="h-28 w-full object-cover md:h-full"
                                                     onError={(event) => {
-                                                        const target = event.target as HTMLImageElement;
-                                                        target.style.display = 'none';
+                                                        const target =
+                                                            event.target as HTMLImageElement;
+                                                        target.style.display =
+                                                            'none';
                                                     }}
                                                 />
                                             </div>
@@ -154,18 +183,29 @@ export function ResourcesOverviewSection({
                                             {updatedAt && (
                                                 <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
                                                     Updated{' '}
-                                                    {formatDateTimeForDisplay(updatedAt, {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                    })}
+                                                    {formatDateTimeForDisplay(
+                                                        updatedAt,
+                                                        {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}
                                                 </p>
                                             )}
                                             <div className="flex justify-end">
                                                 <a
                                                     href={resourceUrl}
-                                                    target={isExternal ? '_blank' : undefined}
-                                                    rel={isExternal ? 'noopener noreferrer' : undefined}
+                                                    target={
+                                                        isExternal
+                                                            ? '_blank'
+                                                            : undefined
+                                                    }
+                                                    rel={
+                                                        isExternal
+                                                            ? 'noopener noreferrer'
+                                                            : undefined
+                                                    }
                                                     className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                                 >
                                                     <svg
@@ -216,8 +256,7 @@ export default function ResourcesOverviewPage({
     error,
 }: ResourcesOverviewPageProps) {
     const ownerName = owner?.name ?? 'Resources Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     return (
         <CustomerLayout
@@ -257,7 +296,8 @@ export default function ResourcesOverviewPage({
                             Partner Details
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -289,5 +329,3 @@ export default function ResourcesOverviewPage({
         </CustomerLayout>
     );
 }
-
-

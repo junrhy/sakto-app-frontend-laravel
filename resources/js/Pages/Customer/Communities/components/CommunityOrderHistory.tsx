@@ -15,7 +15,10 @@ interface CommunityOrderHistoryProps {
     items: CommunityCollectionItem[];
 }
 
-export function CommunityOrderHistory({ id, items }: CommunityOrderHistoryProps) {
+export function CommunityOrderHistory({
+    id,
+    items,
+}: CommunityOrderHistoryProps) {
     return (
         <Card
             id={id}
@@ -35,16 +38,29 @@ export function CommunityOrderHistory({ id, items }: CommunityOrderHistoryProps)
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                <TableHead className="text-gray-900 dark:text-white">Order #</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                <TableHead className="text-gray-900 dark:text-white">Total</TableHead>
-                                <TableHead className="text-right text-gray-900 dark:text-white">Date</TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Order #
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-gray-900 dark:text-white">
+                                    Total
+                                </TableHead>
+                                <TableHead className="text-right text-gray-900 dark:text-white">
+                                    Date
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {items.map((item, index) => (
                                 <TableRow
-                                    key={(item.id as string | number | undefined) ?? `order-${index}`}
+                                    key={
+                                        (item.id as
+                                            | string
+                                            | number
+                                            | undefined) ?? `order-${index}`
+                                    }
                                     className="hover:bg-gray-50 dark:hover:bg-gray-700"
                                 >
                                     <TableCell className="text-gray-900 dark:text-white">
@@ -59,7 +75,9 @@ export function CommunityOrderHistory({ id, items }: CommunityOrderHistoryProps)
                                     </TableCell>
                                     <TableCell className="text-gray-900 dark:text-white">
                                         {coerceToString(item.total_formatted) ??
-                                            coerceToString(item.amount_formatted) ??
+                                            coerceToString(
+                                                item.amount_formatted,
+                                            ) ??
                                             coerceToString(item.total) ??
                                             coerceToString(item.amount) ??
                                             '—'}

@@ -62,23 +62,39 @@ export function ProductOrdersTable({
                             </TableHeader>
                             <TableBody>
                                 {orders.map((order, index) => (
-                                    <TableRow key={`product-order-${order.id ?? index}`}>
+                                    <TableRow
+                                        key={`product-order-${order.id ?? index}`}
+                                    >
                                         <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                            {order.order_number ?? order.reference ?? `Order-${index + 1}`}
+                                            {order.order_number ??
+                                                order.reference ??
+                                                `Order-${index + 1}`}
                                         </TableCell>
                                         <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                            {order.order_status ?? order.status ?? 'unknown'}
+                                            {order.order_status ??
+                                                order.status ??
+                                                'unknown'}
                                         </TableCell>
                                         <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                            {order.total_formatted ?? order.amount_formatted ?? order.total_amount ?? order.amount ?? '—'}
+                                            {order.total_formatted ??
+                                                order.amount_formatted ??
+                                                order.total_amount ??
+                                                order.amount ??
+                                                '—'}
                                         </TableCell>
                                         <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
-                                            {order.created_at || order.ordered_at
-                                                ? formatDateTimeForDisplay(order.created_at ?? order.ordered_at ?? '', {
-                                                      month: 'short',
-                                                      day: 'numeric',
-                                                      year: 'numeric',
-                                                  })
+                                            {order.created_at ||
+                                            order.ordered_at
+                                                ? formatDateTimeForDisplay(
+                                                      order.created_at ??
+                                                          order.ordered_at ??
+                                                          '',
+                                                      {
+                                                          month: 'short',
+                                                          day: 'numeric',
+                                                          year: 'numeric',
+                                                      },
+                                                  )
                                                 : '—'}
                                         </TableCell>
                                     </TableRow>

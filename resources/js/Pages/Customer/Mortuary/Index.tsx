@@ -1,5 +1,10 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -8,9 +13,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Head, Link } from '@inertiajs/react';
-import type { PageProps } from '@/types';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 import type { CommunityCurrency, MortuaryRecord } from '../Communities/types';
 
 export interface MortuaryRecordsSectionProps {
@@ -68,7 +74,8 @@ export function MortuaryRecordsSection({
                         Mortuary Records
                     </CardTitle>
                     <CardDescription>
-                        Coverage and contribution information associated with your membership.
+                        Coverage and contribution information associated with
+                        your membership.
                     </CardDescription>
                 </CardHeader>
                 {items.length === 0 ? (
@@ -112,7 +119,8 @@ export function MortuaryRecordsSection({
                                 {items.map((record) => {
                                     const contributionsCount =
                                         record.contributions?.length ?? 0;
-                                    const claimsCount = record.claims?.length ?? 0;
+                                    const claimsCount =
+                                        record.claims?.length ?? 0;
 
                                     return (
                                         <TableRow
@@ -122,14 +130,16 @@ export function MortuaryRecordsSection({
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium">
-                                                        {record.name ?? 'Unnamed Member'}
+                                                        {record.name ??
+                                                            'Unnamed Member'}
                                                     </span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
                                                         ID: {record.id}
                                                     </span>
                                                     {record.group && (
                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                            Group: {record.group}
+                                                            Group:{' '}
+                                                            {record.group}
                                                         </span>
                                                     )}
                                                 </div>
@@ -139,7 +149,8 @@ export function MortuaryRecordsSection({
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {formatDateTimeForDisplay(
-                                                    record.membership_start_date ?? null,
+                                                    record.membership_start_date ??
+                                                        null,
                                                     {
                                                         year: 'numeric',
                                                         month: 'short',
@@ -156,14 +167,16 @@ export function MortuaryRecordsSection({
                                                         )}
                                                     </span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {record.contribution_frequency ?? 'N/A'}
+                                                        {record.contribution_frequency ??
+                                                            'N/A'}
                                                     </span>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex flex-col">
                                                     <span>
-                                                        {record.contact_number ?? 'No contact'}
+                                                        {record.contact_number ??
+                                                            'No contact'}
                                                     </span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
                                                         {record.gender ?? '—'}
@@ -172,42 +185,48 @@ export function MortuaryRecordsSection({
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span>{contributionsCount}</span>
-                                                    {projectIdentifier && ownerIdentifier && (
-                                                        <Link
-                                                            href={route(
-                                                                'customer.projects.mortuary.contributions',
-                                                                {
-                                                                    project: projectIdentifier,
-                                                                    owner: ownerIdentifier,
-                                                                    member: record.id,
-                                                                },
-                                                            )}
-                                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                        >
-                                                            View
-                                                        </Link>
-                                                    )}
+                                                    <span>
+                                                        {contributionsCount}
+                                                    </span>
+                                                    {projectIdentifier &&
+                                                        ownerIdentifier && (
+                                                            <Link
+                                                                href={route(
+                                                                    'customer.projects.mortuary.contributions',
+                                                                    {
+                                                                        project:
+                                                                            projectIdentifier,
+                                                                        owner: ownerIdentifier,
+                                                                        member: record.id,
+                                                                    },
+                                                                )}
+                                                                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                            >
+                                                                View
+                                                            </Link>
+                                                        )}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span>{claimsCount}</span>
-                                                    {projectIdentifier && ownerIdentifier && (
-                                                        <Link
-                                                            href={route(
-                                                                'customer.projects.mortuary.claims',
-                                                                {
-                                                                    project: projectIdentifier,
-                                                                    owner: ownerIdentifier,
-                                                                    member: record.id,
-                                                                },
-                                                            )}
-                                                            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                        >
-                                                            View
-                                                        </Link>
-                                                    )}
+                                                    {projectIdentifier &&
+                                                        ownerIdentifier && (
+                                                            <Link
+                                                                href={route(
+                                                                    'customer.projects.mortuary.claims',
+                                                                    {
+                                                                        project:
+                                                                            projectIdentifier,
+                                                                        owner: ownerIdentifier,
+                                                                        member: record.id,
+                                                                    },
+                                                                )}
+                                                                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                            >
+                                                                View
+                                                            </Link>
+                                                        )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -251,8 +270,7 @@ export default function MortuaryIndex({
     backUrl,
 }: MortuaryIndexProps) {
     const ownerName = owner?.name ?? 'Mortuary Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     return (
         <CustomerLayout
@@ -292,7 +310,8 @@ export default function MortuaryIndex({
                             Partner Details
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -327,5 +346,3 @@ export default function MortuaryIndex({
         </CustomerLayout>
     );
 }
-
-

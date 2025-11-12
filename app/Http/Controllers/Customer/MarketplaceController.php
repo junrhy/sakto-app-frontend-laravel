@@ -9,65 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class MarketplaceController extends CustomerProjectController
 {
-    public function index(Request $request, string $project, $ownerIdentifier): Response
-    {
-        $this->ensureCustomerProject($request, $project);
-
-        try {
-            $owner = $this->resolveOwner($project, $ownerIdentifier);
-            $owner->app_currency = $this->decodeCurrency($owner->app_currency);
-
-            $filters = $request->only([
-                'search',
-                'category',
-                'type',
-                'availability',
-                'status',
-                'sort',
-                'price_min',
-                'price_max',
-                'page',
-                'per_page',
-            ]);
-
-            $productsResponse = $this->fetchMarketplaceProducts($owner, $filters);
-            $products = $productsResponse['data'] ?? ($productsResponse['products'] ?? []);
-            $meta = $productsResponse['meta'] ?? null;
-
-            $categories = $this->fetchProductCategories($owner);
-
-            return Inertia::render('Customer/Marketplace/Index', [
-                'community' => $owner,
-                'products' => $products,
-                'meta' => $meta,
-                'categories' => $categories,
-                'filters' => array_merge([
-                    'search' => '',
-                    'category' => '',
-                    'type' => '',
-                    'availability' => '',
-                    'status' => 'published',
-                    'sort' => 'latest',
-                    'price_min' => null,
-                    'price_max' => null,
-                    'page' => 1,
-                    'per_page' => 12,
-                ], $filters),
-                'project' => $project,
-                'activeView' => $request->input('view', 'products'),
-            ]);
-        } catch (ModelNotFoundException $e) {
-            abort(404, 'Owner not found');
-        } catch (\Throwable $th) {
-            abort(500, 'Failed to load marketplace');
-        }
-    }
-
     public function overview(Request $request, string $project, $ownerIdentifier): Response
     {
         $this->ensureCustomerProject($request, $project);
@@ -160,6 +107,85 @@ class MarketplaceController extends CustomerProjectController
             abort(404, 'Owner not found');
         } catch (\Throwable $th) {
             abort(500, 'Failed to load orders');
+        }
+    }
+
+    public function placeOrder(Request $request, string $project, $ownerIdentifier): JsonResponse
+    {
+        $this->ensureCustomerProject($request, $project);
+
+        try {
+            $owner = $this->resolveOwner($project, $ownerIdentifier);
+
+            $request->merge([
+                'client_identifier' => $owner->identifier ?? (string) $owner->id,
+                'contact_id' => $request->input('contact_id', $this->getDefaultContactId($request)),
+            ]);
+
+            $validated = $request->validate([
+                'customer_name' => 'required|string|max:255',
+                'customer_email' => 'required|email|max:255',
+                'customer_phone' => 'nullable|string|max:32',
+                'shipping_address' => 'nullable|string',
+                'billing_address' => 'nullable|string',
+                'order_items' => 'required|array|min:1',
+                'order_items.*.product_id' => 'required|integer',
+                'order_items.*.name' => 'required|string',
+                'order_items.*.variant_id' => 'nullable|integer',
+                'order_items.*.attributes' => 'nullable|array',
+                'order_items.*.quantity' => 'required|integer|min:1',
+                'order_items.*.price' => 'required|numeric|min:0',
+                'order_items.*.shipping_fee' => 'nullable|numeric|min:0',
+                'subtotal' => 'required|numeric|min:0',
+                'tax_amount' => 'nullable|numeric|min:0',
+                'shipping_fee' => 'nullable|numeric|min:0',
+                'service_fee' => 'nullable|numeric|min:0',
+                'discount_amount' => 'nullable|numeric|min:0',
+                'total_amount' => 'required|numeric|min:0',
+                'payment_method' => 'nullable|string|in:cash,card,bank_transfer,digital_wallet,cod',
+                'notes' => 'nullable|string',
+                'client_identifier' => 'required|string',
+                'contact_id' => 'nullable|integer',
+                'shipping_method' => 'nullable|string|max:50',
+                'country' => 'nullable|string|max:255',
+                'state' => 'nullable|string|max:255',
+                'city' => 'nullable|string|max:255',
+                'zip_code' => 'nullable|string|max:32',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/product-orders", $validated);
+
+            if (!$response->successful()) {
+                $payload = $response->json();
+                Log::warning('Marketplace order placement failed', [
+                    'owner' => $ownerIdentifier,
+                    'status' => $response->status(),
+                    'response' => $payload,
+                ]);
+
+                return response()->json([
+                    'error' => data_get($payload, 'message') ?? 'Failed to place order',
+                    'details' => $payload,
+                ], $response->status());
+            }
+
+            return response()->json([
+                'order' => $response->json(),
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Owner not found',
+            ], 404);
+        } catch (\Throwable $th) {
+            Log::error('Marketplace checkout failed', [
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to place order',
+            ], 500);
         }
     }
 

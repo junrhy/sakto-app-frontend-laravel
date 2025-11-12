@@ -1,41 +1,4 @@
-interface Product {
-    id: number;
-    name: string;
-    description: string;
-    price: number | string;
-    category: string;
-    type: 'physical' | 'digital' | 'service' | 'subscription';
-    sku: string | null;
-    stock_quantity: number | null;
-    weight: number | null;
-    dimensions: string | null;
-    file_url: string | null;
-    thumbnail_url: string | null;
-    status: 'draft' | 'published' | 'archived' | 'inactive';
-    tags: string[] | null;
-    metadata: any;
-    client_identifier: string;
-    created_at: string;
-    updated_at: string;
-    images?: Array<{
-        id: number;
-        image_url: string;
-        alt_text?: string;
-        is_primary: boolean;
-        sort_order: number;
-    }>;
-    active_variants?: Array<{
-        id: number;
-        sku?: string;
-        price?: number;
-        stock_quantity: number;
-        weight?: number;
-        dimensions?: string;
-        thumbnail_url?: string;
-        attributes: Record<string, string>;
-        is_active: boolean;
-    }>;
-}
+import type { MarketplaceProduct } from './ProductGrid';
 
 interface ProductFilterPanelProps {
     showFilters: boolean;
@@ -59,8 +22,8 @@ interface ProductFilterPanelProps {
     getUniqueTypes: () => string[];
     clearFilters: () => void;
     hasActiveFilters: () => boolean;
-    getFilteredProducts: () => Product[];
-    products: Product[];
+    getFilteredProducts: () => MarketplaceProduct[];
+    products: MarketplaceProduct[];
     appCurrency?: { code: string; symbol: string } | null;
 }
 
@@ -166,10 +129,12 @@ export default function ProductFilterPanel({
                             Under {appCurrency?.symbol || '$'}10
                         </option>
                         <option value="10_50">
-                            {appCurrency?.symbol || '$'}10 - {appCurrency?.symbol || '$'}50
+                            {appCurrency?.symbol || '$'}10 -{' '}
+                            {appCurrency?.symbol || '$'}50
                         </option>
                         <option value="50_100">
-                            {appCurrency?.symbol || '$'}50 - {appCurrency?.symbol || '$'}100
+                            {appCurrency?.symbol || '$'}50 -{' '}
+                            {appCurrency?.symbol || '$'}100
                         </option>
                         <option value="over_100">
                             Over {appCurrency?.symbol || '$'}100
@@ -200,7 +165,8 @@ export default function ProductFilterPanel({
 
             <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {getFilteredProducts().length} of {products.length} products
+                    Showing {getFilteredProducts().length} of {products.length}{' '}
+                    products
                 </div>
                 <div className="flex items-center gap-2">
                     {hasActiveFilters() && (

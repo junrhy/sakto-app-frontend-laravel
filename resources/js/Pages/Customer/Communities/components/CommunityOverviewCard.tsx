@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -62,7 +62,7 @@ export function CommunityOverviewCard({
                         </div>
                     </div>
                     {isJoined && (
-                        <div className="absolute right-2 top-2 flex justify-end md:static md:justify-start md:right-0 md:top-0">
+                        <div className="absolute right-2 top-2 flex justify-end md:static md:right-0 md:top-0 md:justify-start">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -71,10 +71,15 @@ export function CommunityOverviewCard({
                                         className="h-9 w-9 rounded-full border border-gray-200 text-gray-500 hover:text-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
                                     >
                                         <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Community actions</span>
+                                        <span className="sr-only">
+                                            Community actions
+                                        </span>
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-48"
+                                >
                                     <DropdownMenuItem
                                         disabled={leaving}
                                         onSelect={(event) => {
@@ -114,7 +119,9 @@ export function CommunityOverviewCard({
                     />
                     <DetailItem
                         label="Registered on"
-                        value={new Date(community.created_at).toLocaleDateString()}
+                        value={new Date(
+                            community.created_at,
+                        ).toLocaleDateString()}
                         iconPath="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                 </div>
@@ -125,7 +132,7 @@ export function CommunityOverviewCard({
                             type="button"
                             disabled
                             variant="outline"
-                            className="w-full border-amber-300 bg-amber-50 text-amber-800 sm:w-auto dark:border-amber-600 dark:bg-amber-900/30 dark:text-amber-300"
+                            className="w-full border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-600 dark:bg-amber-900/30 dark:text-amber-300 sm:w-auto"
                         >
                             Pending Approval
                         </Button>
@@ -134,7 +141,7 @@ export function CommunityOverviewCard({
                             type="button"
                             onClick={onJoin}
                             disabled={joining}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 sm:w-auto dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 sm:w-auto"
                         >
                             {joining ? (
                                 <>

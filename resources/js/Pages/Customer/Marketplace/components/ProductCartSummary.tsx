@@ -1,11 +1,7 @@
-interface CartItem {
-    id: number;
-    quantity: number;
-    variant?: any;
-}
+import type { MarketplaceCartItem } from './ProductGrid';
 
 interface ProductCartSummaryProps {
-    cartItems: CartItem[];
+    cartItems: MarketplaceCartItem[];
     getCartItemCount: () => number;
     getCartTotal: () => number;
     formatPrice: (price: number | string) => string;
@@ -28,7 +24,8 @@ export default function ProductCartSummary({
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex items-center justify-between sm:justify-start">
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                        {getCartItemCount()} item{getCartItemCount() !== 1 ? 's' : ''} in cart
+                        {getCartItemCount()} item
+                        {getCartItemCount() !== 1 ? 's' : ''} in cart
                     </span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100 sm:ml-4">
                         Total: {formatPrice(getCartTotal())}

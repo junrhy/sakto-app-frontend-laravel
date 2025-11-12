@@ -1,4 +1,3 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { Button } from '@/Components/ui/button';
 import {
     Card,
@@ -7,15 +6,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Head, Link } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { PageProps } from '@/types';
-import {
-    BookOpen,
-    CheckCircle2,
-    Clock,
-    Play,
-    ShieldCheck,
-} from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { BookOpen, CheckCircle2, Clock, Play, ShieldCheck } from 'lucide-react';
 import { useMemo } from 'react';
 
 interface Lesson {
@@ -100,7 +94,8 @@ export default function LessonsIndex({
     isEnrolled,
     project,
 }: Props) {
-    const ownerIdentifier = community.slug || community.identifier || community.id;
+    const ownerIdentifier =
+        community.slug || community.identifier || community.id;
     const projectIdentifier =
         project ?? community.project_identifier ?? 'community';
 
@@ -262,9 +257,11 @@ export default function LessonsIndex({
                                                     <ShieldCheck className="h-4 w-4" />
                                                     {completionLabel}
                                                 </span>
-                                                {lesson.progress?.completion_percentage &&
+                                                {lesson.progress
+                                                    ?.completion_percentage &&
                                                     lesson.progress
-                                                        .completion_percentage > 0 && (
+                                                        .completion_percentage >
+                                                        0 && (
                                                         <span className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
                                                             {formatProgressPercentage(
                                                                 lesson.progress
@@ -305,5 +302,3 @@ export default function LessonsIndex({
         </CustomerLayout>
     );
 }
-
-

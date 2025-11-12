@@ -41,11 +41,10 @@ export default function BottomNav() {
     const page = usePage<PageProps>();
     const { url } = page;
     const unreadCount = page.props.unreadCount ?? 0;
-    const projectIdentifier =
-        page.props.auth?.user?.project_identifier ?? null;
+    const projectIdentifier = page.props.auth?.user?.project_identifier ?? null;
 
     const items = createNavItems(unreadCount).filter((item) =>
-        projectIdentifier === 'enterprise' ? true : item.route !== '/apps'
+        projectIdentifier === 'enterprise' ? true : item.route !== '/apps',
     );
 
     return (

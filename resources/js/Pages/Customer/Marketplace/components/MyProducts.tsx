@@ -1,5 +1,3 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm } from '@inertiajs/react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import {
@@ -19,10 +17,12 @@ import {
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
+import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import { useForm } from '@inertiajs/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { ProductOrderHistory, ProductOrderItem } from './ProductOrderHistory';
 import { ProductOrdersTable } from './ProductOrdersTable';
-import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
-import { toast } from 'sonner';
 
 export interface MarketplaceProduct {
     id: number | string;
@@ -90,16 +90,17 @@ export function MyProducts({
         fetchProducts();
     }, [fetchProducts]);
 
-    const { data, setData, processing, reset, errors, clearErrors, post } = useForm({
-        name: '',
-        description: '',
-        price: '',
-        category: '',
-        type: 'physical',
-        status: 'draft',
-        sku: '',
-        stock_quantity: '',
-    });
+    const { data, setData, processing, reset, errors, clearErrors, post } =
+        useForm({
+            name: '',
+            description: '',
+            price: '',
+            category: '',
+            type: 'physical',
+            status: 'draft',
+            sku: '',
+            stock_quantity: '',
+        });
 
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
@@ -110,7 +111,9 @@ export function MyProducts({
             }
 
             const numeric =
-                typeof value === 'string' ? Number.parseFloat(value) : Number(value);
+                typeof value === 'string'
+                    ? Number.parseFloat(value)
+                    : Number(value);
 
             if (Number.isNaN(numeric)) {
                 return `${appCurrencySymbol}0.00`;
@@ -124,7 +127,9 @@ export function MyProducts({
         [appCurrencySymbol],
     );
 
-    const handleCreateProduct = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleCreateProduct = async (
+        event: React.FormEvent<HTMLFormElement>,
+    ) => {
         event.preventDefault();
         clearErrors();
 
@@ -235,7 +240,7 @@ export function MyProducts({
 
     const marketplaceUrl = useMemo(
         () =>
-            route('customer.projects.marketplace.index', {
+            route('customer.projects.marketplace.overview', {
                 project: projectIdentifier,
                 owner: ownerIdentifier,
             }),
@@ -257,7 +262,9 @@ export function MyProducts({
                     <Button variant="outline" asChild>
                         <a href={marketplaceUrl}>Open Marketplace</a>
                     </Button>
-                    <Button onClick={() => setCreateDialogOpen(true)}>Add Product</Button>
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                        Add Product
+                    </Button>
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -295,7 +302,9 @@ export function MyProducts({
                                 {products.map((product) => (
                                     <tr key={product.id}>
                                         <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                                            <div className="font-medium">{product.name}</div>
+                                            <div className="font-medium">
+                                                {product.name}
+                                            </div>
                                             {product.category && (
                                                 <div className="text-xs text-gray-500 dark:text-gray-400">
                                                     {product.category}
@@ -303,20 +312,28 @@ export function MyProducts({
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                                            <Badge variant="secondary" className="capitalize">
+                                            <Badge
+                                                variant="secondary"
+                                                className="capitalize"
+                                            >
                                                 {product.status ?? 'draft'}
                                             </Badge>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                                            {formattedCurrency(product.price ?? 0)}
+                                            {formattedCurrency(
+                                                product.price ?? 0,
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                                             {product.updated_at
-                                                ? formatDateTimeForDisplay(product.updated_at, {
-                                                      month: 'short',
-                                                      day: 'numeric',
-                                                      year: 'numeric',
-                                                  })
+                                                ? formatDateTimeForDisplay(
+                                                      product.updated_at,
+                                                      {
+                                                          month: 'short',
+                                                          day: 'numeric',
+                                                          year: 'numeric',
+                                                      },
+                                                  )
                                                 : '—'}
                                         </td>
                                         <td className="px-4 py-3 text-right text-sm">
@@ -324,7 +341,11 @@ export function MyProducts({
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleViewOrders(product)}
+                                                    onClick={() =>
+                                                        handleViewOrders(
+                                                            product,
+                                                        )
+                                                    }
                                                     disabled={ordersLoading}
                                                 >
                                                     Orders
@@ -332,7 +353,11 @@ export function MyProducts({
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
-                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                    onClick={() =>
+                                                        handleDeleteProduct(
+                                                            product.id,
+                                                        )
+                                                    }
                                                 >
                                                     Delete
                                                 </Button>
@@ -359,12 +384,16 @@ export function MyProducts({
                             <Input
                                 id="product-name"
                                 value={data.name}
-                                onChange={(event) => setData('name', event.target.value)}
+                                onChange={(event) =>
+                                    setData('name', event.target.value)
+                                }
                                 required
                             />
                         </div>
                         <div>
-                            <Label htmlFor="product-description">Description</Label>
+                            <Label htmlFor="product-description">
+                                Description
+                            </Label>
                             <Textarea
                                 id="product-description"
                                 rows={3}
@@ -383,29 +412,40 @@ export function MyProducts({
                                     min="0"
                                     step="0.01"
                                     value={data.price}
-                                    onChange={(event) => setData('price', event.target.value)}
+                                    onChange={(event) =>
+                                        setData('price', event.target.value)
+                                    }
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="product-stock">Stock Quantity</Label>
+                                <Label htmlFor="product-stock">
+                                    Stock Quantity
+                                </Label>
                                 <Input
                                     id="product-stock"
                                     type="number"
                                     min="0"
                                     value={data.stock_quantity}
                                     onChange={(event) =>
-                                        setData('stock_quantity', event.target.value)
+                                        setData(
+                                            'stock_quantity',
+                                            event.target.value,
+                                        )
                                     }
                                 />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
-                                <Label htmlFor="product-category">Category</Label>
+                                <Label htmlFor="product-category">
+                                    Category
+                                </Label>
                                 <Input
                                     id="product-category"
                                     value={data.category}
-                                    onChange={(event) => setData('category', event.target.value)}
+                                    onChange={(event) =>
+                                        setData('category', event.target.value)
+                                    }
                                 />
                             </div>
                             <div>
@@ -432,12 +472,16 @@ export function MyProducts({
                                     id="product-type"
                                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                                     value={data.type}
-                                    onChange={(event) => setData('type', event.target.value)}
+                                    onChange={(event) =>
+                                        setData('type', event.target.value)
+                                    }
                                 >
                                     <option value="physical">Physical</option>
                                     <option value="digital">Digital</option>
                                     <option value="service">Service</option>
-                                    <option value="subscription">Subscription</option>
+                                    <option value="subscription">
+                                        Subscription
+                                    </option>
                                 </select>
                             </div>
                             <div>
@@ -445,7 +489,9 @@ export function MyProducts({
                                 <Input
                                     id="product-sku"
                                     value={data.sku}
-                                    onChange={(event) => setData('sku', event.target.value)}
+                                    onChange={(event) =>
+                                        setData('sku', event.target.value)
+                                    }
                                 />
                             </div>
                         </div>

@@ -1,7 +1,7 @@
 import ProductCard from './ProductCard';
 
-interface Product {
-    id: number;
+export interface MarketplaceProduct {
+    id: number | string;
     name: string;
     description: string;
     price: number | string;
@@ -19,56 +19,77 @@ interface Product {
     client_identifier: string;
     created_at: string;
     updated_at: string;
+    images?: Array<{
+        id: number;
+        image_url: string;
+        alt_text?: string;
+        is_primary: boolean;
+        sort_order: number;
+    }>;
     active_variants?: Array<{
         id: number;
-        sku?: string;
+        sku?: string | null;
         price?: number;
         stock_quantity: number;
         weight?: number;
-        dimensions?: string;
-        thumbnail_url?: string;
+        dimensions?: string | null;
+        thumbnail_url?: string | null;
         attributes: Record<string, string>;
         is_active: boolean;
     }>;
 }
 
-interface CartItem {
-    id: number;
+export interface MarketplaceCartItem {
+    id: number | string;
     quantity: number;
     variant?: any;
 }
 
+export type MarketplaceProductVariant = NonNullable<
+    MarketplaceProduct['active_variants']
+>[number];
+
+export type MarketplaceProductImage = NonNullable<
+    MarketplaceProduct['images']
+>[number];
+
 interface ProductGridProps {
-    products: Product[];
-    cartItems: CartItem[];
-    selectedVariants: Record<number, any>;
-    variantErrors: Record<number, string>;
-    addToCart: (product: Product, variant?: any, quantity?: number) => void;
-    removeFromCart: (productId: number, variantId?: number) => void;
+    products: MarketplaceProduct[];
+    cartItems: MarketplaceCartItem[];
+    selectedVariants: Record<number | string, any>;
+    variantErrors: Record<number | string, string>;
+    addToCart: (
+        product: MarketplaceProduct,
+        variant?: any,
+        quantity?: number,
+    ) => void;
+    removeFromCart: (productId: number | string, variantId?: number) => void;
     updateCartQuantity: (
-        productId: number,
+        productId: number | string,
         quantity: number,
         variantId?: number,
     ) => void;
-    handleVariantSelection: (productId: number, variant: any) => void;
-    getEffectivePrice: (product: Product, variant?: any) => number;
-    getEffectiveStock: (product: Product, variant?: any) => number;
-    getAvailableAttributes: (product: Product) => Record<string, string[]>;
+    handleVariantSelection: (productId: number | string, variant: any) => void;
+    getEffectivePrice: (product: MarketplaceProduct, variant?: any) => number;
+    getEffectiveStock: (product: MarketplaceProduct, variant?: any) => number;
+    getAvailableAttributes: (
+        product: MarketplaceProduct,
+    ) => Record<string, string[]>;
     findMatchingVariant: (
-        product: Product,
+        product: MarketplaceProduct,
         selectedAttributes: Record<string, string>,
     ) => any;
     isVariantComplete: (
-        product: Product,
+        product: MarketplaceProduct,
         selectedAttributes: Record<string, string>,
     ) => boolean;
     isValidAttributeCombination: (
-        product: Product,
+        product: MarketplaceProduct,
         selectedAttributes: Record<string, string>,
     ) => boolean;
     formatPrice: (price: number | string | null | undefined) => string;
     setVariantErrors: React.Dispatch<
-        React.SetStateAction<Record<number, string>>
+        React.SetStateAction<Record<number | string, string>>
     >;
     hasActiveFilters: () => boolean;
     clearFilters: () => void;

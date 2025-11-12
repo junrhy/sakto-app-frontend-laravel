@@ -1,11 +1,11 @@
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps } from '@/types';
+import { formatCurrency } from '@/utils/formatCurrency';
 import { Head } from '@inertiajs/react';
 import { ArrowUpRight, CreditCard } from 'lucide-react';
 import { MetricCard } from './components/MetricCard';
-import { RecentSubscriptions } from './components/RecentSubscriptions';
 import { QuickActionsGrid } from './components/QuickActionsGrid';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { RecentSubscriptions } from './components/RecentSubscriptions';
 
 interface DashboardProps extends PageProps {
     totalSubscriptionSales?: number;
@@ -30,8 +30,7 @@ export default function Dashboard({
     lastMonthSales = 0,
     recentSubscriptions = [],
 }: DashboardProps) {
-    const summaryCurrency =
-        recentSubscriptions[0]?.currency ?? 'USD';
+    const summaryCurrency = recentSubscriptions[0]?.currency ?? 'USD';
 
     const quickActions = [
         {
@@ -83,22 +82,37 @@ export default function Dashboard({
                             <MetricCard
                                 title="Overall Subscription Sales"
                                 description="Sum of active subscription payouts"
-                                amount={formatCurrency(totalSubscriptionSales, summaryCurrency)}
-                                icon={<CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-300" />}
+                                amount={formatCurrency(
+                                    totalSubscriptionSales,
+                                    summaryCurrency,
+                                )}
+                                icon={
+                                    <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                                }
                                 accent="blue"
                             />
                             <MetricCard
                                 title="This Month"
                                 description="Sales collected in the current month"
-                                amount={formatCurrency(thisMonthSales, summaryCurrency)}
-                                icon={<ArrowUpRight className="h-6 w-6 text-green-600 dark:text-green-300" />}
+                                amount={formatCurrency(
+                                    thisMonthSales,
+                                    summaryCurrency,
+                                )}
+                                icon={
+                                    <ArrowUpRight className="h-6 w-6 text-green-600 dark:text-green-300" />
+                                }
                                 accent="green"
                             />
                             <MetricCard
                                 title="Last Month"
                                 description="Sales collected in the previous month"
-                                amount={formatCurrency(lastMonthSales, summaryCurrency)}
-                                icon={<ArrowUpRight className="h-6 w-6 rotate-180 text-slate-600 dark:text-slate-300" />}
+                                amount={formatCurrency(
+                                    lastMonthSales,
+                                    summaryCurrency,
+                                )}
+                                icon={
+                                    <ArrowUpRight className="h-6 w-6 rotate-180 text-slate-600 dark:text-slate-300" />
+                                }
                                 accent="slate"
                             />
                         </div>
@@ -131,4 +145,3 @@ export default function Dashboard({
         </AdminLayout>
     );
 }
-

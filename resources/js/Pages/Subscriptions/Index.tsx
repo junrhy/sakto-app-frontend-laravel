@@ -33,7 +33,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
     Select,
     SelectContent,
@@ -41,6 +40,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { SubscriptionPlan } from '@/types/models';
 import { format } from 'date-fns';
 
@@ -547,14 +547,23 @@ export default function Index({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={setActiveTab}
+                        className="w-full"
+                    >
                         <div className="px-4 md:hidden">
-                            <Select value={activeTab} onValueChange={setActiveTab}>
+                            <Select
+                                value={activeTab}
+                                onValueChange={setActiveTab}
+                            >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select section" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="overview">Overview</SelectItem>
+                                    <SelectItem value="overview">
+                                        Overview
+                                    </SelectItem>
                                     <SelectItem value="plans">Plans</SelectItem>
                                     <SelectItem value="history">
                                         Subscription History

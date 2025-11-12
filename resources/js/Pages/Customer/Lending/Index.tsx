@@ -1,5 +1,10 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -8,9 +13,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Head, Link } from '@inertiajs/react';
-import type { PageProps } from '@/types';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 import type { CommunityCurrency, LendingRecord } from '../Communities/types';
 
 interface LendingRecordsSectionProps {
@@ -103,7 +109,8 @@ export function LendingRecordsSection({
                         Lending Records
                     </CardTitle>
                     <CardDescription>
-                        Active and historical loans matched to your profile information.
+                        Active and historical loans matched to your profile
+                        information.
                     </CardDescription>
                 </CardHeader>
                 {items.length === 0 ? (
@@ -112,7 +119,8 @@ export function LendingRecordsSection({
                             {emptyMessage}
                         </p>
                         <p className="text-xs">
-                            We could not find any lending records that match your profile details.
+                            We could not find any lending records that match
+                            your profile details.
                         </p>
                     </CardContent>
                 ) : (
@@ -155,50 +163,69 @@ export function LendingRecordsSection({
                                         <TableCell className="text-gray-900 dark:text-white">
                                             <div className="flex flex-col">
                                                 <span className="font-medium">
-                                                    {record.borrower_name ?? 'Unnamed Borrower'}
+                                                    {record.borrower_name ??
+                                                        'Unnamed Borrower'}
                                                 </span>
                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
                                                     Loan ID: {record.id}
                                                 </span>
-                                                {(record.contact_number ?? '').trim() !== '' && (
+                                                {(
+                                                    record.contact_number ?? ''
+                                                ).trim() !== '' && (
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        Contact: {record.contact_number}
+                                                        Contact:{' '}
+                                                        {record.contact_number}
                                                     </span>
                                                 )}
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            <div className="flex flex-col">
-                                                <span>{record.status ?? '—'}</span>
-                                                {record.interest_type && (
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {record.interest_type} interest
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            {formatAmount(record.amount, appCurrency)}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             <div className="flex flex-col">
                                                 <span>
-                                                    {formatAmount(record.total_balance, appCurrency)}
+                                                    {record.status ?? '—'}
+                                                </span>
+                                                {record.interest_type && (
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {record.interest_type}{' '}
+                                                        interest
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {formatAmount(
+                                                record.amount,
+                                                appCurrency,
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="flex flex-col">
+                                                <span>
+                                                    {formatAmount(
+                                                        record.total_balance,
+                                                        appCurrency,
+                                                    )}
                                                 </span>
                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
                                                     Paid:{' '}
-                                                    {formatAmount(record.paid_amount, appCurrency)}
+                                                    {formatAmount(
+                                                        record.paid_amount,
+                                                        appCurrency,
+                                                    )}
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            {formatPercent(record.interest_rate)}
+                                            {formatPercent(
+                                                record.interest_rate,
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             <div className="flex flex-col">
                                                 <span>
                                                     {formatDateTimeForDisplay(
-                                                        record.start_date ?? null,
+                                                        record.start_date ??
+                                                            null,
                                                         {
                                                             year: 'numeric',
                                                             month: 'short',
@@ -221,10 +248,15 @@ export function LendingRecordsSection({
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
                                             <div className="flex flex-col">
-                                                <span>{record.frequency ?? '—'}</span>
+                                                <span>
+                                                    {record.frequency ?? '—'}
+                                                </span>
                                                 {record.installment_frequency && (
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        Installment: {record.installment_frequency}
+                                                        Installment:{' '}
+                                                        {
+                                                            record.installment_frequency
+                                                        }
                                                     </span>
                                                 )}
                                                 {record.installment_amount && (
@@ -238,12 +270,14 @@ export function LendingRecordsSection({
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-gray-900 dark:text-white">
-                                            {projectIdentifier && ownerIdentifier ? (
+                                            {projectIdentifier &&
+                                            ownerIdentifier ? (
                                                 <Link
                                                     href={route(
                                                         'customer.projects.lending.show',
                                                         {
-                                                            project: projectIdentifier,
+                                                            project:
+                                                                projectIdentifier,
                                                             owner: ownerIdentifier,
                                                             loan: record.id,
                                                         },
@@ -298,11 +332,12 @@ export default function LendingIndex({
     backUrl,
 }: LendingIndexProps) {
     const ownerName = owner?.name ?? 'Lending Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     const loansTotal = records.length;
-    const activeLoans = records.filter((loan) => loan.status === 'active').length;
+    const activeLoans = records.filter(
+        (loan) => loan.status === 'active',
+    ).length;
 
     return (
         <CustomerLayout
@@ -342,7 +377,8 @@ export default function LendingIndex({
                             Partner Overview
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -393,5 +429,3 @@ export default function LendingIndex({
         </CustomerLayout>
     );
 }
-
-

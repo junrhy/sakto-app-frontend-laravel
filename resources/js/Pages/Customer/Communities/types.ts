@@ -112,4 +112,3 @@ export interface CommunityDetailProps extends PageProps {
 }
 
 export type CommunityFilter = 'my' | 'all';
-

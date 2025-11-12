@@ -6,11 +6,7 @@ import { CommunityCard } from './components/CommunityCard';
 import { CommunityEmptyState } from './components/CommunityEmptyState';
 import { CommunityFilters } from './components/CommunityFilters';
 import { LeaveCommunityDialog } from './components/LeaveCommunityDialog';
-import {
-    Community,
-    CommunitiesProps,
-    CommunityFilter,
-} from './types';
+import { CommunitiesProps, Community, CommunityFilter } from './types';
 
 export default function Communities({
     auth,
@@ -38,7 +34,7 @@ export default function Communities({
                     ? joinedCommunityIds.includes(community.id)
                     : true,
             )
-        .filter((community) => {
+            .filter((community) => {
                 const matchesName = community.name
                     .toLowerCase()
                     .includes(lowerQuery);
@@ -76,7 +72,11 @@ export default function Communities({
             if (data.status === 'success') {
                 toast.success(data.message);
                 router.reload({
-                    only: ['communities', 'joinedCommunityIds', 'pendingRequestIds'],
+                    only: [
+                        'communities',
+                        'joinedCommunityIds',
+                        'pendingRequestIds',
+                    ],
                 });
             } else {
                 toast.error(data.message || 'Failed to join community');
@@ -111,7 +111,11 @@ export default function Communities({
             if (data.status === 'success') {
                 toast.success(data.message);
                 router.reload({
-                    only: ['communities', 'joinedCommunityIds', 'pendingRequestIds'],
+                    only: [
+                        'communities',
+                        'joinedCommunityIds',
+                        'pendingRequestIds',
+                    ],
                 });
             } else {
                 toast.error(data.message || 'Failed to leave community');
@@ -185,8 +189,10 @@ export default function Communities({
                                     onLeave={openLeaveConfirm}
                                     onView={(selectedCommunity) =>
                                         router.visit(
-                                            route('customer.communities.show',
-                                                selectedCommunity.slug || selectedCommunity.id,
+                                            route(
+                                                'customer.communities.show',
+                                                selectedCommunity.slug ||
+                                                    selectedCommunity.id,
                                             ),
                                         )
                                     }

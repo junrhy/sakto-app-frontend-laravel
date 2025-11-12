@@ -12,8 +12,17 @@ import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps, Project, User } from '@/types/index';
 import { SubscriptionPlan, UserSubscription } from '@/types/models';
 import { Head, Link, useForm } from '@inertiajs/react';
+import {
+    Copy,
+    Eye,
+    Pencil,
+    Plus,
+    Power,
+    RefreshCcw,
+    Search,
+    Trash2,
+} from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Eye, Pencil, Power, RefreshCcw, Search, Trash2, Plus } from 'lucide-react';
 import Tabs from './Tabs';
 
 interface Props {
@@ -66,9 +75,7 @@ const formatCurrency = (amount: number, currency = 'USD') => {
             currency,
         }).format(amount);
     } catch {
-        return (
-            getCurrencySymbol(currency) + ' ' + amount.toLocaleString()
-        );
+        return getCurrencySymbol(currency) + ' ' + amount.toLocaleString();
     }
 };
 
@@ -353,7 +360,9 @@ export default function Index({
         });
     }, [plans, normalizedPlanSearch]);
 
-    const normalizedSubscriptionSearch = subscriptionSearch.trim().toLowerCase();
+    const normalizedSubscriptionSearch = subscriptionSearch
+        .trim()
+        .toLowerCase();
     const filteredSubscriptions = useMemo(() => {
         if (!normalizedSubscriptionSearch) {
             return subscriptions?.data ?? [];
@@ -641,7 +650,9 @@ export default function Index({
                                         {activeTab === 'plans' && (
                                             <>
                                                 <SecondaryButton
-                                                    onClick={duplicateSelectedPlans}
+                                                    onClick={
+                                                        duplicateSelectedPlans
+                                                    }
                                                     disabled={
                                                         selectedPlans.length ===
                                                             0 ||
@@ -670,8 +681,12 @@ export default function Index({
                                                     className="px-3 py-3"
                                                 >
                                                     <Checkbox
-                                                        ref={selectAllCheckboxRef}
-                                                        checked={allPlansSelected}
+                                                        ref={
+                                                            selectAllCheckboxRef
+                                                        }
+                                                        checked={
+                                                            allPlansSelected
+                                                        }
                                                         onChange={(event) =>
                                                             handleSelectAll(
                                                                 event.target
@@ -746,208 +761,220 @@ export default function Index({
                                         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                                             {filteredPlans.length > 0 ? (
                                                 filteredPlans.map((plan) => (
-                                                <tr
-                                                    key={plan.id}
-                                                    className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                                                >
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <Checkbox
-                                                            checked={isPlanSelected(
-                                                                plan.id,
-                                                            )}
-                                                            onChange={(event) =>
-                                                                handlePlanSelection(
+                                                    <tr
+                                                        key={plan.id}
+                                                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    >
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <Checkbox
+                                                                checked={isPlanSelected(
                                                                     plan.id,
-                                                                    event.target
-                                                                        .checked,
-                                                                )
-                                                            }
-                                                            aria-label={`Select ${plan.name}`}
-                                                        />
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="flex items-center">
-                                                            <div>
-                                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                    {plan.name}
-                                                                </div>
-                                                                {plan.badge_text && (
-                                                                    <span className="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                                )}
+                                                                onChange={(
+                                                                    event,
+                                                                ) =>
+                                                                    handlePlanSelection(
+                                                                        plan.id,
+                                                                        event
+                                                                            .target
+                                                                            .checked,
+                                                                    )
+                                                                }
+                                                                aria-label={`Select ${plan.name}`}
+                                                            />
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="flex items-center">
+                                                                <div>
+                                                                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                                         {
-                                                                            plan.badge_text
+                                                                            plan.name
                                                                         }
+                                                                    </div>
+                                                                    {plan.badge_text && (
+                                                                        <span className="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                                            {
+                                                                                plan.badge_text
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="font-mono text-sm text-gray-600 dark:text-gray-400">
+                                                                {plan.slug}
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {plan.project
+                                                                    ? plan
+                                                                          .project
+                                                                          .name
+                                                                    : 'No Project'}
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {plan.price?.toLocaleString()}
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="flex items-center gap-1 text-sm text-gray-900 dark:text-gray-100">
+                                                                <span className="font-mono font-semibold">
+                                                                    {plan.currency ||
+                                                                        'USD'}
+                                                                </span>
+                                                                <span className="text-gray-500 dark:text-gray-400">
+                                                                    (
+                                                                    {getCurrencySymbol(
+                                                                        plan.currency,
+                                                                    )}
+                                                                    )
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {
+                                                                    plan.duration_in_days
+                                                                }{' '}
+                                                                days
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {
+                                                                    plan.credits_per_month
+                                                                }{' '}
+                                                                credits/month
+                                                            </div>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                {plan.active_users_count ||
+                                                                    0}{' '}
+                                                                users
+                                                                {(plan.active_users_count ||
+                                                                    0) > 0 && (
+                                                                    <span className="ml-1 text-xs text-orange-600 dark:text-orange-400">
+                                                                        (active)
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="font-mono text-sm text-gray-600 dark:text-gray-400">
-                                                            {plan.slug}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {plan.project
-                                                                ? plan.project
-                                                                      .name
-                                                                : 'No Project'}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {plan.price?.toLocaleString()}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="flex items-center gap-1 text-sm text-gray-900 dark:text-gray-100">
-                                                            <span className="font-mono font-semibold">
-                                                                {plan.currency ||
-                                                                    'USD'}
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4">
+                                                            <span
+                                                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                    plan.is_active
+                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                                }`}
+                                                            >
+                                                                {plan.is_active
+                                                                    ? 'Active'
+                                                                    : 'Inactive'}
                                                             </span>
-                                                            <span className="text-gray-500 dark:text-gray-400">
-                                                                (
-                                                                {getCurrencySymbol(
-                                                                    plan.currency,
-                                                                )}
-                                                                )
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {
-                                                                plan.duration_in_days
-                                                            }{' '}
-                                                            days
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {
-                                                                plan.credits_per_month
-                                                            }{' '}
-                                                            credits/month
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                            {plan.active_users_count ||
-                                                                0}{' '}
-                                                            users
-                                                            {(plan.active_users_count ||
-                                                                0) > 0 && (
-                                                                <span className="ml-1 text-xs text-orange-600 dark:text-orange-400">
-                                                                    (active)
+                                                            {plan.is_popular && (
+                                                                <span className="ml-1 inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                                    Popular
                                                                 </span>
                                                             )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4">
-                                                        <span
-                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                                plan.is_active
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                            }`}
-                                                        >
-                                                            {plan.is_active
-                                                                ? 'Active'
-                                                                : 'Inactive'}
-                                                        </span>
-                                                        {plan.is_popular && (
-                                                            <span className="ml-1 inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                                Popular
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
-                                                        <div className="flex space-x-2">
-                                                            <button
-                                                                className="rounded-full p-2 text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
-                                                                onClick={() =>
-                                                                    openEditModal(
-                                                                        plan,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Pencil className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                className={`rounded-full p-2 text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300 ${
-                                                                    duplicatePlanForm.processing
-                                                                        ? 'cursor-wait opacity-60'
-                                                                        : ''
-                                                                }`}
-                                                                onClick={() =>
-                                                                    duplicatePlan(
-                                                                        plan,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    duplicatePlanForm.processing
-                                                                }
-                                                            >
-                                                                <Copy className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                className={`rounded-full p-2 transition-colors ${
-                                                                    plan.is_active &&
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
-                                                                        : plan.is_active
-                                                                          ? 'text-orange-600 hover:bg-orange-50 hover:text-orange-900 dark:text-orange-400 dark:hover:bg-orange-950/40 dark:hover:text-orange-300'
-                                                                          : 'text-green-600 hover:bg-green-50 hover:text-green-900 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-300'
-                                                                }`}
-                                                                onClick={() =>
-                                                                    togglePlanStatus(
-                                                                        plan,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    plan.is_active &&
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                }
-                                                                title={
-                                                                    plan.is_active &&
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                        ? `Cannot deactivate plan with ${plan.active_users_count} active users`
-                                                                        : undefined
-                                                                }
-                                                            >
-                                                                <Power className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                className={`rounded-full p-2 transition-colors ${
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                        ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
-                                                                        : 'text-red-600 hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300'
-                                                                }`}
-                                                                onClick={() =>
-                                                                    openDeleteModal(
-                                                                        plan,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                }
-                                                                title={
-                                                                    (plan.active_users_count ||
-                                                                        0) > 0
-                                                                        ? `Cannot delete plan with ${plan.active_users_count} active users`
-                                                                        : undefined
-                                                                }
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
+                                                            <div className="flex space-x-2">
+                                                                <button
+                                                                    className="rounded-full p-2 text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+                                                                    onClick={() =>
+                                                                        openEditModal(
+                                                                            plan,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    className={`rounded-full p-2 text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300 ${
+                                                                        duplicatePlanForm.processing
+                                                                            ? 'cursor-wait opacity-60'
+                                                                            : ''
+                                                                    }`}
+                                                                    onClick={() =>
+                                                                        duplicatePlan(
+                                                                            plan,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        duplicatePlanForm.processing
+                                                                    }
+                                                                >
+                                                                    <Copy className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    className={`rounded-full p-2 transition-colors ${
+                                                                        plan.is_active &&
+                                                                        (plan.active_users_count ||
+                                                                            0) >
+                                                                            0
+                                                                            ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                                                                            : plan.is_active
+                                                                              ? 'text-orange-600 hover:bg-orange-50 hover:text-orange-900 dark:text-orange-400 dark:hover:bg-orange-950/40 dark:hover:text-orange-300'
+                                                                              : 'text-green-600 hover:bg-green-50 hover:text-green-900 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-300'
+                                                                    }`}
+                                                                    onClick={() =>
+                                                                        togglePlanStatus(
+                                                                            plan,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        plan.is_active &&
+                                                                        (plan.active_users_count ||
+                                                                            0) >
+                                                                            0
+                                                                    }
+                                                                    title={
+                                                                        plan.is_active &&
+                                                                        (plan.active_users_count ||
+                                                                            0) >
+                                                                            0
+                                                                            ? `Cannot deactivate plan with ${plan.active_users_count} active users`
+                                                                            : undefined
+                                                                    }
+                                                                >
+                                                                    <Power className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    className={`rounded-full p-2 transition-colors ${
+                                                                        (plan.active_users_count ||
+                                                                            0) >
+                                                                        0
+                                                                            ? 'cursor-not-allowed text-gray-400 dark:text-gray-500'
+                                                                            : 'text-red-600 hover:bg-red-50 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300'
+                                                                    }`}
+                                                                    onClick={() =>
+                                                                        openDeleteModal(
+                                                                            plan,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        (plan.active_users_count ||
+                                                                            0) >
+                                                                        0
+                                                                    }
+                                                                    title={
+                                                                        (plan.active_users_count ||
+                                                                            0) >
+                                                                        0
+                                                                            ? `Cannot delete plan with ${plan.active_users_count} active users`
+                                                                            : undefined
+                                                                    }
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                                 ))
                                             ) : (
                                                 <tr>
@@ -955,7 +982,8 @@ export default function Index({
                                                         colSpan={11}
                                                         className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
                                                     >
-                                                        No subscription plans found for this search.
+                                                        No subscription plans
+                                                        found for this search.
                                                     </td>
                                                 </tr>
                                             )}
@@ -1099,99 +1127,105 @@ export default function Index({
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                            {filteredSubscriptions.length > 0 ? (
+                                            {filteredSubscriptions.length >
+                                            0 ? (
                                                 filteredSubscriptions.map(
                                                     (subscription) => (
-                                                    <tr
-                                                        key={subscription.id}
-                                                        className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                                                    >
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                                {
-                                                                    subscription.user_name
-                                                                }
-                                                            </div>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                                {
-                                                                    subscription
-                                                                        .plan
-                                                                        .name
-                                                                }
-                                                            </div>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <span
-                                                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                                    subscription.status ===
-                                                                    'active'
-                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                        : subscription.status ===
-                                                                            'cancelled'
-                                                                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                                                }`}
-                                                            >
-                                                                {subscription.status
-                                                                    .charAt(0)
-                                                                    .toUpperCase() +
-                                                                    subscription.status.slice(
-                                                                        1,
+                                                        <tr
+                                                            key={
+                                                                subscription.id
+                                                            }
+                                                            className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                        >
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {
+                                                                        subscription.user_name
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {
+                                                                        subscription
+                                                                            .plan
+                                                                            .name
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <span
+                                                                    className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                        subscription.status ===
+                                                                        'active'
+                                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                            : subscription.status ===
+                                                                                'cancelled'
+                                                                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                                    }`}
+                                                                >
+                                                                    {subscription.status
+                                                                        .charAt(
+                                                                            0,
+                                                                        )
+                                                                        .toUpperCase() +
+                                                                        subscription.status.slice(
+                                                                            1,
+                                                                        )}
+                                                                </span>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {new Date(
+                                                                        subscription.start_date,
+                                                                    ).toLocaleDateString()}
+                                                                </div>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {new Date(
+                                                                        subscription.end_date,
+                                                                    ).toLocaleDateString()}
+                                                                </div>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <span
+                                                                    className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                        subscription.auto_renew
+                                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                                    }`}
+                                                                >
+                                                                    {subscription.auto_renew
+                                                                        ? 'Yes'
+                                                                        : 'No'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4">
+                                                                <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                                    {formatCurrency(
+                                                                        subscription.total_sales ??
+                                                                            0,
+                                                                        subscription
+                                                                            .plan
+                                                                            ?.currency,
                                                                     )}
-                                                            </span>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                                {new Date(
-                                                                    subscription.start_date,
-                                                                ).toLocaleDateString()}
-                                                            </div>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                                {new Date(
-                                                                    subscription.end_date,
-                                                                ).toLocaleDateString()}
-                                                            </div>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <span
-                                                                className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                                    subscription.auto_renew
-                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                                                }`}
-                                                            >
-                                                                {subscription.auto_renew
-                                                                    ? 'Yes'
-                                                                    : 'No'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4">
-                                                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                                                                {formatCurrency(
-                                                                    subscription.total_sales ??
-                                                                        0,
-                                                                    subscription.plan
-                                                                        ?.currency,
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
-                                                            <Link
-                                                                href={route(
-                                                                    'admin.subscriptions.view',
-                                                                    subscription.id,
-                                                                )}
-                                                                className="inline-flex rounded-full p-2 text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
-                                                                aria-label="View details"
-                                                            >
-                                                                <Eye className="h-4 w-4" />
-                                                            </Link>
-                                                        </td>
-                                                    </tr>
+                                                                </div>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
+                                                                <Link
+                                                                    href={route(
+                                                                        'admin.subscriptions.view',
+                                                                        subscription.id,
+                                                                    )}
+                                                                    className="inline-flex rounded-full p-2 text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+                                                                    aria-label="View details"
+                                                                >
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
+                                                            </td>
+                                                        </tr>
                                                     ),
                                                 )
                                             ) : (
@@ -1200,7 +1234,8 @@ export default function Index({
                                                         colSpan={7}
                                                         className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
                                                     >
-                                                        No user subscriptions found for this search.
+                                                        No user subscriptions
+                                                        found for this search.
                                                     </td>
                                                 </tr>
                                             )}

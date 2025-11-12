@@ -1,11 +1,10 @@
-import { useMemo, useState } from 'react';
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Link, Head } from '@inertiajs/react';
-import type { PageProps } from '@/types';
 import {
-    CommunityCollectionItem,
-    CommunityCurrency,
-} from '../Communities/types';
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -13,13 +12,20 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import {
     extractYouTubeVideos,
     hideYouTubeLinks,
     YouTubeVideo,
 } from '@/lib/youtube-utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
+import {
+    CommunityCollectionItem,
+    CommunityCurrency,
+} from '../Communities/types';
 
 interface NewsfeedOverviewSectionProps {
     id?: string;
@@ -66,7 +72,9 @@ export function NewsfeedOverviewSection({
     ownerIdentifier,
     emptyMessage = 'No newsfeed items yet.',
 }: NewsfeedOverviewSectionProps) {
-    const [expandedUpdates, setExpandedUpdates] = useState<Set<string | number>>(new Set());
+    const [expandedUpdates, setExpandedUpdates] = useState<
+        Set<string | number>
+    >(new Set());
     const [selectedUpdateForVideos, setSelectedUpdateForVideos] =
         useState<CommunityCollectionItem | null>(null);
     const [showVideoDialog, setShowVideoDialog] = useState(false);
@@ -149,7 +157,8 @@ export function NewsfeedOverviewSection({
                                 Newsfeed
                             </CardTitle>
                             <CardDescription>
-                                Latest announcements and updates from this partner.
+                                Latest announcements and updates from this
+                                partner.
                             </CardDescription>
                         </div>
                         {viewAllLink && (
@@ -165,20 +174,36 @@ export function NewsfeedOverviewSection({
                 <CardContent className="space-y-4">
                     {normalizedUpdates.map((update, index) => {
                         const updateId =
-                            typeof update.id === 'number' || typeof update.id === 'string'
+                            typeof update.id === 'number' ||
+                            typeof update.id === 'string'
                                 ? update.id
                                 : typeof update.slug === 'string'
-                                    ? update.slug
-                                    : index;
-                        const author = toString(update.author ?? update.created_by ?? 'Community');
-                        const createdAt = toString(update.created_at ?? update.published_at ?? '');
-                        const title = toString(update.title ?? 'Untitled update');
-                        const content = toString(update.content ?? update.description ?? '');
-                        const featuredImage = toString(update.featured_image ?? update.image_url);
-                        const status = toString(update.status ?? 'published').toLowerCase();
+                                  ? update.slug
+                                  : index;
+                        const author = toString(
+                            update.author ?? update.created_by ?? 'Community',
+                        );
+                        const createdAt = toString(
+                            update.created_at ?? update.published_at ?? '',
+                        );
+                        const title = toString(
+                            update.title ?? 'Untitled update',
+                        );
+                        const content = toString(
+                            update.content ?? update.description ?? '',
+                        );
+                        const featuredImage = toString(
+                            update.featured_image ?? update.image_url,
+                        );
+                        const status = toString(
+                            update.status ?? 'published',
+                        ).toLowerCase();
 
                         const youtubeVideos = extractYouTubeVideos(content);
-                        const processedContent = hideYouTubeLinks(content, false);
+                        const processedContent = hideYouTubeLinks(
+                            content,
+                            false,
+                        );
                         const isExpanded = expandedUpdates.has(updateId);
                         const displayContent =
                             isExpanded || processedContent.length <= 280
@@ -214,11 +239,14 @@ export function NewsfeedOverviewSection({
                                         </div>
                                         {createdAt && (
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {formatDateTimeForDisplay(createdAt, {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric',
-                                                })}
+                                                {formatDateTimeForDisplay(
+                                                    createdAt,
+                                                    {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                    },
+                                                )}
                                             </p>
                                         )}
                                         <div>
@@ -227,27 +255,40 @@ export function NewsfeedOverviewSection({
                                             </h4>
                                             <div
                                                 className="newsfeed-content text-sm leading-relaxed text-gray-700 dark:text-gray-300"
-                                                dangerouslySetInnerHTML={{ __html: displayContent }}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: displayContent,
+                                                }}
                                             />
-                                            {processedContent.length > 280 && !isExpanded && (
-                                                <button
-                                                    onClick={() => toggleUpdateExpansion(updateId)}
-                                                    className="mt-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                >
-                                                    Read more
-                                                </button>
-                                            )}
+                                            {processedContent.length > 280 &&
+                                                !isExpanded && (
+                                                    <button
+                                                        onClick={() =>
+                                                            toggleUpdateExpansion(
+                                                                updateId,
+                                                            )
+                                                        }
+                                                        className="mt-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                    >
+                                                        Read more
+                                                    </button>
+                                                )}
                                         </div>
                                         {featuredImage && (
                                             <div
                                                 className="group relative overflow-hidden rounded-lg"
                                                 onClick={() => {
-                                                    if (youtubeVideos.length > 0) {
-                                                        setSelectedUpdateForVideos({
-                                                            ...update,
-                                                            youtubeVideos,
-                                                        });
-                                                        setShowVideoDialog(true);
+                                                    if (
+                                                        youtubeVideos.length > 0
+                                                    ) {
+                                                        setSelectedUpdateForVideos(
+                                                            {
+                                                                ...update,
+                                                                youtubeVideos,
+                                                            },
+                                                        );
+                                                        setShowVideoDialog(
+                                                            true,
+                                                        );
                                                     }
                                                 }}
                                             >
@@ -270,8 +311,14 @@ export function NewsfeedOverviewSection({
                                                                 Watch Videos
                                                             </p>
                                                             <p className="text-xs opacity-75">
-                                                                {youtubeVideos.length}{' '}
-                                                                video{youtubeVideos.length > 1 ? 's' : ''}
+                                                                {
+                                                                    youtubeVideos.length
+                                                                }{' '}
+                                                                video
+                                                                {youtubeVideos.length >
+                                                                1
+                                                                    ? 's'
+                                                                    : ''}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -298,30 +345,33 @@ export function NewsfeedOverviewSection({
                     </DialogHeader>
 
                     {selectedUpdateForVideos &&
-                        Array.isArray((selectedUpdateForVideos as any).youtubeVideos) && (
+                        Array.isArray(
+                            (selectedUpdateForVideos as any).youtubeVideos,
+                        ) && (
                             <div className="space-y-4">
-                                {((selectedUpdateForVideos as any).youtubeVideos as YouTubeVideo[]).map(
-                                    (video, index) => (
-                                        <div
-                                            key={`${video.id ?? index}`}
-                                            className="relative w-full"
-                                            style={{ paddingBottom: '56.25%' }}
-                                        >
-                                            <iframe
-                                                src={
-                                                    index === 0
-                                                        ? `${video.embedUrl}&autoplay=1`
-                                                        : video.embedUrl
-                                                }
-                                                title={`YouTube video ${index + 1}`}
-                                                className="absolute left-0 top-0 h-full w-full rounded-lg"
-                                                frameBorder={0}
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                allowFullScreen
-                                            />
-                                        </div>
-                                    ),
-                                )}
+                                {(
+                                    (selectedUpdateForVideos as any)
+                                        .youtubeVideos as YouTubeVideo[]
+                                ).map((video, index) => (
+                                    <div
+                                        key={`${video.id ?? index}`}
+                                        className="relative w-full"
+                                        style={{ paddingBottom: '56.25%' }}
+                                    >
+                                        <iframe
+                                            src={
+                                                index === 0
+                                                    ? `${video.embedUrl}&autoplay=1`
+                                                    : video.embedUrl
+                                            }
+                                            title={`YouTube video ${index + 1}`}
+                                            className="absolute left-0 top-0 h-full w-full rounded-lg"
+                                            frameBorder={0}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         )}
                 </DialogContent>
@@ -340,8 +390,7 @@ export default function NewsfeedOverviewPage({
     error,
 }: NewsfeedOverviewPageProps) {
     const ownerName = owner?.name ?? 'Newsfeed Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     return (
         <CustomerLayout
@@ -381,7 +430,8 @@ export default function NewsfeedOverviewPage({
                             Partner Details
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -414,5 +464,3 @@ export default function NewsfeedOverviewPage({
         </CustomerLayout>
     );
 }
-
-

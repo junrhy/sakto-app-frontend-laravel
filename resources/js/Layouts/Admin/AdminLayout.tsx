@@ -192,7 +192,9 @@ export default function AdminLayout({
                             >
                                 <svg
                                     className={`mr-3 h-5 w-5 text-white transition-transform duration-200 ${
-                                        route().current('admin.wallets.index') ? 'scale-110' : ''
+                                        route().current('admin.wallets.index')
+                                            ? 'scale-110'
+                                            : ''
                                     }`}
                                     fill="none"
                                     stroke="currentColor"
@@ -207,7 +209,9 @@ export default function AdminLayout({
                                 </svg>
                                 <span
                                     className={`font-medium ${
-                                        route().current('admin.wallets.index') ? 'text-white' : 'text-white/80'
+                                        route().current('admin.wallets.index')
+                                            ? 'text-white'
+                                            : 'text-white/80'
                                     }`}
                                 >
                                     Wallets

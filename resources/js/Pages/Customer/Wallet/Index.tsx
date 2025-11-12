@@ -1,8 +1,4 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
@@ -10,9 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
 import {
     Table,
     TableBody,
@@ -22,7 +16,13 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Textarea } from '@/Components/ui/textarea';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface Wallet {
     id: number;
@@ -56,7 +56,9 @@ export default function WalletIndex({
     transactions,
     isAdmin,
 }: WalletPageProps) {
-    const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'transfer' | 'topup'>('overview');
+    const [activeTab, setActiveTab] = useState<
+        'overview' | 'history' | 'transfer' | 'topup'
+    >('overview');
     const [transferForm, setTransferForm] = useState({
         contact_number: '',
         amount: '',
@@ -92,8 +94,11 @@ export default function WalletIndex({
                 return {
                     symbol: '$',
                     code: 'USD',
-                    decimalSeparator: parsed?.decimal_separator ?? fallback.decimalSeparator,
-                    thousandsSeparator: parsed?.thousands_separator ?? fallback.thousandsSeparator,
+                    decimalSeparator:
+                        parsed?.decimal_separator ?? fallback.decimalSeparator,
+                    thousandsSeparator:
+                        parsed?.thousands_separator ??
+                        fallback.thousandsSeparator,
                 };
             } catch {
                 return fallback;
@@ -103,27 +108,37 @@ export default function WalletIndex({
         return {
             symbol: '$',
             code: 'USD',
-            decimalSeparator: rawCurrency.decimal_separator ?? fallback.decimalSeparator,
-            thousandsSeparator: rawCurrency.thousands_separator ?? fallback.thousandsSeparator,
+            decimalSeparator:
+                rawCurrency.decimal_separator ?? fallback.decimalSeparator,
+            thousandsSeparator:
+                rawCurrency.thousands_separator ?? fallback.thousandsSeparator,
         };
     }, [auth?.user?.app_currency]);
 
-    const parseNumber = useCallback((value: unknown): number => {
-        if (typeof value === 'number') {
-            return Number.isFinite(value) ? value : 0;
-        }
+    const parseNumber = useCallback(
+        (value: unknown): number => {
+            if (typeof value === 'number') {
+                return Number.isFinite(value) ? value : 0;
+            }
 
-        if (typeof value === 'string') {
-            const normalized = value.replace(new RegExp(`[^0-9${currencySettings.decimalSeparator}-]`, 'g'), '').replace(
-                currencySettings.decimalSeparator,
-                '.',
-            );
-            const numeric = Number.parseFloat(normalized);
-            return Number.isFinite(numeric) ? numeric : 0;
-        }
+            if (typeof value === 'string') {
+                const normalized = value
+                    .replace(
+                        new RegExp(
+                            `[^0-9${currencySettings.decimalSeparator}-]`,
+                            'g',
+                        ),
+                        '',
+                    )
+                    .replace(currencySettings.decimalSeparator, '.');
+                const numeric = Number.parseFloat(normalized);
+                return Number.isFinite(numeric) ? numeric : 0;
+            }
 
-        return 0;
-    }, [currencySettings.decimalSeparator]);
+            return 0;
+        },
+        [currencySettings.decimalSeparator],
+    );
 
     const formatCurrency = useCallback(
         (value: unknown) => {
@@ -135,8 +150,14 @@ export default function WalletIndex({
                 maximumFractionDigits: 2,
             }).format(amount);
 
-            if (currencySettings.symbol && currencySettings.symbol !== currencySettings.code) {
-                return formatted.replace(currencySettings.code, currencySettings.symbol);
+            if (
+                currencySettings.symbol &&
+                currencySettings.symbol !== currencySettings.code
+            ) {
+                return formatted.replace(
+                    currencySettings.code,
+                    currencySettings.symbol,
+                );
             }
 
             return formatted;
@@ -168,7 +189,9 @@ export default function WalletIndex({
         return formatCurrency(computedBalance);
     }, [computedBalance, formatCurrency]);
 
-    const handleTransferSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleTransferSubmit = async (
+        event: React.FormEvent<HTMLFormElement>,
+    ) => {
         event.preventDefault();
         setTransferProcessing(true);
 
@@ -210,7 +233,9 @@ export default function WalletIndex({
         }
     };
 
-    const handleTopUpSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleTopUpSubmit = async (
+        event: React.FormEvent<HTMLFormElement>,
+    ) => {
         event.preventDefault();
         setTopUpProcessing(true);
 
@@ -231,7 +256,9 @@ export default function WalletIndex({
             const payload = await response.json();
 
             if (!response.ok) {
-                throw new Error(payload?.message ?? payload?.error ?? 'Top-up failed.');
+                throw new Error(
+                    payload?.message ?? payload?.error ?? 'Top-up failed.',
+                );
             }
 
             toast.success('Funds added successfully.');
@@ -259,7 +286,8 @@ export default function WalletIndex({
                             Wallet
                         </h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Manage your balance, transfers, and transaction history.
+                            Manage your balance, transfers, and transaction
+                            history.
                         </p>
                     </div>
                 </div>
@@ -267,12 +295,19 @@ export default function WalletIndex({
         >
             <Head title="Wallet" />
 
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+            <Tabs
+                value={activeTab}
+                onValueChange={(value) =>
+                    setActiveTab(value as typeof activeTab)
+                }
+            >
                 <TabsList className="w-full overflow-x-auto">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="history">History</TabsTrigger>
                     <TabsTrigger value="transfer">Transfer</TabsTrigger>
-                    {isAdmin && <TabsTrigger value="topup">Admin Top-Up</TabsTrigger>}
+                    {isAdmin && (
+                        <TabsTrigger value="topup">Admin Top-Up</TabsTrigger>
+                    )}
                 </TabsList>
 
                 <TabsContent value="overview" className="mt-6 space-y-4">
@@ -292,13 +327,16 @@ export default function WalletIndex({
                             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 Last updated:{' '}
                                 {wallet?.updated_at
-                                    ? formatDateTimeForDisplay(wallet.updated_at, {
-                                          month: 'short',
-                                          day: 'numeric',
-                                          year: 'numeric',
-                                          hour: 'numeric',
-                                          minute: 'numeric',
-                                      })
+                                    ? formatDateTimeForDisplay(
+                                          wallet.updated_at,
+                                          {
+                                              month: 'short',
+                                              day: 'numeric',
+                                              year: 'numeric',
+                                              hour: 'numeric',
+                                              minute: 'numeric',
+                                          },
+                                      )
                                     : '—'}
                             </p>
                         </CardContent>
@@ -322,37 +360,53 @@ export default function WalletIndex({
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 dark:bg-gray-700">
-                                            <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Amount</TableHead>
-                                            <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Type
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Amount
+                                            </TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">
+                                                Status
+                                            </TableHead>
                                             <TableHead className="text-right text-gray-900 dark:text-white">
                                                 Date
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {transactions.slice(0, 10).map((transaction) => (
-                                            <TableRow key={transaction.id}>
-                                                <TableCell className="text-sm capitalize text-gray-900 dark:text-gray-100">
-                                                    {transaction.type.replace('_', ' ')}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                                    {formatCurrency(transaction.amount)}
-                                                </TableCell>
-                                                <TableCell className="text-sm capitalize text-gray-900 dark:text-gray-100">
-                                                    {transaction.status}
-                                                </TableCell>
-                                                <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
-                                                    {formatDateTimeForDisplay(transaction.transaction_at, {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                        hour: 'numeric',
-                                                        minute: 'numeric',
-                                                    })}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {transactions
+                                            .slice(0, 10)
+                                            .map((transaction) => (
+                                                <TableRow key={transaction.id}>
+                                                    <TableCell className="text-sm capitalize text-gray-900 dark:text-gray-100">
+                                                        {transaction.type.replace(
+                                                            '_',
+                                                            ' ',
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-gray-900 dark:text-gray-100">
+                                                        {formatCurrency(
+                                                            transaction.amount,
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-sm capitalize text-gray-900 dark:text-gray-100">
+                                                        {transaction.status}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
+                                                        {formatDateTimeForDisplay(
+                                                            transaction.transaction_at,
+                                                            {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                year: 'numeric',
+                                                                hour: 'numeric',
+                                                                minute: 'numeric',
+                                                            },
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
                                     </TableBody>
                                 </Table>
                             )}
@@ -361,7 +415,10 @@ export default function WalletIndex({
                 </TabsContent>
 
                 <TabsContent value="history" className="mt-6">
-                    <TransactionHistory transactions={transactions} formatAmount={formatCurrency} />
+                    <TransactionHistory
+                        transactions={transactions}
+                        formatAmount={formatCurrency}
+                    />
                 </TabsContent>
 
                 <TabsContent value="transfer" className="mt-6">
@@ -371,11 +428,15 @@ export default function WalletIndex({
                                 Send Funds
                             </CardTitle>
                             <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                Transfers are instant and available to any customer account.
+                                Transfers are instant and available to any
+                                customer account.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form className="space-y-4" onSubmit={handleTransferSubmit}>
+                            <form
+                                className="space-y-4"
+                                onSubmit={handleTransferSubmit}
+                            >
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div>
                                         <label className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
@@ -386,7 +447,8 @@ export default function WalletIndex({
                                             onChange={(event) =>
                                                 setTransferForm((prev) => ({
                                                     ...prev,
-                                                    contact_number: event.target.value,
+                                                    contact_number:
+                                                        event.target.value,
                                                 }))
                                             }
                                             placeholder="e.g. 09171234567"
@@ -428,8 +490,13 @@ export default function WalletIndex({
                                     />
                                 </div>
                                 <div className="flex justify-end">
-                                    <Button type="submit" disabled={transferProcessing}>
-                                        {transferProcessing ? 'Processing…' : 'Send Funds'}
+                                    <Button
+                                        type="submit"
+                                        disabled={transferProcessing}
+                                    >
+                                        {transferProcessing
+                                            ? 'Processing…'
+                                            : 'Send Funds'}
                                     </Button>
                                 </div>
                             </form>
@@ -445,11 +512,15 @@ export default function WalletIndex({
                                     Admin Manual Top-Up
                                 </CardTitle>
                                 <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                    Add funds to a customer wallet on their behalf.
+                                    Add funds to a customer wallet on their
+                                    behalf.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <form className="space-y-4" onSubmit={handleTopUpSubmit}>
+                                <form
+                                    className="space-y-4"
+                                    onSubmit={handleTopUpSubmit}
+                                >
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         <div>
                                             <label className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
@@ -460,7 +531,8 @@ export default function WalletIndex({
                                                 onChange={(event) =>
                                                     setTopUpForm((prev) => ({
                                                         ...prev,
-                                                        customer: event.target.value,
+                                                        customer:
+                                                            event.target.value,
                                                     }))
                                                 }
                                                 placeholder="e.g. 09171234567"
@@ -479,7 +551,8 @@ export default function WalletIndex({
                                                 onChange={(event) =>
                                                     setTopUpForm((prev) => ({
                                                         ...prev,
-                                                        amount: event.target.value,
+                                                        amount: event.target
+                                                            .value,
                                                     }))
                                                 }
                                                 required
@@ -495,7 +568,8 @@ export default function WalletIndex({
                                             onChange={(event) =>
                                                 setTopUpForm((prev) => ({
                                                     ...prev,
-                                                    reference: event.target.value,
+                                                    reference:
+                                                        event.target.value,
                                                 }))
                                             }
                                         />
@@ -510,14 +584,20 @@ export default function WalletIndex({
                                             onChange={(event) =>
                                                 setTopUpForm((prev) => ({
                                                     ...prev,
-                                                    description: event.target.value,
+                                                    description:
+                                                        event.target.value,
                                                 }))
                                             }
                                         />
                                     </div>
                                     <div className="flex justify-end">
-                                        <Button type="submit" disabled={topUpProcessing}>
-                                            {topUpProcessing ? 'Processing…' : 'Add Funds'}
+                                        <Button
+                                            type="submit"
+                                            disabled={topUpProcessing}
+                                        >
+                                            {topUpProcessing
+                                                ? 'Processing…'
+                                                : 'Add Funds'}
                                         </Button>
                                     </div>
                                 </form>
@@ -569,10 +649,18 @@ function TransactionHistory({ transactions, formatAmount }: HistoryProps) {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50 dark:bg-gray-700">
-                            <TableHead className="text-gray-900 dark:text-white">Reference</TableHead>
-                            <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
-                            <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                            <TableHead className="text-gray-900 dark:text-white">Amount</TableHead>
+                            <TableHead className="text-gray-900 dark:text-white">
+                                Reference
+                            </TableHead>
+                            <TableHead className="text-gray-900 dark:text-white">
+                                Type
+                            </TableHead>
+                            <TableHead className="text-gray-900 dark:text-white">
+                                Status
+                            </TableHead>
+                            <TableHead className="text-gray-900 dark:text-white">
+                                Amount
+                            </TableHead>
                             <TableHead className="text-right text-gray-900 dark:text-white">
                                 Date
                             </TableHead>
@@ -594,13 +682,16 @@ function TransactionHistory({ transactions, formatAmount }: HistoryProps) {
                                     {formatAmount(transaction.amount)}
                                 </TableCell>
                                 <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
-                                    {formatDateTimeForDisplay(transaction.transaction_at, {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                        hour: 'numeric',
-                                        minute: 'numeric',
-                                    })}
+                                    {formatDateTimeForDisplay(
+                                        transaction.transaction_at,
+                                        {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                            hour: 'numeric',
+                                            minute: 'numeric',
+                                        },
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -610,4 +701,3 @@ function TransactionHistory({ transactions, formatAmount }: HistoryProps) {
         </Card>
     );
 }
-

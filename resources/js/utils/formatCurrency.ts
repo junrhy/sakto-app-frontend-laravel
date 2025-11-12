@@ -8,4 +8,3 @@ export const formatCurrency = (amount: number, currency = 'USD') => {
         return `${currency} ${amount.toLocaleString()}`;
     }
 };
-

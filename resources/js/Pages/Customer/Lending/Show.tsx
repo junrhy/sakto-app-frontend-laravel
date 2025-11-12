@@ -1,5 +1,10 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -8,9 +13,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Head, Link } from '@inertiajs/react';
-import type { PageProps } from '@/types';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 import type { CommunityCurrency } from '../Communities/types';
 
 interface OwnerSummary {
@@ -167,7 +173,10 @@ export default function LendingShow({
                                     Loan Summary
                                 </CardTitle>
                                 <CardDescription>
-                                    Project: <span className="font-semibold">{project}</span>
+                                    Project:{' '}
+                                    <span className="font-semibold">
+                                        {project}
+                                    </span>
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -205,10 +214,17 @@ export default function LendingShow({
                                         Current Balance
                                     </p>
                                     <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                        {formatAmount(loan.total_balance, appCurrency)}
+                                        {formatAmount(
+                                            loan.total_balance,
+                                            appCurrency,
+                                        )}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Paid: {formatAmount(loan.paid_amount, appCurrency)}
+                                        Paid:{' '}
+                                        {formatAmount(
+                                            loan.paid_amount,
+                                            appCurrency,
+                                        )}
                                     </p>
                                 </div>
                                 <div>
@@ -227,17 +243,23 @@ export default function LendingShow({
                                         Term
                                     </p>
                                     <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                        {formatDateTimeForDisplay(loan.start_date ?? null, {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                        })}{' '}
+                                        {formatDateTimeForDisplay(
+                                            loan.start_date ?? null,
+                                            {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                            },
+                                        )}{' '}
                                         –{' '}
-                                        {formatDateTimeForDisplay(loan.end_date ?? null, {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                        })}
+                                        {formatDateTimeForDisplay(
+                                            loan.end_date ?? null,
+                                            {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                            },
+                                        )}
                                     </p>
                                 </div>
                                 <div>
@@ -299,7 +321,8 @@ export default function LendingShow({
                                                 >
                                                     <TableCell className="text-gray-900 dark:text-white">
                                                         {formatDateTimeForDisplay(
-                                                            payment.payment_date ?? null,
+                                                            payment.payment_date ??
+                                                                null,
                                                             {
                                                                 year: 'numeric',
                                                                 month: 'short',
@@ -308,13 +331,17 @@ export default function LendingShow({
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
-                                                        {formatAmount(payment.amount, appCurrency)}
+                                                        {formatAmount(
+                                                            payment.amount,
+                                                            appCurrency,
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
                                                         {payment.method ?? '—'}
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
-                                                        {payment.reference_number ?? '—'}
+                                                        {payment.reference_number ??
+                                                            '—'}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -328,7 +355,7 @@ export default function LendingShow({
                             </CardContent>
                         </Card>
 
-                        <Card className="border border-gray-200 shadow-sm dark	border-gray-700 dark:bg-gray-800/80">
+                        <Card className="dark border border-gray-200 border-gray-700 shadow-sm dark:bg-gray-800/80">
                             <CardHeader>
                                 <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                     Billing Schedule
@@ -361,7 +388,8 @@ export default function LendingShow({
                                                 >
                                                     <TableCell className="text-gray-900 dark:text-white">
                                                         {formatDateTimeForDisplay(
-                                                            bill.due_date ?? null,
+                                                            bill.due_date ??
+                                                                null,
                                                             {
                                                                 year: 'numeric',
                                                                 month: 'short',
@@ -370,7 +398,10 @@ export default function LendingShow({
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
-                                                        {formatAmount(bill.amount, appCurrency)}
+                                                        {formatAmount(
+                                                            bill.amount,
+                                                            appCurrency,
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-white">
                                                         {bill.status ?? '—'}
@@ -390,7 +421,8 @@ export default function LendingShow({
                 ) : (
                     <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
                         <CardContent className="p-6 text-sm text-gray-600 dark:text-gray-300">
-                            We couldn’t find that loan record. It may have been removed or you might not have access.
+                            We couldn’t find that loan record. It may have been
+                            removed or you might not have access.
                         </CardContent>
                     </Card>
                 )}
@@ -398,5 +430,3 @@ export default function LendingShow({
         </CustomerLayout>
     );
 }
-
-

@@ -1,7 +1,11 @@
 import { CommunityCollectionItem } from '../types';
 
 export function normalizeCollection(
-    items: CommunityCollectionItem | CommunityCollectionItem[] | null | undefined,
+    items:
+        | CommunityCollectionItem
+        | CommunityCollectionItem[]
+        | null
+        | undefined,
 ): CommunityCollectionItem[] {
     if (!items) {
         return [];
@@ -30,8 +34,16 @@ export function getItemTitle(item: CommunityCollectionItem): string {
     return 'Untitled';
 }
 
-export function getItemDescription(item: CommunityCollectionItem): string | undefined {
-    const possibleKeys = ['description', 'summary', 'short_description', 'details', 'content'];
+export function getItemDescription(
+    item: CommunityCollectionItem,
+): string | undefined {
+    const possibleKeys = [
+        'description',
+        'summary',
+        'short_description',
+        'details',
+        'content',
+    ];
 
     for (const key of possibleKeys) {
         const value = item[key];

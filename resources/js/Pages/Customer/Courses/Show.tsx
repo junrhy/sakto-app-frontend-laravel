@@ -1,4 +1,3 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import {
@@ -8,9 +7,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, Clock, Play, Users } from 'lucide-react';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, BookOpen, Play } from 'lucide-react';
 import { useMemo } from 'react';
 
 interface Course {
@@ -84,7 +84,8 @@ export default function CourseShow({
     isEnrolled,
     project,
 }: Props) {
-    const ownerIdentifier = community.slug || community.identifier || community.id;
+    const ownerIdentifier =
+        community.slug || community.identifier || community.id;
     const projectIdentifier =
         project ?? community.project_identifier ?? 'community';
 
@@ -106,7 +107,8 @@ export default function CourseShow({
         }
 
         const symbol = community.app_currency?.symbol ?? '₱';
-        const decimalSeparator = community.app_currency?.decimal_separator ?? '.';
+        const decimalSeparator =
+            community.app_currency?.decimal_separator ?? '.';
         const thousandsSeparator =
             community.app_currency?.thousands_separator ?? ',';
 
@@ -171,7 +173,10 @@ export default function CourseShow({
                         Course Details
                     </h2>
                     <Link
-                        href={route('customer.communities.show', ownerIdentifier)}
+                        href={route(
+                            'customer.communities.show',
+                            ownerIdentifier,
+                        )}
                         className="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                         &larr; Back to Community
@@ -217,7 +222,9 @@ export default function CourseShow({
                                 <Badge variant="secondary">Featured</Badge>
                             )}
                             {course.category && (
-                                <Badge variant="outline">{course.category}</Badge>
+                                <Badge variant="outline">
+                                    {course.category}
+                                </Badge>
                             )}
                         </div>
                     </CardHeader>
@@ -315,8 +322,10 @@ export default function CourseShow({
                                 <CardContent className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
-                                            {(course.instructor_name ||
-                                                'Instructor')
+                                            {(
+                                                course.instructor_name ||
+                                                'Instructor'
+                                            )
                                                 .charAt(0)
                                                 .toUpperCase()}
                                         </div>
@@ -337,22 +346,25 @@ export default function CourseShow({
                             </Card>
                         </div>
 
-                        {course.requirements && course.requirements.length > 0 && (
-                            <Card className="border border-gray-200 dark:border-gray-700">
-                                <CardHeader>
-                                    <CardTitle className="text-base text-gray-900 dark:text-gray-100">
-                                        Requirements
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                    <ul className="list-inside list-disc space-y-1">
-                                        {course.requirements.map((item, index) => (
-                                            <li key={index}>{item}</li>
-                                        ))}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        )}
+                        {course.requirements &&
+                            course.requirements.length > 0 && (
+                                <Card className="border border-gray-200 dark:border-gray-700">
+                                    <CardHeader>
+                                        <CardTitle className="text-base text-gray-900 dark:text-gray-100">
+                                            Requirements
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <ul className="list-inside list-disc space-y-1">
+                                            {course.requirements.map(
+                                                (item, index) => (
+                                                    <li key={index}>{item}</li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+                            )}
 
                         {course.tags && course.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
@@ -393,5 +405,3 @@ export default function CourseShow({
         </CustomerLayout>
     );
 }
-
-

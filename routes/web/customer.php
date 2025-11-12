@@ -91,8 +91,13 @@ Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])
     Route::prefix('/customer/{project}/{owner}/marketplace')
         ->name('customer.projects.marketplace.')
         ->group(function () {
+            Route::get('/', function (string $project, $owner) {
+                return redirect()->route('customer.projects.marketplace.overview', [
+                    'project' => $project,
+                    'owner' => $owner,
+                ]);
+            })->name('index');
             Route::get('/overview', [App\Http\Controllers\Customer\MarketplaceController::class, 'overview'])->name('overview');
-            Route::get('/', [App\Http\Controllers\Customer\MarketplaceController::class, 'index'])->name('index');
             Route::get('/checkout', [App\Http\Controllers\Customer\MarketplaceController::class, 'checkout'])->name('checkout');
             Route::get('/my-products', [App\Http\Controllers\Customer\MarketplaceController::class, 'myProducts'])->name('my-products');
             Route::get('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'show'])->name('products.show');
@@ -104,6 +109,7 @@ Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])
             Route::get('/products/{product}/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'productOrders'])->name('products.orders');
             Route::get('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'orders'])->name('orders');
             Route::post('/orders/{order}/cancel', [App\Http\Controllers\Customer\MarketplaceController::class, 'cancelOrder'])->name('orders.cancel');
+            Route::post('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'placeOrder'])->name('orders.store');
         });
 
     Route::prefix('/customer/{project}/{owner}/healthcare')

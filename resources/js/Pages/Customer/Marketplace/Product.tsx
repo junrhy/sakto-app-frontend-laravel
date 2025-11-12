@@ -1,4 +1,5 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
@@ -6,18 +7,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
-import { Head, Link } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, Box, Layers, ShoppingBag, Tag } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import {
-    ArrowLeft,
-    Box,
-    Layers,
-    ShoppingBag,
-    Tag,
-} from 'lucide-react';
 
 interface ProductImage {
     id?: number;
@@ -113,7 +107,7 @@ const buildOrdersUrl = (project: string, owner: string | number) =>
     });
 
 const buildMarketplaceUrl = (project: string, owner: string | number) =>
-    route('customer.projects.marketplace.index', {
+    route('customer.projects.marketplace.overview', {
         project,
         owner,
     });
@@ -126,7 +120,8 @@ export default function MarketplaceProduct({
 }: Props) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-    const ownerIdentifier = community.slug || community.identifier || community.id;
+    const ownerIdentifier =
+        community.slug || community.identifier || community.id;
     const projectIdentifier =
         project ?? community.project_identifier ?? 'community';
 
@@ -214,7 +209,10 @@ export default function MarketplaceProduct({
                                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
                                     {gallery[activeImageIndex]?.image_url ? (
                                         <img
-                                            src={gallery[activeImageIndex].image_url ?? ''}
+                                            src={
+                                                gallery[activeImageIndex]
+                                                    .image_url ?? ''
+                                            }
                                             alt={product.name}
                                             className="h-80 w-full object-cover"
                                         />
@@ -229,7 +227,9 @@ export default function MarketplaceProduct({
                                         {gallery.map((image, index) => (
                                             <button
                                                 key={image.id ?? index}
-                                                onClick={() => setActiveImageIndex(index)}
+                                                onClick={() =>
+                                                    setActiveImageIndex(index)
+                                                }
                                                 className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border ${
                                                     activeImageIndex === index
                                                         ? 'border-indigo-500'
@@ -265,15 +265,22 @@ export default function MarketplaceProduct({
 
                                 <div className="flex flex-wrap gap-2">
                                     {product.category && (
-                                        <Badge variant="secondary">{product.category}</Badge>
+                                        <Badge variant="secondary">
+                                            {product.category}
+                                        </Badge>
                                     )}
                                     {product.type && (
-                                        <Badge variant="outline" className="capitalize">
+                                        <Badge
+                                            variant="outline"
+                                            className="capitalize"
+                                        >
                                             {product.type}
                                         </Badge>
                                     )}
                                     {product.status && (
-                                        <Badge className="capitalize">{product.status}</Badge>
+                                        <Badge className="capitalize">
+                                            {product.status}
+                                        </Badge>
                                     )}
                                 </div>
 
@@ -282,7 +289,10 @@ export default function MarketplaceProduct({
                                         Price
                                     </div>
                                     <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-300">
-                                        {formatPrice(product.price, community.app_currency)}
+                                        {formatPrice(
+                                            product.price,
+                                            community.app_currency,
+                                        )}
                                     </div>
                                     <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                         Stock:{' '}
@@ -323,7 +333,9 @@ export default function MarketplaceProduct({
                                         </div>
                                         <div className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                                             {product.updated_at
-                                                ? new Date(product.updated_at).toLocaleString()
+                                                ? new Date(
+                                                      product.updated_at,
+                                                  ).toLocaleString()
                                                 : '—'}
                                         </div>
                                     </div>
@@ -355,23 +367,26 @@ export default function MarketplaceProduct({
                                 </div>
                             )}
 
-                            {product.metadata && Object.keys(product.metadata).length > 0 ? (
+                            {product.metadata &&
+                            Object.keys(product.metadata).length > 0 ? (
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                    {Object.entries(product.metadata).map(([key, value]) => (
-                                        <div
-                                            key={key}
-                                            className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
-                                        >
-                                            <div className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                {key}
+                                    {Object.entries(product.metadata).map(
+                                        ([key, value]) => (
+                                            <div
+                                                key={key}
+                                                className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                                            >
+                                                <div className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                                    {key}
+                                                </div>
+                                                <div className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                                    {typeof value === 'string'
+                                                        ? value
+                                                        : JSON.stringify(value)}
+                                                </div>
                                             </div>
-                                            <div className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                                {typeof value === 'string'
-                                                    ? value
-                                                    : JSON.stringify(value)}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ),
+                                    )}
                                 </div>
                             ) : (
                                 <p>No additional metadata provided.</p>
@@ -380,62 +395,67 @@ export default function MarketplaceProduct({
                     </Card>
                 </section>
 
-                {product.active_variants && product.active_variants.length > 0 && (
-                    <section id="variants">
-                        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
-                                    Available Variants
-                                </CardTitle>
-                                <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                    Different configurations offered for this product.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                {product.active_variants.map((variant) => (
-                                    <div
-                                        key={variant.id}
-                                        className="rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700"
-                                    >
-                                        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                            <div className="flex items-center gap-2">
-                                                <Layers className="h-4 w-4 text-gray-400" />
-                                                <span className="font-medium text-gray-900 dark:text-gray-100">
-                                                    Variant #{variant.id}
-                                                </span>
+                {product.active_variants &&
+                    product.active_variants.length > 0 && (
+                        <section id="variants">
+                            <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+                                <CardHeader>
+                                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                                        Available Variants
+                                    </CardTitle>
+                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                                        Different configurations offered for
+                                        this product.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    {product.active_variants.map((variant) => (
+                                        <div
+                                            key={variant.id}
+                                            className="rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700"
+                                        >
+                                            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                <div className="flex items-center gap-2">
+                                                    <Layers className="h-4 w-4 text-gray-400" />
+                                                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                                                        Variant #{variant.id}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline">
+                                                        {formatPrice(
+                                                            variant.price ??
+                                                                product.price,
+                                                            community.app_currency,
+                                                        )}
+                                                    </Badge>
+                                                    <Badge>
+                                                        Stock:{' '}
+                                                        {variant.stock_quantity ??
+                                                            '—'}
+                                                    </Badge>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant="outline">
-                                                    {formatPrice(
-                                                        variant.price ?? product.price,
-                                                        community.app_currency,
-                                                    )}
-                                                </Badge>
-                                                <Badge>
-                                                    Stock: {variant.stock_quantity ?? '—'}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                        {variant.attributes && (
-                                            <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase text-gray-500 dark:text-gray-400">
-                                                {Object.entries(variant.attributes).map(
-                                                    ([key, value]) => (
+                                            {variant.attributes && (
+                                                <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase text-gray-500 dark:text-gray-400">
+                                                    {Object.entries(
+                                                        variant.attributes,
+                                                    ).map(([key, value]) => (
                                                         <span
                                                             key={`${variant.id}-${key}`}
                                                             className="rounded-md border border-gray-200 px-2 py-1 dark:border-gray-700"
                                                         >
                                                             {key}: {value}
                                                         </span>
-                                                    ),
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </section>
-                )}
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        </section>
+                    )}
 
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
                     <div className="flex items-center gap-2">
@@ -443,7 +463,10 @@ export default function MarketplaceProduct({
                         Managed by {community.name}
                     </div>
                     <Link
-                        href={buildOrdersUrl(projectIdentifier, ownerIdentifier)}
+                        href={buildOrdersUrl(
+                            projectIdentifier,
+                            ownerIdentifier,
+                        )}
                         className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                     >
                         <ShoppingBag className="mr-2 h-4 w-4" />
@@ -454,5 +477,3 @@ export default function MarketplaceProduct({
         </CustomerLayout>
     );
 }
-
-

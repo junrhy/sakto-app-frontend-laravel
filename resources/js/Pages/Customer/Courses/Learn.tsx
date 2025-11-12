@@ -1,4 +1,3 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { Button } from '@/Components/ui/button';
 import {
     Card,
@@ -7,18 +6,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Head, Link, router } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { PageProps } from '@/types';
-import {
-    BookOpen,
-    CheckCircle2,
-    ChevronLeft,
-    Clock,
-    Menu,
-    Play,
-    Video,
-    X,
-} from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { BookOpen, CheckCircle2, Clock, Menu, Video, X } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -117,7 +108,8 @@ export default function CourseLearn({
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [completing, setCompleting] = useState(false);
 
-    const ownerIdentifier = community.slug || community.identifier || community.id;
+    const ownerIdentifier =
+        community.slug || community.identifier || community.id;
     const projectIdentifier =
         project ?? community.project_identifier ?? 'community';
 
@@ -198,7 +190,13 @@ export default function CourseLearn({
 
             toast.success('Lesson marked as complete');
             router.reload({
-                only: ['course', 'lessons', 'currentLesson', 'progress', 'isEnrolled'],
+                only: [
+                    'course',
+                    'lessons',
+                    'currentLesson',
+                    'progress',
+                    'isEnrolled',
+                ],
             });
         } catch (error) {
             toast.error('Unable to mark lesson as complete right now.');
@@ -226,7 +224,9 @@ export default function CourseLearn({
                 </div>
             }
         >
-            <Head title={`${currentLesson?.title ?? 'Lesson'} • ${course.title}`} />
+            <Head
+                title={`${currentLesson?.title ?? 'Lesson'} • ${course.title}`}
+            />
 
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
                 <div className="space-y-6">
@@ -264,7 +264,9 @@ export default function CourseLearn({
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                 <span className="inline-flex items-center gap-1">
                                     <Clock className="h-4 w-4" />
-                                    {formatDuration(currentLesson?.duration_minutes)}
+                                    {formatDuration(
+                                        currentLesson?.duration_minutes,
+                                    )}
                                 </span>
                                 <span className="inline-flex items-center gap-1">
                                     <BookOpen className="h-4 w-4" />
@@ -317,8 +319,8 @@ export default function CourseLearn({
                                     </Button>
                                 ) : (
                                     <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200">
-                                        Enroll in this course to track your lesson
-                                        progress.
+                                        Enroll in this course to track your
+                                        lesson progress.
                                     </div>
                                 )}
                             </div>
@@ -360,7 +362,8 @@ export default function CourseLearn({
                                         className="h-2 rounded-full bg-blue-600 transition-all duration-300 dark:bg-blue-500"
                                         style={{
                                             width: `${Math.min(
-                                                progress?.progress_percentage ?? 0,
+                                                progress?.progress_percentage ??
+                                                    0,
                                                 100,
                                             )}%`,
                                         }}
@@ -409,7 +412,8 @@ export default function CourseLearn({
 
                                 const isActive =
                                     currentLesson &&
-                                    String(currentLesson.id) === String(lesson.id);
+                                    String(currentLesson.id) ===
+                                        String(lesson.id);
 
                                 return (
                                     <Link
@@ -431,7 +435,9 @@ export default function CourseLearn({
                                             )}
                                         </div>
                                         <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            {formatDuration(lesson.duration_minutes)}
+                                            {formatDuration(
+                                                lesson.duration_minutes,
+                                            )}
                                         </div>
                                     </Link>
                                 );
@@ -451,5 +457,3 @@ function formatProgressPercentage(value?: number | null): string {
 
     return `${Math.round(value)}%`;
 }
-
-

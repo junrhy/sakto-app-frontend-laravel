@@ -1,13 +1,19 @@
-import { useMemo, useState } from 'react';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Link, Head } from '@inertiajs/react';
+import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
 import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import {
     CommunityCollectionItem,
     CommunityCurrency,
 } from '../Communities/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
 
 interface EventsOverviewSectionProps {
     id?: string;
@@ -107,7 +113,10 @@ const toNumber = (value: unknown): number | null => {
     return null;
 };
 
-const formatDateLabel = (value: unknown, options?: Intl.DateTimeFormatOptions): string | null => {
+const formatDateLabel = (
+    value: unknown,
+    options?: Intl.DateTimeFormatOptions,
+): string | null => {
     if (typeof value === 'string' || typeof value === 'number') {
         return formatDateTimeForDisplay(String(value), options);
     }
@@ -127,7 +136,9 @@ export function EventsOverviewSection({
     appCurrency,
     emptyMessage = 'No events available yet.',
 }: EventsOverviewSectionProps) {
-    const [expandedEvents, setExpandedEvents] = useState<Set<string | number>>(new Set());
+    const [expandedEvents, setExpandedEvents] = useState<Set<string | number>>(
+        new Set(),
+    );
 
     const normalizedEvents = useMemo(
         () => (Array.isArray(events) ? events : []),
@@ -200,12 +211,16 @@ export function EventsOverviewSection({
                 <CardContent className="space-y-4">
                     {normalizedEvents.map((event, index) => {
                         const eventId =
-                            typeof event.id === 'number' || typeof event.id === 'string'
+                            typeof event.id === 'number' ||
+                            typeof event.id === 'string'
                                 ? event.id
                                 : typeof event.slug === 'string'
-                                    ? event.slug
-                                    : index;
-                        const title = toString(event.title ?? event.name, 'Untitled Event');
+                                  ? event.slug
+                                  : index;
+                        const title = toString(
+                            event.title ?? event.name,
+                            'Untitled Event',
+                        );
                         const description = toString(event.description, '');
                         const startDate = formatDateLabel(
                             event.start_date ?? event.startDate,
@@ -220,21 +235,35 @@ export function EventsOverviewSection({
                         );
                         const location = toString(event.location, 'TBA');
                         const category = toString(event.category);
-                        const image = toString(event.image ?? event.featured_image);
-                        const status = toString(event.status ?? 'scheduled').toLowerCase();
-                        const isPaid = toBoolean(event.is_paid_event ?? event.isPaidEvent);
-                        const rawPrice = event.event_price ?? event.price ?? null;
+                        const image = toString(
+                            event.image ?? event.featured_image,
+                        );
+                        const status = toString(
+                            event.status ?? 'scheduled',
+                        ).toLowerCase();
+                        const isPaid = toBoolean(
+                            event.is_paid_event ?? event.isPaidEvent,
+                        );
+                        const rawPrice =
+                            event.event_price ?? event.price ?? null;
                         const participants = Array.isArray(event.participants)
                             ? event.participants.length
-                            : toNumber(event.participant_count ?? event.participants_count ?? 0) ?? 0;
-                        const maxParticipants = toNumber(event.max_participants ?? event.maxParticipants);
+                            : (toNumber(
+                                  event.participant_count ??
+                                      event.participants_count ??
+                                      0,
+                              ) ?? 0);
+                        const maxParticipants = toNumber(
+                            event.max_participants ?? event.maxParticipants,
+                        );
                         const spotsLeft =
                             maxParticipants !== null
                                 ? Math.max(0, maxParticipants - participants)
                                 : null;
 
                         const registrationDeadline = formatDateLabel(
-                            event.registration_deadline ?? event.registrationDeadline,
+                            event.registration_deadline ??
+                                event.registrationDeadline,
                             {
                                 month: 'short',
                                 day: 'numeric',
@@ -242,31 +271,40 @@ export function EventsOverviewSection({
                             },
                         );
 
-                        const eventLink =
-                            hasProjectContext
-                                ? route('customer.projects.events.overview', {
-                                      project: projectIdentifier,
-                                      owner: ownerIdentifier,
-                                  })
-                                : '#';
+                        const eventLink = hasProjectContext
+                            ? route('customer.projects.events.overview', {
+                                  project: projectIdentifier,
+                                  owner: ownerIdentifier,
+                              })
+                            : '#';
 
                         let publicEventLink: string | undefined;
                         if (typeof event.id === 'number') {
-                            publicEventLink = route('events.public-register', event.id);
+                            publicEventLink = route(
+                                'events.public-register',
+                                event.id,
+                            );
                         } else if (
                             typeof event.id === 'string' &&
                             event.id.trim() !== '' &&
                             !Number.isNaN(Number(event.id))
                         ) {
-                            publicEventLink = route('events.public-register', Number(event.id));
+                            publicEventLink = route(
+                                'events.public-register',
+                                Number(event.id),
+                            );
                         }
 
                         const formattedPrice =
                             rawPrice !== null
-                                ? formatCurrency(rawPrice as number | string, appCurrency)
+                                ? formatCurrency(
+                                      rawPrice as number | string,
+                                      appCurrency,
+                                  )
                                 : '';
 
-                        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                        const statusLabel =
+                            status.charAt(0).toUpperCase() + status.slice(1);
 
                         return (
                             <div
@@ -281,8 +319,10 @@ export function EventsOverviewSection({
                                                 alt={title}
                                                 className="h-32 w-full object-cover md:h-full"
                                                 onError={(eventTarget) => {
-                                                    const target = eventTarget.target as HTMLImageElement;
-                                                    target.style.display = 'none';
+                                                    const target =
+                                                        eventTarget.target as HTMLImageElement;
+                                                    target.style.display =
+                                                        'none';
                                                 }}
                                             />
                                         </div>
@@ -318,17 +358,28 @@ export function EventsOverviewSection({
                                                     </span>
                                                 </p>
                                             )}
-                                            <div className={!expandedEvents.has(eventId) ? 'line-clamp-3' : ''}>
+                                            <div
+                                                className={
+                                                    !expandedEvents.has(eventId)
+                                                        ? 'line-clamp-3'
+                                                        : ''
+                                                }
+                                            >
                                                 {description}
                                             </div>
-                                            {!expandedEvents.has(eventId) && description.length > 160 && (
-                                                <button
-                                                    onClick={() => expandEventDescription(eventId)}
-                                                    className="mt-1 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                >
-                                                    Read more
-                                                </button>
-                                            )}
+                                            {!expandedEvents.has(eventId) &&
+                                                description.length > 160 && (
+                                                    <button
+                                                        onClick={() =>
+                                                            expandEventDescription(
+                                                                eventId,
+                                                            )
+                                                        }
+                                                        className="mt-1 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                    >
+                                                        Read more
+                                                    </button>
+                                                )}
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
@@ -374,12 +425,14 @@ export function EventsOverviewSection({
                                             )}
                                             {registrationDeadline && (
                                                 <span className="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-200">
-                                                    Register by {registrationDeadline}
+                                                    Register by{' '}
+                                                    {registrationDeadline}
                                                 </span>
                                             )}
                                         </div>
 
-                                        {(hasProjectContext || publicEventLink) && (
+                                        {(hasProjectContext ||
+                                            publicEventLink) && (
                                             <div className="flex flex-wrap justify-end gap-2">
                                                 {publicEventLink && (
                                                     <Link
@@ -422,8 +475,7 @@ export default function EventsOverviewPage({
     error,
 }: EventsOverviewPageProps) {
     const ownerName = owner?.name ?? 'Events Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     return (
         <CustomerLayout
@@ -463,7 +515,8 @@ export default function EventsOverviewPage({
                             Partner Details
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -496,5 +549,3 @@ export default function EventsOverviewPage({
         </CustomerLayout>
     );
 }
-
-

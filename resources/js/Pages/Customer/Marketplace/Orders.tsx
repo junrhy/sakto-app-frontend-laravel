@@ -1,4 +1,5 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
@@ -6,28 +7,27 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
-    SelectTrigger,
-    SelectValue,
     SelectContent,
     SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/Components/ui/select';
 import {
     Table,
-    TableHeader,
-    TableRow,
-    TableHead,
     TableBody,
     TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/Components/ui/table';
-import { Head, Link, useForm } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { PageProps } from '@/types';
-import { Badge } from '@/Components/ui/badge';
-import { useMemo } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Receipt } from 'lucide-react';
+import { useMemo } from 'react';
 
 interface OrderItem {
     name: string;
@@ -142,16 +142,12 @@ export default function MarketplaceOrders({
     filters,
     project,
 }: Props) {
-    const ownerIdentifier = community.slug || community.identifier || community.id;
+    const ownerIdentifier =
+        community.slug || community.identifier || community.id;
     const projectIdentifier =
         project ?? community.project_identifier ?? 'community';
 
-    const {
-        data,
-        setData,
-        get,
-        processing,
-    } = useForm({
+    const { data, setData, get, processing } = useForm({
         status: filters.status ?? '',
         payment_status: filters.payment_status ?? '',
         search: filters.search ?? '',
@@ -215,11 +211,14 @@ export default function MarketplaceOrders({
                         My Marketplace Orders
                     </h2>
                     <Button asChild variant="outline" size="sm">
-                    <Link
-                        href={route('customer.projects.marketplace.index', {
-                            project: projectIdentifier,
-                            owner: ownerIdentifier,
-                        })}
+                        <Link
+                            href={route(
+                                'customer.projects.marketplace.overview',
+                                {
+                                    project: projectIdentifier,
+                                    owner: ownerIdentifier,
+                                },
+                            )}
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Marketplace
@@ -235,37 +234,65 @@ export default function MarketplaceOrders({
             <Head title={`Marketplace Orders • ${community.name}`} />
 
             <div className="space-y-6">
-                <Card id="filters" className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+                <Card
+                    id="filters"
+                    className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+                >
                     <CardHeader>
                         <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
                             Filter Orders
                         </CardTitle>
                         <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                            Narrow down orders by status, payment status, or reference number.
+                            Narrow down orders by status, payment status, or
+                            reference number.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <form
+                            onSubmit={onSubmit}
+                            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                        >
                             <div>
                                 <label className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
                                     Order Status
                                 </label>
                                 <Select
                                     value={data.status}
-                                    onValueChange={(value) => setData('status', value === 'all' ? '' : value)}
+                                    onValueChange={(value) =>
+                                        setData(
+                                            'status',
+                                            value === 'all' ? '' : value,
+                                        )
+                                    }
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Statuses</SelectItem>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                                        <SelectItem value="processing">Processing</SelectItem>
-                                        <SelectItem value="shipped">Shipped</SelectItem>
-                                        <SelectItem value="delivered">Delivered</SelectItem>
-                                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                                        <SelectItem value="refunded">Refunded</SelectItem>
+                                        <SelectItem value="all">
+                                            All Statuses
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            Pending
+                                        </SelectItem>
+                                        <SelectItem value="confirmed">
+                                            Confirmed
+                                        </SelectItem>
+                                        <SelectItem value="processing">
+                                            Processing
+                                        </SelectItem>
+                                        <SelectItem value="shipped">
+                                            Shipped
+                                        </SelectItem>
+                                        <SelectItem value="delivered">
+                                            Delivered
+                                        </SelectItem>
+                                        <SelectItem value="cancelled">
+                                            Cancelled
+                                        </SelectItem>
+                                        <SelectItem value="refunded">
+                                            Refunded
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -276,19 +303,34 @@ export default function MarketplaceOrders({
                                 <Select
                                     value={data.payment_status}
                                     onValueChange={(value) =>
-                                        setData('payment_status', value === 'all' ? '' : value)
+                                        setData(
+                                            'payment_status',
+                                            value === 'all' ? '' : value,
+                                        )
                                     }
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="All payments" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Payments</SelectItem>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="paid">Paid</SelectItem>
-                                        <SelectItem value="failed">Failed</SelectItem>
-                                        <SelectItem value="refunded">Refunded</SelectItem>
-                                        <SelectItem value="partially_refunded">Partial Refund</SelectItem>
+                                        <SelectItem value="all">
+                                            All Payments
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            Pending
+                                        </SelectItem>
+                                        <SelectItem value="paid">
+                                            Paid
+                                        </SelectItem>
+                                        <SelectItem value="failed">
+                                            Failed
+                                        </SelectItem>
+                                        <SelectItem value="refunded">
+                                            Refunded
+                                        </SelectItem>
+                                        <SelectItem value="partially_refunded">
+                                            Partial Refund
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -298,7 +340,9 @@ export default function MarketplaceOrders({
                                 </label>
                                 <Input
                                     value={data.search}
-                                    onChange={(event) => setData('search', event.target.value)}
+                                    onChange={(event) =>
+                                        setData('search', event.target.value)
+                                    }
                                     placeholder="Search by order number or product name"
                                 />
                             </div>
@@ -308,7 +352,9 @@ export default function MarketplaceOrders({
                                 </label>
                                 <Select
                                     value={String(data.per_page)}
-                                    onValueChange={(value) => setData('per_page', Number(value))}
+                                    onValueChange={(value) =>
+                                        setData('per_page', Number(value))
+                                    }
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="10" />
@@ -322,7 +368,9 @@ export default function MarketplaceOrders({
                             </div>
                             <div className="sm:col-span-2 lg:col-span-2">
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Filtering...' : 'Apply Filters'}
+                                    {processing
+                                        ? 'Filtering...'
+                                        : 'Apply Filters'}
                                 </Button>
                             </div>
                         </form>
@@ -337,7 +385,8 @@ export default function MarketplaceOrders({
                                     Orders
                                 </CardTitle>
                                 <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                    Keep track of all your purchases within this community.
+                                    Keep track of all your purchases within this
+                                    community.
                                 </CardDescription>
                             </div>
                             {paginationLabel && (
@@ -349,7 +398,8 @@ export default function MarketplaceOrders({
                         <CardContent className="overflow-x-auto">
                             {orders.length === 0 ? (
                                 <div className="py-10 text-center text-gray-500 dark:text-gray-400">
-                                    No orders yet. Once you purchase items, they will appear here.
+                                    No orders yet. Once you purchase items, they
+                                    will appear here.
                                 </div>
                             ) : (
                                 <Table>
@@ -384,27 +434,49 @@ export default function MarketplaceOrders({
                                                 <TableCell className="font-medium text-gray-900 dark:text-gray-100">
                                                     <div className="flex items-center gap-2">
                                                         <Receipt className="h-4 w-4 text-gray-400" />
-                                                        <span>{order.order_number}</span>
+                                                        <span>
+                                                            {order.order_number}
+                                                        </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-gray-600 dark:text-gray-400">
-                                                    {new Date(order.created_at).toLocaleString()}
+                                                    {new Date(
+                                                        order.created_at,
+                                                    ).toLocaleString()}
                                                 </TableCell>
                                                 <TableCell className="text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(order.total_amount, community.app_currency)}
+                                                    {formatPrice(
+                                                        order.total_amount,
+                                                        community.app_currency,
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge className={statusBadgeVariant(order.order_status)}>
-                                                        {order.order_status.replace('_', ' ')}
+                                                    <Badge
+                                                        className={statusBadgeVariant(
+                                                            order.order_status,
+                                                        )}
+                                                    >
+                                                        {order.order_status.replace(
+                                                            '_',
+                                                            ' ',
+                                                        )}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge className={statusBadgeVariant(order.payment_status)}>
-                                                        {order.payment_status.replace('_', ' ')}
+                                                    <Badge
+                                                        className={statusBadgeVariant(
+                                                            order.payment_status,
+                                                        )}
+                                                    >
+                                                        {order.payment_status.replace(
+                                                            '_',
+                                                            ' ',
+                                                        )}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap text-right text-gray-600 dark:text-gray-400">
-                                                    {order.order_items?.length ?? 0}
+                                                    {order.order_items
+                                                        ?.length ?? 0}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -418,7 +490,8 @@ export default function MarketplaceOrders({
                 {meta && (meta.next_page_url || meta.prev_page_url) && (
                     <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
                         <div>
-                            Page {meta.current_page ?? 1} of {meta.last_page ?? 1}
+                            Page {meta.current_page ?? 1} of{' '}
+                            {meta.last_page ?? 1}
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
@@ -426,7 +499,12 @@ export default function MarketplaceOrders({
                                 size="sm"
                                 disabled={!meta.prev_page_url}
                                 onClick={() =>
-                                    onChangePage(Math.max((meta.current_page ?? 1) - 1, 1))
+                                    onChangePage(
+                                        Math.max(
+                                            (meta.current_page ?? 1) - 1,
+                                            1,
+                                        ),
+                                    )
                                 }
                             >
                                 Previous
@@ -436,7 +514,12 @@ export default function MarketplaceOrders({
                                 size="sm"
                                 disabled={!meta.next_page_url}
                                 onClick={() =>
-                                    onChangePage(Math.min((meta.current_page ?? 1) + 1, meta.last_page ?? 1))
+                                    onChangePage(
+                                        Math.min(
+                                            (meta.current_page ?? 1) + 1,
+                                            meta.last_page ?? 1,
+                                        ),
+                                    )
                                 }
                             >
                                 Next
@@ -448,5 +531,3 @@ export default function MarketplaceOrders({
         </CustomerLayout>
     );
 }
-
-

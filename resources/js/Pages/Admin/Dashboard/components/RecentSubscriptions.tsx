@@ -1,5 +1,5 @@
-import { Users } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { Users } from 'lucide-react';
 
 interface RecentSubscriptionsProps {
     subscriptions: Array<{
@@ -61,8 +61,8 @@ export function RecentSubscriptions({
                                     )}
                                 </p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {formatDate(subscription.start_date)} &ndash;{' '}
-                                    {formatDate(subscription.end_date)}
+                                    {formatDate(subscription.start_date)}{' '}
+                                    &ndash; {formatDate(subscription.end_date)}
                                 </p>
                             </div>
                         </div>
@@ -76,4 +76,3 @@ export function RecentSubscriptions({
         </div>
     );
 }
-

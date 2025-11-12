@@ -1,15 +1,12 @@
-import { useMemo, useState } from 'react';
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Link, Head } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import {
-    CommunityCollectionItem,
-    CommunityCurrency,
-} from '../Communities/types';
-import { BookOpen, Clock, Eye, Play, Search, Star, Users } from 'lucide-react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
@@ -18,6 +15,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { BookOpen, Clock, Eye, Play, Search, Star, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+    CommunityCollectionItem,
+    CommunityCurrency,
+} from '../Communities/types';
 
 interface CoursesOverviewSectionProps {
     id?: string;
@@ -155,45 +161,29 @@ const normalizeCourse = (item: CommunityCollectionItem): NormalizedCourse => {
     const rawPrice = asNumber(item.price) ?? asNumber(record.course_price);
     const isFreeExplicit = asBoolean(item.is_free);
     const isFree =
-        isFreeExplicit ??
-        (rawPrice !== undefined ? rawPrice === 0 : undefined);
+        isFreeExplicit ?? (rawPrice !== undefined ? rawPrice === 0 : undefined);
 
     return {
         id: courseId,
-        title:
-            asString(item.title) ??
-            asString(item.name) ??
-            'Untitled Course',
+        title: asString(item.title) ?? asString(item.name) ?? 'Untitled Course',
         description:
-            asString(item.description) ??
-            asString(record.summary) ??
-            '',
+            asString(item.description) ?? asString(record.summary) ?? '',
         slug: asString(item.slug) ?? asString(record.course_slug),
         price: rawPrice,
         is_free: isFree,
-        is_featured:
-            asBoolean(item.is_featured) ?? asBoolean(record.featured),
-        status:
-            asString(item.status) ??
-            asString(record.visibility),
-        category:
-            asString(item.category) ??
-            asString(record.category_name),
+        is_featured: asBoolean(item.is_featured) ?? asBoolean(record.featured),
+        status: asString(item.status) ?? asString(record.visibility),
+        category: asString(item.category) ?? asString(record.category_name),
         instructor_name:
-            asString(item.instructor_name) ??
-            asString(record.instructor),
+            asString(item.instructor_name) ?? asString(record.instructor),
         duration_minutes:
-            asNumber(item.duration_minutes) ??
-            asNumber(record.duration),
+            asNumber(item.duration_minutes) ?? asNumber(record.duration),
         lessons_count:
-            asNumber(item.lessons_count) ??
-            asNumber(record.lesson_count),
+            asNumber(item.lessons_count) ?? asNumber(record.lesson_count),
         enrolled_count:
-            asNumber(item.enrolled_count) ??
-            asNumber(record.enrollments),
+            asNumber(item.enrolled_count) ?? asNumber(record.enrollments),
         thumbnail_url:
-            asString(item.thumbnail_url) ??
-            asString(record.cover_image),
+            asString(item.thumbnail_url) ?? asString(record.cover_image),
         created_at: asString(item.created_at),
         updated_at: asString(item.updated_at),
     };
@@ -223,7 +213,8 @@ export function CoursesOverviewSection({
                     .map((course) => course.category)
                     .filter(
                         (category): category is string =>
-                            typeof category === 'string' && category.trim().length > 0,
+                            typeof category === 'string' &&
+                            category.trim().length > 0,
                     ),
             ),
         );
@@ -237,7 +228,8 @@ export function CoursesOverviewSection({
             filtered = filtered.filter((course) => {
                 return (
                     course.title.toLowerCase().includes(lower) ||
-                    (course.description && course.description.toLowerCase().includes(lower)) ||
+                    (course.description &&
+                        course.description.toLowerCase().includes(lower)) ||
                     (course.instructor_name &&
                         course.instructor_name.toLowerCase().includes(lower))
                 );
@@ -245,7 +237,9 @@ export function CoursesOverviewSection({
         }
 
         if (selectedCategory !== 'all') {
-            filtered = filtered.filter((course) => course.category === selectedCategory);
+            filtered = filtered.filter(
+                (course) => course.category === selectedCategory,
+            );
         }
 
         switch (selectedFilter) {
@@ -256,7 +250,9 @@ export function CoursesOverviewSection({
                 filtered = filtered.filter((course) => !course.is_free);
                 break;
             case 'featured':
-                filtered = filtered.filter((course) => Boolean(course.is_featured));
+                filtered = filtered.filter((course) =>
+                    Boolean(course.is_featured),
+                );
                 break;
             default:
                 break;
@@ -309,7 +305,8 @@ export function CoursesOverviewSection({
                                 Courses
                             </CardTitle>
                             <CardDescription>
-                                Browse training programs curated by this partner.
+                                Browse training programs curated by this
+                                partner.
                             </CardDescription>
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -329,7 +326,9 @@ export function CoursesOverviewSection({
                                 <Input
                                     placeholder="Search courses by title, instructor, or description"
                                     value={searchTerm}
-                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    onChange={(event) =>
+                                        setSearchTerm(event.target.value)
+                                    }
                                     className="pl-10"
                                 />
                             </div>
@@ -343,9 +342,14 @@ export function CoursesOverviewSection({
                                     <SelectValue placeholder="Category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="all">
+                                        All Categories
+                                    </SelectItem>
                                     {categories.map((category) => (
-                                        <SelectItem key={category} value={category}>
+                                        <SelectItem
+                                            key={category}
+                                            value={category}
+                                        >
                                             {category}
                                         </SelectItem>
                                     ))}
@@ -359,10 +363,14 @@ export function CoursesOverviewSection({
                                     <SelectValue placeholder="Filter" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Courses</SelectItem>
+                                    <SelectItem value="all">
+                                        All Courses
+                                    </SelectItem>
                                     <SelectItem value="free">Free</SelectItem>
                                     <SelectItem value="paid">Paid</SelectItem>
-                                    <SelectItem value="featured">Featured</SelectItem>
+                                    <SelectItem value="featured">
+                                        Featured
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -370,23 +378,22 @@ export function CoursesOverviewSection({
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {filteredCourses.map((course) => {
-                            const courseIdentifier = course.id ?? course.slug ?? '';
-                            const courseUrl =
-                                hasProjectContext
-                                    ? route('customer.projects.courses.show', {
-                                          project: projectIdentifier,
-                                          owner: ownerIdentifier,
-                                          course: courseIdentifier,
-                                      })
-                                    : undefined;
-                            const courseLessonsUrl =
-                                hasProjectContext
-                                    ? route('customer.projects.courses.lessons', {
-                                          project: projectIdentifier,
-                                          owner: ownerIdentifier,
-                                          course: courseIdentifier,
-                                      })
-                                    : undefined;
+                            const courseIdentifier =
+                                course.id ?? course.slug ?? '';
+                            const courseUrl = hasProjectContext
+                                ? route('customer.projects.courses.show', {
+                                      project: projectIdentifier,
+                                      owner: ownerIdentifier,
+                                      course: courseIdentifier,
+                                  })
+                                : undefined;
+                            const courseLessonsUrl = hasProjectContext
+                                ? route('customer.projects.courses.lessons', {
+                                      project: projectIdentifier,
+                                      owner: ownerIdentifier,
+                                      course: courseIdentifier,
+                                  })
+                                : undefined;
 
                             return (
                                 <Card
@@ -400,8 +407,10 @@ export function CoursesOverviewSection({
                                                 alt={course.title}
                                                 className="h-full w-full object-cover"
                                                 onError={(event) => {
-                                                    const target = event.target as HTMLImageElement;
-                                                    target.style.display = 'none';
+                                                    const target =
+                                                        event.target as HTMLImageElement;
+                                                    target.style.display =
+                                                        'none';
                                                 }}
                                             />
                                         ) : (
@@ -442,15 +451,25 @@ export function CoursesOverviewSection({
                                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                             <div className="flex items-center gap-1.5">
                                                 <Clock className="h-4 w-4" />
-                                                <span>{formatDuration(course.duration_minutes)}</span>
+                                                <span>
+                                                    {formatDuration(
+                                                        course.duration_minutes,
+                                                    )}
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <Play className="h-4 w-4" />
-                                                <span>{course.lessons_count ?? 0} lessons</span>
+                                                <span>
+                                                    {course.lessons_count ?? 0}{' '}
+                                                    lessons
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <Users className="h-4 w-4" />
-                                                <span>{course.enrolled_count ?? 0} students</span>
+                                                <span>
+                                                    {course.enrolled_count ?? 0}{' '}
+                                                    students
+                                                </span>
                                             </div>
                                         </div>
 
@@ -458,12 +477,16 @@ export function CoursesOverviewSection({
                                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 by{' '}
                                                 <span className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {course.instructor_name || 'Unknown Instructor'}
+                                                    {course.instructor_name ||
+                                                        'Unknown Instructor'}
                                                 </span>
                                             </div>
                                             {!course.is_free && (
                                                 <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    {formatCurrency(course.price, appCurrency)}
+                                                    {formatCurrency(
+                                                        course.price,
+                                                        appCurrency,
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -475,7 +498,7 @@ export function CoursesOverviewSection({
                                                 className="min-w-0 flex-1"
                                                 disabled={!courseUrl}
                                             >
-                                                <Link href={courseUrl ?? '#'} >
+                                                <Link href={courseUrl ?? '#'}>
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     View Course
                                                 </Link>
@@ -485,7 +508,11 @@ export function CoursesOverviewSection({
                                                 className="min-w-0 flex-1"
                                                 disabled={!courseLessonsUrl}
                                             >
-                                                <Link href={courseLessonsUrl ?? '#'} >
+                                                <Link
+                                                    href={
+                                                        courseLessonsUrl ?? '#'
+                                                    }
+                                                >
                                                     <BookOpen className="mr-2 h-4 w-4" />
                                                     View Lessons
                                                 </Link>
@@ -504,7 +531,8 @@ export function CoursesOverviewSection({
                                 No courses match the selected filters.
                             </p>
                             <p className="text-sm">
-                                Try clearing your filters or adjusting the search keywords.
+                                Try clearing your filters or adjusting the
+                                search keywords.
                             </p>
                         </div>
                     )}
@@ -524,8 +552,7 @@ export default function CoursesOverviewPage({
     error,
 }: CoursesOverviewPageProps) {
     const ownerName = owner?.name ?? 'Courses Partner';
-    const ownerIdentifier =
-        owner.slug ?? owner.identifier ?? String(owner.id);
+    const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
 
     return (
         <CustomerLayout
@@ -565,7 +592,8 @@ export default function CoursesOverviewPage({
                             Partner Details
                         </CardTitle>
                         <CardDescription>
-                            Project: <span className="font-semibold">{project}</span>
+                            Project:{' '}
+                            <span className="font-semibold">{project}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -599,5 +627,3 @@ export default function CoursesOverviewPage({
         </CustomerLayout>
     );
 }
-
-

@@ -1,6 +1,4 @@
-import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
+import { Button } from '@/Components/ui/button';
 import {
     Card,
     CardContent,
@@ -8,7 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
     Table,
@@ -18,8 +15,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { useState } from 'react';
+import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import { PageProps } from '@/types';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface Customer {
@@ -65,7 +65,11 @@ export default function AdminWalletIndex({
 }: Props) {
     const formatCurrency = (value: unknown, currencyCode?: string) => {
         const numeric = Number.parseFloat(
-            typeof value === 'number' ? value.toString() : value ? String(value) : '0',
+            typeof value === 'number'
+                ? value.toString()
+                : value
+                  ? String(value)
+                  : '0',
         );
 
         if (!Number.isFinite(numeric)) {
@@ -128,7 +132,9 @@ export default function AdminWalletIndex({
             const payload = await response.json();
 
             if (!response.ok) {
-                throw new Error(payload?.message ?? payload?.error ?? 'Top-up failed.');
+                throw new Error(
+                    payload?.message ?? payload?.error ?? 'Top-up failed.',
+                );
             }
 
             toast.success('Funds added successfully.');
@@ -160,11 +166,15 @@ export default function AdminWalletIndex({
                             Wallet Lookup
                         </CardTitle>
                         <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                            Search for a customer wallet using their contact number.
+                            Search for a customer wallet using their contact
+                            number.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSearch} className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                        <form
+                            onSubmit={handleSearch}
+                            className="flex flex-col gap-4 sm:flex-row sm:items-end"
+                        >
                             <div className="sm:flex-1">
                                 <label className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
                                     Customer Contact Number
@@ -196,7 +206,9 @@ export default function AdminWalletIndex({
                                     {customer.name}
                                 </CardTitle>
                                 <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                                    {customer.email} • {customer.contact_number ?? 'No contact number'}
+                                    {customer.email} •{' '}
+                                    {customer.contact_number ??
+                                        'No contact number'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -205,7 +217,12 @@ export default function AdminWalletIndex({
                                         Wallet Balance
                                     </p>
                                     <p className="text-2xl font-semibold text-indigo-600 dark:text-indigo-300">
-                                        {wallet ? formatCurrency(wallet.balance, wallet.currency) : '—'}
+                                        {wallet
+                                            ? formatCurrency(
+                                                  wallet.balance,
+                                                  wallet.currency,
+                                              )
+                                            : '—'}
                                     </p>
                                 </div>
                                 <div>
@@ -214,13 +231,16 @@ export default function AdminWalletIndex({
                                     </p>
                                     <p className="text-sm text-gray-700 dark:text-gray-300">
                                         {wallet
-                                            ? formatDateTimeForDisplay(wallet.updated_at, {
-                                                  month: 'short',
-                                                  day: 'numeric',
-                                                  year: 'numeric',
-                                                  hour: 'numeric',
-                                                  minute: 'numeric',
-                                              })
+                                            ? formatDateTimeForDisplay(
+                                                  wallet.updated_at,
+                                                  {
+                                                      month: 'short',
+                                                      day: 'numeric',
+                                                      year: 'numeric',
+                                                      hour: 'numeric',
+                                                      minute: 'numeric',
+                                                  },
+                                              )
                                             : '—'}
                                     </p>
                                 </div>
@@ -237,7 +257,10 @@ export default function AdminWalletIndex({
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <form className="space-y-4" onSubmit={handleTopUp}>
+                                <form
+                                    className="space-y-4"
+                                    onSubmit={handleTopUp}
+                                >
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         <div>
                                             <label className="text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-400">
@@ -248,7 +271,8 @@ export default function AdminWalletIndex({
                                                 onChange={(event) =>
                                                     setForm((prev) => ({
                                                         ...prev,
-                                                        contact_number: event.target.value,
+                                                        contact_number:
+                                                            event.target.value,
                                                     }))
                                                 }
                                                 required
@@ -266,7 +290,8 @@ export default function AdminWalletIndex({
                                                 onChange={(event) =>
                                                     setForm((prev) => ({
                                                         ...prev,
-                                                        amount: event.target.value,
+                                                        amount: event.target
+                                                            .value,
                                                     }))
                                                 }
                                                 required
@@ -283,7 +308,8 @@ export default function AdminWalletIndex({
                                                 onChange={(event) =>
                                                     setForm((prev) => ({
                                                         ...prev,
-                                                        reference: event.target.value,
+                                                        reference:
+                                                            event.target.value,
                                                     }))
                                                 }
                                             />
@@ -297,15 +323,21 @@ export default function AdminWalletIndex({
                                                 onChange={(event) =>
                                                     setForm((prev) => ({
                                                         ...prev,
-                                                        description: event.target.value,
+                                                        description:
+                                                            event.target.value,
                                                     }))
                                                 }
                                             />
                                         </div>
                                     </div>
                                     <div className="flex justify-end">
-                                        <Button type="submit" disabled={topUpProcessing}>
-                                            {topUpProcessing ? 'Processing…' : 'Add Funds'}
+                                        <Button
+                                            type="submit"
+                                            disabled={topUpProcessing}
+                                        >
+                                            {topUpProcessing
+                                                ? 'Processing…'
+                                                : 'Add Funds'}
                                         </Button>
                                     </div>
                                 </form>
@@ -330,10 +362,18 @@ export default function AdminWalletIndex({
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="bg-gray-50 dark:bg-gray-800">
-                                                <TableHead className="text-gray-900 dark:text-white">Reference</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-white">Type</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-white">Status</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-white">Amount</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">
+                                                    Reference
+                                                </TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">
+                                                    Type
+                                                </TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">
+                                                    Status
+                                                </TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">
+                                                    Amount
+                                                </TableHead>
                                                 <TableHead className="text-right text-gray-900 dark:text-white">
                                                     Date
                                                 </TableHead>
@@ -343,25 +383,35 @@ export default function AdminWalletIndex({
                                             {transactions.map((transaction) => (
                                                 <TableRow key={transaction.id}>
                                                     <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {transaction.reference ?? '—'}
+                                                        {transaction.reference ??
+                                                            '—'}
                                                     </TableCell>
                                                     <TableCell className="text-sm capitalize text-gray-900 dark:text-gray-100">
-                                                        {transaction.type.replace('_', ' ')}
+                                                        {transaction.type.replace(
+                                                            '_',
+                                                            ' ',
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-sm capitalize text-gray-900 dark:text-gray-100">
                                                         {transaction.status}
                                                     </TableCell>
                                                     <TableCell className="text-sm text-gray-900 dark:text-gray-100">
-                                                        {formatCurrency(transaction.amount, wallet?.currency)}
+                                                        {formatCurrency(
+                                                            transaction.amount,
+                                                            wallet?.currency,
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-right text-sm text-gray-900 dark:text-gray-100">
-                                                        {formatDateTimeForDisplay(transaction.transaction_at, {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            year: 'numeric',
-                                                            hour: 'numeric',
-                                                            minute: 'numeric',
-                                                        })}
+                                                        {formatDateTimeForDisplay(
+                                                            transaction.transaction_at,
+                                                            {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                year: 'numeric',
+                                                                hour: 'numeric',
+                                                                minute: 'numeric',
+                                                            },
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -380,8 +430,9 @@ export default function AdminWalletIndex({
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-red-600 dark:text-red-300">
-                                No customer account was found for contact number {filters.contact_number}. Verify the
-                                number and try again.
+                                No customer account was found for contact number{' '}
+                                {filters.contact_number}. Verify the number and
+                                try again.
                             </p>
                         </CardContent>
                     </Card>
@@ -390,4 +441,3 @@ export default function AdminWalletIndex({
         </AdminLayout>
     );
 }
-

@@ -1,9 +1,4 @@
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -86,7 +81,8 @@ export function ProductOrderHistory({
                                     coerceToString(order.total_amount) ??
                                     coerceToString(order.amount) ??
                                     '—';
-                                const dateValue = order.created_at ?? order.ordered_at;
+                                const dateValue =
+                                    order.created_at ?? order.ordered_at;
 
                                 return (
                                     <TableRow
@@ -104,11 +100,14 @@ export function ProductOrderHistory({
                                         </TableCell>
                                         <TableCell className="text-right text-gray-900 dark:text-white">
                                             {dateValue
-                                                ? formatDateTimeForDisplay(dateValue, {
-                                                      month: 'short',
-                                                      day: 'numeric',
-                                                      year: 'numeric',
-                                                  })
+                                                ? formatDateTimeForDisplay(
+                                                      dateValue,
+                                                      {
+                                                          month: 'short',
+                                                          day: 'numeric',
+                                                          year: 'numeric',
+                                                      },
+                                                  )
                                                 : '—'}
                                         </TableCell>
                                     </TableRow>

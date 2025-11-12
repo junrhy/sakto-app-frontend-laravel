@@ -93,4 +93,3 @@ export function QuickActionsGrid({ actions }: QuickActionsGridProps) {
         </div>
     );
 }
-

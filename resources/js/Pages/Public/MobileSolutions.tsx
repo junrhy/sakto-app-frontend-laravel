@@ -13,16 +13,15 @@ import {
     Crown,
     GraduationCap,
     HardHat,
-    RotateCcw,
     Landmark,
     LogOut,
     Mail,
     MapPin,
     MoreHorizontal,
     Package,
-    Plus,
-    X,
     Plane,
+    Plus,
+    RotateCcw,
     ShieldCheck,
     ShoppingBag,
     Sprout,
@@ -30,6 +29,7 @@ import {
     Truck,
     Users,
     UtensilsCrossed,
+    X,
 } from 'lucide-react';
 import React from 'react';
 
@@ -109,8 +109,7 @@ export default function MobileSolutions({ auth }: PageProps) {
         customer: 'Customer Portal',
     };
 
-    const headerLabel =
-        (typeParam && portalLabelMap[typeParam]) || 'Apps';
+    const headerLabel = (typeParam && portalLabelMap[typeParam]) || 'Apps';
 
     const storageKey = 'mobileSolutions.selectedApps';
 
@@ -159,120 +158,125 @@ export default function MobileSolutions({ auth }: PageProps) {
 
     const allSolutions: Solution[] = React.useMemo(
         () => [
-        {
-            name: 'Community',
-            description:
-                'Connect teams, manage events, and streamline communications',
-            icon: Users,
-            href: getHref('community', '/community'),
-            gradient: 'from-blue-500 to-blue-600',
-            comingSoon: false,
-            projectIdentifier: 'community',
-        },
-        {
-            name: 'Medical',
-            description:
-                'Streamline appointments, patient records, and clinic operations',
-            icon: Stethoscope,
-            href: getHref('medical', '/medical'),
-            gradient: 'from-green-500 to-emerald-600',
-            comingSoon: false,
-            projectIdentifier: 'medical',
-        },
-        {
-            name: 'Logistics',
-            description: 'Manage shipments, routes, and track fleet operations',
-            icon: Truck,
-            href: getHref('logistics', '/logistics'),
-            gradient: 'from-orange-500 to-red-500',
-            comingSoon: false,
-            projectIdentifier: 'logistics',
-        },
-        {
-            name: 'Shop',
-            description:
-                'Manage wholesale operations, inventory, and purchasing',
-            icon: ShoppingBag,
-            href: getHref('shop', '/shop'),
-            gradient: 'from-purple-500 to-pink-500',
-            comingSoon: false,
-            projectIdentifier: 'shop',
-        },
-        {
-            name: 'Delivery',
-            description:
-                'Coordinate food service, catering, and supply operations',
-            icon: Package,
-            href: getHref('delivery', '/delivery'),
-            gradient: 'from-red-500 to-rose-600',
-            comingSoon: false,
-            projectIdentifier: 'delivery',
-        },
-        {
-            name: 'HR',
-            description: 'Manage your own human resources business',
-            icon: Briefcase,
-            href: getHref('hr', '/hr'),
-            gradient: 'from-indigo-500 to-purple-600',
-            comingSoon: false,
-            projectIdentifier: 'hr',
-        },
-        {
-            name: 'Travel',
-            description:
-                'Corporate bookings, expenses, and travel coordination',
-            icon: Plane,
-            href: getHref('travel', '/travel'),
-            gradient: 'from-cyan-500 to-blue-500',
-            comingSoon: false,
-            projectIdentifier: 'travel',
-        },
-        {
-            name: 'F&B',
-            description: 'Handle restaurant operations, inventory, and orders',
-            icon: UtensilsCrossed,
-            href: getHref('fnb', '/fnb'),
-            gradient: 'from-amber-500 to-orange-600',
-            comingSoon: false,
-            projectIdentifier: 'fnb',
-        },
-        {
-            name: 'Education',
-            description: 'Manage courses, students, and school administration',
-            icon: GraduationCap,
-            href: getHref('education', '/education'),
-            gradient: 'from-violet-500 to-purple-600',
-            comingSoon: false,
-            projectIdentifier: 'education',
-        },
-        {
-            name: 'Finance',
-            description:
-                'Handle accounting, budgeting, and financial reporting',
-            icon: Landmark,
-            href: getHref('finance', '/finance'),
-            gradient: 'from-emerald-500 to-teal-600',
-            comingSoon: true,
-            projectIdentifier: 'finance',
-        },
-        {
-            name: 'Agriculture',
-            description: 'Optimize farm operations, yields, and supply chains',
-            icon: Sprout,
-            href: getHref('agriculture', '/agriculture'),
-            gradient: 'from-green-500 to-lime-600',
-            comingSoon: true,
-            projectIdentifier: 'agriculture',
-        },
-        {
-            name: 'Construction',
-            description: 'Manage construction projects, teams, and resources',
-            icon: HardHat,
-            href: getHref('construction', '/construction'),
-            gradient: 'from-yellow-500 to-orange-600',
-            comingSoon: false,
-            projectIdentifier: 'construction',
-        },
+            {
+                name: 'Community',
+                description:
+                    'Connect teams, manage events, and streamline communications',
+                icon: Users,
+                href: getHref('community', '/community'),
+                gradient: 'from-blue-500 to-blue-600',
+                comingSoon: false,
+                projectIdentifier: 'community',
+            },
+            {
+                name: 'Medical',
+                description:
+                    'Streamline appointments, patient records, and clinic operations',
+                icon: Stethoscope,
+                href: getHref('medical', '/medical'),
+                gradient: 'from-green-500 to-emerald-600',
+                comingSoon: false,
+                projectIdentifier: 'medical',
+            },
+            {
+                name: 'Logistics',
+                description:
+                    'Manage shipments, routes, and track fleet operations',
+                icon: Truck,
+                href: getHref('logistics', '/logistics'),
+                gradient: 'from-orange-500 to-red-500',
+                comingSoon: false,
+                projectIdentifier: 'logistics',
+            },
+            {
+                name: 'Shop',
+                description:
+                    'Manage wholesale operations, inventory, and purchasing',
+                icon: ShoppingBag,
+                href: getHref('shop', '/shop'),
+                gradient: 'from-purple-500 to-pink-500',
+                comingSoon: false,
+                projectIdentifier: 'shop',
+            },
+            {
+                name: 'Delivery',
+                description:
+                    'Coordinate food service, catering, and supply operations',
+                icon: Package,
+                href: getHref('delivery', '/delivery'),
+                gradient: 'from-red-500 to-rose-600',
+                comingSoon: false,
+                projectIdentifier: 'delivery',
+            },
+            {
+                name: 'HR',
+                description: 'Manage your own human resources business',
+                icon: Briefcase,
+                href: getHref('hr', '/hr'),
+                gradient: 'from-indigo-500 to-purple-600',
+                comingSoon: false,
+                projectIdentifier: 'hr',
+            },
+            {
+                name: 'Travel',
+                description:
+                    'Corporate bookings, expenses, and travel coordination',
+                icon: Plane,
+                href: getHref('travel', '/travel'),
+                gradient: 'from-cyan-500 to-blue-500',
+                comingSoon: false,
+                projectIdentifier: 'travel',
+            },
+            {
+                name: 'F&B',
+                description:
+                    'Handle restaurant operations, inventory, and orders',
+                icon: UtensilsCrossed,
+                href: getHref('fnb', '/fnb'),
+                gradient: 'from-amber-500 to-orange-600',
+                comingSoon: false,
+                projectIdentifier: 'fnb',
+            },
+            {
+                name: 'Education',
+                description:
+                    'Manage courses, students, and school administration',
+                icon: GraduationCap,
+                href: getHref('education', '/education'),
+                gradient: 'from-violet-500 to-purple-600',
+                comingSoon: false,
+                projectIdentifier: 'education',
+            },
+            {
+                name: 'Finance',
+                description:
+                    'Handle accounting, budgeting, and financial reporting',
+                icon: Landmark,
+                href: getHref('finance', '/finance'),
+                gradient: 'from-emerald-500 to-teal-600',
+                comingSoon: true,
+                projectIdentifier: 'finance',
+            },
+            {
+                name: 'Agriculture',
+                description:
+                    'Optimize farm operations, yields, and supply chains',
+                icon: Sprout,
+                href: getHref('agriculture', '/agriculture'),
+                gradient: 'from-green-500 to-lime-600',
+                comingSoon: true,
+                projectIdentifier: 'agriculture',
+            },
+            {
+                name: 'Construction',
+                description:
+                    'Manage construction projects, teams, and resources',
+                icon: HardHat,
+                href: getHref('construction', '/construction'),
+                gradient: 'from-yellow-500 to-orange-600',
+                comingSoon: false,
+                projectIdentifier: 'construction',
+            },
         ],
         [getHref],
     );
@@ -305,7 +309,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                         );
                     }
                 } catch (error) {
-                    console.error('Failed to parse stored app selections', error);
+                    console.error(
+                        'Failed to parse stored app selections',
+                        error,
+                    );
                 }
             }
         }
@@ -323,9 +330,12 @@ export default function MobileSolutions({ auth }: PageProps) {
             !selectedAppIds.includes(solution.projectIdentifier),
     );
 
-    const [removalTarget, setRemovalTarget] = React.useState<string | null>(null);
-    const longPressTimeoutRef =
-        React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [removalTarget, setRemovalTarget] = React.useState<string | null>(
+        null,
+    );
+    const longPressTimeoutRef = React.useRef<ReturnType<
+        typeof setTimeout
+    > | null>(null);
 
     const handleAddSolution = (identifier: string) => {
         setRemovalTarget(null);
@@ -335,9 +345,7 @@ export default function MobileSolutions({ auth }: PageProps) {
     };
 
     const handleRemoveSolution = (identifier: string) => {
-        setSelectedAppIds((prev) =>
-            prev.filter((id) => id !== identifier),
-        );
+        setSelectedAppIds((prev) => prev.filter((id) => id !== identifier));
     };
 
     React.useEffect(() => {
@@ -449,7 +457,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                         });
                     }
                 } catch (error) {
-                    console.error('Failed to parse stored app selections', error);
+                    console.error(
+                        'Failed to parse stored app selections',
+                        error,
+                    );
                 }
             } else {
                 setSelectedAppIds([]);
@@ -563,7 +574,8 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                 <h2 className="text-base font-bold text-gray-900 dark:text-white">
                                                     {auth.user.name}
                                                 </h2>
-                                                {auth.user.email_verified_at && (
+                                                {auth.user
+                                                    .email_verified_at && (
                                                     <span title="Verified">
                                                         <BadgeCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                                                     </span>
@@ -594,7 +606,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                                 Organization
                                                             </p>
                                                             <p className="mt-0.5 text-xs font-semibold text-gray-900 dark:text-white">
-                                                                {auth.project.name}
+                                                                {
+                                                                    auth.project
+                                                                        .name
+                                                                }
                                                             </p>
                                                         </div>
                                                     )}
@@ -605,7 +620,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                             Member Since
                                                         </p>
                                                         <p className="mt-0.5 text-xs font-semibold text-gray-900 dark:text-white">
-                                                            {formatDate(auth.user.created_at)}
+                                                            {formatDate(
+                                                                auth.user
+                                                                    .created_at,
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -617,22 +635,39 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                             <div className="flex items-center gap-1.5">
                                                                 <Crown className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                                                                 <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                                                                    {auth.user.subscription.plan?.name || 'Free'}
+                                                                    {auth.user
+                                                                        .subscription
+                                                                        .plan
+                                                                        ?.name ||
+                                                                        'Free'}
                                                                 </span>
                                                             </div>
                                                             <span
                                                                 className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                                                                    auth.user.subscription.status === 'active'
+                                                                    auth.user
+                                                                        .subscription
+                                                                        .status ===
+                                                                    'active'
                                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                                         : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                                                                 }`}
                                                             >
-                                                                {auth.user.subscription.status}
+                                                                {
+                                                                    auth.user
+                                                                        .subscription
+                                                                        .status
+                                                                }
                                                             </span>
                                                         </div>
-                                                        {auth.user.subscription.end_date && (
+                                                        {auth.user.subscription
+                                                            .end_date && (
                                                             <p className="mt-1 text-[10px] text-gray-600 dark:text-gray-400">
-                                                                Until {formatDate(auth.user.subscription.end_date)}
+                                                                Until{' '}
+                                                                {formatDate(
+                                                                    auth.user
+                                                                        .subscription
+                                                                        .end_date,
+                                                                )}
                                                             </p>
                                                         )}
                                                     </div>
@@ -649,21 +684,31 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                     {primaryAddress ? (
                                                         <div className="mt-1 text-xs text-gray-900 dark:text-white">
                                                             <p>
-                                                                {primaryAddress.street}
+                                                                {
+                                                                    primaryAddress.street
+                                                                }
                                                                 {primaryAddress.unit_number
                                                                     ? `, ${primaryAddress.unit_number}`
                                                                     : ''}
                                                             </p>
                                                             <p>
-                                                                {primaryAddress.city},{' '}
-                                                                {primaryAddress.state}{' '}
-                                                                {primaryAddress.postal_code}
+                                                                {
+                                                                    primaryAddress.city
+                                                                }
+                                                                ,{' '}
+                                                                {
+                                                                    primaryAddress.state
+                                                                }{' '}
+                                                                {
+                                                                    primaryAddress.postal_code
+                                                                }
                                                             </p>
                                                         </div>
                                                     ) : (
                                                         <div className="mt-1">
                                                             <p className="text-[10px] italic text-gray-500 dark:text-gray-400">
-                                                                No address specified
+                                                                No address
+                                                                specified
                                                             </p>
                                                             <Link
                                                                 href="/profile"
@@ -684,7 +729,10 @@ export default function MobileSolutions({ auth }: PageProps) {
                                         const isDisabled = solution.comingSoon;
 
                                         return (
-                                            <div key={solution.name} className="w-full max-w-md">
+                                            <div
+                                                key={solution.name}
+                                                className="w-full max-w-md"
+                                            >
                                                 <div className="rounded-2xl bg-white p-5 shadow-lg transition-all duration-300 dark:bg-gray-800">
                                                     {/* App Icon */}
                                                     <div className="mb-4 flex justify-center">
@@ -701,17 +749,26 @@ export default function MobileSolutions({ auth }: PageProps) {
                                                             {solution.name}
                                                         </h2>
                                                         <p className="mb-4 text-xs text-gray-600 dark:text-gray-400">
-                                                            {solution.description}
+                                                            {
+                                                                solution.description
+                                                            }
                                                         </p>
 
                                                         {/* Action Buttons */}
                                                         <div className="flex flex-row justify-center gap-2">
                                                             {/* Open App Button */}
-                                                            <Link href={solution.href} className="group/btn flex-1">
+                                                            <Link
+                                                                href={
+                                                                    solution.href
+                                                                }
+                                                                className="group/btn flex-1"
+                                                            >
                                                                 <div
                                                                     className={`inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r px-4 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 ${solution.gradient}`}
                                                                 >
-                                                                    <span>Open</span>
+                                                                    <span>
+                                                                        Open
+                                                                    </span>
                                                                     <svg
                                                                         className="ml-1 h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1"
                                                                         fill="none"
@@ -730,11 +787,15 @@ export default function MobileSolutions({ auth }: PageProps) {
 
                                                             {/* Logout Button */}
                                                             <button
-                                                                onClick={handleLogout}
+                                                                onClick={
+                                                                    handleLogout
+                                                                }
                                                                 className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-red-600 hover:shadow-lg active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
                                                             >
                                                                 <LogOut className="h-4 w-4" />
-                                                                <span>Logout</span>
+                                                                <span>
+                                                                    Logout
+                                                                </span>
                                                             </button>
                                                         </div>
                                                     </div>
@@ -792,9 +853,14 @@ export default function MobileSolutions({ auth }: PageProps) {
                                         );
 
                                         return isDisabled ? (
-                                            <div key={solution.name}>{appContent}</div>
+                                            <div key={solution.name}>
+                                                {appContent}
+                                            </div>
                                         ) : (
-                                            <Link key={solution.name} href={solution.href}>
+                                            <Link
+                                                key={solution.name}
+                                                href={solution.href}
+                                            >
                                                 {appContent}
                                             </Link>
                                         );
@@ -822,7 +888,8 @@ export default function MobileSolutions({ auth }: PageProps) {
                                     No apps available
                                 </p>
                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                    Please contact support if you need access to additional apps.
+                                    Please contact support if you need access to
+                                    additional apps.
                                 </p>
                             </div>
                         )
@@ -832,12 +899,15 @@ export default function MobileSolutions({ auth }: PageProps) {
                                 const Icon = solution.icon;
                                 const isDisabled = solution.comingSoon;
                                 const showRemove =
-                                    removalTarget === solution.projectIdentifier;
+                                    removalTarget ===
+                                    solution.projectIdentifier;
 
                                 const appContent = (
                                     <div
                                         className="group relative"
-                                        data-app-tile-id={solution.projectIdentifier}
+                                        data-app-tile-id={
+                                            solution.projectIdentifier
+                                        }
                                         onMouseDown={() =>
                                             startLongPress(
                                                 solution.projectIdentifier,
@@ -939,8 +1009,8 @@ export default function MobileSolutions({ auth }: PageProps) {
                                         className="group relative flex flex-col items-center justify-center text-center text-xs font-medium text-gray-500 transition hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 sm:text-sm"
                                         type="button"
                                     >
-                                        <div className="relative mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white text-gray-500 transition-all duration-300 sm:h-20 sm:w-20 lg:h-24 lg:w-24 dark:border-gray-700 dark:bg-gray-800">
-                                            <Plus className="h-8 w-8 text-gray-400 sm:h-10 sm:w-10 lg:h-12 lg:w-12 dark:text-gray-500" />
+                                        <div className="relative mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white text-gray-500 transition-all duration-300 dark:border-gray-700 dark:bg-gray-800 sm:h-20 sm:w-20 lg:h-24 lg:w-24">
+                                            <Plus className="h-8 w-8 text-gray-400 dark:text-gray-500 sm:h-10 sm:w-10 lg:h-12 lg:w-12" />
                                             <div className="absolute inset-0 rounded-2xl border border-white/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:border-white/10"></div>
                                         </div>
                                         {availableSolutions.length > 0 ? (
@@ -954,14 +1024,23 @@ export default function MobileSolutions({ auth }: PageProps) {
                                         )}
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-56">
+                                <DropdownMenuContent
+                                    align="start"
+                                    className="w-56"
+                                >
                                     {availableSolutions.length > 0 ? (
                                         availableSolutions.map((solution) => {
                                             const IconComponent = solution.icon;
                                             return (
                                                 <DropdownMenuItem
-                                                    key={solution.projectIdentifier}
-                                                    onClick={() => handleAddSolution(solution.projectIdentifier)}
+                                                    key={
+                                                        solution.projectIdentifier
+                                                    }
+                                                    onClick={() =>
+                                                        handleAddSolution(
+                                                            solution.projectIdentifier,
+                                                        )
+                                                    }
                                                     className="cursor-pointer"
                                                 >
                                                     <IconComponent className="mr-2 h-4 w-4" />

@@ -1,5 +1,11 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -8,10 +14,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { Badge } from '@/Components/ui/badge';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { cn } from '@/lib/utils';
-import { Link, Head } from '@inertiajs/react';
 import type { PageProps } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 
 interface OwnerSummary {
     id: number | string;
@@ -58,7 +64,10 @@ interface ClaimsPageProps extends PageProps {
     backUrl: string;
 }
 
-const formatAmount = (amount: number | string | null | undefined, currency?: CurrencySettings | null) => {
+const formatAmount = (
+    amount: number | string | null | undefined,
+    currency?: CurrencySettings | null,
+) => {
     if (amount === null || amount === undefined) {
         return '—';
     }
@@ -74,7 +83,10 @@ const formatAmount = (amount: number | string | null | undefined, currency?: Cur
     const thousands = currency?.thousands_separator ?? ',';
 
     const [whole, fraction = '00'] = numeric.toFixed(2).split('.');
-    const wholeWithSeparators = whole.replace(/\B(?=(\d{3})+(?!\d))/g, thousands);
+    const wholeWithSeparators = whole.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        thousands,
+    );
 
     return `${symbol}${wholeWithSeparators}${decimal}${fraction}`;
 };
@@ -112,7 +124,9 @@ const formatStatus = (value?: string | null) => {
         return 'Unknown';
     }
 
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+    return value
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const claimTypeLabels: Record<string, string> = {
@@ -124,9 +138,12 @@ const claimTypeLabels: Record<string, string> = {
 };
 
 const statusVariants: Record<string, string> = {
-    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200',
-    approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200',
-    rejected: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200',
+    pending:
+        'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200',
+    approved:
+        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200',
+    rejected:
+        'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200',
 };
 
 export default function HealthcareClaims({
@@ -185,7 +202,9 @@ export default function HealthcareClaims({
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-1">
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Member</p>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Member
+                            </p>
                             <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
                                 {memberName}
                             </p>
@@ -200,10 +219,15 @@ export default function HealthcareClaims({
                                             'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
                                     )}
                                 >
-                                    {member?.status ? member.status.toUpperCase() : 'STATUS UNKNOWN'}
+                                    {member?.status
+                                        ? member.status.toUpperCase()
+                                        : 'STATUS UNKNOWN'}
                                 </Badge>
                                 {member?.group && (
-                                    <Badge variant="outline" className="border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                    <Badge
+                                        variant="outline"
+                                        className="border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                    >
                                         Group: {member.group}
                                     </Badge>
                                 )}
@@ -215,7 +239,10 @@ export default function HealthcareClaims({
                                     Contribution Amount
                                 </p>
                                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                    {formatAmount(member?.contribution_amount, appCurrency)}
+                                    {formatAmount(
+                                        member?.contribution_amount,
+                                        appCurrency,
+                                    )}
                                 </p>
                             </div>
                             <div>
@@ -236,7 +263,8 @@ export default function HealthcareClaims({
                             Claim History
                         </CardTitle>
                         <CardDescription>
-                            Submitted healthcare claims with their current status and details.
+                            Submitted healthcare claims with their current
+                            status and details.
                         </CardDescription>
                     </CardHeader>
                     {hasClaims ? (
@@ -269,17 +297,30 @@ export default function HealthcareClaims({
                                 </TableHeader>
                                 <TableBody>
                                     {claims.map((claim) => (
-                                        <TableRow key={claim.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <TableRow
+                                            key={claim.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {claim.claim_type
-                                                    ? claimTypeLabels[claim.claim_type] ?? formatStatus(claim.claim_type)
+                                                    ? (claimTypeLabels[
+                                                          claim.claim_type
+                                                      ] ??
+                                                      formatStatus(
+                                                          claim.claim_type,
+                                                      ))
                                                     : '—'}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {formatAmount(claim.amount, appCurrency)}
+                                                {formatAmount(
+                                                    claim.amount,
+                                                    appCurrency,
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {formatDate(claim.date_of_service)}
+                                                {formatDate(
+                                                    claim.date_of_service,
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
                                                 {claim.hospital_name || '—'}
@@ -291,14 +332,21 @@ export default function HealthcareClaims({
                                                 <Badge
                                                     className={cn(
                                                         'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-                                                        claim.status ? statusVariants[claim.status] ?? '' : '',
+                                                        claim.status
+                                                            ? (statusVariants[
+                                                                  claim.status
+                                                              ] ?? '')
+                                                            : '',
                                                     )}
                                                 >
                                                     {formatStatus(claim.status)}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-gray-900 dark:text-white">
-                                                {formatDate(claim.created_at, true)}
+                                                {formatDate(
+                                                    claim.created_at,
+                                                    true,
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -308,7 +356,8 @@ export default function HealthcareClaims({
                     ) : (
                         <CardContent>
                             <div className="rounded-md border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-600 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
-                                No claims have been submitted for this member yet.
+                                No claims have been submitted for this member
+                                yet.
                             </div>
                         </CardContent>
                     )}
@@ -317,5 +366,3 @@ export default function HealthcareClaims({
         </CustomerLayout>
     );
 }
-
-

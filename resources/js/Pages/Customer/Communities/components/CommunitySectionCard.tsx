@@ -33,7 +33,9 @@ export function CommunitySectionCard({
             </CardHeader>
             <CardContent className="space-y-4">
                 {items.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{emptyMessage}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {emptyMessage}
+                    </p>
                 ) : (
                     <div className="space-y-3">
                         {items.map((item, index) => {
@@ -41,7 +43,12 @@ export function CommunitySectionCard({
 
                             return (
                                 <div
-                                    key={(item.id as string | number | undefined) ?? `${id}-${index}`}
+                                    key={
+                                        (item.id as
+                                            | string
+                                            | number
+                                            | undefined) ?? `${id}-${index}`
+                                    }
                                     className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
                                 >
                                     <div className="flex items-start justify-between gap-4">
@@ -64,8 +71,13 @@ export function CommunitySectionCard({
                                     {itemValueKeys.length > 0 && (
                                         <div className="mt-3 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
                                             {itemValueKeys
-                                                .map((key) => coerceToString(item[key]))
-                                                .filter((value): value is string => !!value)
+                                                .map((key) =>
+                                                    coerceToString(item[key]),
+                                                )
+                                                .filter(
+                                                    (value): value is string =>
+                                                        !!value,
+                                                )
                                                 .map((value, valueIndex) => (
                                                     <span
                                                         key={`${id}-value-${valueIndex}`}

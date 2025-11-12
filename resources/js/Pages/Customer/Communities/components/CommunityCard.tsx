@@ -223,7 +223,9 @@ export function CommunityCard({
                         </svg>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                             Registered on{' '}
-                            {new Date(community.created_at).toLocaleDateString()}
+                            {new Date(
+                                community.created_at,
+                            ).toLocaleDateString()}
                         </span>
                     </div>
                 </div>
@@ -262,4 +264,3 @@ export function CommunityCard({
         </Card>
     );
 }
-

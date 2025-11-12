@@ -1,23 +1,20 @@
-import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { ChallengesOverviewSection } from '@/Pages/Customer/Challenges/Overview';
+import { CoursesOverviewSection } from '@/Pages/Customer/Courses/Overview';
+import { EventsOverviewSection } from '@/Pages/Customer/Events/Overview';
+import { HealthcareRecordsSection } from '@/Pages/Customer/Healthcare/Index';
+import { LendingRecordsSection } from '@/Pages/Customer/Lending/Index';
+import { MarketplaceOverviewSection } from '@/Pages/Customer/Marketplace/Overview';
+import { MortuaryRecordsSection } from '@/Pages/Customer/Mortuary/Index';
+import { NewsfeedOverviewSection } from '@/Pages/Customer/Newsfeed/Overview';
+import { ResourcesOverviewSection } from '@/Pages/Customer/Resources/Overview';
 import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { LeaveCommunityDialog } from './components/LeaveCommunityDialog';
 import { CommunityOverviewCard } from './components/CommunityOverviewCard';
-import { HealthcareRecordsSection } from '@/Pages/Customer/Healthcare/Index';
-import { MortuaryRecordsSection } from '@/Pages/Customer/Mortuary/Index';
-import { LendingRecordsSection } from '@/Pages/Customer/Lending/Index';
-import { CoursesOverviewSection } from '@/Pages/Customer/Courses/Overview';
-import { MarketplaceOverviewSection } from '@/Pages/Customer/Marketplace/Overview';
-import { ChallengesOverviewSection } from '@/Pages/Customer/Challenges/Overview';
-import { ResourcesOverviewSection } from '@/Pages/Customer/Resources/Overview';
-import { EventsOverviewSection } from '@/Pages/Customer/Events/Overview';
-import { NewsfeedOverviewSection } from '@/Pages/Customer/Newsfeed/Overview';
-import {
-    CommunityCollectionItem,
-    CommunityDetailProps,
-} from './types';
+import { LeaveCommunityDialog } from './components/LeaveCommunityDialog';
+import { CommunityCollectionItem, CommunityDetailProps } from './types';
 import { normalizeCollection } from './utils/communityCollections';
 
 export default function Show({
@@ -220,15 +217,21 @@ export default function Show({
                                 <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                            What's happening in {community.name}?
+                                            What's happening in {community.name}
+                                            ?
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <NewsfeedOverviewSection
                                             key="newsfeed-preview"
                                             id="newsfeed-preview"
-                                            updates={normalizedSections.updates.slice(0, 3)}
-                                            projectIdentifier={projectIdentifier}
+                                            updates={normalizedSections.updates.slice(
+                                                0,
+                                                3,
+                                            )}
+                                            projectIdentifier={
+                                                projectIdentifier
+                                            }
                                             ownerIdentifier={ownerIdentifier}
                                             emptyMessage="No newsfeed items."
                                         />
@@ -238,7 +241,10 @@ export default function Show({
                                     <EventsOverviewSection
                                         key="overview-events"
                                         id="overview-events"
-                                        events={normalizedSections.events.slice(0, 3)}
+                                        events={normalizedSections.events.slice(
+                                            0,
+                                            3,
+                                        )}
                                         projectIdentifier={projectIdentifier}
                                         ownerIdentifier={ownerIdentifier}
                                         appCurrency={community.app_currency}
@@ -410,9 +416,13 @@ export default function Show({
             <Head title={`Community: ${community.name}`} />
 
             <div className="space-y-8">
-                {(sectionNodes.find((section) => section.id === activeSection) ??
-                    sectionNodes[0]
-                ).node}
+                {
+                    (
+                        sectionNodes.find(
+                            (section) => section.id === activeSection,
+                        ) ?? sectionNodes[0]
+                    ).node
+                }
             </div>
 
             <LeaveCommunityDialog

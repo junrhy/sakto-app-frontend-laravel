@@ -1,78 +1,40 @@
 import { router } from '@inertiajs/react';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
-
-interface Product {
-    id: number;
-    name: string;
-    description: string;
-    price: number | string;
-    category: string;
-    type: 'physical' | 'digital' | 'service' | 'subscription';
-    sku: string | null;
-    stock_quantity: number | null;
-    weight: number | null;
-    dimensions: string | null;
-    file_url: string | null;
-    thumbnail_url: string | null;
-    status: 'draft' | 'published' | 'archived' | 'inactive';
-    tags: string[] | null;
-    metadata: any;
-    client_identifier: string;
-    created_at: string;
-    updated_at: string;
-    images?: Array<{
-        id: number;
-        image_url: string;
-        alt_text?: string;
-        is_primary: boolean;
-        sort_order: number;
-    }>;
-    active_variants?: Array<{
-        id: number;
-        sku?: string;
-        price?: number;
-        stock_quantity: number;
-        weight?: number;
-        dimensions?: string;
-        thumbnail_url?: string;
-        attributes: Record<string, string>;
-        is_active: boolean;
-    }>;
-}
-
-interface CartItem {
-    id: number;
-    quantity: number;
-    variant?: any;
-}
+import type { MarketplaceCartItem, MarketplaceProduct } from './ProductGrid';
 
 interface ProductCardProps {
-    product: Product;
-    cartItems: CartItem[];
-    selectedVariants: Record<number, any>;
-    variantErrors: Record<number, string>;
-    addToCart: (product: Product, variant?: any, quantity?: number) => void;
-    removeFromCart: (productId: number, variantId?: number) => void;
+    product: MarketplaceProduct;
+    cartItems: MarketplaceCartItem[];
+    selectedVariants: Record<number | string, any>;
+    variantErrors: Record<number | string, string>;
+    addToCart: (
+        product: MarketplaceProduct,
+        variant?: any,
+        quantity?: number,
+    ) => void;
+    removeFromCart: (productId: number | string, variantId?: number) => void;
     updateCartQuantity: (
-        productId: number,
+        productId: number | string,
         quantity: number,
         variantId?: number,
     ) => void;
-    handleVariantSelection: (productId: number, variant: any) => void;
-    getEffectivePrice: (product: Product, variant?: any) => number;
-    getEffectiveStock: (product: Product, variant?: any) => number;
-    getAvailableAttributes: (product: Product) => Record<string, string[]>;
+    handleVariantSelection: (productId: number | string, variant: any) => void;
+    getEffectivePrice: (product: MarketplaceProduct, variant?: any) => number;
+    getEffectiveStock: (product: MarketplaceProduct, variant?: any) => number;
+    getAvailableAttributes: (
+        product: MarketplaceProduct,
+    ) => Record<string, string[]>;
     findMatchingVariant: (
-        product: Product,
+        product: MarketplaceProduct,
         selectedAttributes: Record<string, string>,
     ) => any;
     isVariantComplete: (
-        product: Product,
+        product: MarketplaceProduct,
         selectedAttributes: Record<string, string>,
     ) => boolean;
     isValidAttributeCombination: (
-        product: Product,
+        product: MarketplaceProduct,
         selectedAttributes: Record<string, string>,
     ) => boolean;
     formatPrice: (price: number | string | null | undefined) => string;
@@ -111,7 +73,9 @@ export default function ProductCard({
 
     let images: { image_url: string; alt_text?: string }[] = [];
     if (product.images && product.images.length > 0) {
-        images = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+        images = [...product.images].sort(
+            (a, b) => a.sort_order - b.sort_order,
+        );
     } else if (product.thumbnail_url) {
         images = [{ image_url: product.thumbnail_url, alt_text: product.name }];
     }
@@ -147,7 +111,9 @@ export default function ProductCard({
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setCurrentImageIdx((prev) => prev - 1);
+                                            setCurrentImageIdx(
+                                                (prev) => prev - 1,
+                                            );
                                         }}
                                         className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1 text-white transition-colors hover:bg-black/70"
                                     >
@@ -170,7 +136,9 @@ export default function ProductCard({
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setCurrentImageIdx((prev) => prev + 1);
+                                            setCurrentImageIdx(
+                                                (prev) => prev + 1,
+                                            );
                                         }}
                                         className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1 text-white transition-colors hover:bg-black/70"
                                     >
@@ -311,7 +279,9 @@ export default function ProductCard({
                                     : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                             }`}
                         >
-                            {product.status === 'published' ? 'Available' : product.status}
+                            {product.status === 'published'
+                                ? 'Available'
+                                : product.status}
                         </span>
                     </div>
                     <div>
@@ -322,7 +292,8 @@ export default function ProductCard({
                 </div>
 
                 <div className="mb-3">
-                    {product.active_variants && product.active_variants.length > 0 ? (
+                    {product.active_variants &&
+                    product.active_variants.length > 0 ? (
                         <button
                             onClick={handleViewDetails}
                             className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-md dark:bg-blue-700 dark:hover:bg-blue-600"
