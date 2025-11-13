@@ -1,11 +1,4 @@
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import type { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -92,19 +85,35 @@ export default function MarketplaceOverviewPage({
     return (
         <CustomerLayout
             auth={auth}
-            title={`Marketplace Overview – ${ownerName}`}
+            title={`Marketplace – ${ownerName}`}
             header={
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                            Marketplace Overview
-                        </h2>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Quick snapshot of marketplace activity for{' '}
-                            {ownerName}.
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3 sm:block">
+                            <h2 className="text-lg font-semibold leading-tight text-gray-800 dark:text-gray-200 sm:text-xl">
+                                Marketplace
+                            </h2>
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="shrink-0 sm:hidden"
+                            >
+                                <Link href={backUrl ?? route('customer.dashboard')}>
+                                    ← Back
+                                </Link>
+                            </Button>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+                            Browse products from {ownerName}
                         </p>
                     </div>
-                    <Button asChild variant="outline">
+                    <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="hidden shrink-0 sm:inline-flex"
+                    >
                         <Link href={backUrl ?? route('customer.dashboard')}>
                             ← Back
                         </Link>
@@ -112,7 +121,7 @@ export default function MarketplaceOverviewPage({
                 </div>
             }
         >
-            <Head title={`Marketplace Overview – ${ownerName}`} />
+            <Head title={`Marketplace – ${ownerName}`} />
 
             <div className="space-y-6">
                 {error && (
@@ -121,45 +130,12 @@ export default function MarketplaceOverviewPage({
                     </div>
                 )}
 
-                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Partner Details
-                        </CardTitle>
-                        <CardDescription>
-                            Project:{' '}
-                            <span className="font-semibold text-gray-900 dark:text-gray-100">
-                                {project}
-                            </span>
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Partner
-                            </p>
-                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                {ownerName}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Identifier
-                            </p>
-                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                                {ownerIdentifier}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <MarketplaceOverviewSection
-                    id="marketplace-overview"
-                    projectIdentifier={project}
-                    ownerIdentifier={ownerIdentifier}
+                <ProductsSection
                     products={products}
                     orderHistory={orderHistory}
                     appCurrency={appCurrency}
+                    projectIdentifier={project}
+                    ownerIdentifier={ownerIdentifier}
                     authUser={authUser}
                 />
             </div>

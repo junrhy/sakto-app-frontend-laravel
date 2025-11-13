@@ -412,6 +412,7 @@ export default function Show({
                 </div>
             }
             sidebarSections={sidebarSections}
+            sidebarSectionTitle={community.name}
         >
             <Head title={`Community: ${community.name}`} />
 

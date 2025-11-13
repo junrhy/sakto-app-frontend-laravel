@@ -101,7 +101,7 @@ const formatPrice = (
 };
 
 const buildOrdersUrl = (project: string, owner: string | number) =>
-    route('customer.projects.marketplace.orders', {
+    route('customer.projects.marketplace.overview', {
         project,
         owner,
     });

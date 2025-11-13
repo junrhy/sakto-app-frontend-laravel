@@ -23,10 +23,9 @@ class MarketplaceController extends CustomerProjectController
             $owner = $this->resolveOwner($project, $ownerIdentifier);
             $owner->app_currency = $this->decodeCurrency($owner->app_currency);
 
+            // Backend API returns all products (no pagination), so no need for per_page/page
             $productsResponse = $this->fetchMarketplaceProducts($owner, [
                 'status' => 'published',
-                'per_page' => 12,
-                'page' => 1,
             ]);
 
             $ordersResponse = $this->fetchMarketplaceOrders($owner, $request->user(), [
@@ -37,7 +36,7 @@ class MarketplaceController extends CustomerProjectController
             return Inertia::render('Customer/Marketplace/Overview', [
                 'project' => $project,
                 'owner' => $this->transformOwner($owner),
-                'products' => $productsResponse['data'] ?? ($productsResponse['products'] ?? []),
+                'products' => $productsResponse['data'] ?? [],
                 'orderHistory' => $ordersResponse['data'] ?? ($ordersResponse['orders'] ?? []),
                 'appCurrency' => $owner->app_currency ?? $this->decodeCurrency($request->user()->app_currency),
                 'authUser' => $this->transformAuthUser($request->user()),
@@ -69,44 +68,6 @@ class MarketplaceController extends CustomerProjectController
             abort(404, 'Product not found');
         } catch (\Throwable $th) {
             abort(500, 'Failed to load product');
-        }
-    }
-
-    public function orders(Request $request, string $project, $ownerIdentifier): Response
-    {
-        $this->ensureCustomerProject($request, $project);
-
-        try {
-            $owner = $this->resolveOwner($project, $ownerIdentifier);
-            $owner->app_currency = $this->decodeCurrency($owner->app_currency);
-
-            $filters = $request->only([
-                'status',
-                'payment_status',
-                'search',
-                'page',
-                'per_page',
-            ]);
-
-            $orders = $this->fetchMarketplaceOrders($owner, $request->user(), $filters);
-
-            return Inertia::render('Customer/Marketplace/Orders', [
-                'community' => $owner,
-                'orders' => $orders['data'] ?? ($orders['orders'] ?? []),
-                'meta' => $orders['meta'] ?? null,
-                'filters' => array_merge([
-                    'status' => '',
-                    'payment_status' => '',
-                    'search' => '',
-                    'page' => 1,
-                    'per_page' => 10,
-                ], $filters),
-                'project' => $project,
-            ]);
-        } catch (ModelNotFoundException $e) {
-            abort(404, 'Owner not found');
-        } catch (\Throwable $th) {
-            abort(500, 'Failed to load orders');
         }
     }
 
@@ -197,13 +158,20 @@ class MarketplaceController extends CustomerProjectController
             $owner = $this->resolveOwner($project, $ownerIdentifier);
             $owner->app_currency = $this->decodeCurrency($owner->app_currency);
 
+            // Fetch all products for checkout (backend returns all products, no pagination)
+            // First try with published status filter
             $productsResponse = $this->fetchMarketplaceProducts($owner, [
                 'status' => 'published',
-                'per_page' => 50,
-                'page' => 1,
             ]);
 
-            $products = $productsResponse['data'] ?? ($productsResponse['products'] ?? []);
+            // fetchMarketplaceProducts now always returns ['data' => [...], 'meta' => ...]
+            $products = $productsResponse['data'] ?? [];
+
+            // If no products found, try without status filter (cart might have unpublished products)
+            if (empty($products)) {
+                $productsResponse = $this->fetchMarketplaceProducts($owner, []);
+                $products = $productsResponse['data'] ?? [];
+            }
 
             return Inertia::render('Customer/Marketplace/Checkout', [
                 'community' => $owner,
@@ -213,6 +181,13 @@ class MarketplaceController extends CustomerProjectController
         } catch (ModelNotFoundException $e) {
             abort(404, 'Owner not found');
         } catch (\Throwable $th) {
+            // Log error for production debugging but don't expose details to user
+            Log::error('Marketplace checkout failed', [
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
+                'project' => $project,
+                'owner' => $ownerIdentifier,
+            ]);
             abort(500, 'Failed to load checkout');
         }
     }
@@ -224,20 +199,20 @@ class MarketplaceController extends CustomerProjectController
         try {
             $owner = $this->resolveOwner($project, $ownerIdentifier);
 
+            // Filter by authenticated user for "My Products"
+            // Use identifier as primary filter (more reliable than email)
+            $user = $request->user();
             $params = [
                 'client_identifier' => $owner->identifier,
+                'customer_identifier' => $user->identifier,
+                'customer_email' => $user->email,
                 'per_page' => $request->integer('per_page', 20),
                 'page' => $request->integer('page', 1),
-                'status' => $request->input('status'),
             ];
 
-            $contactId = $request->input('contact_id') ?? $this->getDefaultContactId($request);
-            if ($contactId) {
-                $params['contact_products'] = true;
-                $params['contact_id'] = $contactId;
-            } else {
-                $params['owned_only'] = true;
-                $params['customer_email'] = $request->user()->email;
+            // Only add status filter if explicitly provided
+            if ($request->has('status')) {
+                $params['status'] = $request->input('status');
             }
 
             $response = Http::withToken($this->apiToken)
@@ -282,6 +257,11 @@ class MarketplaceController extends CustomerProjectController
 
         $payload = $validated;
         $payload['client_identifier'] = $owner->identifier;
+        // Set the creator information for tracking who created the product
+        $user = $request->user();
+        $payload['created_by_email'] = $user->email;
+        $payload['created_by_identifier'] = $user->identifier;
+        $payload['created_by_name'] = $user->name;
 
         if (isset($payload['tags']) && is_string($payload['tags'])) {
             $decodedTags = json_decode($payload['tags'], true);
@@ -319,23 +299,100 @@ class MarketplaceController extends CustomerProjectController
     public function update(Request $request, string $project, $ownerIdentifier, $productId): JsonResponse
     {
         $this->ensureCustomerProject($request, $project);
-        $this->resolveOwner($project, $ownerIdentifier);
 
         try {
-            $response = Http::withToken($this->apiToken)
-                ->put("{$this->apiUrl}/products/{$productId}", $request->all());
+            $owner = $this->resolveOwner($project, $ownerIdentifier);
 
-            if ($response->successful()) {
-                return response()->json($response->json());
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'category' => 'required|string|max:255',
+                'type' => 'required|string|in:physical,digital,service,subscription',
+                'sku' => 'nullable|string|max:255',
+                'stock_quantity' => 'nullable|integer|min:0',
+                'weight' => 'nullable|numeric|min:0',
+                'dimensions' => 'nullable|string|max:255',
+                'status' => 'required|string|in:draft,published,archived,inactive',
+                'tags' => 'nullable',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $payload = $validated;
+            $payload['client_identifier'] = $owner->identifier;
+
+            // Handle tags - ensure it's always an array or not included
+            if (isset($payload['tags'])) {
+                if (is_string($payload['tags'])) {
+                    $decodedTags = json_decode($payload['tags'], true);
+                    $payload['tags'] = is_array($decodedTags) ? $decodedTags : [];
+                } elseif (!is_array($payload['tags'])) {
+                    // If it's not a string and not an array, make it an empty array
+                    $payload['tags'] = [];
+                }
+                // Only include tags if it's not empty - backend will handle empty arrays
+                // Don't set to null - the model mutator expects an array
+            } else {
+                // If tags is not set, don't include it in the payload
+                unset($payload['tags']);
             }
 
+            // Handle file uploads separately - get images array if present
+            $images = null;
+            if ($request->hasFile('images')) {
+                $images = $request->file('images');
+                if (!is_array($images)) {
+                    $images = [$images];
+                }
+            }
+            unset($payload['images']);
+
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/products/{$productId}", $payload);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'error' => 'Failed to update product',
+                    'details' => $response->json(),
+                ], $response->status());
+            }
+
+            // Get the product response from backend API
+            // Http::json() returns an array
+            $productData = $response->json();
+            
+            // Handle different response structures from API
+            if (isset($productData['data'])) {
+                $productData = $productData['data'];
+            }
+
+            // Handle image uploads if provided (don't fail if image upload fails)
+            if ($images && is_array($images) && count($images) > 0) {
+                $productIdForImages = $productData['id'] ?? $productId;
+                
+                if ($productIdForImages) {
+                    // Upload images - don't let failures block the response
+                    try {
+                        $this->uploadImagesToApi($images, $productIdForImages);
+                    } catch (\Throwable $th) {
+                        // Silently continue - product was already updated successfully
+                        // Image upload failure shouldn't fail the entire update
+                    }
+                }
+            }
+
+            // Return the product data
+            // Ensure it's a valid array/object that can be JSON encoded
+            return response()->json($productData ?: ['id' => $productId, 'updated' => true]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'error' => 'Failed to update product',
-                'details' => $response->json(),
-            ], $response->status());
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => 'An error occurred while updating the product',
+                'message' => $th->getMessage(),
             ], 500);
         }
     }
@@ -491,29 +548,61 @@ class MarketplaceController extends CustomerProjectController
 
     protected function fetchMarketplaceProducts(User $owner, array $filters = []): array
     {
-        $params = array_filter([
-            'client_identifier' => $owner->identifier,
-            'status' => $filters['status'] ?? 'published',
-            'per_page' => $filters['per_page'] ?? 12,
-            'page' => $filters['page'] ?? 1,
-            'search' => $filters['search'] ?? null,
-            'category' => $filters['category'] ?? null,
-            'type' => $filters['type'] ?? null,
-            'availability' => $filters['availability'] ?? null,
-            'sort' => $filters['sort'] ?? null,
-            'price_min' => $filters['price_min'] ?? null,
-            'price_max' => $filters['price_max'] ?? null,
-        ], fn ($value) => $value !== null && $value !== '');
+        $params = [];
+        
+        // Always include client_identifier
+        $params['client_identifier'] = $owner->identifier;
+        
+        // Only add status if explicitly provided (don't default to 'published')
+        if (isset($filters['status'])) {
+            $params['status'] = $filters['status'];
+        }
+        
+        // Add pagination filters only if explicitly provided
+        // Backend API doesn't paginate by default, returns all products
+        if (isset($filters['per_page'])) {
+            $params['per_page'] = $filters['per_page'];
+        }
+        if (isset($filters['page'])) {
+            $params['page'] = $filters['page'];
+        }
+        
+        foreach (['search', 'category', 'type', 'availability', 'sort', 'price_min', 'price_max'] as $key) {
+            if (isset($filters[$key]) && $filters[$key] !== null && $filters[$key] !== '') {
+                $params[$key] = $filters[$key];
+            }
+        }
 
         try {
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/products", $params);
 
             if ($response->successful()) {
-                return $response->json();
+                $data = $response->json();
+                
+                // Handle different response structures:
+                // 1. Direct array of products: [product1, product2, ...]
+                // 2. Wrapped in 'data' key: {data: [product1, product2, ...]}
+                // 3. Wrapped in 'products' key: {products: [product1, product2, ...]}
+                if (isset($data['data']) && is_array($data['data'])) {
+                    $products = $data['data'];
+                } elseif (isset($data['products']) && is_array($data['products'])) {
+                    $products = $data['products'];
+                } elseif (is_array($data) && !empty($data) && isset($data[0]) && is_array($data[0])) {
+                    // Direct array of products
+                    $products = $data;
+                } else {
+                    $products = [];
+                }
+                
+                // Return in consistent format
+                return [
+                    'data' => $products,
+                    'meta' => $data['meta'] ?? null,
+                ];
             }
         } catch (\Throwable $th) {
-            // Swallow exceptions and return empty array
+            // Silently handle exceptions
         }
 
         return [

@@ -102,12 +102,11 @@ Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])
             Route::get('/my-products', [App\Http\Controllers\Customer\MarketplaceController::class, 'myProducts'])->name('my-products');
             Route::get('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'show'])->name('products.show');
             Route::post('/products', [App\Http\Controllers\Customer\MarketplaceController::class, 'store'])->name('products.store');
-            Route::put('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'update'])->name('products.update');
+            Route::match(['put', 'post'], '/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'update'])->name('products.update');
             Route::delete('/products/{product}', [App\Http\Controllers\Customer\MarketplaceController::class, 'destroy'])->name('products.destroy');
             Route::post('/products/{product}/images', [App\Http\Controllers\Customer\MarketplaceController::class, 'uploadProductImages'])->name('products.images.store');
             Route::delete('/products/{product}/images/{image}', [App\Http\Controllers\Customer\MarketplaceController::class, 'deleteProductImage'])->name('products.images.destroy');
             Route::get('/products/{product}/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'productOrders'])->name('products.orders');
-            Route::get('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'orders'])->name('orders');
             Route::post('/orders/{order}/cancel', [App\Http\Controllers\Customer\MarketplaceController::class, 'cancelOrder'])->name('orders.cancel');
             Route::post('/orders', [App\Http\Controllers\Customer\MarketplaceController::class, 'placeOrder'])->name('orders.store');
         });

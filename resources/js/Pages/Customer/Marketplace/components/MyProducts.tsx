@@ -16,10 +16,19 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
 import { useForm } from '@inertiajs/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Image as ImageIcon, Package } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ProductOrderHistory, ProductOrderItem } from './ProductOrderHistory';
 import { ProductOrdersTable } from './ProductOrdersTable';
@@ -34,6 +43,16 @@ export interface MarketplaceProduct {
     status?: string | null;
     sku?: string | null;
     stock_quantity?: number | null;
+    thumbnail_url?: string | null;
+    images?: Array<{
+        id: number;
+        image_url: string;
+        alt_text?: string;
+        is_primary: boolean;
+        sort_order: number;
+    }> | null;
+    active_variants?: Array<unknown> | null;
+    tags?: string[] | null;
     updated_at?: string | null;
     created_at?: string | null;
 }
@@ -103,6 +122,8 @@ export function MyProducts({
         });
 
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<MarketplaceProduct | null>(null);
 
     const formattedCurrency = useCallback(
         (value: number | string | null | undefined) => {
@@ -134,6 +155,11 @@ export function MyProducts({
         clearErrors();
 
         try {
+            const csrfToken =
+                document
+                    .querySelector('meta[name="csrf-token"]')
+                    ?.getAttribute('content') ?? '';
+
             const formData = new FormData();
             Object.entries(data).forEach(([key, value]) => {
                 formData.append(key, value ?? '');
@@ -149,6 +175,7 @@ export function MyProducts({
                     body: formData,
                     headers: {
                         Accept: 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
                     },
                 },
             );
@@ -165,6 +192,77 @@ export function MyProducts({
             fetchProducts();
         } catch (error) {
             toast.error('Unable to create product right now.');
+        }
+    };
+
+    const handleEditProduct = (product: MarketplaceProduct) => {
+        setEditingProduct(product);
+        setData({
+            name: product.name ?? '',
+            description: product.description ?? '',
+            price: product.price?.toString() ?? '',
+            category: product.category ?? '',
+            type: product.type ?? 'physical',
+            status: product.status ?? 'draft',
+            sku: product.sku ?? '',
+            stock_quantity: product.stock_quantity?.toString() ?? '',
+        });
+        setEditDialogOpen(true);
+    };
+
+    const handleUpdateProduct = async (
+        event: React.FormEvent<HTMLFormElement>,
+    ) => {
+        event.preventDefault();
+        if (!editingProduct) return;
+        clearErrors();
+
+        try {
+            const csrfToken =
+                document
+                    .querySelector('meta[name="csrf-token"]')
+                    ?.getAttribute('content') ?? '';
+
+            const formData = new FormData();
+            // Add method override for Laravel to handle PUT with FormData
+            formData.append('_method', 'PUT');
+            
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== null && value !== undefined) {
+                    formData.append(key, value);
+                }
+            });
+
+            // Use POST with _method=PUT for FormData (Laravel standard)
+            const response = await fetch(
+                route('customer.projects.marketplace.products.update', {
+                    project: projectIdentifier,
+                    owner: ownerIdentifier,
+                    product: editingProduct.id,
+                }),
+                {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                },
+            );
+
+            if (!response.ok) {
+                const payload = await response.json();
+                toast.error(payload?.error ?? 'Failed to update product');
+                return;
+            }
+
+            toast.success('Product updated successfully');
+            setEditDialogOpen(false);
+            setEditingProduct(null);
+            reset();
+            fetchProducts();
+        } catch (error) {
+            toast.error('Unable to update product right now.');
         }
     };
 
@@ -238,15 +336,6 @@ export function MyProducts({
         }
     };
 
-    const marketplaceUrl = useMemo(
-        () =>
-            route('customer.projects.marketplace.overview', {
-                project: projectIdentifier,
-                owner: ownerIdentifier,
-            }),
-        [ownerIdentifier, projectIdentifier],
-    );
-
     return (
         <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -258,14 +347,9 @@ export function MyProducts({
                         Manage your listings for this community marketplace.
                     </CardDescription>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" asChild>
-                        <a href={marketplaceUrl}>Open Marketplace</a>
-                    </Button>
                     <Button onClick={() => setCreateDialogOpen(true)}>
                         Add Product
                     </Button>
-                </div>
             </CardHeader>
             <CardContent className="space-y-4">
                 {loading ? (
@@ -277,31 +361,76 @@ export function MyProducts({
                         You have not listed any products yet.
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[680px] divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                    <TableHead className="text-gray-900 dark:text-white">
                                         Product
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Type
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
                                         Status
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        SKU
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Stock
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
                                         Price
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
-                                        Updated
-                                    </th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Created
+                                    </TableHead>
+                                    <TableHead className="text-right text-gray-900 dark:text-white">
                                         Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {products.map((product) => (
-                                    <tr key={product.id}>
-                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {products.map((product) => {
+                                    const getProductImage = () => {
+                                        if (product.thumbnail_url) {
+                                            return product.thumbnail_url;
+                                        }
+                                        const primaryImage = product.images?.find(
+                                            (img) => img.is_primary,
+                                        );
+                                        if (primaryImage) {
+                                            return primaryImage.image_url;
+                                        }
+                                        return product.images?.[0]?.image_url;
+                                    };
+
+                                    const productImage = getProductImage();
+                                    const variantsCount =
+                                        product.active_variants?.length ?? 0;
+                                    const stockQuantity =
+                                        product.stock_quantity ?? 0;
+
+                                    return (
+                                        <TableRow
+                                            key={product.id}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <div className="flex items-center gap-3">
+                                                    {productImage ? (
+                                                        <img
+                                                            src={productImage}
+                                                            alt={product.name}
+                                                            className="h-12 w-12 rounded-md object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-12 w-12 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700">
+                                                            <ImageIcon className="h-6 w-6 text-gray-400" />
+                                                        </div>
+                                                    )}
+                                                    <div>
                                             <div className="font-medium">
                                                 {product.name}
                                             </div>
@@ -310,24 +439,70 @@ export function MyProducts({
                                                     {product.category}
                                                 </div>
                                             )}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                                                        {variantsCount > 0 && (
+                                                            <div className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                                <Package className="h-3 w-3" />
+                                                                {variantsCount} variant
+                                                                {variantsCount !== 1
+                                                                    ? 's'
+                                                                    : ''}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="capitalize"
+                                                >
+                                                    {product.type ?? 'physical'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
                                             <Badge
                                                 variant="secondary"
                                                 className="capitalize"
                                             >
                                                 {product.status ?? 'draft'}
                                             </Badge>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {product.sku ? (
+                                                    <span className="text-sm font-mono">
+                                                        {product.sku}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {stockQuantity > 0 ? (
+                                                    <span className="text-sm">
+                                                        {stockQuantity.toLocaleString()}
+                                                    </span>
+                                                ) : (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        Out of Stock
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <span className="font-medium">
                                             {formattedCurrency(
                                                 product.price ?? 0,
                                             )}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                                            {product.updated_at
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {product.created_at
                                                 ? formatDateTimeForDisplay(
-                                                      product.updated_at,
+                                                          product.created_at,
                                                       {
                                                           month: 'short',
                                                           day: 'numeric',
@@ -335,9 +510,20 @@ export function MyProducts({
                                                       },
                                                   )
                                                 : '—'}
-                                        </td>
-                                        <td className="px-4 py-3 text-right text-sm">
+                                            </TableCell>
+                                            <TableCell className="text-right text-gray-900 dark:text-white">
                                             <div className="flex flex-wrap justify-end gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEditProduct(
+                                                                product,
+                                                            )
+                                                        }
+                                                    >
+                                                        Edit
+                                                    </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -362,18 +548,27 @@ export function MyProducts({
                                                     Delete
                                                 </Button>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
                 )}
 
                 <ProductOrderHistory orders={orders} title="Recent Orders" />
             </CardContent>
 
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <Dialog
+                open={createDialogOpen}
+                onOpenChange={(open) => {
+                    setCreateDialogOpen(open);
+                    if (!open) {
+                        reset();
+                    }
+                }}
+            >
                 <DialogContent className="max-w-xl">
                     <DialogHeader>
                         <DialogTitle>Create Product Listing</DialogTitle>
@@ -508,6 +703,164 @@ export function MyProducts({
                             </Button>
                             <Button type="submit" disabled={processing}>
                                 {processing ? 'Saving...' : 'Save Product'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={editDialogOpen}
+                onOpenChange={(open) => {
+                    setEditDialogOpen(open);
+                    if (!open) {
+                        setEditingProduct(null);
+                        reset();
+                    }
+                }}
+            >
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Edit Product Listing</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdateProduct} className="space-y-4">
+                        <div>
+                            <Label htmlFor="edit-product-name">Name</Label>
+                            <Input
+                                id="edit-product-name"
+                                value={data.name}
+                                onChange={(event) =>
+                                    setData('name', event.target.value)
+                                }
+                                required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="edit-product-description">
+                                Description
+                            </Label>
+                            <Textarea
+                                id="edit-product-description"
+                                rows={3}
+                                value={data.description}
+                                onChange={(event) =>
+                                    setData(
+                                        'description',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                                <Label htmlFor="edit-product-price">Price</Label>
+                                <Input
+                                    id="edit-product-price"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={data.price}
+                                    onChange={(event) =>
+                                        setData('price', event.target.value)
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-product-stock">
+                                    Stock Quantity
+                                </Label>
+                                <Input
+                                    id="edit-product-stock"
+                                    type="number"
+                                    min="0"
+                                    value={data.stock_quantity}
+                                    onChange={(event) =>
+                                        setData(
+                                            'stock_quantity',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                                <Label htmlFor="edit-product-category">
+                                    Category
+                                </Label>
+                                <Input
+                                    id="edit-product-category"
+                                    value={data.category}
+                                    onChange={(event) =>
+                                        setData('category', event.target.value)
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-product-status">
+                                    Status
+                                </Label>
+                                <select
+                                    id="edit-product-status"
+                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    value={data.status}
+                                    onChange={(event) =>
+                                        setData('status', event.target.value)
+                                    }
+                                >
+                                    <option value="draft">Draft</option>
+                                    <option value="published">Published</option>
+                                    <option value="archived">Archived</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                                <Label htmlFor="edit-product-type">Type</Label>
+                                <select
+                                    id="edit-product-type"
+                                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    value={data.type}
+                                    onChange={(event) =>
+                                        setData('type', event.target.value)
+                                    }
+                                >
+                                    <option value="physical">Physical</option>
+                                    <option value="digital">Digital</option>
+                                    <option value="service">Service</option>
+                                    <option value="subscription">
+                                        Subscription
+                                    </option>
+                                </select>
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-product-sku">SKU</Label>
+                                <Input
+                                    id="edit-product-sku"
+                                    value={data.sku}
+                                    onChange={(event) =>
+                                        setData('sku', event.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setEditDialogOpen(false);
+                                    setEditingProduct(null);
+                                    reset();
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing
+                                    ? 'Updating...'
+                                    : 'Update Product'}
                             </Button>
                         </DialogFooter>
                     </form>

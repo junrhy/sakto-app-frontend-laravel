@@ -21,6 +21,7 @@ interface CustomerLayoutProps {
     header?: ReactNode;
     title?: string;
     sidebarSections?: SidebarSectionItem[];
+    sidebarSectionTitle?: string;
 }
 
 export default function CustomerLayout({
@@ -29,6 +30,7 @@ export default function CustomerLayout({
     children,
     title = 'Customer Dashboard',
     sidebarSections = [],
+    sidebarSectionTitle = 'This Page',
 }: PropsWithChildren<CustomerLayoutProps>) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const pageProps = usePage().props as any;
@@ -368,7 +370,7 @@ export default function CustomerLayout({
                             {sidebarSections.length > 0 && (
                                 <div className="mt-6 space-y-2 border-t border-white/10 pt-4">
                                     <p className="px-4 text-xs font-semibold uppercase tracking-wide text-indigo-200/70">
-                                        This Page
+                                        {sidebarSectionTitle}
                                     </p>
                                     <div className="flex flex-col space-y-1">
                                         {sidebarSections.map((section) => (

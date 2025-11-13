@@ -160,8 +160,14 @@ export default function MarketplaceCheckout({
 
     const cartKeyCandidates = useMemo(() => {
         const ownerKeys = new Set<string>();
+        
+        // Add owner identifier variations (same as ProductsSection)
+        if (ownerIdentifier !== null && ownerIdentifier !== undefined) {
+            ownerKeys.add(String(ownerIdentifier));
+        }
+        
+        // Add community identifier variations
         [
-            ownerIdentifier,
             community.identifier,
             community.slug,
             community.id,
@@ -173,6 +179,17 @@ export default function MarketplaceCheckout({
                 }
             }
         });
+        
+        // Add normalized lowercase version (same as ProductsSection)
+        const normalizedOwner = String(ownerIdentifier ?? '')
+            .trim()
+            .toLowerCase();
+        if (normalizedOwner.length > 0) {
+            ownerKeys.add(normalizedOwner);
+        }
+        
+        // Add default fallback (same as ProductsSection)
+        ownerKeys.add('default');
 
         if (ownerKeys.size === 0) {
             ownerKeys.add(String(ownerIdentifier ?? 'community'));
@@ -252,6 +269,10 @@ export default function MarketplaceCheckout({
         initialCartStateRef.current.items,
     );
 
+    // Track when products have been loaded to clean up cart only once
+    const productsLoadedRef = useRef<string>('');
+
+    // Load cart items from localStorage on mount and when cartKeyCandidates change
     useEffect(() => {
         if (!isBrowser) {
             return;
@@ -260,31 +281,44 @@ export default function MarketplaceCheckout({
             return;
         }
 
-        const preferredKey = cartKeyCandidates[0];
-        if (!preferredKey || storageKey === preferredKey) {
-            return;
-        }
+        // Try to find cart items from any candidate key
+        let foundKey: string | null = null;
+        let foundItems: MarketplaceCartItem[] = [];
 
-        if (cartItems.length > 0) {
-            const payload = JSON.stringify(cartItems);
-            window.localStorage.setItem(preferredKey, payload);
-            window.localStorage.setItem('community-cart', payload);
-        } else {
-            const saved = window.localStorage.getItem(preferredKey);
+        for (const key of cartKeyCandidates) {
+            const saved = window.localStorage.getItem(key);
             if (saved) {
                 try {
-                    setCartItems(JSON.parse(saved) as MarketplaceCartItem[]);
+                    const parsed = JSON.parse(saved) as MarketplaceCartItem[];
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        foundKey = key;
+                        foundItems = parsed;
+                        break;
+                    }
                 } catch (error) {
                     console.error(
-                        'Failed to parse marketplace cart from preferred key',
+                        'Failed to parse marketplace cart data',
                         error,
                     );
                 }
             }
         }
 
+        // If we found items, use them (this ensures we always have the latest cart)
+        if (foundKey && foundItems.length > 0) {
+            setCartItems(foundItems);
+            setStorageKey(foundKey);
+        } else if (foundKey) {
+            // Found key but no items, just update the storage key
+            setStorageKey(foundKey);
+        } else {
+            // No cart found, use the preferred key
+            const preferredKey = cartKeyCandidates[0];
+            if (preferredKey && storageKey !== preferredKey) {
         setStorageKey(preferredKey);
-    }, [cartKeyCandidates, cartItems, storageKey]);
+            }
+        }
+    }, [cartKeyCandidates, isBrowser]); // Removed cartItems and storageKey from dependencies to avoid loops
 
     const [currentStep, setCurrentStep] =
         useState<CheckoutStep>('order-summary');
@@ -343,6 +377,49 @@ export default function MarketplaceCheckout({
             ),
         [products],
     );
+
+    // Clean up cart items that don't have matching products (only when products change)
+    useEffect(() => {
+        if (products.length === 0) {
+            return;
+        }
+
+        // Create a signature of current products to detect when they change
+        const productsSignature = products.map(p => p.id).sort().join(',');
+        
+        // Only clean up when products actually change, not on every render
+        if (productsLoadedRef.current === productsSignature) {
+            return;
+        }
+
+        // Use functional update to get latest cartItems without adding to dependencies
+        setCartItems((currentCartItems) => {
+            if (currentCartItems.length === 0) {
+                productsLoadedRef.current = productsSignature;
+                return currentCartItems;
+            }
+
+            const availableItems = currentCartItems.filter((item) => {
+                const product = getProductById(item.id);
+                return product !== undefined;
+            });
+
+            if (availableItems.length !== currentCartItems.length) {
+                const removedCount = currentCartItems.length - availableItems.length;
+                if (removedCount > 0) {
+                    toast.warning(
+                        `${removedCount} item(s) removed from cart - no longer available.`,
+                    );
+                }
+                return availableItems;
+            }
+
+            return currentCartItems;
+        });
+
+        // Mark this products set as processed
+        productsLoadedRef.current = productsSignature;
+    }, [products, getProductById]);
 
     const getEffectiveStock = (
         product: MarketplaceProduct | undefined,
@@ -805,7 +882,7 @@ export default function MarketplaceCheckout({
             );
 
             router.visit(
-                route('customer.projects.marketplace.orders', {
+                route('customer.projects.marketplace.overview', {
                     project,
                     owner: ownerIdentifier,
                 }),
@@ -939,7 +1016,7 @@ export default function MarketplaceCheckout({
                                                                     variant="outline"
                                                                 >
                                                                     {key}:{' '}
-                                                                    {value}
+                                                                    {String(value)}
                                                                 </Badge>
                                                             ),
                                                         )}

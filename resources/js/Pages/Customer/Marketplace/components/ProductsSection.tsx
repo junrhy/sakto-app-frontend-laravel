@@ -2,7 +2,13 @@ import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import type { PageProps } from '@/types';
 import { router, usePage } from '@inertiajs/react';
+import {
+    Package,
+    ShoppingBag,
+    Store,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
     CommunityCollectionItem,
     CommunityCurrency,
@@ -187,6 +193,7 @@ const normalizeOrderHistory = (
         reference: toOptionalString(order.reference),
         order_status: toOptionalString(order.order_status),
         status: toOptionalString(order.status),
+        payment_status: toOptionalString(order.payment_status),
         total_amount:
             toOptionalAmount(order.total_amount) ??
             toOptionalAmount(order.amount),
@@ -196,6 +203,11 @@ const normalizeOrderHistory = (
         created_at: toOptionalString(order.created_at),
         ordered_at: toOptionalString(order.ordered_at),
         items: Array.isArray(order.items) ? order.items : [],
+        order_items: Array.isArray(order.order_items)
+            ? order.order_items
+            : Array.isArray(order.items)
+              ? order.items
+              : [],
     }));
 };
 
@@ -316,6 +328,7 @@ export default function ProductsSection({
         initialCartStateRef.current.items,
     );
 
+    // Load cart items from localStorage when cartKeyCandidates change
     useEffect(() => {
         if (!isBrowser) {
             return;
@@ -324,31 +337,44 @@ export default function ProductsSection({
             return;
         }
 
-        const preferredKey = cartKeyCandidates[0];
-        if (!preferredKey || storageKey === preferredKey) {
-            return;
-        }
+        // Try to find cart items from any candidate key (same as Checkout)
+        let foundKey: string | null = null;
+        let foundItems: MarketplaceCartItem[] = [];
 
-        if (cartItems.length > 0) {
-            const payload = JSON.stringify(cartItems);
-            window.localStorage.setItem(preferredKey, payload);
-            window.localStorage.setItem('community-cart', payload);
-        } else {
-            const saved = window.localStorage.getItem(preferredKey);
+        for (const key of cartKeyCandidates) {
+            const saved = window.localStorage.getItem(key);
             if (saved) {
                 try {
-                    setCartItems(JSON.parse(saved) as MarketplaceCartItem[]);
+                    const parsed = JSON.parse(saved) as MarketplaceCartItem[];
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        foundKey = key;
+                        foundItems = parsed;
+                        break;
+                    }
                 } catch (error) {
                     console.error(
-                        'Failed to parse marketplace cart from preferred key',
+                        'Failed to parse marketplace cart data',
                         error,
                     );
                 }
             }
         }
 
+        // If we found items, use them (this ensures we always have the latest cart)
+        if (foundKey && foundItems.length > 0) {
+            setCartItems(foundItems);
+            setStorageKey(foundKey);
+        } else if (foundKey) {
+            // Found key but no items, just update the storage key
+            setStorageKey(foundKey);
+        } else {
+            // No cart found, use the preferred key
+            const preferredKey = cartKeyCandidates[0];
+            if (preferredKey && storageKey !== preferredKey) {
         setStorageKey(preferredKey);
-    }, [cartKeyCandidates, cartItems, isBrowser, storageKey]);
+            }
+        }
+    }, [cartKeyCandidates, isBrowser]); // Removed cartItems and storageKey from dependencies to avoid loops
 
     const [selectedVariants, setSelectedVariants] = useState<
         Record<number | string, MarketplaceProductVariant | null>
@@ -624,6 +650,21 @@ export default function ProductsSection({
         return cartItems.reduce((count, item) => count + item.quantity, 0);
     };
 
+    const clearCart = useCallback(() => {
+        setCartItems([]);
+        setSelectedVariants({});
+        setVariantErrors({});
+        if (isBrowser) {
+            window.localStorage.removeItem(storageKey);
+            window.localStorage.removeItem('community-cart');
+            // Also clear from all candidate keys
+            cartKeyCandidates.forEach((key) => {
+                window.localStorage.removeItem(key);
+            });
+        }
+        toast.success('Cart cleared');
+    }, [isBrowser, storageKey, cartKeyCandidates]);
+
     const handleVariantSelection = (
         productId: number | string,
         variant: MarketplaceProductVariant | null,
@@ -754,10 +795,28 @@ export default function ProductsSection({
                 }
                 className="w-full"
             >
-                <TabsList className="w-full flex-wrap sm:w-auto">
-                    <TabsTrigger value="products">Products</TabsTrigger>
-                    <TabsTrigger value="orders">Orders</TabsTrigger>
-                    <TabsTrigger value="my-products">My Products</TabsTrigger>
+                <TabsList className="mb-6 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-gray-200 bg-gray-100 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:grid-cols-3">
+                    <TabsTrigger
+                        value="products"
+                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
+                    >
+                        <Package className="h-4 w-4" />
+                        <span>Products</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="orders"
+                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
+                    >
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>Orders</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="my-products"
+                        className="group flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50"
+                    >
+                        <Store className="h-4 w-4" />
+                        <span>My Products</span>
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="products" className="space-y-6">
@@ -767,6 +826,7 @@ export default function ProductsSection({
                         getCartTotal={getCartTotal}
                         formatPrice={formatPrice}
                         handleCheckout={handleCheckout}
+                        handleClearCart={clearCart}
                     />
 
                     <div className="flex items-center justify-end">
@@ -825,6 +885,9 @@ export default function ProductsSection({
                     <ProductOrderHistory
                         orders={formattedOrders}
                         emptyMessage="You have no marketplace orders yet."
+                        projectIdentifier={projectIdentifier}
+                        ownerIdentifier={ownerIdentifier}
+                        appCurrency={appCurrency}
                     />
                 </TabsContent>
 
