@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register global middleware
         $middleware->append([
+            \App\Http\Middleware\RedirectSubdomainMiddleware::class,
             \App\Http\Middleware\MaintenanceModeMiddleware::class,
         ]);
 

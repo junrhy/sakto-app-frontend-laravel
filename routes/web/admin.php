@@ -86,4 +86,12 @@ Route::middleware(['auth', 'ip_restriction', 'admin', 'ensure_user_type:admin'])
         Route::get('/', [App\Http\Controllers\Admin\WalletController::class, 'index'])->name('admin.wallets.index');
         Route::post('/top-up', [App\Http\Controllers\Admin\WalletController::class, 'topUp'])->name('admin.wallets.top-up');
     });
+
+    // Subdomain Redirects
+    Route::prefix('admin/subdomain-redirects')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\SubdomainRedirectController::class, 'index'])->name('admin.subdomain-redirects.index');
+        Route::post('/', [App\Http\Controllers\Admin\SubdomainRedirectController::class, 'store'])->name('admin.subdomain-redirects.store');
+        Route::put('/{subdomainRedirect}', [App\Http\Controllers\Admin\SubdomainRedirectController::class, 'update'])->name('admin.subdomain-redirects.update');
+        Route::delete('/{subdomainRedirect}', [App\Http\Controllers\Admin\SubdomainRedirectController::class, 'destroy'])->name('admin.subdomain-redirects.destroy');
+    });
 });

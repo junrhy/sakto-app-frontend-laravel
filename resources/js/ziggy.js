@@ -594,6 +594,24 @@ const Ziggy = {
             methods: ['DELETE'],
             parameters: ['index'],
         },
+        'admin.subdomain-redirects.index': {
+            uri: 'admin\/subdomain-redirects',
+            methods: ['GET', 'HEAD'],
+        },
+        'admin.subdomain-redirects.store': {
+            uri: 'admin\/subdomain-redirects',
+            methods: ['POST'],
+        },
+        'admin.subdomain-redirects.update': {
+            uri: 'admin\/subdomain-redirects\/{subdomainRedirect}',
+            methods: ['PUT'],
+            parameters: ['subdomainRedirect'],
+        },
+        'admin.subdomain-redirects.destroy': {
+            uri: 'admin\/subdomain-redirects\/{subdomainRedirect}',
+            methods: ['DELETE'],
+            parameters: ['subdomainRedirect'],
+        },
         'admin.apps.reorder': {
             uri: 'admin\/apps\/reorder',
             methods: ['POST'],

@@ -180,6 +180,44 @@ export default function AdminLayout({
                                 </span>
                             </NavLink>
 
+                        {/* Redirects */}
+                        <NavLink
+                            href={route('admin.subdomain-redirects.index')}
+                            active={route().current('admin.subdomain-redirects.*')}
+                            className={`flex items-center px-4 py-2.5 text-white transition-all duration-200 ${
+                                route().current('admin.subdomain-redirects.*')
+                                    ? 'bg-white/10 text-white'
+                                    : 'hover:bg-white/10'
+                            }`}
+                        >
+                            <svg
+                                className={`mr-3 h-5 w-5 text-white transition-transform duration-200 ${
+                                    route().current('admin.subdomain-redirects.*')
+                                        ? 'scale-110'
+                                        : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M3 7h18M3 12h18M3 17h18"
+                                />
+                            </svg>
+                            <span
+                                className={`font-medium ${
+                                    route().current('admin.subdomain-redirects.*')
+                                        ? 'text-white'
+                                        : 'text-white/80'
+                                }`}
+                            >
+                                Redirects
+                            </span>
+                        </NavLink>
+
                             {/* Wallet Management */}
                             <NavLink
                                 href={route('admin.wallets.index')}

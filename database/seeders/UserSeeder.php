@@ -22,7 +22,9 @@ class UserSeeder extends Seeder
                 'name' => 'Developer',
                 'email' => 'developer@sakto.app',
                 'password' => Hash::make('password'),
-                'project_identifier' => 'trial',
+                'project_identifier' => 'community',
+                'user_type' => 'admin',
+                'is_admin' => true,
                 'email_verified_at' => now(),
             ],
             [
