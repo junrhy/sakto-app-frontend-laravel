@@ -93,7 +93,12 @@ class CommunityController extends CustomerProjectController
             ->first();
 
         $apiPayload = ['client_identifier' => $community->identifier];
+        $customer = $request->user();
+        $customerName = $customer->name ? trim($customer->name) : null;
+        $customerContact = $customer->contact_number ? trim($customer->contact_number) : null;
 
+        // Fetch data using the existing methods that were working before
+        // This ensures data is properly extracted
         $challenges = $this->fetchApiCollection('challenges', array_merge($apiPayload, [
             'status' => 'published',
             'limit' => 24,
@@ -113,10 +118,6 @@ class CommunityController extends CustomerProjectController
             'limit' => 24,
         ]));
 
-        $customer = $request->user();
-        $customerName = $customer->name ? trim($customer->name) : null;
-        $customerContact = $customer->contact_number ? trim($customer->contact_number) : null;
-
         $productsResponse = $this->fetchApiRaw('products', array_merge($apiPayload, [
             'status' => 'published',
             'limit' => 6,
@@ -132,15 +133,23 @@ class CommunityController extends CustomerProjectController
             'per_page' => 50,
         ]));
 
-        $lendingRecords = $this->fetchLendingRecordsForCustomer($community, $customerName, $customerContact);
-        $healthcareRecords = $this->fetchHealthcareRecordsForCustomer($community, $customerName, $customerContact);
-        $mortuaryRecords = $this->fetchMortuaryRecordsForCustomer($community, $customerName, $customerContact);
+        // Lazy load records - these will be fetched when user navigates to respective sections
+        // This improves initial page load performance significantly
+        $lendingRecords = [];
+        $healthcareRecords = [];
+        $mortuaryRecords = [];
+
+        // Get total number of user_customers (members) for this community
+        $totalCustomers = UserCustomer::where('user_id', $community->id)
+            ->where('is_active', true)
+            ->count();
 
         return Inertia::render('Customer/Communities/Show', [
             'community' => $community,
             'isJoined' => $isJoined,
             'isPending' => $isPending,
             'joinedAt' => optional($membership?->created_at)?->toIso8601String(),
+            'totalCustomers' => $totalCustomers,
             'challenges' => $challenges,
             'events' => $events,
             'pages' => $pages,
@@ -358,128 +367,57 @@ class CommunityController extends CustomerProjectController
         return [];
     }
 
-    private function fetchLendingRecordsForCustomer(User $community, ?string $name, ?string $contactNumber): array
+    /**
+     * Extract data from HTTP response, handling different response structures
+     * Matches the behavior of fetchApiCollection method
+     */
+    private function extractResponseData($response): array
     {
-        if (!$name && !$contactNumber) {
+        if (!$response) {
             return [];
         }
 
-        try {
-            $params = [
-                'client_identifier' => $community->identifier,
-            ];
-
-            if ($name) {
-                $params['borrower_name'] = $name;
-            }
-
-            $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/lending", $params);
-
+        // Check if response has successful method (Http response object)
+        if (method_exists($response, 'successful')) {
             if (!$response->successful()) {
                 return [];
             }
+        }
 
-            $loans = $response->json()['data']['loans'] ?? [];
-            $normalizedContact = $this->normalizePhoneNumber($contactNumber);
-
-            return collect($loans)
-                ->filter(function ($loan) use ($name, $normalizedContact) {
-                    $matchesName = $name
-                        ? stripos($loan['borrower_name'] ?? '', $name) !== false
-                        : false;
-
-                    $loanContact = $this->normalizePhoneNumber($loan['borrower_contact_number'] ?? ($loan['contact_number'] ?? null));
-                    $matchesContact = $normalizedContact && $loanContact
-                        ? str_contains($loanContact, $normalizedContact)
-                        : false;
-
-                    return $matchesName || $matchesContact;
-                })
-                ->values()
-                ->all();
-        } catch (\Throwable $th) {
+        try {
+            $data = $response->json();
+            
+            if (!is_array($data)) {
+                return [];
+            }
+            
+            // Use same logic as fetchApiCollection: return $response['data'] ?? []
+            if (isset($data['data'])) {
+                return is_array($data['data']) ? $data['data'] : [];
+            }
+            
+            return [];
+        } catch (\Exception $e) {
+            Log::error('Error extracting response data', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return [];
         }
     }
 
-    private function fetchHealthcareRecordsForCustomer(User $community, ?string $name, ?string $contactNumber): array
-    {
-        if (!$name && !$contactNumber) {
-            return [];
-        }
-
-        try {
-            $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/health-insurance", [
-                    'client_identifier' => $community->identifier,
-                ]);
-
-            if (!$response->successful()) {
-                return [];
-            }
-
-            $members = $response->json()['data']['members'] ?? [];
-            $normalizedContact = $this->normalizePhoneNumber($contactNumber);
-
-            return collect($members)
-                ->filter(function ($member) use ($name, $normalizedContact) {
-                    $matchesName = $name
-                        ? stripos($member['name'] ?? '', $name) !== false
-                        : false;
-
-                    $memberContact = $this->normalizePhoneNumber($member['contact_number'] ?? null);
-                    $matchesContact = $normalizedContact && $memberContact
-                        ? str_contains($memberContact, $normalizedContact)
-                        : false;
-
-                    return $matchesName || $matchesContact;
-                })
-                ->values()
-                ->all();
-        } catch (\Throwable $th) {
-            return [];
-        }
-    }
-
-    private function fetchMortuaryRecordsForCustomer(User $community, ?string $name, ?string $contactNumber): array
-    {
-        if (!$name && !$contactNumber) {
-            return [];
-        }
-
-        try {
-            $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/mortuary", [
-                    'client_identifier' => $community->identifier,
-                ]);
-
-            if (!$response->successful()) {
-                return [];
-            }
-
-            $members = $response->json()['data']['members'] ?? [];
-            $normalizedContact = $this->normalizePhoneNumber($contactNumber);
-
-            return collect($members)
-                ->filter(function ($member) use ($name, $normalizedContact) {
-                    $matchesName = $name
-                        ? stripos($member['name'] ?? '', $name) !== false
-                        : false;
-
-                    $memberContact = $this->normalizePhoneNumber($member['contact_number'] ?? null);
-                    $matchesContact = $normalizedContact && $memberContact
-                        ? str_contains($memberContact, $normalizedContact)
-                        : false;
-
-                    return $matchesName || $matchesContact;
-                })
-                ->values()
-                ->all();
-        } catch (\Throwable $th) {
-            return [];
-        }
-    }
+    /**
+     * NOTE: Lending, Healthcare, and Mortuary records are now lazy-loaded
+     * to improve initial page load performance. These records are fetched
+     * when users navigate to their respective sections or via their
+     * dedicated controllers:
+     * - LendingController::index()
+     * - HealthcareController::index()
+     * - MortuaryController::index()
+     * 
+     * If you need to fetch these records synchronously in the future,
+     * consider using Http::pool() to make concurrent requests.
+     */
 
     private function normalizePhoneNumber(?string $value): ?string
     {

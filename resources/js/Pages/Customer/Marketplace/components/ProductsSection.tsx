@@ -202,12 +202,8 @@ const normalizeOrderHistory = (
         amount_formatted: toOptionalString(order.amount_formatted),
         created_at: toOptionalString(order.created_at),
         ordered_at: toOptionalString(order.ordered_at),
-        items: Array.isArray(order.items) ? order.items : [],
-        order_items: Array.isArray(order.order_items)
-            ? order.order_items
-            : Array.isArray(order.items)
-              ? order.items
-              : [],
+        items: order.items,
+        order_items: order.order_items ?? order.items,
     }));
 };
 

@@ -201,6 +201,21 @@ export function ChallengesOverviewSection({
                               })
                             : undefined;
 
+                        const challengePublicUrl =
+                            challenge.id !== undefined && challenge.id !== null
+                                ? route('challenges.public-show', challenge.id)
+                                : null;
+
+                        const challengeRegisterUrl =
+                            status === 'active' &&
+                            challenge.id !== undefined &&
+                            challenge.id !== null
+                                ? route(
+                                      'challenges.public-register',
+                                      challenge.id,
+                                  )
+                                : null;
+
                         return (
                             <div
                                 key={`challenge-${idValue}`}
@@ -281,6 +296,79 @@ export function ChallengesOverviewSection({
                                                 />
                                             </svg>
                                         </Link>
+                                    )}
+                                </div>
+
+                                <div className="mt-4 flex flex-wrap justify-end gap-2">
+                                    {challengePublicUrl && (
+                                        <Link
+                                            href={challengePublicUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center rounded-lg border border-indigo-200 px-4 py-2 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-500/50 dark:text-indigo-300 dark:hover:bg-indigo-500/10"
+                                        >
+                                            <svg
+                                                className="mr-2 h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M14 3h7m0 0v7m0-7L10 14"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M5 10V5a2 2 0 012-2h5"
+                                                />
+                                            </svg>
+                                            View Public Page
+                                        </Link>
+                                    )}
+                                    {challengeRegisterUrl ? (
+                                        <Link
+                                            href={challengeRegisterUrl}
+                                            className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg dark:bg-blue-700 dark:shadow-gray-900/50 dark:hover:bg-blue-600 dark:hover:shadow-gray-900/70"
+                                        >
+                                            <svg
+                                                className="mr-2 h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                                                />
+                                            </svg>
+                                            Join Challenge
+                                        </Link>
+                                    ) : (
+                                        <button
+                                            className="inline-flex items-center rounded-lg bg-gray-100 px-6 py-3 text-sm font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                            disabled
+                                        >
+                                            <svg
+                                                className="mr-2 h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                            Register Interest
+                                        </button>
                                     )}
                                 </div>
                             </div>

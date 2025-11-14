@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
 import { ChallengesOverviewSection } from '@/Pages/Customer/Challenges/Overview';
 import { CoursesOverviewSection } from '@/Pages/Customer/Courses/Overview';
@@ -23,6 +22,7 @@ export default function Show({
     isJoined,
     isPending,
     joinedAt,
+    totalCustomers,
     challenges,
     events,
     pages,
@@ -72,8 +72,6 @@ export default function Show({
     const navigationItems = useMemo(
         () => [
             { id: 'overview', label: 'Overview' },
-            { id: 'newsfeed', label: 'Newsfeed' },
-            { id: 'events', label: 'Events' },
             { id: 'resources', label: 'Resources' },
             { id: 'challenges', label: 'Challenges' },
             { id: 'marketplace', label: 'Marketplace' },
@@ -201,56 +199,47 @@ export default function Show({
                 id: 'overview',
                 node: (
                     <div id="overview">
-                        <CommunityOverviewCard
-                            key="overview"
-                            community={community}
-                            isJoined={isJoined}
-                            isPending={isPending}
-                            joining={joining}
-                            leaving={leaving}
-                            onJoin={handleJoin}
-                            onLeaveClick={() => setLeaveConfirmOpen(true)}
-                            joinedAt={joinedAt}
-                        />
-                        <div className="mt-8 space-y-6">
-                            <div className="grid gap-6 lg:grid-cols-2">
-                                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                            What's happening in {community.name}
-                                            ?
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <NewsfeedOverviewSection
-                                            key="newsfeed-preview"
-                                            id="newsfeed-preview"
-                                            updates={normalizedSections.updates.slice(
-                                                0,
-                                                3,
-                                            )}
-                                            projectIdentifier={
-                                                projectIdentifier
-                                            }
-                                            ownerIdentifier={ownerIdentifier}
-                                            emptyMessage="No newsfeed items."
-                                        />
-                                    </CardContent>
-                                </Card>
-                                <div className="h-full">
-                                    <EventsOverviewSection
-                                        key="overview-events"
-                                        id="overview-events"
-                                        events={normalizedSections.events.slice(
-                                            0,
-                                            3,
-                                        )}
-                                        projectIdentifier={projectIdentifier}
-                                        ownerIdentifier={ownerIdentifier}
-                                        appCurrency={community.app_currency}
-                                        emptyMessage="No upcoming events."
+                        <div className="grid gap-6 lg:grid-cols-3">
+                            {/* First Column: Newsfeed (wider - spans 2 columns) */}
+                            <div className="space-y-6 lg:col-span-2 lg:px-2 xl:px-20 2xl:px-40">
+                                <NewsfeedOverviewSection
+                                    key="newsfeed-overview"
+                                    id="newsfeed-overview"
+                                    updates={normalizedSections.updates}
+                                    projectIdentifier={projectIdentifier}
+                                    ownerIdentifier={ownerIdentifier}
+                                    emptyMessage="No newsfeed items."
+                                />
+                            </div>
+
+                            {/* Second Column: Overview and Events (spans 1 column) */}
+                            <div className="space-y-6">
+                                <div className="hidden lg:block">
+                                    <CommunityOverviewCard
+                                        key="overview"
+                                        community={community}
+                                        isJoined={isJoined}
+                                        isPending={isPending}
+                                        joining={joining}
+                                        leaving={leaving}
+                                        onJoin={handleJoin}
+                                        onLeaveClick={() => setLeaveConfirmOpen(true)}
+                                        joinedAt={joinedAt}
+                                        totalCustomers={totalCustomers}
                                     />
                                 </div>
+                                <EventsOverviewSection
+                                    key="overview-events"
+                                    id="overview-events"
+                                    events={normalizedSections.events.slice(
+                                        0,
+                                        3,
+                                    )}
+                                    projectIdentifier={projectIdentifier}
+                                    ownerIdentifier={ownerIdentifier}
+                                    appCurrency={community.app_currency}
+                                    emptyMessage="No upcoming events."
+                                />
                             </div>
                         </div>
                     </div>
@@ -265,33 +254,6 @@ export default function Show({
                         resources={normalizedSections.pages}
                         projectIdentifier={projectIdentifier}
                         ownerIdentifier={ownerIdentifier}
-                    />
-                ),
-            },
-            {
-                id: 'newsfeed',
-                node: (
-                    <NewsfeedOverviewSection
-                        key="newsfeed"
-                        id="newsfeed"
-                        updates={normalizedSections.updates}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        emptyMessage="No newsfeed items."
-                    />
-                ),
-            },
-            {
-                id: 'events',
-                node: (
-                    <EventsOverviewSection
-                        key="events"
-                        id="events"
-                        events={normalizedSections.events}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        appCurrency={community.app_currency}
-                        emptyMessage="No events found."
                     />
                 ),
             },

@@ -118,7 +118,7 @@ export function NewsfeedOverviewSection({
                             Newsfeed
                         </CardTitle>
                         <CardDescription>
-                            Latest announcements and updates from this partner.
+                            Latest announcements and updates from this group.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-8 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
@@ -149,29 +149,19 @@ export function NewsfeedOverviewSection({
 
     return (
         <section id={id} className="space-y-4">
-            <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                <CardHeader>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                Newsfeed
-                            </CardTitle>
-                            <CardDescription>
-                                Latest announcements and updates from this
-                                partner.
-                            </CardDescription>
-                        </div>
-                        {viewAllLink && (
-                            <Link
-                                href={viewAllLink}
-                                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200"
-                            >
-                                View all updates →
-                            </Link>
-                        )}
+            <Card className="overflow-hidden border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-gray-800 dark:to-gray-900/50">
+                <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+                    <div>
+                        <CardTitle className="text-xl font-bold text-white">
+                            Newsfeed
+                        </CardTitle>
+                        <CardDescription className="text-white/90">
+                            Latest announcements and updates from this
+                            group.
+                        </CardDescription>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-6">
                     {normalizedUpdates.map((update, index) => {
                         const updateId =
                             typeof update.id === 'number' ||
@@ -195,9 +185,6 @@ export function NewsfeedOverviewSection({
                         const featuredImage = toString(
                             update.featured_image ?? update.image_url,
                         );
-                        const status = toString(
-                            update.status ?? 'published',
-                        ).toLowerCase();
 
                         const youtubeVideos = extractYouTubeVideos(content);
                         const processedContent = hideYouTubeLinks(
@@ -213,119 +200,123 @@ export function NewsfeedOverviewSection({
                         return (
                             <div
                                 key={`newsfeed-${updateId}`}
-                                className="rounded-lg border border-gray-200/80 bg-white/80 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-gray-600/70 dark:bg-gray-800/50 dark:shadow-gray-900/40"
+                                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-indigo-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800/80 dark:hover:border-indigo-600"
                             >
-                                <div className="flex items-start gap-4">
-                                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 shadow-sm">
-                                        <span className="text-sm font-semibold text-white">
-                                            {author.charAt(0).toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1 space-y-3">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                {author}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-700">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                                                {title}
                                             </h3>
-                                            {status === 'published' && (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
-                                                    Published
-                                                </span>
-                                            )}
-                                            {status === 'draft' && (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-500/20 dark:text-amber-200">
-                                                    Draft
-                                                </span>
-                                            )}
                                         </div>
                                         {createdAt && (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {formatDateTimeForDisplay(
-                                                    createdAt,
-                                                    {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                    },
-                                                )}
-                                            </p>
-                                        )}
-                                        <div>
-                                            <h4 className="mb-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-                                                {title}
-                                            </h4>
-                                            <div
-                                                className="newsfeed-content text-sm leading-relaxed text-gray-700 dark:text-gray-300"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: displayContent,
-                                                }}
-                                            />
-                                            {processedContent.length > 280 &&
-                                                !isExpanded && (
-                                                    <button
-                                                        onClick={() =>
-                                                            toggleUpdateExpansion(
-                                                                updateId,
-                                                            )
-                                                        }
-                                                        className="mt-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        Read more
-                                                    </button>
-                                                )}
-                                        </div>
-                                        {featuredImage && (
-                                            <div
-                                                className="group relative overflow-hidden rounded-lg"
-                                                onClick={() => {
-                                                    if (
-                                                        youtubeVideos.length > 0
-                                                    ) {
-                                                        setSelectedUpdateForVideos(
-                                                            {
-                                                                ...update,
-                                                                youtubeVideos,
-                                                            },
-                                                        );
-                                                        setShowVideoDialog(
-                                                            true,
-                                                        );
-                                                    }
-                                                }}
-                                            >
-                                                <img
-                                                    src={featuredImage}
-                                                    alt={title}
-                                                    className="h-48 w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                                                />
-                                                {youtubeVideos.length > 0 && (
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                                        <div className="text-center text-white">
-                                                            <svg
-                                                                className="mx-auto mb-2 h-8 w-8"
-                                                                fill="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path d="M8 5v14l11-7z" />
-                                                            </svg>
-                                                            <p className="text-sm font-medium">
-                                                                Watch Videos
-                                                            </p>
-                                                            <p className="text-xs opacity-75">
-                                                                {
-                                                                    youtubeVideos.length
-                                                                }{' '}
-                                                                video
-                                                                {youtubeVideos.length >
-                                                                1
-                                                                    ? 's'
-                                                                    : ''}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                            <div className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                                <svg
+                                                    className="h-3.5 w-3.5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                    />
+                                                </svg>
+                                                <span className="whitespace-nowrap">
+                                                    {formatDateTimeForDisplay(
+                                                        createdAt,
+                                                        {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}
+                                                </span>
                                             </div>
                                         )}
                                     </div>
+                                    <div className="space-y-3">
+                                        <div
+                                            className="newsfeed-content text-sm leading-relaxed text-gray-700 dark:text-gray-300"
+                                            dangerouslySetInnerHTML={{
+                                                __html: displayContent,
+                                            }}
+                                        />
+                                        {processedContent.length > 280 &&
+                                            !isExpanded && (
+                                                <button
+                                                    onClick={() =>
+                                                        toggleUpdateExpansion(
+                                                            updateId,
+                                                        )
+                                                    }
+                                                    className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                >
+                                                    Read more
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M19 9l-7 7-7-7"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                    </div>
+                                    {featuredImage && (
+                                        <div
+                                            className="group relative overflow-hidden rounded-lg bg-black"
+                                            onClick={() => {
+                                                if (youtubeVideos.length > 0) {
+                                                    setSelectedUpdateForVideos({
+                                                        ...update,
+                                                        youtubeVideos,
+                                                    });
+                                                    setShowVideoDialog(true);
+                                                }
+                                            }}
+                                        >
+                                            <img
+                                                src={featuredImage}
+                                                alt={title}
+                                                className="w-full max-h-96 object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                                            />
+                                            {youtubeVideos.length > 0 && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                                    <div className="text-center text-white">
+                                                        <svg
+                                                            className="mx-auto mb-2 h-8 w-8"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path d="M8 5v14l11-7z" />
+                                                        </svg>
+                                                        <p className="text-sm font-medium">
+                                                            Watch Videos
+                                                        </p>
+                                                        <p className="text-xs opacity-75">
+                                                            {
+                                                                youtubeVideos.length
+                                                            }{' '}
+                                                            video
+                                                            {youtubeVideos.length >
+                                                            1
+                                                                ? 's'
+                                                                : ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );

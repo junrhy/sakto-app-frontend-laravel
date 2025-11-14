@@ -134,19 +134,27 @@ export function ResourcesOverviewSection({
                             const externalUrl = toString(resource.url, '');
                             const slug = toString(resource.slug, '');
 
-                            const resourceUrl =
-                                externalUrl ||
-                                (hasProjectContext
-                                    ? route(
-                                          'customer.projects.resources.overview',
-                                          {
-                                              project: projectIdentifier,
-                                              owner: ownerIdentifier,
-                                          },
-                                      )
-                                    : '#');
+                            const publicResourceUrl = slug
+                                ? route('pages.public', slug)
+                                : null;
 
                             const isExternal = Boolean(externalUrl);
+
+                            const resourceUrl = isExternal
+                                ? externalUrl
+                                : publicResourceUrl ??
+                                  (hasProjectContext
+                                      ? route(
+                                            'customer.projects.resources.overview',
+                                            {
+                                                project: projectIdentifier,
+                                                owner: ownerIdentifier,
+                                            },
+                                        )
+                                      : '#');
+
+                            const isPublicRouteLink =
+                                !isExternal && Boolean(publicResourceUrl);
 
                             return (
                                 <div
@@ -194,35 +202,55 @@ export function ResourcesOverviewSection({
                                                 </p>
                                             )}
                                             <div className="flex justify-end">
-                                                <a
-                                                    href={resourceUrl}
-                                                    target={
-                                                        isExternal
-                                                            ? '_blank'
-                                                            : undefined
-                                                    }
-                                                    rel={
-                                                        isExternal
-                                                            ? 'noopener noreferrer'
-                                                            : undefined
-                                                    }
-                                                    className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                                                >
-                                                    <svg
-                                                        className="mr-2 h-4 w-4"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
+                                                {isExternal ? (
+                                                    <a
+                                                        href={resourceUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                                     >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                        />
-                                                    </svg>
-                                                    View Resource
-                                                </a>
+                                                        <svg
+                                                            className="mr-2 h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                                            />
+                                                        </svg>
+                                                        View Resource
+                                                    </a>
+                                                ) : isPublicRouteLink ? (
+                                                    <Link
+                                                        href={resourceUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                                    >
+                                                        <svg
+                                                            className="mr-2 h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                                            />
+                                                        </svg>
+                                                        View Resource
+                                                    </Link>
+                                                ) : (
+                                                    <span className="inline-flex items-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                                        Resource unavailable
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

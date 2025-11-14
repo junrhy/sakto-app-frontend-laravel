@@ -9,6 +9,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
+import { Fragment } from 'react';
 import { coerceToString } from '../../Communities/utils/communityCollections';
 
 export interface ProductOrderItem {
@@ -98,6 +99,58 @@ const formatPrice = (
     return `${symbol}${formattedWhole}${decimalSeparator}${fraction}`;
 };
 
+const normalizeItems = (order: ProductOrderItem): any[] => {
+    let rawItems = order.items ?? order.order_items ?? [];
+
+    if (typeof rawItems === 'string') {
+        try {
+            rawItems = JSON.parse(rawItems);
+        } catch {
+            rawItems = [];
+        }
+    }
+
+    if (rawItems && typeof rawItems === 'object' && !Array.isArray(rawItems)) {
+        rawItems = Object.values(rawItems);
+    }
+
+    if (!Array.isArray(rawItems)) {
+        return [];
+    }
+
+    return rawItems;
+};
+
+const getOrderItems = (order: ProductOrderItem) =>
+    normalizeItems(order).map((item, index) => {
+        const typed = item as Record<string, any>;
+        const attributes = typed?.attributes;
+        const attributeLabel =
+            attributes && typeof attributes === 'object'
+                ? Object.entries(attributes)
+                      .map(([key, value]) => `${key}: ${value}`)
+                      .join(' • ')
+                : typed?.variant_name ?? '';
+
+        return {
+            id: typed.id ?? index,
+            name:
+                typed.product_name ??
+                typed.name ??
+                typed.title ??
+                `Item ${index + 1}`,
+            attributes: attributeLabel,
+            quantity: typed.quantity ?? typed.qty ?? 0,
+            price:
+                typed.price_formatted ??
+                typed.amount_formatted ??
+                typed.total_formatted ??
+                typed.price ??
+                typed.amount ??
+                null,
+        };
+    });
+
 export function ProductOrderHistory({
     orders,
     title = 'Order History',
@@ -107,10 +160,17 @@ export function ProductOrderHistory({
     appCurrency,
 }: ProductOrderHistoryProps) {
     const getItemsCount = (order: ProductOrderItem): number => {
-        const items = order.items ?? order.order_items ?? [];
-        if (!Array.isArray(items)) {
-            return 0;
+        const items = normalizeItems(order);
+        const totalQty = items.reduce((count: number, item) => {
+            const typed = item as Record<string, any>;
+            const qty = Number(typed?.quantity ?? typed?.qty ?? 0);
+            return count + (Number.isFinite(qty) ? qty : 0);
+        }, 0);
+
+        if (totalQty > 0) {
+            return totalQty;
         }
+
         return items.length;
     };
 
@@ -184,40 +244,28 @@ export function ProductOrderHistory({
                                 const totalAmount = getTotalAmount(order);
                                 const dateValue =
                                     order.created_at ?? order.ordered_at;
+                                const orderItems = getOrderItems(order);
 
                                 return (
-                                    <TableRow
-                                        key={`marketplace-order-${order.id ?? orderNumber}`}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    <Fragment
+                                        key={`marketplace-order-fragment-${order.id ?? orderNumber}`}
                                     >
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            <div className="font-medium">
-                                            {orderNumber}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            <Badge
-                                                className={statusBadgeVariant(
-                                                    orderStatus,
-                                                )}
-                                            >
-                                                {orderStatus
-                                                    .replace(/_/g, ' ')
-                                                    .replace(
-                                                        /\b\w/g,
-                                                        (l) =>
-                                                            l.toUpperCase(),
-                                                    )}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            {paymentStatus ? (
+                                        <TableRow
+                                            key={`marketplace-order-${order.id ?? orderNumber}-row`}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <div className="font-medium">
+                                                    {orderNumber}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
                                                 <Badge
                                                     className={statusBadgeVariant(
-                                                        paymentStatus,
+                                                        orderStatus,
                                                     )}
                                                 >
-                                                    {paymentStatus
+                                                    {orderStatus
                                                         .replace(/_/g, ' ')
                                                         .replace(
                                                             /\b\w/g,
@@ -225,38 +273,103 @@ export function ProductOrderHistory({
                                                                 l.toUpperCase(),
                                                         )}
                                                 </Badge>
-                                            ) : (
-                                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                                    —
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                {paymentStatus ? (
+                                                    <Badge
+                                                        className={statusBadgeVariant(
+                                                            paymentStatus,
+                                                        )}
+                                                    >
+                                                        {paymentStatus
+                                                            .replace(/_/g, ' ')
+                                                            .replace(
+                                                                /\b\w/g,
+                                                                (l) =>
+                                                                    l.toUpperCase(),
+                                                            )}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <span className="text-sm">
+                                                    {itemsCount} item
+                                                    {itemsCount !== 1 ? 's' : ''}
                                                 </span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            <span className="text-sm">
-                                                {itemsCount} item
-                                                {itemsCount !== 1 ? 's' : ''}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-gray-900 dark:text-white">
-                                            <span className="font-medium">
-                                                {totalAmount}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right text-gray-900 dark:text-white">
-                                            {dateValue
-                                                ? formatDateTimeForDisplay(
-                                                      dateValue,
-                                                      {
-                                                          month: 'short',
-                                                          day: 'numeric',
-                                                          year: 'numeric',
-                                                          hour: 'numeric',
-                                                          minute: '2-digit',
-                                                      },
-                                                  )
-                                                : '—'}
-                                        </TableCell>
-                                    </TableRow>
+                                            </TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
+                                                <span className="font-medium">
+                                                    {totalAmount}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right text-gray-900 dark:text-white">
+                                                {dateValue
+                                                    ? formatDateTimeForDisplay(
+                                                          dateValue,
+                                                          {
+                                                              month: 'short',
+                                                              day: 'numeric',
+                                                              year: 'numeric',
+                                                              hour: 'numeric',
+                                                              minute: '2-digit',
+                                                          },
+                                                      )
+                                                    : '—'}
+                                            </TableCell>
+                                        </TableRow>
+                                        {orderItems.length > 0 && (
+                                            <TableRow className="bg-gray-50/70 dark:bg-gray-800/60">
+                                                <TableCell
+                                                    colSpan={6}
+                                                    className="p-4"
+                                                >
+                                                    <div className="space-y-3">
+                                                        {orderItems.map(
+                                                            (item) => (
+                                                                <div
+                                                                    key={`${orderNumber}-item-${item.id ?? 'index'}`}
+                                                                    className="flex flex-col gap-2 border-b border-dashed border-gray-200 pb-3 last:border-b-0 last:pb-0 dark:border-gray-700"
+                                                                >
+                                                                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                                                        <div>
+                                                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                                {
+                                                                                    item.name
+                                                                                }
+                                                                            </p>
+                                                                            {item.attributes && (
+                                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                                    {
+                                                                                        item.attributes
+                                                                                    }
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-sm text-gray-700 dark:text-gray-200">
+                                                                            Qty:{' '}
+                                                                            {
+                                                                                item.quantity
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                                        {formatPrice(
+                                                                            item.price,
+                                                                            appCurrency,
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </Fragment>
                                 );
                             })}
                         </TableBody>

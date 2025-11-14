@@ -162,12 +162,12 @@ export function EventsOverviewSection({
     if (normalizedEvents.length === 0) {
         return (
             <section id={id} className="space-y-4">
-                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <Card className="overflow-hidden border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-gray-800 dark:to-gray-900/50">
+                    <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+                        <CardTitle className="text-xl font-bold text-white">
                             Events
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-white/90">
                             Upcoming activities hosted by this partner.
                         </CardDescription>
                     </CardHeader>
@@ -199,16 +199,16 @@ export function EventsOverviewSection({
 
     return (
         <section id={id} className="space-y-4">
-            <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <Card className="overflow-hidden border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-gray-800 dark:to-gray-900/50">
+                <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+                    <CardTitle className="text-xl font-bold text-white">
                         Events
                     </CardTitle>
-                    <CardDescription>
-                        Upcoming and ongoing events from this partner.
+                    <CardDescription className="text-white/90">
+                        Upcoming and ongoing events.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-6">
                     {normalizedEvents.map((event, index) => {
                         const eventId =
                             typeof event.id === 'number' ||
@@ -238,9 +238,6 @@ export function EventsOverviewSection({
                         const image = toString(
                             event.image ?? event.featured_image,
                         );
-                        const status = toString(
-                            event.status ?? 'scheduled',
-                        ).toLowerCase();
                         const isPaid = toBoolean(
                             event.is_paid_event ?? event.isPaidEvent,
                         );
@@ -303,21 +300,18 @@ export function EventsOverviewSection({
                                   )
                                 : '';
 
-                        const statusLabel =
-                            status.charAt(0).toUpperCase() + status.slice(1);
-
                         return (
                             <div
                                 key={`event-${eventId}`}
-                                className="rounded-lg border border-gray-200/80 bg-white/80 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-gray-600/70 dark:bg-gray-800/50 dark:shadow-gray-900/40"
+                                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-indigo-300 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800/80 dark:hover:border-indigo-600"
                             >
-                                <div className="flex flex-col gap-4 p-5 md:flex-row">
+                                <div className="flex flex-col gap-5 md:flex-row">
                                     {image && (
-                                        <div className="overflow-hidden rounded-lg md:w-40">
+                                        <div className="overflow-hidden rounded-xl md:w-48">
                                             <img
                                                 src={image}
                                                 alt={title}
-                                                className="h-32 w-full object-cover md:h-full"
+                                                className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-full"
                                                 onError={(eventTarget) => {
                                                     const target =
                                                         eventTarget.target as HTMLImageElement;
@@ -328,35 +322,88 @@ export function EventsOverviewSection({
                                         </div>
                                     )}
                                     <div className="flex-1 space-y-4">
-                                        <div>
+                                        <div className="space-y-3 border-b border-gray-100 pb-3 dark:border-gray-700">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                                     {title}
                                                 </h3>
                                                 {category && (
-                                                    <span className="inline-flex items-center rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-600 dark:bg-purple-500/20 dark:text-purple-200">
+                                                    <span className="inline-flex items-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                                                         {category}
                                                     </span>
                                                 )}
-                                                <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
-                                                    {statusLabel}
-                                                </span>
                                             </div>
-                                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                                {startDate ?? 'Schedule TBA'}
-                                                {' • '}
-                                                {location}
-                                            </p>
+                                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                                                {startDate && (
+                                                    <div className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                                        <svg
+                                                            className="h-3.5 w-3.5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                            />
+                                                        </svg>
+                                                        <span className="whitespace-nowrap">
+                                                            {startDate}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {location && location !== 'TBA' && (
+                                                    <div className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                                        <svg
+                                                            className="h-3.5 w-3.5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                                            />
+                                                        </svg>
+                                                        <span>{location}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
 
-                                        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                                             {isPaid && formattedPrice && (
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formattedPrice}{' '}
-                                                    <span className="font-normal text-gray-500 dark:text-gray-400">
+                                                <div className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 dark:from-indigo-900/20 dark:to-purple-900/20">
+                                                    <svg
+                                                        className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                    </svg>
+                                                    <p className="font-bold text-gray-900 dark:text-gray-100">
+                                                        {formattedPrice}
+                                                    </p>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
                                                         per person
                                                     </span>
-                                                </p>
+                                                </div>
                                             )}
                                             <div
                                                 className={
@@ -375,9 +422,22 @@ export function EventsOverviewSection({
                                                                 eventId,
                                                             )
                                                         }
-                                                        className="mt-1 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                        className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                     >
                                                         Read more
+                                                        <svg
+                                                            className="h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M19 9l-7 7-7-7"
+                                                            />
+                                                        </svg>
                                                     </button>
                                                 )}
                                         </div>
@@ -433,23 +493,49 @@ export function EventsOverviewSection({
 
                                         {(hasProjectContext ||
                                             publicEventLink) && (
-                                            <div className="flex flex-wrap justify-end gap-2">
+                                            <div className="flex flex-wrap justify-end gap-2 pt-2">
                                                 {publicEventLink && (
                                                     <Link
                                                         href={publicEventLink}
-                                                        className="inline-flex items-center rounded-lg border border-indigo-500 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
+                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-700 hover:shadow-xl dark:from-green-500 dark:to-emerald-500 dark:hover:from-green-600 dark:hover:to-emerald-600"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        Public Event Page
+                                                        Register Now
+                                                        <svg
+                                                            className="h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            />
+                                                        </svg>
                                                     </Link>
                                                 )}
                                                 {hasProjectContext && (
                                                     <Link
                                                         href={eventLink}
-                                                        className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl dark:from-indigo-500 dark:to-purple-500 dark:hover:from-indigo-600 dark:hover:to-purple-600"
                                                     >
                                                         View Event Details
+                                                        <svg
+                                                            className="h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M9 5l7 7-7 7"
+                                                            />
+                                                        </svg>
                                                     </Link>
                                                 )}
                                             </div>

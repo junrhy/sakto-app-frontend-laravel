@@ -327,7 +327,9 @@ export function MyProducts({
 
             const payload = await response.json();
             const data = payload['data'] ?? payload['orders'] ?? payload;
-            setOrders(Array.isArray(data) ? data : []);
+            const normalizedOrders = Array.isArray(data) ? data : [];
+            console.log('MyProducts product orders:', normalizedOrders);
+            setOrders(normalizedOrders);
             setOrdersDialogOpen(true);
         } catch (error) {
             toast.error('Unable to load product orders right now.');
