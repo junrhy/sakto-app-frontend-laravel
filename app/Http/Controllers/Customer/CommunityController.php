@@ -9,7 +9,6 @@ use App\Mail\CommunityJoinRequestMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\JsonResponse;
@@ -93,51 +92,16 @@ class CommunityController extends CustomerProjectController
             ->first();
 
         $apiPayload = ['client_identifier' => $community->identifier];
-        $customer = $request->user();
-        $customerName = $customer->name ? trim($customer->name) : null;
-        $customerContact = $customer->contact_number ? trim($customer->contact_number) : null;
-
-        // Fetch data using the existing methods that were working before
-        // This ensures data is properly extracted
-        $challenges = $this->fetchApiCollection('challenges', array_merge($apiPayload, [
-            'status' => 'published',
-            'limit' => 24,
-        ]));
 
         $events = $this->fetchApiCollection('events', array_merge($apiPayload, [
             'is_public' => true,
             'limit' => 24,
         ]));
 
-        $pages = $this->fetchApiCollection('pages', array_merge($apiPayload, [
-            'is_published' => true,
-        ]));
-
         $updates = $this->fetchApiCollection('content-creator', array_merge($apiPayload, [
             'status' => 'published',
             'limit' => 24,
         ]));
-
-        $productsResponse = $this->fetchApiRaw('products', array_merge($apiPayload, [
-            'status' => 'published',
-            'limit' => 6,
-        ]));
-        $products = $productsResponse['data'] ?? $productsResponse;
-
-        $courses = $this->fetchApiCollection('courses', array_merge($apiPayload, [
-            'status' => 'published',
-            'limit' => 6,
-        ]));
-
-        $orderHistory = $this->fetchApiCollection('product-orders', array_merge($apiPayload, [
-            'per_page' => 50,
-        ]));
-
-        // Lazy load records - these will be fetched when user navigates to respective sections
-        // This improves initial page load performance significantly
-        $lendingRecords = [];
-        $healthcareRecords = [];
-        $mortuaryRecords = [];
 
         // Get total number of user_customers (members) for this community
         $totalCustomers = UserCustomer::where('user_id', $community->id)
@@ -150,16 +114,8 @@ class CommunityController extends CustomerProjectController
             'isPending' => $isPending,
             'joinedAt' => optional($membership?->created_at)?->toIso8601String(),
             'totalCustomers' => $totalCustomers,
-            'challenges' => $challenges,
             'events' => $events,
-            'pages' => $pages,
             'updates' => $updates,
-            'products' => $products,
-            'courses' => $courses,
-            'orderHistory' => $orderHistory,
-            'lendingRecords' => $lendingRecords,
-            'healthcareRecords' => $healthcareRecords,
-            'mortuaryRecords' => $mortuaryRecords,
             'appUrl' => config('app.url'),
         ]);
     }
@@ -365,69 +321,6 @@ class CommunityController extends CustomerProjectController
         }
 
         return [];
-    }
-
-    /**
-     * Extract data from HTTP response, handling different response structures
-     * Matches the behavior of fetchApiCollection method
-     */
-    private function extractResponseData($response): array
-    {
-        if (!$response) {
-            return [];
-        }
-
-        // Check if response has successful method (Http response object)
-        if (method_exists($response, 'successful')) {
-            if (!$response->successful()) {
-                return [];
-            }
-        }
-
-        try {
-            $data = $response->json();
-            
-            if (!is_array($data)) {
-                return [];
-            }
-            
-            // Use same logic as fetchApiCollection: return $response['data'] ?? []
-            if (isset($data['data'])) {
-                return is_array($data['data']) ? $data['data'] : [];
-            }
-            
-            return [];
-        } catch (\Exception $e) {
-            Log::error('Error extracting response data', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return [];
-        }
-    }
-
-    /**
-     * NOTE: Lending, Healthcare, and Mortuary records are now lazy-loaded
-     * to improve initial page load performance. These records are fetched
-     * when users navigate to their respective sections or via their
-     * dedicated controllers:
-     * - LendingController::index()
-     * - HealthcareController::index()
-     * - MortuaryController::index()
-     * 
-     * If you need to fetch these records synchronously in the future,
-     * consider using Http::pool() to make concurrent requests.
-     */
-
-    private function normalizePhoneNumber(?string $value): ?string
-    {
-        if (!$value) {
-            return null;
-        }
-
-        $digitsOnly = preg_replace('/\D+/', '', $value);
-
-        return $digitsOnly ?: null;
     }
 
     private function resolveCommunity(string $identifier): User

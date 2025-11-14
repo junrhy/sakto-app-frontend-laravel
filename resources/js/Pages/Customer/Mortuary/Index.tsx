@@ -14,9 +14,11 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { buildOwnerSidebarSections } from '@/Pages/Customer/Communities/utils/ownerSidebarSections';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
 import type { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { useMemo } from 'react';
 import type { CommunityCurrency, MortuaryRecord } from '../Communities/types';
 
 export interface MortuaryRecordsSectionProps {
@@ -271,6 +273,16 @@ export default function MortuaryIndex({
 }: MortuaryIndexProps) {
     const ownerName = owner?.name ?? 'Mortuary Partner';
     const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
+    const projectIdentifier = project ?? 'community';
+    const sidebarSections = useMemo(
+        () =>
+            buildOwnerSidebarSections(
+                projectIdentifier,
+                ownerIdentifier,
+                'mortuary',
+            ),
+        [projectIdentifier, ownerIdentifier],
+    );
 
     return (
         <CustomerLayout
@@ -294,6 +306,8 @@ export default function MortuaryIndex({
                     </Link>
                 </div>
             }
+            sidebarSections={sidebarSections}
+            sidebarSectionTitle={ownerName}
         >
             <Head title={`Mortuary Members – ${ownerName}`} />
 
@@ -303,36 +317,6 @@ export default function MortuaryIndex({
                         {error}
                     </div>
                 )}
-
-                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Partner Details
-                        </CardTitle>
-                        <CardDescription>
-                            Project:{' '}
-                            <span className="font-semibold">{project}</span>
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Partner
-                            </p>
-                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                {ownerName}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Identifier
-                            </p>
-                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                                {ownerIdentifier}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
 
                 <MortuaryRecordsSection
                     id="mortuary-records"

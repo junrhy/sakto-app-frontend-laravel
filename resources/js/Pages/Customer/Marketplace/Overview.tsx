@@ -1,7 +1,9 @@
 import { Button } from '@/Components/ui/button';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { buildOwnerSidebarSections } from '@/Pages/Customer/Communities/utils/ownerSidebarSections';
 import type { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { useMemo } from 'react';
 import {
     CommunityCollectionItem,
     CommunityCurrency,
@@ -81,6 +83,16 @@ export default function MarketplaceOverviewPage({
 }: MarketplaceOverviewPageProps) {
     const ownerName = owner?.name ?? 'Marketplace Partner';
     const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
+    const projectIdentifier = project ?? 'community';
+    const sidebarSections = useMemo(
+        () =>
+            buildOwnerSidebarSections(
+                projectIdentifier,
+                ownerIdentifier,
+                'marketplace',
+            ),
+        [projectIdentifier, ownerIdentifier],
+    );
 
     return (
         <CustomerLayout
@@ -120,6 +132,8 @@ export default function MarketplaceOverviewPage({
                     </Button>
                 </div>
             }
+            sidebarSections={sidebarSections}
+            sidebarSectionTitle={ownerName}
         >
             <Head title={`Marketplace – ${ownerName}`} />
 

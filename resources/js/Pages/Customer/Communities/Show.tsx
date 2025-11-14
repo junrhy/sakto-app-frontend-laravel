@@ -1,13 +1,6 @@
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
-import { ChallengesOverviewSection } from '@/Pages/Customer/Challenges/Overview';
-import { CoursesOverviewSection } from '@/Pages/Customer/Courses/Overview';
 import { EventsOverviewSection } from '@/Pages/Customer/Events/Overview';
-import { HealthcareRecordsSection } from '@/Pages/Customer/Healthcare/Index';
-import { LendingRecordsSection } from '@/Pages/Customer/Lending/Index';
-import { MarketplaceOverviewSection } from '@/Pages/Customer/Marketplace/Overview';
-import { MortuaryRecordsSection } from '@/Pages/Customer/Mortuary/Index';
 import { NewsfeedOverviewSection } from '@/Pages/Customer/Newsfeed/Overview';
-import { ResourcesOverviewSection } from '@/Pages/Customer/Resources/Overview';
 import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -23,16 +16,8 @@ export default function Show({
     isPending,
     joinedAt,
     totalCustomers,
-    challenges,
     events,
-    pages,
     updates,
-    products,
-    courses,
-    orderHistory,
-    lendingRecords,
-    healthcareRecords,
-    mortuaryRecords,
 }: CommunityDetailProps) {
     const [joining, setJoining] = useState(false);
     const [leaving, setLeaving] = useState(false);
@@ -41,28 +26,10 @@ export default function Show({
 
     const normalizedSections = useMemo(
         () => ({
-            challenges: normalizeCollection(challenges),
             events: normalizeCollection(events),
-            pages: normalizeCollection(pages),
             updates: normalizeCollection(updates),
-            products: normalizeCollection(products),
-            courses: normalizeCollection(courses),
-            orderHistory: normalizeCollection(orderHistory),
         }),
-        [challenges, events, pages, updates, products, courses, orderHistory],
-    );
-
-    const lendingRecordsSafe = useMemo(
-        () => (Array.isArray(lendingRecords) ? lendingRecords : []),
-        [lendingRecords],
-    );
-    const healthcareRecordsSafe = useMemo(
-        () => (Array.isArray(healthcareRecords) ? healthcareRecords : []),
-        [healthcareRecords],
-    );
-    const mortuaryRecordsSafe = useMemo(
-        () => (Array.isArray(mortuaryRecords) ? mortuaryRecords : []),
-        [mortuaryRecords],
+        [events, updates],
     );
 
     const projectIdentifier = community.project_identifier ?? 'community';
@@ -83,7 +50,28 @@ export default function Show({
         [],
     );
 
-    const handleNavigation = useCallback((id: string) => {
+    const handleNavigation = useCallback(
+        (id: string) => {
+            const externalRoutes: Record<string, string> = {
+                resources: 'customer.projects.resources.overview',
+                challenges: 'customer.projects.challenges.overview',
+                marketplace: 'customer.projects.marketplace.overview',
+                courses: 'customer.projects.courses.index',
+                healthcare: 'customer.projects.healthcare.index',
+                mortuary: 'customer.projects.mortuary.index',
+                lending: 'customer.projects.lending.index',
+            };
+
+            if (externalRoutes[id]) {
+                router.visit(
+                    route(externalRoutes[id], {
+                        project: projectIdentifier,
+                        owner: ownerIdentifier,
+                    }),
+                );
+                return;
+            }
+
         setActiveSection(id);
         if (typeof window !== 'undefined') {
             const target = document.getElementById(id);
@@ -91,7 +79,9 @@ export default function Show({
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
-    }, []);
+        },
+        [router, projectIdentifier, ownerIdentifier],
+    );
 
     const sidebarSections = useMemo(
         () =>
@@ -132,10 +122,6 @@ export default function Show({
                         'isJoined',
                         'isPending',
                         'joinedAt',
-                        'orderHistory',
-                        'lendingRecords',
-                        'healthcareRecords',
-                        'mortuaryRecords',
                     ],
                 });
             } else {
@@ -176,10 +162,6 @@ export default function Show({
                         'isJoined',
                         'isPending',
                         'joinedAt',
-                        'orderHistory',
-                        'lendingRecords',
-                        'healthcareRecords',
-                        'mortuaryRecords',
                     ],
                 });
             } else {
@@ -215,128 +197,34 @@ export default function Show({
                             {/* Second Column: Overview and Events (spans 1 column) */}
                             <div className="space-y-6">
                                 <div className="hidden lg:block">
-                                    <CommunityOverviewCard
-                                        key="overview"
-                                        community={community}
-                                        isJoined={isJoined}
-                                        isPending={isPending}
-                                        joining={joining}
-                                        leaving={leaving}
-                                        onJoin={handleJoin}
-                                        onLeaveClick={() => setLeaveConfirmOpen(true)}
-                                        joinedAt={joinedAt}
+                        <CommunityOverviewCard
+                            key="overview"
+                            community={community}
+                            isJoined={isJoined}
+                            isPending={isPending}
+                            joining={joining}
+                            leaving={leaving}
+                            onJoin={handleJoin}
+                            onLeaveClick={() => setLeaveConfirmOpen(true)}
+                            joinedAt={joinedAt}
                                         totalCustomers={totalCustomers}
-                                    />
+                                        />
                                 </div>
-                                <EventsOverviewSection
-                                    key="overview-events"
-                                    id="overview-events"
-                                    events={normalizedSections.events.slice(
-                                        0,
-                                        3,
-                                    )}
-                                    projectIdentifier={projectIdentifier}
-                                    ownerIdentifier={ownerIdentifier}
-                                    appCurrency={community.app_currency}
-                                    emptyMessage="No upcoming events."
-                                />
+                                    <EventsOverviewSection
+                                        key="overview-events"
+                                        id="overview-events"
+                                        events={normalizedSections.events.slice(
+                                            0,
+                                            3,
+                                        )}
+                                        projectIdentifier={projectIdentifier}
+                                        ownerIdentifier={ownerIdentifier}
+                                        appCurrency={community.app_currency}
+                                        emptyMessage="No upcoming events."
+                                    />
                             </div>
                         </div>
                     </div>
-                ),
-            },
-            {
-                id: 'resources',
-                node: (
-                    <ResourcesOverviewSection
-                        key="resources"
-                        id="resources"
-                        resources={normalizedSections.pages}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                    />
-                ),
-            },
-            {
-                id: 'challenges',
-                node: (
-                    <ChallengesOverviewSection
-                        key="challenges"
-                        id="challenges"
-                        challenges={normalizedSections.challenges}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                    />
-                ),
-            },
-            {
-                id: 'marketplace',
-                node: (
-                    <MarketplaceOverviewSection
-                        key="marketplace"
-                        id="marketplace"
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        products={normalizedSections.products}
-                        orderHistory={
-                            normalizedSections.orderHistory as CommunityCollectionItem[]
-                        }
-                        appCurrency={community.app_currency}
-                        authUser={auth.user as any}
-                    />
-                ),
-            },
-            {
-                id: 'courses',
-                node: (
-                    <CoursesOverviewSection
-                        key="courses"
-                        id="courses"
-                        courses={normalizedSections.courses}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        appCurrency={community.app_currency}
-                        emptyMessage="No courses available."
-                    />
-                ),
-            },
-            {
-                id: 'healthcare',
-                node: (
-                    <HealthcareRecordsSection
-                        key="healthcare"
-                        id="healthcare"
-                        records={healthcareRecordsSafe}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        appCurrency={community.app_currency}
-                    />
-                ),
-            },
-            {
-                id: 'mortuary',
-                node: (
-                    <MortuaryRecordsSection
-                        key="mortuary"
-                        id="mortuary"
-                        records={mortuaryRecordsSafe}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        appCurrency={community.app_currency}
-                    />
-                ),
-            },
-            {
-                id: 'lending',
-                node: (
-                    <LendingRecordsSection
-                        key="lending"
-                        id="lending"
-                        records={lendingRecordsSafe}
-                        projectIdentifier={projectIdentifier}
-                        ownerIdentifier={ownerIdentifier}
-                        appCurrency={community.app_currency}
-                    />
                 ),
             },
         ],
@@ -348,9 +236,6 @@ export default function Show({
             leaving,
             normalizedSections,
             handleJoin,
-            healthcareRecordsSafe,
-            mortuaryRecordsSafe,
-            lendingRecordsSafe,
             projectIdentifier,
             ownerIdentifier,
         ],

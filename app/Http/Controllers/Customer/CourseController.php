@@ -47,55 +47,12 @@ class CourseController extends CustomerProjectController
         }
     }
 
-    public function index(Request $request, string $project, $ownerIdentifier): JsonResponse
+    public function index(Request $request, string $project, $ownerIdentifier): Response
     {
-        $this->ensureCustomerProject($request, $project);
-
-        try {
-            $owner = $this->resolveOwner($project, $ownerIdentifier);
-
-            $params = [
-                'client_identifier' => $owner->identifier,
-                'status' => $request->input('status', 'published'),
-                'per_page' => (int) $request->input('per_page', 12),
-                'page' => (int) $request->input('page', 1),
-            ];
-
-            if ($request->filled('search')) {
-                $params['search'] = $request->input('search');
-            }
-
-            if ($request->filled('category')) {
-                $params['category'] = $request->input('category');
-            }
-
-            foreach (['featured', 'free'] as $flag) {
-                if ($request->has($flag)) {
-                    $params[$flag] = $request->boolean($flag);
-                }
-            }
-
-            $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/courses", $params);
-
-            if ($response->successful()) {
-                return response()->json($response->json());
-            }
-
-            return response()->json([
-                'error' => 'Failed to fetch courses',
-                'data' => [],
-            ], $response->status());
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => 'Owner not found',
-            ], 404);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'error' => 'An error occurred while loading courses',
-                'message' => $th->getMessage(),
-            ], 500);
-        }
+        // Ensure Inertia requests always receive an Inertia response by
+        // delegating to the overview renderer. The dedicated overview route
+        // can still be used directly, while /courses now behaves the same way.
+        return $this->overview($request, $project, $ownerIdentifier);
     }
 
     public function categories(Request $request, string $project, $ownerIdentifier): JsonResponse

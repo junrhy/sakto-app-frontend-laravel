@@ -14,9 +14,11 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { buildOwnerSidebarSections } from '@/Pages/Customer/Communities/utils/ownerSidebarSections';
 import { formatDateTimeForDisplay } from '@/Pages/Public/Community/utils/dateUtils';
 import type { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { useMemo } from 'react';
 import type { CommunityCurrency, LendingRecord } from '../Communities/types';
 
 interface LendingRecordsSectionProps {
@@ -333,6 +335,16 @@ export default function LendingIndex({
 }: LendingIndexProps) {
     const ownerName = owner?.name ?? 'Lending Partner';
     const ownerIdentifier = owner.slug ?? owner.identifier ?? String(owner.id);
+    const projectIdentifier = project ?? 'community';
+    const sidebarSections = useMemo(
+        () =>
+            buildOwnerSidebarSections(
+                projectIdentifier,
+                ownerIdentifier,
+                'lending',
+            ),
+        [projectIdentifier, ownerIdentifier],
+    );
 
     const loansTotal = records.length;
     const activeLoans = records.filter(
@@ -361,6 +373,8 @@ export default function LendingIndex({
                     </Link>
                 </div>
             }
+            sidebarSections={sidebarSections}
+            sidebarSectionTitle={ownerName}
         >
             <Head title={`Lending Records – ${ownerName}`} />
 
@@ -370,52 +384,6 @@ export default function LendingIndex({
                         {error}
                     </div>
                 )}
-
-                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Partner Overview
-                        </CardTitle>
-                        <CardDescription>
-                            Project:{' '}
-                            <span className="font-semibold">{project}</span>
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Partner
-                            </p>
-                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                {ownerName}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Identifier
-                            </p>
-                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                                {ownerIdentifier}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Total Loans
-                            </p>
-                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                {loansTotal}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Active Loans
-                            </p>
-                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                {activeLoans}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
 
                 <LendingRecordsSection
                     id="lending-records"

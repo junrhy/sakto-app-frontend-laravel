@@ -8,6 +8,7 @@ import { Toaster } from 'sonner';
 interface SidebarSectionItem {
     id: string;
     label: string;
+    href?: string;
     isActive?: boolean;
     onSelect?: (id: string) => void;
 }
@@ -373,32 +374,54 @@ export default function CustomerLayout({
                                         {sidebarSectionTitle}
                                     </p>
                                     <div className="flex flex-col space-y-1">
-                                        {sidebarSections.map((section) => (
-                                            <button
-                                                key={section.id}
-                                                type="button"
-                                                onClick={() => {
-                                                    section.onSelect?.(
-                                                        section.id,
-                                                    );
-                                                    if (
-                                                        typeof window !==
-                                                            'undefined' &&
-                                                        window.innerWidth < 1024
-                                                    ) {
-                                                        setIsSidebarOpen(false);
-                                                    }
-                                                }}
-                                                className={`flex items-center rounded-md px-4 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
-                                                    section.isActive
-                                                        ? 'bg-white/10 text-white'
-                                                        : 'text-white/80 hover:bg-white/10 hover:text-white'
-                                                }`}
-                                            >
-                                                <span className="mr-3 h-2 w-2 rounded-full bg-white/60" />
-                                                <span>{section.label}</span>
-                                            </button>
-                                        ))}
+                                        {sidebarSections.map((section) => {
+                                            const sharedClasses = `flex items-center rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                                                section.isActive
+                                                    ? 'bg-white/10 text-white'
+                                                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                                            }`;
+
+                                            const handleClose = () => {
+                                                if (
+                                                    typeof window !==
+                                                        'undefined' &&
+                                                    window.innerWidth < 1024
+                                                ) {
+                                                    setIsSidebarOpen(false);
+                                                }
+                                            };
+
+                                            if (section.href) {
+                                                return (
+                                                    <Link
+                                                        key={section.id}
+                                                        href={section.href}
+                                                        className={`${sharedClasses} text-left`}
+                                                        onClick={handleClose}
+                                                    >
+                                                        <span className="mr-3 h-2 w-2 rounded-full bg-white/60" />
+                                                        <span>{section.label}</span>
+                                                    </Link>
+                                                );
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={section.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        section.onSelect?.(
+                                                            section.id,
+                                                        );
+                                                        handleClose();
+                                                    }}
+                                                    className={`${sharedClasses} text-left`}
+                                                >
+                                                    <span className="mr-3 h-2 w-2 rounded-full bg-white/60" />
+                                                    <span>{section.label}</span>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
