@@ -187,6 +187,13 @@ const normalizeProduct = (
 const normalizeOrderHistory = (
     orders: CommunityCollectionItem[],
 ): ProductOrderItem[] => {
+    const ensureArray = (value: unknown): unknown[] | undefined => {
+        if (Array.isArray(value)) {
+            return value;
+        }
+        return undefined;
+    };
+
     return orders.map((order) => ({
         id: order.id,
         order_number: toOptionalString(order.order_number),
@@ -202,8 +209,8 @@ const normalizeOrderHistory = (
         amount_formatted: toOptionalString(order.amount_formatted),
         created_at: toOptionalString(order.created_at),
         ordered_at: toOptionalString(order.ordered_at),
-        items: order.items,
-        order_items: order.order_items ?? order.items,
+        items: ensureArray(order.items),
+        order_items: ensureArray(order.order_items ?? order.items),
     }));
 };
 
