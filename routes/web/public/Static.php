@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 /*
@@ -63,75 +63,39 @@ Route::prefix('policies')->group(function () {
 });
 
 
-// Manifest Routes
-Route::get('/manifest/member/{identifier}.json', function ($identifier) {
-    try {
-        $user = User::where('project_identifier', 'community')
-            ->where('identifier', $identifier)
-            ->first();
+// Manifest Route
+Route::get('/manifest.json', function (Request $request) {
+    $startParam = $request->query('start', '/');
+    $normalizedStart = Str::start($startParam, '/');
+    $schemeHost = rtrim($request->getSchemeAndHttpHost(), '/');
 
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
+    $manifest = [
+        'name' => config('app.name', 'Neulify'),
+        'short_name' => 'Neulify',
+        'description' => 'Neulify is a digital solution provider for businesses and individuals.',
+        'start_url' => $schemeHost . $normalizedStart,
+        'scope' => $schemeHost . '/',
+        'display' => 'standalone',
+        'background_color' => '#ffffff',
+        'theme_color' => '#ffffff',
+        'icons' => [
+            [
+                'src' => asset('images/neulify-logo-app-icon.png'),
+                'sizes' => '192x192',
+                'type' => 'image/png',
+                'purpose' => 'any maskable',
+            ],
+            [
+                'src' => asset('images/neulify-logo-app-icon.png'),
+                'sizes' => '512x512',
+                'type' => 'image/png',
+                'purpose' => 'any maskable',
+            ],
+        ],
+    ];
 
-        $manifest = [
-            'name' => $user->name . ' - Neulify Member',
-            'short_name' => $user->name,
-            'description' => 'Member profile for ' . $user->name,
-            'start_url' => '/m/' . $user->identifier,
-            'display' => 'standalone',
-            'background_color' => '#ffffff',
-            'theme_color' => '#000000',
-            'icons' => [
-                [
-                    'src' => '/images/neulify-logo-app-icon.png',
-                    'sizes' => '192x192',
-                    'type' => 'image/png'
-                ],
-                [
-                    'src' => '/images/neulify-logo-white-app-icon.png',
-                    'sizes' => '512x512',
-                    'type' => 'image/png'
-                ]
-            ]
-        ];
-
-        return response()->json($manifest);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to generate manifest'], 500);
-    }
-})->name('manifest.member');
-
-// Content Creator Manifest
-Route::get('/manifest/content/{slug}.json', function ($slug) {
-    try {
-        $manifest = [
-            'name' => 'Content Creator - Sakto',
-            'short_name' => 'Content Creator',
-            'description' => 'Content creator profile',
-            'start_url' => '/post/' . $slug,
-            'display' => 'standalone',
-            'background_color' => '#ffffff',
-            'theme_color' => '#000000',
-            'icons' => [
-                [
-                    'src' => '/images/neulify-logo-app-icon.png',
-                    'sizes' => '192x192',
-                    'type' => 'image/png'
-                ],
-                [
-                    'src' => '/images/neulify-logo-white-app-icon.png',
-                    'sizes' => '512x512',
-                    'type' => 'image/png'
-                ]
-            ]
-        ];
-
-        return response()->json($manifest);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to generate manifest'], 500);
-    }
-})->name('manifest.content');
+    return response()->json($manifest);
+})->name('manifest');
 
 // Debug and utility routes
 Route::get('/debug-auth', function () {

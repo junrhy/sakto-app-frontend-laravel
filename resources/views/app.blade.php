@@ -7,33 +7,49 @@
 
         <title inertia>
             @php
+                use Illuminate\Support\Str;
+
                 $routeName = request()->route()->getName();
                 $title = config('app.name', 'Neulify');
-    
-                // Get user slug name for community member routes
-                if (in_array($routeName, ['community.member', 'member.short'])) {
+
+                $host = request()->getHost();
+                $primaryHost = parse_url(config('app.url'), PHP_URL_HOST) ?: $host;
+
+                if ($host !== $primaryHost && Str::endsWith($host, $primaryHost)) {
+                    $subdomain = Str::before($host, '.' . $primaryHost);
+                    if ($subdomain && $subdomain !== 'www') {
+                        $member = \App\Models\User::where('project_identifier', 'community')
+                            ->where(function ($query) use ($subdomain) {
+                                $query->where('slug', $subdomain)->orWhere('identifier', $subdomain);
+                            })
+                            ->first();
+
+                        if ($member) {
+                            $title = $member->name;
+                        }
+                    }
+                } elseif (in_array($routeName, ['community.member', 'member.short'])) {
                     $identifier = request()->route('identifier');
                     if ($identifier) {
-                        // Check if identifier is numeric (ID) or string (slug)
-                        $member = null;
-                        
-                        if (is_numeric($identifier)) {
-                            // Search by ID
-                            $member = \App\Models\User::where('project_identifier', 'community')
-                                ->where('id', $identifier)
-                                ->first();
-                        } else {
-                            // Search by slug
-                            $member = \App\Models\User::where('project_identifier', 'community')
-                                ->where('slug', $identifier)
-                                ->first();
-                        }
-                        
+                        $member = \App\Models\User::where('project_identifier', 'community')
+                            ->where(function ($query) use ($identifier) {
+                                if (is_numeric($identifier)) {
+                                    $query->where('id', $identifier);
+                                } else {
+                                    $query->where('slug', $identifier)->orWhere('identifier', $identifier);
+                                }
+                            })
+                            ->first();
+
                         if ($member) {
                             $title = $member->name;
                         }
                     }
                 }
+
+                $manifestStartPath = request()->getRequestUri();
+                $manifestParams = ['start' => $manifestStartPath];
+
             @endphp
             {{ $title }}
         </title>
@@ -54,13 +70,7 @@
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Laravel') }}">
         
         <!-- PWA manifest -->
-        @if(in_array(request()->route()->getName(), ['community.member', 'member.short']))
-            <link rel="manifest" href="{{ asset('manifest/member/' . request()->route('identifier') . '.json') }}">
-        @elseif(request()->route()->getName() === 'content-creator.public')
-            <link rel="manifest" href="{{ asset('manifest/content/' . request()->route('slug') . '.json') }}">
-        @else
-            <link rel="manifest" href="{{ asset('manifest.json') }}">
-        @endif
+        <link rel="manifest" href="{{ route('manifest', $manifestParams) }}">
         
         <!-- Theme color for Safari -->
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
