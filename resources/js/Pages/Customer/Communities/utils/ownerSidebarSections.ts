@@ -54,6 +54,15 @@ const sectionConfigs: SectionConfig[] = [
             }),
     },
     {
+        id: 'jobs',
+        label: 'Jobs',
+        buildHref: (projectIdentifier, ownerIdentifier) =>
+            route('customer.projects.jobs.index', {
+                project: projectIdentifier,
+                owner: ownerIdentifier,
+            }),
+    },
+    {
         id: 'courses',
         label: 'Courses',
         buildHref: (projectIdentifier, ownerIdentifier) =>

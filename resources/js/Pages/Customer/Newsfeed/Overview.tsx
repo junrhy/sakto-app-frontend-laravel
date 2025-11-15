@@ -112,16 +112,16 @@ export function NewsfeedOverviewSection({
     if (normalizedUpdates.length === 0) {
         return (
             <section id={id} className="space-y-4">
-                <Card className="border border-gray-200 shadow-sm dark:border-gray-700 dark:bg-gray-800/80">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <Card className="border border-gray-200 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-rose-900/40 dark:via-amber-900/40 dark:to-orange-900/40">
+                    <CardHeader className="bg-gradient-to-r from-rose-400 via-pink-500 to-orange-400 p-6 text-white">
+                        <CardTitle className="text-lg font-semibold text-white">
                             Newsfeed
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-white/90">
                             Latest announcements and updates from this group.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/70 p-8 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
+                    <CardContent className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-rose-200 bg-white/70 p-8 text-center text-gray-600 dark:border-rose-700/60 dark:bg-gray-900/40 dark:text-gray-300">
                         <svg
                             className="h-12 w-12 text-gray-300 dark:text-gray-600"
                             fill="none"
@@ -149,8 +149,8 @@ export function NewsfeedOverviewSection({
 
     return (
         <section id={id} className="space-y-4">
-            <Card className="overflow-hidden border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-gray-800 dark:to-gray-900/50">
-                <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
+            <Card className="overflow-hidden border border-gray-200 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-rose-900/40 dark:via-amber-900/40 dark:to-orange-900/40">
+                <CardHeader className="bg-gradient-to-r from-rose-400 via-pink-500 to-orange-400 p-6 text-white">
                     <div>
                         <CardTitle className="text-xl font-bold text-white">
                             Newsfeed

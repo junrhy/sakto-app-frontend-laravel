@@ -135,6 +135,12 @@ Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])
             Route::get('/loans/{loan}', [App\Http\Controllers\Customer\LendingController::class, 'show'])->name('show');
         });
 
+    Route::prefix('/customer/{project}/{owner}/jobs')
+        ->name('customer.projects.jobs.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Customer\JobsController::class, 'index'])->name('index');
+        });
+
     Route::prefix('/customer/wallet')
         ->name('customer.wallet.')
         ->group(function () {
@@ -155,9 +161,6 @@ Route::middleware(['auth', 'customer', 'verified', 'ensure_user_type:customer'])
     
     // Customer Shop
     Route::get('/customer/shop', [App\Http\Controllers\Customer\ShopController::class, 'index'])->name('customer.shop');
-    
-    // Customer Jobs
-    Route::get('/customer/jobs', [App\Http\Controllers\Customer\JobsController::class, 'index'])->name('customer.jobs');
     
     // Customer Travel
     Route::get('/customer/travel', [App\Http\Controllers\Customer\TravelController::class, 'index'])->name('customer.travel');

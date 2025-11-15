@@ -42,6 +42,7 @@ export default function Show({
             { id: 'resources', label: 'Resources' },
             { id: 'challenges', label: 'Challenges' },
             { id: 'marketplace', label: 'Marketplace' },
+            { id: 'jobs', label: 'Jobs' },
             { id: 'courses', label: 'Courses' },
             { id: 'healthcare', label: 'Healthcare' },
             { id: 'mortuary', label: 'Mortuary' },
@@ -56,6 +57,7 @@ export default function Show({
                 resources: 'customer.projects.resources.overview',
                 challenges: 'customer.projects.challenges.overview',
                 marketplace: 'customer.projects.marketplace.overview',
+                jobs: 'customer.projects.jobs.index',
                 courses: 'customer.projects.courses.index',
                 healthcare: 'customer.projects.healthcare.index',
                 mortuary: 'customer.projects.mortuary.index',
@@ -175,14 +177,13 @@ export default function Show({
         }
     }, [community.id, router]);
 
-    const sectionNodes = useMemo(
-        () => [
+    const sectionNodes = useMemo(() => {
+        const sections = [
             {
                 id: 'overview',
                 node: (
                     <div id="overview">
                         <div className="grid gap-6 lg:grid-cols-3">
-                            {/* First Column: Newsfeed (wider - spans 2 columns) */}
                             <div className="space-y-6 lg:col-span-2 lg:px-2 xl:px-20 2xl:px-40">
                                 <NewsfeedOverviewSection
                                     key="newsfeed-overview"
@@ -194,52 +195,54 @@ export default function Show({
                                 />
                             </div>
 
-                            {/* Second Column: Overview and Events (spans 1 column) */}
                             <div className="space-y-6">
+                                <EventsOverviewSection
+                                    key="overview-events"
+                                    id="overview-events"
+                                    events={normalizedSections.events.slice(
+                                        0,
+                                        3,
+                                    )}
+                                    projectIdentifier={projectIdentifier}
+                                    ownerIdentifier={ownerIdentifier}
+                                    appCurrency={community.app_currency}
+                                    emptyMessage="No upcoming events."
+                                />
                                 <div className="hidden lg:block">
-                        <CommunityOverviewCard
-                            key="overview"
-                            community={community}
-                            isJoined={isJoined}
-                            isPending={isPending}
-                            joining={joining}
-                            leaving={leaving}
-                            onJoin={handleJoin}
-                            onLeaveClick={() => setLeaveConfirmOpen(true)}
-                            joinedAt={joinedAt}
+                                    <CommunityOverviewCard
+                                        key="overview"
+                                        community={community}
+                                        isJoined={isJoined}
+                                        isPending={isPending}
+                                        joining={joining}
+                                        leaving={leaving}
+                                        onJoin={handleJoin}
+                                        onLeaveClick={() =>
+                                            setLeaveConfirmOpen(true)
+                                        }
+                                        joinedAt={joinedAt}
                                         totalCustomers={totalCustomers}
-                                        />
-                                </div>
-                                    <EventsOverviewSection
-                                        key="overview-events"
-                                        id="overview-events"
-                                        events={normalizedSections.events.slice(
-                                            0,
-                                            3,
-                                        )}
-                                        projectIdentifier={projectIdentifier}
-                                        ownerIdentifier={ownerIdentifier}
-                                        appCurrency={community.app_currency}
-                                        emptyMessage="No upcoming events."
                                     />
+                                </div>
                             </div>
                         </div>
                     </div>
                 ),
             },
-        ],
-        [
-            community,
-            isJoined,
-            isPending,
-            joining,
-            leaving,
-            normalizedSections,
-            handleJoin,
-            projectIdentifier,
-            ownerIdentifier,
-        ],
-    );
+        ];
+
+        return sections;
+    }, [
+        community,
+        isJoined,
+        isPending,
+        joining,
+        leaving,
+        normalizedSections,
+        handleJoin,
+        projectIdentifier,
+        ownerIdentifier,
+    ]);
 
     return (
         <CustomerLayout

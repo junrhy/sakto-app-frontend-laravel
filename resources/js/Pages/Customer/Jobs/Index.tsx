@@ -1,200 +1,321 @@
-import TextInput from '@/Components/TextInput';
-import { Card } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/Components/ui/card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import CustomerLayout from '@/Layouts/Customer/CustomerLayout';
+import { buildOwnerSidebarSections } from '@/Pages/Customer/Communities/utils/ownerSidebarSections';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-interface JobProvider {
-    id: number;
-    name: string;
-    email: string;
-    contact_number: string;
-    created_at: string;
-    slug: string;
-    identifier: string;
+interface CommunityJob {
+    id?: number | string;
+    title?: string;
+    description?: string;
+    location?: string;
+    employment_type?: string;
+    job_category?: string;
+    salary_min?: number | string | null;
+    salary_max?: number | string | null;
+    salary_currency?: string | null;
+    application_deadline?: string | null;
+    status?: string;
+    created_at?: string;
+    job_board_id?: number | string | null;
 }
 
 interface JobsProps extends PageProps {
-    jobs: JobProvider[];
+    community: {
+        id: number | string;
+        name: string;
+        identifier?: string | null;
+        slug?: string | null;
+        app_currency?: {
+            symbol?: string;
+            code?: string;
+            decimal_separator?: string;
+            thousands_separator?: string;
+        } | null;
+    };
+    project: string;
+    jobs: CommunityJob[];
 }
 
-export default function Jobs({ auth, jobs }: JobsProps) {
+export default function Jobs({ auth, community, project, jobs }: JobsProps) {
     const [searchQuery, setSearchQuery] = useState('');
-
-    const filteredJobs = jobs.filter(
-        (provider) =>
-            provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            provider.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (provider.contact_number &&
-                provider.contact_number
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase())),
+    const [employmentFilter, setEmploymentFilter] = useState('all');
+    const [locationFilter, setLocationFilter] = useState('all');
+    const ownerIdentifier = community.slug ?? community.identifier ?? community.id;
+    const projectIdentifier = project ?? 'community';
+    const sidebarSections = useMemo(
+        () =>
+            buildOwnerSidebarSections(
+                projectIdentifier,
+                String(ownerIdentifier),
+                'jobs',
+            ),
+        [projectIdentifier, ownerIdentifier],
     );
+
+    const employmentOptions = useMemo(() => {
+        const set = new Set(
+            jobs
+                .map((job) => job.employment_type)
+                .filter((type): type is string => Boolean(type)),
+        );
+        return Array.from(set).sort();
+    }, [jobs]);
+
+    const locationOptions = useMemo(() => {
+        const set = new Set(
+            jobs
+                .map((job) => job.location)
+                .filter((loc): loc is string => Boolean(loc)),
+        );
+        return Array.from(set).sort();
+    }, [jobs]);
+
+    const normalizeSalaryValue = (value: unknown): number | null => {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return value;
+        }
+        const parsed = Number.parseFloat(String(value));
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const formatSalary = (job: CommunityJob): string => {
+        const min = normalizeSalaryValue(job.salary_min);
+        const max = normalizeSalaryValue(job.salary_max);
+        const currency =
+            job.salary_currency ??
+            community.app_currency?.symbol ??
+            community.app_currency?.code ??
+            '₱';
+
+        if (min === null && max === null) {
+            return 'Negotiable';
+        }
+
+        if (min !== null && max !== null) {
+            if (min === max) {
+                return `${currency}${min.toLocaleString()}`;
+            }
+            return `${currency}${min.toLocaleString()} - ${currency}${max.toLocaleString()}`;
+        }
+
+        const value = (min ?? max) as number;
+        return `${currency}${value.toLocaleString()}`;
+    };
+
+    const formatDate = (date?: string | null): string => {
+        if (!date) {
+            return '';
+        }
+        const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) {
+            return '';
+        }
+        return parsed.toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
+
+    const filteredJobs = useMemo(() => {
+        return jobs.filter((job) => {
+            const matchesSearch =
+                !searchQuery ||
+                job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                job.location
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                job.job_category
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase());
+            const matchesEmployment =
+                employmentFilter === 'all' ||
+                job.employment_type === employmentFilter;
+            const matchesLocation =
+                locationFilter === 'all' || job.location === locationFilter;
+
+            return matchesSearch && matchesEmployment && matchesLocation;
+        });
+    }, [jobs, searchQuery, employmentFilter, locationFilter]);
 
     return (
         <CustomerLayout
             auth={auth}
-            title="Jobs"
+            title={`${community.name} Jobs`}
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Jobs
-                </h2>
-            }
-        >
-            <Head title="Jobs" />
-
-            <div className="overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:rounded-lg">
-                <div className="p-4 text-gray-900 dark:text-gray-100 sm:p-6">
-                    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex-shrink-0">
-                            <h3 className="text-lg font-medium">
-                                Job Providers
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Total: {filteredJobs.length}{' '}
-                                {filteredJobs.length === 1
-                                    ? 'provider'
-                                    : 'providers'}
-                            </p>
-                        </div>
-                        <div className="w-full sm:w-auto sm:max-w-sm">
-                            <TextInput
-                                type="text"
-                                placeholder="Search by name, email, or phone..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full"
-                            />
-                        </div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                            Job Opportunities
+                        </h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Roles published by {community.name}
+                        </p>
                     </div>
+                    <Button asChild variant="outline" className="hidden sm:inline-flex">
+                        <Link
+                            href={route('customer.communities.show', {
+                                community:
+                                    community.slug ?? community.identifier ?? community.id,
+                            })}
+                        >
+                            &larr; Back
+                        </Link>
+                    </Button>
+                </div>
+            }
+            sidebarSections={sidebarSections}
+            sidebarSectionTitle={community.name}
+        >
+            <Head title={`${community.name} Jobs`} />
 
-                    {filteredJobs.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredJobs.map((provider) => (
-                                <Card
-                                    key={provider.id}
-                                    className="overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-                                >
-                                    <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-700 sm:px-6 sm:py-4">
-                                        <div className="flex items-center space-x-3">
-                                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 sm:h-12 sm:w-12">
-                                                <span className="text-base font-medium text-indigo-600 dark:text-indigo-300 sm:text-lg">
-                                                    {provider.name
-                                                        .charAt(0)
-                                                        .toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <h3 className="truncate text-base font-medium text-gray-900 dark:text-gray-100 sm:text-lg">
-                                                    {provider.name}
-                                                </h3>
-                                                <p className="truncate text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
-                                                    {provider.email}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="p-4 sm:p-6">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center space-x-2">
-                                                <svg
-                                                    className="h-4 w-4 flex-shrink-0 text-gray-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                                    />
-                                                </svg>
-                                                <span className="min-w-0 truncate text-sm text-gray-600 dark:text-gray-400">
-                                                    {provider.contact_number ||
-                                                        'No phone number'}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <svg
-                                                    className="h-4 w-4 flex-shrink-0 text-gray-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                    />
-                                                </svg>
-                                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                    Joined{' '}
-                                                    {new Date(
-                                                        provider.created_at,
-                                                    ).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-700 sm:px-6">
-                                        <Link
-                                            href={route(
-                                                'member.short',
-                                                provider.slug || provider.id,
-                                            )}
-                                            className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                        >
-                                            View Profile
-                                            <svg
-                                                className="ml-1 h-4 w-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 5l7 7-7 7"
-                                                />
-                                            </svg>
-                                        </Link>
-                                    </div>
-                                </Card>
+            <Card className="border border-gray-200 shadow-sm dark:border-gray-700">
+                <CardHeader className="space-y-4">
+                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Listings ({filteredJobs.length})
+                    </CardTitle>
+                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                        Browse and apply to open positions. Filter by employment
+                        type or location to narrow down the results.
+                    </CardDescription>
+                    <div className="grid gap-3 md:grid-cols-3">
+                        <input
+                            type="text"
+                            placeholder="Search title, category, or location..."
+                            value={searchQuery}
+                            onChange={(event) =>
+                                setSearchQuery(event.target.value)
+                            }
+                            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        />
+                        <select
+                            value={employmentFilter}
+                            onChange={(event) =>
+                                setEmploymentFilter(event.target.value)
+                            }
+                            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        >
+                            <option value="all">All Employment Types</option>
+                            {employmentOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
                             ))}
-                        </div>
+                        </select>
+                        <select
+                            value={locationFilter}
+                            onChange={(event) =>
+                                setLocationFilter(event.target.value)
+                            }
+                            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        >
+                            <option value="all">All Locations</option>
+                            {locationOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                    {filteredJobs.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Role
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Type
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Location
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Salary
+                                    </TableHead>
+                                    <TableHead className="text-gray-900 dark:text-white">
+                                        Deadline
+                                    </TableHead>
+                                    <TableHead className="text-right text-gray-900 dark:text-white">
+                                        Action
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredJobs.map((job) => (
+                                    <TableRow
+                                        key={job.id ?? job.title}
+                                        className="hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                                    >
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            <div className="font-semibold">
+                                                {job.title ?? 'Untitled role'}
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                {job.job_category ?? 'General'}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {job.employment_type ?? 'N/A'}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {job.location ?? 'Remote / TBD'}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {formatSalary(job)}
+                                        </TableCell>
+                                        <TableCell className="text-gray-900 dark:text-white">
+                                            {formatDate(job.application_deadline) ||
+                                                'Open until filled'}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Link
+                                                href={route('jobs.public.job', {
+                                                    id: job.id,
+                                                    client:
+                                                        community.identifier ??
+                                                        community.slug ??
+                                                        community.id,
+                                                })}
+                                                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                            >
+                                                View Details
+                                            </Link>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     ) : (
-                        <div className="rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-8">
-                            <svg
-                                className="mx-auto h-10 w-10 text-gray-400 sm:h-12 sm:w-12"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                />
-                            </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100 sm:text-base">
-                                {searchQuery
-                                    ? 'No providers found'
-                                    : 'No job providers available'}
-                            </h3>
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
-                                {searchQuery
-                                    ? 'Try adjusting your search terms.'
-                                    : 'No job providers have been added yet.'}
-                            </p>
+                        <div className="p-8 text-center text-sm text-gray-600 dark:text-gray-400">
+                            No job postings match your filters. Try adjusting
+                            your search.
                         </div>
                     )}
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </CustomerLayout>
     );
 }

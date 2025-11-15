@@ -44,7 +44,7 @@ export function CommunityOverviewCard({
             id="overview"
             className="overflow-hidden border border-gray-200 bg-gradient-to-br from-white to-gray-50/50 shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:from-gray-800 dark:to-gray-900/50"
         >
-            <CardHeader className="relative bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-4 text-white sm:p-6">
+            <CardHeader className="relative bg-gradient-to-r from-rose-400 via-pink-500 to-orange-400 p-4 text-white sm:p-6">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="flex flex-col gap-2 pr-12 md:pr-0">
                         <CardTitle className="text-lg font-bold text-white sm:text-xl md:text-2xl">
@@ -175,7 +175,7 @@ export function CommunityOverviewCard({
 
                 {/* Other Details Grid */}
                 <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-                    <div className="group rounded-lg border border-gray-200 bg-white p-3 transition-all duration-200 hover:border-indigo-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-indigo-600 sm:p-4">
+                    <div className="group rounded-lg border border-gray-200 bg-white p-3 transition-all duration-200 hover:border-indigo-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-indigo-600 sm:col-span-2 sm:p-4">
                         <DetailItem
                             label="Email"
                             value={community.email || 'No email'}
@@ -183,7 +183,7 @@ export function CommunityOverviewCard({
                             secondaryPath="M3 7l9 6 9-6"
                         />
                     </div>
-                    <div className="group rounded-lg border border-gray-200 bg-white p-3 transition-all duration-200 hover:border-indigo-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-indigo-600 sm:p-4">
+                    <div className="group rounded-lg border border-gray-200 bg-white p-3 transition-all duration-200 hover:border-indigo-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-indigo-600 sm:col-span-2 sm:p-4">
                         <DetailItem
                             label="Contact Number"
                             value={community.contact_number || 'Not provided'}

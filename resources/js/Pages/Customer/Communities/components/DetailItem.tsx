@@ -35,7 +35,7 @@ export function DetailItem({
                 )}
             </svg>
             <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-pink-600 dark:text-pink-300">
                     {label}
                 </p>
                 <p className="text-sm text-gray-900 dark:text-gray-100 break-words break-all">

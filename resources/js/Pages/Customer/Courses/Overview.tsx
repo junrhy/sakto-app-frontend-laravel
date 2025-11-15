@@ -568,23 +568,22 @@ export default function CoursesOverviewPage({
     return (
         <CustomerLayout
             auth={auth}
-            title={`Courses Overview – ${ownerName}`}
+            title={`Courses – ${ownerName}`}
             header={
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                            Courses Overview
+                            Courses
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             Learning opportunities from {ownerName}.
                         </p>
                     </div>
-                    <Link
-                        href={backUrl ?? route('customer.dashboard')}
-                        className="inline-flex items-center justify-center rounded-md border border-indigo-500 px-3 py-1 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-400/10"
-                    >
-                        ← Back
-                    </Link>
+                    <Button asChild variant="outline" className="hidden sm:inline-flex">
+                        <Link href={backUrl ?? route('customer.dashboard')}>
+                            &larr; Back
+                        </Link>
+                    </Button>
                 </div>
             }
             sidebarSections={sidebarSections}
